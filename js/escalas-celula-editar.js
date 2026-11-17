@@ -14,8 +14,9 @@
    em vermelho do Fora da escala, a dele (escalas-celula-fora.js); o
    Oficial de Área do título, o dia da companhia (escalas-celula-
    oficial.js). O que cada item faz: escalas-celula-editar-acoes.js. O
-   dia é lido no clique (os pontos até ele chegar; no pelotão, o mês da
-   extra junto, escalas-celula-extra.js); o clique fora e o
+   dia, as unidades da companhia e o mês da extra começam a ser lidos
+   antes do clique (escalas-celula-adiantar.js); a caixa abre na hora,
+   com as faixas enquanto eles chegam; o clique fora e o
    Esc fecham (o concluído fica, o que ficou pela metade sai); um dia
    por vez (outro dia com mudança não salva pergunta antes). O dia de
    mais de 7 dias atrás abre a caixa com o aviso (o painel só por
@@ -127,7 +128,8 @@
   }
 
   /* abre a caixa da peça (titulo: o da folha do celular; junto: o pelotão do nome), já escolhida (a borda forte); ela
-     aparece ao lado quando o menu chega (no pelotão, com o topo um pouco abaixo do dele, sem cobrir os nomes) */
+     aparece ao lado na hora, com o menu, ou com as faixas até ele chegar (no pelotão, com o topo um pouco abaixo do dele,
+     sem cobrir os nomes) */
   function abrirCaixa(a, peca, titulo, junto) {
     aberto = a;
     a.caixa = RW.caixaFlutuante.abrir({
@@ -170,18 +172,23 @@
     return false;
   }
 
-  /* o conteúdo da caixa 1: o menu do nome ou o do pelotão, quando o dia chega. A caixa só aparece com ele; passando de
-     0,5 s, aparece com os pontos (Carregando, REGRAS §4) */
+  /* o conteúdo da caixa 1: o menu do nome ou o do pelotão, quando o dia chega. Até lá, a caixa mostra as faixas
+     (geral-caixa-flutuante.js), que ficam o mínimo na tela depois de aparecer (Carregando, REGRAS §4) */
   function mostrar() {
     var a = aberto;
     if (!a || !a.caixa) return;
     if (!ativo() || !api().livre() || api().carregando() || !api().dados() || !unidadesProntas(a) || !extraPronta(a)) {
       a.esperando = true;
-      if (!a.pontos) a.pontos = setTimeout(function () { if (aberto === a && a.esperando) a.caixa.espera(true); }, 500);
+      return;
+    }
+    var falta = a.caixa.faltaForma();
+    if (falta > 0) {
+      a.esperando = true;
+      clearTimeout(a.relogio);
+      a.relogio = setTimeout(function () { if (aberto === a) mostrar(); }, falta);
       return;
     }
     a.esperando = false;
-    clearTimeout(a.pontos);
     a.caixa.espera(false);
     var menu;
     if (a.tipo === 'pelotao') menu = A().menuDoPelotao(contexto());
@@ -341,7 +348,7 @@
     aberto = null;
     if (RW.extrajornadaCelula) RW.extrajornadaCelula.esquecer();   // a caixa da extra também
     if (!a) return;
-    clearTimeout(a.pontos);
+    clearTimeout(a.relogio);
     if (A()) A().fechar(a, modo);
     if (a.caixa) a.caixa.fechar();
   }
@@ -397,7 +404,9 @@
      próximo quadro */
   function decorar(cel) {
     if (!naEscala(cel)) return;
-    cel.classList.toggle('escala-mes-celula--edita', edita(cel));
+    var pode = edita(cel);
+    cel.classList.toggle('escala-mes-celula--edita', pode);
+    if (pode && RW.escalasCelulaAdiantar) RW.escalasCelulaAdiantar.aoEntrar(diaDe(cel));
     if (RW.extrajornadaCelula) RW.extrajornadaCelula.procurar(cel.dataset.unidadeId, cel.dataset.iso);
     var a = aberto;
     if (!a) return;
@@ -427,8 +436,12 @@
     contexto: function () {
       return ativo() ? { unidadeId: dia.unidadeId, iso: dia.iso, secao: 'distribuicao', unidadeNome: dia.unidadeNome } : null;
     },
-    /* é o dia que a célula está mexendo? (o painel que abre nele continua o rascunho) */
+    /* é o dia que a célula está mexendo? (o painel que abre nele continua o rascunho; a leitura antes do clique,
+       escalas-celula-adiantar.js, pula esse dia) */
     ehDia: function (unidadeId, iso) { return ativo() && mesmo(dia, unidadeId, iso); },
+    /* a célula abre a caixa (true), o aviso do dia antigo ('antigo') ou o painel (false)? (escalas-celula-adiantar.js lê
+       o dia antes do clique só na que abre a caixa) */
+    podeNaCelula: podeNaCelula,
     /* há mudança não salva no dia da célula? */
     pendente: function () { return ativo() && !!S() && S().pendente(); },
     /* o painel do dia vai abrir: a caixa fecha (o que está concluído fica) e a célula deixa o dia */

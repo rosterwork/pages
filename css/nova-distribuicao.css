@@ -114,6 +114,12 @@
   flex-direction: column;
   gap: 2px;
 }
+/* as bolinhas lado a lado (a regra do acúmulo: Sempre ou Se faltar) */
+.nova-distribuicao-opcoes--lado {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 16px;
+}
 
 /* o dia da guarnição A (bloco 1, na companhia): o campo com o calendário e, embaixo, a frase */
 .nova-distribuicao-guarnicao {

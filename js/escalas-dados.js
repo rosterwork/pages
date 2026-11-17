@@ -36,6 +36,7 @@
   function chaveMes(ids, inicio, fim) { return 'ler_escala_mes|' + ids.join(',') + '|' + inicio + '|' + fim; }
 
   function buscarMes(ids, inicio, fim, daTela, semAviso) {
+    esquecerGuardados();   // a grade lida de novo: as leituras guardadas saem (as leituras guardadas, abaixo)
     var corpo = { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim };
     /* no treino, o exemplo roda num ensaio do banco e tem de aparecer: sempre o dado real */
     if (daTela && !(RosterWork.treino && RosterWork.treino.ligado())) corpo.p_aceita_copia = true;
@@ -59,6 +60,8 @@
     if (RosterWork.escalaExtraServico) RosterWork.escalaExtraServico.anotar(grade);
     /* o sobreaviso da companhia de cada dia: a célula o desenha no lugar dele (escalas-celula-sobreaviso.js) */
     if (RosterWork.escalasCelulaSobreaviso) RosterWork.escalasCelulaSobreaviso.guardar(grade);
+    /* a Operação Verão de cada dia: a página Op. Verão a desenha na célula e no título (op-verao-celula.js) */
+    if (RosterWork.opVeraoCelula) RosterWork.opVeraoCelula.guardar(grade);
     /* os estagiários que não são efetivo de cada hora: a dica da faixa os mostra embaixo dos militares (escalas-celula.js) */
     if (RosterWork.escalasCelula) RosterWork.escalasCelula.guardarEstagiarios(grade);
     Object.keys(grade).forEach(function (uid) {
@@ -106,12 +109,81 @@
   /* distribuição de um dia (RPC ler_distribuicao_dia): automático + manuais (e o rascunho,
      quando editando). Sem rascunho = salvo (modo Ver); com rascunho = simulação (modo Editar). */
   function lerDistribuicaoDia(unidadeId, iso, rascunho) {
-    var corpo = { p_unidade_id: Number(unidadeId), p_data: iso };
-    if (rascunho != null) corpo.p_rascunho = rascunho;
-    return RosterWork.apiFetch('/rest/v1/rpc/ler_distribuicao_dia', { metodo: 'POST', corpo: corpo })
-      .then(function (r) { return r.ok ? r.json() : null; })
+    if (rascunho == null) return lerGuardado(chaveDia(unidadeId, iso), 'ler_distribuicao_dia', corpoDia(unidadeId, iso));
+    var corpo = corpoDia(unidadeId, iso);
+    corpo.p_rascunho = rascunho;
+    return emDados(buscarTexto('ler_distribuicao_dia', corpo));
+  }
+  function corpoDia(unidadeId, iso) { return { p_unidade_id: Number(unidadeId), p_data: iso }; }
+
+  /* a resposta como texto (null em falha), e o texto como dados (cada um com a sua cópia) */
+  function buscarTexto(rpc, corpo) {
+    return RosterWork.apiFetch('/rest/v1/rpc/' + rpc, { metodo: 'POST', corpo: corpo })
+      .then(function (r) { return r.ok ? r.text() : null; })
       .catch(function () { return null; });
   }
+  function emDados(texto) {
+    return texto.then(function (t) { try { return t ? JSON.parse(t) : null; } catch (e) { return null; } });
+  }
+
+  /* ---- as leituras guardadas (a caixa da célula abre na hora) ----
+     O dia sem rascunho e as listas da caixa 2 da célula (quem pode entrar no dia, sem a vaga, e quem pode entrar na
+     guarnição) ficam guardados por pouco tempo: o mouse parado na célula da grade começa a leitura do dia antes do clique
+     (adiantarDia, escalas-celula-adiantar.js), a caixa 1 do pelotão a das listas (adiantarListas), e quem pede a mesma
+     leitura depois (a caixa, o painel) usa a que está em curso ou a que já chegou, cada um com a sua cópia. Saem com 1
+     minuto, em qualquer Salvar e quando a grade é lida de novo (a entrada, o mês, o Salvar, o Cancelar, o recálculo); a
+     falha não fica. No treino, nada fica guardado */
+  var GUARDA_MS = 60000;
+  var guardados = {};          // 'leitura|unidade|dia...' -> { em (quando começou), texto (a Promise do texto) }
+  var adiantando = false;      // a leitura do dia pelo mouse em curso: uma por vez
+  var adiantarDepois = null;   // o último dia pedido enquanto ela corria: [unidade, dia]
+
+  function guardavel() { return !(RosterWork.treino && RosterWork.treino.ligado()); }
+  function chaveDia(unidadeId, iso) { return 'dia|' + Number(unidadeId) + '|' + iso; }
+  function guardado(chave) {
+    var g = guardados[chave];
+    return g && performance.now() - g.em < GUARDA_MS ? g : null;
+  }
+  function esquecerGuardados() { guardados = {}; adiantarDepois = null; }
+
+  function textoGuardado(chave, rpc, corpo) {
+    var g = guardado(chave);
+    if (g) return g.texto;
+    var item = { em: performance.now(), texto: null };
+    item.texto = buscarTexto(rpc, corpo).then(function (t) {
+      if (t == null && guardados[chave] === item) delete guardados[chave];
+      return t;
+    });
+    guardados[chave] = item;
+    return item.texto;
+  }
+  function lerGuardado(chave, rpc, corpo) { return emDados(guardavel() ? textoGuardado(chave, rpc, corpo) : buscarTexto(rpc, corpo)); }
+
+  /* o dia começa a ser lido antes do clique: o aperto do mouse na hora; o mouse parado e o dedo (que pode só rolar a
+     grade), um por vez, e o último pedido enquanto um corre vai depois dele */
+  function adiantarDia(unidadeId, iso, agora) {
+    var chave = chaveDia(unidadeId, iso);
+    if (!guardavel() || guardado(chave)) return;
+    if (agora) { textoGuardado(chave, 'ler_distribuicao_dia', corpoDia(unidadeId, iso)); return; }
+    if (adiantando) { adiantarDepois = [unidadeId, iso]; return; }
+    adiantando = true;
+    textoGuardado(chave, 'ler_distribuicao_dia', corpoDia(unidadeId, iso)).then(function () {
+      adiantando = false;
+      var proximo = adiantarDepois;
+      adiantarDepois = null;
+      if (proximo) adiantarDia(proximo[0], proximo[1]);
+    });
+  }
+
+  /* as listas da caixa 2 do pelotão, lidas quando a caixa 1 aparece (escalas-celula-editar-acoes.js): quais =
+     { disponiveis (o Adicionar neste dia e o Adicionar estagiário), guarnicao (o Adicionar à guarnição) } */
+  function adiantarListas(unidadeId, iso, quais) {
+    if (!guardavel()) return;
+    if (quais.disponiveis) disponiveis(unidadeId, iso, unidadeId, null, false);
+    if (quais.guarnicao) continuosListar(unidadeId, iso);
+  }
+  window.addEventListener('rosterwork_escala_salva', esquecerGuardados);
+  window.addEventListener('rosterwork_escala_recarregar', esquecerGuardados);
 
   /* os dias que ainda podem mudar (RPC escala_dias_atualizando): [{ unidade, data, fila }], fila = ainda vai ser refeito
      (senão, já foi e só falta a cópia guardada); null em falha */
@@ -225,17 +297,18 @@
     var corpo = { p_unidade_id: Number(unidadeId), p_data: iso, p_dia: dia || null, p_ciclo: ciclo || null };
     if (extra) corpo.p_extra = extra;
     if (sobreaviso) corpo.p_sobreaviso = sobreaviso;
+    /* as leituras guardadas saem ao gravar e de novo com a resposta (o que quem chama lê depois já vem do banco) */
+    esquecerGuardados();
     return RosterWork.apiFetch('/rest/v1/rpc/escala_painel_salvar', { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
-      .catch(function () { return { _falha: 'conexao' }; });
+      .catch(function () { return { _falha: 'conexao' }; })
+      .then(function (r) { esquecerGuardados(); return r; });
   }
 
   /* ---- Guarnições (o ciclo automático) ---- */
   /* quem está fora da escala, em outra guarnição ou de serviço no dia (o campo de militar do Adicionar militar) */
   function continuosListar(unidadeId, iso) {
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_continuos_listar', { metodo: 'POST', corpo: { p_unidade_id: Number(unidadeId), p_data: iso } })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .catch(function () { return null; });
+    return lerGuardado('guarnicao|' + Number(unidadeId) + '|' + iso, 'escala_continuos_listar', corpoDia(unidadeId, iso));
   }
   /* a aba Guarnições (RPC escala_guarnicoes_listar): os períodos a partir do dia, cada um com as guarnições lado a lado e
      as marcas do que muda, e quem está fora da escala. Com mudança do painel esperando o Salvar, já com o rascunho (a
@@ -268,9 +341,9 @@
     var corpo = { p_unidade_id: Number(unidadeId), p_data: iso, p_unidade_busca: Number(unidadeBusca) };
     if (vaga) corpo.p_vaga = vaga;
     if (oficial) corpo.p_oficial = true;
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_dia_disponiveis', { metodo: 'POST', corpo: corpo })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .catch(function () { return null; });
+    /* sem a vaga, a lista fica guardada (as leituras guardadas, acima) */
+    if (vaga) return emDados(buscarTexto('escala_dia_disponiveis', corpo));
+    return lerGuardado('disponiveis|' + [Number(unidadeId), iso, Number(unidadeBusca), oficial ? 1 : 0].join('|'), 'escala_dia_disponiveis', corpo);
   }
 
   /* o calendário do Mudar o dia do serviço (RPC escala_mudar_dia_dias): para cada dia do período (até 63 dias), a
@@ -327,7 +400,7 @@
     sobreavisoCandidatos: sobreavisoCandidatos, sobreavisoMilitares: sobreavisoMilitares,
     carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     motivos: motivos,
-    lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
+    lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, adiantarDia: adiantarDia, adiantarListas: adiantarListas, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
     continuosListar: continuosListar, guarnicoesListar: guarnicoesListar, cicloRetirarAnalisar: cicloRetirarAnalisar,

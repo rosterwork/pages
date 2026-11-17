@@ -7,7 +7,8 @@
    a Guarnição em bolinhas (sem a escolha do administrador, sai a
    partir de 16 dias) e o que ele deixa nesses dias, em caixas de
    marcar. Escolher um nome da lista preenche as marcas dele (a
-   Op. Verão e a F. Tarefa deixam trocar e tirar extra); as Férias não
+   Op. Verão e a F. Tarefa deixam trocar e tirar extra, e a Op. Verão
+   também fica no sobreaviso; o Litoral sai de tudo); as Férias não
    perguntam a guarnição nem as marcas (saem de tudo). Cada resposta
    entra no rascunho na hora. O que é de mais de uma semana atrás fica
    travado (o mesmo limite do banco): o que terminou antes não muda; o
@@ -89,12 +90,13 @@
             return;
           }
           var campos = { padrao: valor, nome: rotuloDe(valor) };
-          /* as marcas do item: as férias saem de tudo; a Op. Verão e a F. Tarefa deixam trocar e tirar extra */
+          /* as marcas do item: as férias e o Litoral saem de tudo; a Op. Verão e a F. Tarefa deixam trocar e tirar extra,
+             e a Op. Verão fica também no sobreaviso */
           if (!iniTravado) {
             var deixa = MISSOES.indexOf(valor) >= 0;
             campos.tro = !deixa;
             campos.ext = !deixa;
-            campos.sob = true;
+            campos.sob = valor !== 'op_verao';
           }
           mudar(campos);
           el.outro.classList.add('oculto');

@@ -10,9 +10,13 @@
      com a pergunta de descontar ou não no banco de horas (o Não
      descontar vem primeiro e marcado).
    - Pontual: o horário pode diminuir ou ir para as horas livres dele
-     no dia (a mesma leitura do Adicionar militar, escala_dia_disponiveis);
-     a pergunta é a do Adicionar: contabilizar ou não as horas do
-     pontual (começa na escolha de antes).
+     no dia (a mesma leitura do Adicionar militar, escala_dia_disponiveis).
+     O banco de horas: o pontual ainda não gravado tem a pergunta do
+     Adicionar (contabilizar ou não, começando na escolha de antes),
+     sempre; o gravado e contabilizado, só quando o total de horas fica
+     diferente do que ele tem no banco por este dia: Corrigir (marcado)
+     ou Manter; o gravado sem contabilizar e o estagiário (as horas são
+     só registro), nenhuma.
    A resposta completa entra no rascunho do Dia ao vivo
    (escalas-painel-editar.js › aoVivo) e grava no Salvar do rodapé
    largo; o horário fora das horas livres fica em vermelho, e a
@@ -70,11 +74,12 @@
      ciclo) }, opcoes() (as horas dos campos),
      dentro(), calcular(), aplicar(c), lerLivres(aoLer) }.
      calcular() devolve { ok, mudou, f, saem (as horas que viram folga), texto (a nota da sub-tela), pergunta (o banco de
-     horas aparece), sim (o texto do Descontar ou do Contabilizar), folga ({ periodos, horas } ou null) }; aplicar(c) põe a
+     horas aparece), sim e nao (os textos das duas respostas), folga ({ periodos, horas } ou null) }; aplicar(c) põe a
      resposta no rascunho ao vivo (o horário fora de onde ele pode ficar trava o Salvar).
-     Pelo ciclo, o banco começa no Não descontar (ou na escolha da folga dele já no rascunho); no pontual, na escolha de
-     antes. opcoes.sempreBanco: no pontual, a pergunta do banco aparece sempre, e mudar só a resposta já muda o rascunho
-     (a célula, logo depois do Adicionar somente nesse dia) */
+     Pelo ciclo, o banco começa no Não descontar (ou na escolha da folga dele já no rascunho). No pontual (bancoPontual):
+     'novo' (ainda não gravado) começa na escolha do Adicionar, e mudar só a resposta já muda o rascunho; 'corrigir'
+     (gravado e contabilizado) começa no Corrigir (ou no Manter já no rascunho); null, sem pergunta.
+     opcoes.estagiario: o estagiário que ainda não está na leitura do dia */
   function criar(cpf, opcoes) {
     opcoes = opcoes || {};
     var api = ed(), H = api.horas;
@@ -87,8 +92,13 @@
     var base = H.uniao([H.faixa(s.periodo)].concat(folgasAntes.map(H.faixa)));
     if (base.length !== 1) base = [H.faixa(s.periodo)];
     var pont = pontual ? (r0.pontuais || []).filter(function (x) { return x.cpf === cpf; })[0] : null;
+    /* o banco de horas do pontual: o estagiário nunca (as horas dele são só registro) */
+    var dd = api.dados() || {}, estagiario = !!(opcoes.estagiario || (dd.estagios && dd.estagios[cpf]));
+    var gravado = pontual ? api.pontualGravado(cpf) : null;
+    var bancoPontual = !pontual || estagiario ? null : !gravado ? 'novo' : gravado.contabilizado ? 'corrigir' : null;
     var est = { periodo: { hi: s.periodo.hi, hf: s.periodo.hf }, livres: pontual ? [H.faixa(s.periodo)] : base,
-      banco: pontual ? (pont && pont.contabilizar ? 'sim' : 'nao') : (folgas[0] && folgas[0].contabilizar ? 'sim' : 'nao'),
+      banco: bancoPontual === 'corrigir' ? (pont && pont.manter_banco ? 'nao' : 'sim')
+        : pontual ? (pont && pont.contabilizar ? 'sim' : 'nao') : (folgas[0] && folgas[0].contabilizar ? 'sim' : 'nao'),
       motivo: (folgas[0] && folgas[0].motivo) || '' };
     var bancoAntes = est.banco;
 
@@ -103,16 +113,22 @@
       var f = H.faixa(est.periodo), ok = dentro();
       var saem = ok ? H.menos(base, [f]) : [];
       var mudou = ok && (pontual
-        ? JSON.stringify(est.periodo) !== JSON.stringify(s.periodo) || (!!opcoes.sempreBanco && est.banco !== bancoAntes)
+        ? JSON.stringify(est.periodo) !== JSON.stringify(s.periodo) || (bancoPontual === 'novo' && est.banco !== bancoAntes)
         : JSON.stringify(saem) !== JSON.stringify(H.uniao(folgasAntes.map(H.faixa))));
       var texto = '';
       if (mudou && !pontual && saem.length) texto = L().horarioDiaFolga(H.textoPeriodos(saem.map(H.periodo)), nome, H.horasTexto(minutos(saem)));
       if (mudou && pontual) texto = L().horarioDiaPontual(nome, msg().dasAs(H.curta(est.periodo.hi), H.curta(est.periodo.hf)), H.horasTexto(f[1] - f[0]));
-      /* o banco de horas só com o horário mudado (pelo ciclo, só com horas de folga) */
-      var pergunta = ok && (pontual ? mudou || !!opcoes.sempreBanco : mudou && saem.length > 0);
-      var sim = !pergunta ? '' : pontual ? L().bancoSim(H.horasTexto(f[1] - f[0])) : L().descontar(H.horasTexto(minutos(saem)));
+      /* o banco de horas: pelo ciclo, só com horas de folga; no pontual novo, sempre; no gravado e contabilizado, só com o
+         total de horas diferente do que ele tem no banco por este dia */
+      var pergunta = ok && (bancoPontual === 'novo' ? true
+        : bancoPontual === 'corrigir' ? mudou && f[1] - f[0] !== gravado.minutos
+        : !pontual && mudou && saem.length > 0);
+      var sim = '', nao = '';
+      if (pergunta && bancoPontual === 'novo') { sim = L().bancoSim(H.horasTexto(f[1] - f[0])); nao = RosterWork.mensagens.botoes.naoContabilizar; }
+      if (pergunta && bancoPontual === 'corrigir') { sim = L().bancoCorrigir(H.horasTexto(f[1] - f[0])); nao = L().bancoManter(H.horasTexto(gravado.minutos)); }
+      if (pergunta && !pontual) { sim = L().descontar(H.horasTexto(minutos(saem))); nao = L().naoDescontar; }
       var folga = mudou && !pontual && saem.length ? { periodos: saem.map(H.periodo), horas: H.horasTexto(minutos(saem)) } : null;
-      return { ok: ok, mudou: mudou, f: f, saem: saem, texto: texto, pergunta: pergunta, sim: sim, folga: folga };
+      return { ok: ok, mudou: mudou, f: f, saem: saem, texto: texto, pergunta: pergunta, sim: sim, nao: nao, folga: folga };
     }
 
     function aplicar(c) {
@@ -121,9 +137,12 @@
       if (!c.mudou) { api.aoVivo(null, false); return; }
       if (c.pergunta && !est.banco) { api.aoVivo(null, true); return; }
       var contabilizar = est.banco === 'sim', novo = { hi: est.periodo.hi, hf: est.periodo.hf }, f = c.f, saem = c.saem;
+      /* o gravado e contabilizado: o Manter deixa o banco de horas como estava; sem a pergunta, ele acompanha as horas */
+      var manter = bancoPontual === 'corrigir' && c.pergunta && est.banco === 'nao';
+      if (bancoPontual === 'corrigir') contabilizar = true;
       api.aoVivo(pontual
         ? function () {
-          api.aplicarColocacao({ cpf: cpf, periodos: [novo], sistema: true, pontual: { contabilizar: contabilizar } });
+          api.aplicarColocacao({ cpf: cpf, periodos: [novo], sistema: true, pontual: { contabilizar: contabilizar, manter: manter } });
           api.cortarAjustes(cpf, H.menos([H.faixa(s.periodo)], [f]));
         }
         : function () {
@@ -179,7 +198,7 @@
       mostra(el.desconta, !sessao.pontual);
       mostra(el.contabiliza, sessao.pontual);
       if (c.pergunta && !sessao.pontual) el.descontaSim.textContent = c.sim;
-      if (c.pergunta && sessao.pontual) el.contabilizaSim.textContent = c.sim;
+      if (c.pergunta && sessao.pontual) { el.contabilizaSim.textContent = c.sim; el.contabilizaNao.textContent = c.nao; }
       sessao.aplicar(c);
     }
 
@@ -191,7 +210,7 @@
         servico: q('.escala-horario-dia-servico'), periodo: q('.escala-horario-dia-periodo'), efeito: q('.escala-horario-dia-efeito'),
         erro: q('.escala-horario-dia-erro'), banco: q('.escala-horario-dia-banco'), desconta: q('.escala-horario-dia-descontar'),
         contabiliza: q('.escala-horario-dia-contabilizar'), descontaSim: q('.escala-horario-dia-descontar-sim'),
-        contabilizaSim: q('.escala-horario-dia-contabilizar-sim')
+        contabilizaSim: q('.escala-horario-dia-contabilizar-sim'), contabilizaNao: q('.escala-horario-dia-contabilizar-nao')
       };
       var servico = sessao.servico;
       el.servico.textContent = L().horarioDiaServico(sessao.nome, diaMes(api.iso()), sessao.pontual, msg().dasAs(H.curta(servico.hi), H.curta(servico.hf)));

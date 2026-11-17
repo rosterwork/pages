@@ -104,9 +104,7 @@
       var meu = ++pedido;
       ['fazer', 'junto', 'horas', 'docs', 'motivo', 'efeito', 'conflito', 'erro'].forEach(function (k) { mostra(el[k], false); });
       el.rw.textContent = '';
-      el.dias.textContent = '';
-      var pontos = RW.tpl('carregando-pontos');
-      if (pontos) el.dias.appendChild(pontos);
+      RW.etapas.frase(el.dias, 'trocaDias');
       if (visivel) cfg.pronto(L().escolhaFazer, false);
       chamar().then(function (r) {
         if (meu !== pedido || !raiz.isConnected) return;
@@ -216,10 +214,8 @@
       var qual = acao();
       if (!qual) { ++pedido; desenhar(); return; }
       var meu = ++pedido;
-      var nota = el.efeito.querySelector('.nota-texto'), pontos = RW.tpl('carregando-pontos');
       desenhar();
-      nota.textContent = '';
-      if (pontos) nota.appendChild(pontos);
+      RW.etapas.frase(el.efeito.querySelector('.nota-texto'), 'trocaOQueMuda');
       chamar({ acao: qual, junto: qual === 'troca' ? est.junto : null, ensaio: true }).then(function (r) {
         if (meu !== pedido || !raiz.isConnected) return;
         est.previa = r && r.ok ? r.previa : { erro: (r && r.erro) || RW.mensagens.escala.falhaCarregar };

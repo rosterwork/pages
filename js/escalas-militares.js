@@ -8,7 +8,8 @@
    dos estágios em vigor, um bloco por estágio; o dia sem nada abre,
    para quem administra, o Adicionar militar do painel do dia, já
    com ele. Na página Sobreaviso, a mesma grade com a fila e
-   os dias de sobreaviso (escalas-militares-sobreaviso.js). O selo
+   os dias de sobreaviso (escalas-militares-sobreaviso.js); na Op.
+   Verão, a aba Guarda-vidas (op-verao-militares.js). O selo
    dos dias de cada militar, o efetivo de cada dia e o filtro ficam
    no escalas-militares-dias.js. Não busca no banco nem escreve
    estilo CSS.
@@ -23,6 +24,7 @@
   var termoAtual = '';   // termo da busca (persiste entre re-renderizações e navegação)
   var reqSeq = 0;        // token de requisição: ignora resposta antiga quando outra render começou
   var sobreaviso = false; // a grade é a da página Sobreaviso (escalas-militares-sobreaviso.js)
+  var opVerao = false;    // a grade é a aba Guarda-vidas da página Op. Verão (op-verao-militares.js)
 
   /* tira acentos e caixa para comparar nomes sem diferença de acentuação */
 
@@ -98,6 +100,7 @@
   function preencherCelula(celula, estado) {
     if (!estado) return;   // folga: célula vazia
     if (estado.estado === 'sobreaviso') { RosterWork.escalasMilitaresSobreaviso.chips(celula, estado.periodos); return; }
+    if (estado.estado === 'op-verao') { RosterWork.opVeraoMilitares.chips(celula, estado.periodos); return; }
     if (estado.estado === 'afastado') {
       var chip = RosterWork.tpl('tpl-escala-mil-afast');
       if (!chip) return;
@@ -131,12 +134,13 @@
   }
 
   /* clique numa célula: realça e abre o painel de detalhe do militar naquele dia. Na aba Estagiários (aba.estagiarios),
-     o dia sem nada, para quem administra a unidade, abre o painel do dia no Adicionar militar, já com ele */
+     o dia sem nada, para quem administra a unidade, abre o painel do dia na aba Estagiários, no Adicionar estagiário, já
+     com ele */
   function ligarCelula(celula, militar, coluna, iso, estado, aba) {
     function adicionar() {
       desmarcarCelula();
       RosterWork.escalasPainel.abrirDia({ unidadeId: coluna.id, iso: iso, unidadeNome: coluna.nomeCompleto || coluna.nome,
-        unidadeCidade: coluna.cidade }, 'distribuicao', { adicionar: militar.cpf });
+        unidadeCidade: coluna.cidade }, 'estagiarios', { adicionar: militar.cpf });
     }
     function abrir() {
       desmarcarCelula();
@@ -151,6 +155,7 @@
       if (RosterWork.painel) RosterWork.painel.acompanharTela(function () { return celula.isConnected && celula.getClientRects().length > 0; });
     }
     celula.addEventListener('click', function () {
+      if (opVerao) return;   // a aba Guarda-vidas: o dia não abre nada
       if (sobreaviso) { RosterWork.escalasMilitaresSobreaviso.clique(celula, militar, coluna, iso, estado); return; }
       if (aba && aba.estagiarios && !estado && RosterWork.escalasPainel && RosterWork.sessao.podeAdministrar('pelotao', coluna.id)) {
         adicionar();
@@ -188,7 +193,8 @@
     if (!militares.length) {
       var vazio = RosterWork.tpl('tpl-escala-estado');
       if (vazio) {
-        vazio.textContent = aba ? RosterWork.mensagens.escala.estagiarios.semEstagiario : 'Nenhum militar nesta unidade.';
+        vazio.textContent = aba ? RosterWork.mensagens.escala.estagiarios.semEstagiario
+          : opVerao ? RosterWork.mensagens.opVerao.semNinguemMes : 'Nenhum militar nesta unidade.';
         vazio.classList.add('escala-mil-vazio');
         corpoU.appendChild(vazio);
       }
@@ -204,6 +210,7 @@
       linha.querySelector('.escala-mil-pessoa-cpf').textContent = formatarCpf(m.cpf);
       linha.setAttribute('data-busca', RosterWork.busca.normalizar((m.grad || '') + ' ' + (m.nome || '')));
       linha.dataset.cpf = m.cpf;
+      if (opVerao) RosterWork.opVeraoMilitares.linha(linha, m, coluna);   // o guarda-vidas civil
       dias.forEach(function (info) {
         var cel = RosterWork.tpl('tpl-escala-mil-celula');
         var estadoDia = m.dias && m.dias[info.iso];
@@ -313,7 +320,8 @@
     var Dia = window.RosterWork.escalasDiaNaGrade;
     var estagiarios = !!(opcoes && opcoes.estagiarios);
     sobreaviso = !!(opcoes && opcoes.sobreaviso);
-    var chaveGrade = (sobreaviso ? 'sobreaviso|' : estagiarios ? 'estagiarios|' : 'militares|') + inicio + '|' + ids.join(',');
+    opVerao = !!(opcoes && opcoes.opVerao);
+    var chaveGrade = (sobreaviso ? 'sobreaviso|' : opVerao ? 'op-verao|' : estagiarios ? 'estagiarios|' : 'militares|') + inicio + '|' + ids.join(',');
     var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
     /* outro mês: o que está na tela fica 0,5 s; depois, a forma da nova, que fica o mínimo na tela (escalas-esqueleto.js) */
     var Esqueleto = window.RosterWork.escalasEsqueleto;
@@ -324,6 +332,7 @@
 
     var req = ++reqSeq;
     return Esqueleto.segurar(esperaDaGrade, (sobreaviso ? RosterWork.escalasMilitaresSobreaviso.ler(ids, inicio, fim)
+      : opVerao ? RosterWork.opVeraoMilitares.ler(ids, inicio, fim)
       : window.RosterWork.escalasDados.carregarMilitares(ids, inicio, fim, estagiarios))).then(function (dados) {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;   // saiu da página, outra render começou, ou trocou de modo
       Esqueleto.parar();
@@ -368,11 +377,13 @@
           return;
         }
         if (sobreaviso && !((dados[c.id] || {}).militares || []).length) return;   // a unidade sem ninguém na fila
-        var bloco = montarUnidade(c, dados[c.id], dias);
+        if (opVerao && !dados[c.id]) return;   // a Op. Verão: um bloco por companhia com ela no mês, com o nome dela
+        var bloco = montarUnidade(opVerao ? RosterWork.opVeraoMilitares.coluna(c) : c, dados[c.id], dias);
         if (bloco) grade.appendChild(bloco);
       });
 
       if (sobreaviso && !grade.querySelector('.escala-mil-unidade')) { mostrarEstado(corpo, RosterWork.mensagens.escala.sobreaviso.paginaVazia); return; }
+      if (opVerao && !grade.querySelector('.escala-mil-unidade')) { mostrarEstado(corpo, RosterWork.opVeraoMilitares.vazia()); return; }
       RosterWork.escalasMilitaresDias.aplicar(grade);   // o filtro, o selo dos dias e o efetivo, antes de aparecer
       corpo.appendChild(wrap);
       /* a sombra da coluna dos nomes: só com a grade rolada para o lado, quando os dias passam por baixo dela */

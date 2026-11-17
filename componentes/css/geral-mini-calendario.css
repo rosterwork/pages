@@ -24,7 +24,7 @@
   gap: 4px;
 }
 
-/* o mês em cima da grade: as setas nas pontas e o nome no meio (com os pontos enquanto o mês carrega) */
+/* o mês em cima da grade: as setas nas pontas e o nome no meio (com a barra enquanto o mês carrega) */
 .mini-calendario-mes {
   display: flex;
   align-items: center;
@@ -37,7 +37,7 @@
 .mini-calendario-mes-nome {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .mini-calendario-cab {

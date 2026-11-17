@@ -4,12 +4,14 @@
    Distribuição (abre nela; o ritmo da escala é o bloco 1 dela),
    Horário de expediente (um só para a companhia e os pelotões),
    Feriados (o calendário de cada unidade), Estágios (as regras de
-   cada estágio da unidade) e Sobreaviso (as regras da companhia;
-   a aba só para o administrador da companhia). Sair de uma aba com
+   cada estágio da unidade), Sobreaviso e Op. Verão (as regras da
+   companhia; as duas abas só para o administrador da companhia).
+   Sair de uma aba com
    edição não salva pergunta antes. Quem não administra fica sem as
    abas e vê na Distribuição "Página só do administrador.". Cada aba
    mora no seu arquivo: nova-distribuicao*.js, ajustes-horario.js,
-   ajustes-feriados.js, ajustes-estagios*.js e ajustes-sobreaviso.js.
+   ajustes-feriados.js, ajustes-estagios*.js, ajustes-sobreaviso.js e
+   ajustes-op-verao.js.
    As preferências pessoais (tema) moram no Meu perfil (cabeçalho).
    ============================================================ */
 (function () {
@@ -18,13 +20,14 @@
   window.RosterWork = window.RosterWork || {};
   window.RosterWork.paginas = window.RosterWork.paginas || {};
 
-  /* ---------- abas (Distribuição · Horário de expediente · Feriados · Estágios) ---------- */
+  /* ---------- abas (Distribuição · Horário de expediente · Feriados · Estágios · Sobreaviso · Op. Verão) ---------- */
   var abaAtual = null;   // a aba à mostra
 
   /* o arquivo de cada aba: a Distribuição inicia com a página; as outras, ao abrir a aba (ativar) */
   function modulo(nome) {
     return { distribuicao: RosterWork.novaDistribuicao, horario: RosterWork.ajustesHorario, feriados: RosterWork.ajustesFeriados,
-             estagios: RosterWork.ajustesEstagios, sobreaviso: RosterWork.ajustesSobreaviso }[nome] || null;
+             estagios: RosterWork.ajustesEstagios, sobreaviso: RosterWork.ajustesSobreaviso,
+             'op-verao': RosterWork.ajustesOpVerao }[nome] || null;
   }
 
   function mostrarAba(conteudo, nome) {
@@ -65,10 +68,12 @@
       if (RosterWork.ajustesHorario) RosterWork.ajustesHorario.montar(conteudo);
       if (RosterWork.ajustesFeriados) RosterWork.ajustesFeriados.montar(conteudo);
       if (RosterWork.ajustesEstagios) RosterWork.ajustesEstagios.montar(conteudo);
-      /* o Sobreaviso é da companhia: a aba só para o administrador da companhia (ou de cima) */
-      var sobreaviso = !!S.temPapel && S.temPapel('companhia');
-      abas.querySelector('[data-aba="sobreaviso"]').classList.toggle('oculto', !sobreaviso);
-      if (sobreaviso && RosterWork.ajustesSobreaviso) RosterWork.ajustesSobreaviso.montar(conteudo);
+      /* o Sobreaviso e a Op. Verão são da companhia: as abas só para o administrador da companhia (ou de cima) */
+      var companhia = !!S.temPapel && S.temPapel('companhia');
+      abas.querySelector('[data-aba="sobreaviso"]').classList.toggle('oculto', !companhia);
+      abas.querySelector('[data-aba="op-verao"]').classList.toggle('oculto', !companhia);
+      if (companhia && RosterWork.ajustesSobreaviso) RosterWork.ajustesSobreaviso.montar(conteudo);
+      if (companhia && RosterWork.ajustesOpVerao) RosterWork.ajustesOpVerao.montar(conteudo);
       if (RosterWork.abas) RosterWork.abas.ligar(abas, function (aba) { trocarAba(conteudo, aba); });
     }
     abaAtual = 'distribuicao';

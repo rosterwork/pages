@@ -198,7 +198,10 @@ html[data-treino] .etapas-veu {
   color: var(--texto-forte);
 }
 
-.etapas-linha .cobertura-viva {
+/* a barra curta: a da linha e a que fica sozinha ao lado de um texto que já diz o que espera (o nome do mês, a nota
+   amarela da Escala, a caixa flutuante) */
+.etapas-linha .cobertura-viva,
+.cobertura-viva--curta {
   width: 64px;
   min-height: 12px;
   flex-shrink: 0;

@@ -13,7 +13,35 @@
 /* ---------- as barras: a da Distribuição (a unidade) e a dos Feriados (o mês e a unidade) somem nas outras abas ---------- */
 .pagina:has([data-aba-painel="distribuicao"].oculto) #nova-distribuicao-barra,
 .pagina:has([data-aba-painel="feriados"].oculto) #feriados-barra,
-.pagina:has([data-aba-painel="sobreaviso"].oculto) #sobreaviso-barra {
+.pagina:has([data-aba-painel="sobreaviso"].oculto) #sobreaviso-barra,
+.pagina:has([data-aba-painel="op-verao"].oculto) #op-verao-barra {
+  display: none;
+}
+
+/* ---------- aba Op. Verão: os postos, um por linha (o nome e a lixeira na ponta) ---------- */
+.ajustes-op-verao-postos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ajustes-op-verao-posto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.ajustes-op-verao-posto > .campo-entrada {
+  flex: 1 1 auto;
+  max-width: 320px;
+}
+
+.ajustes-op-verao-posto > .nova-distribuicao-remover {
+  margin-left: auto;
+}
+
+.ajustes-op-verao-postos:empty {
   display: none;
 }
 

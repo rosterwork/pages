@@ -43,6 +43,7 @@
   var modoBusca = 'marcar';  // 'marcar' (realça) ou 'filtrar' (esconde quem não bate)
   var aberto = { cpf: null, peca: null };   // o militar do painel aberto e a peça dele na grade (o realce)
   var siglas = {};           // cpf -> a sigla da unidade (ao lado do nome, no painel)
+  var setores = {};          // cpf -> o setor (Operacional, Administrativo, Aluno): o Salvar sabe se refaz a escala
 
   function M() { return RW.mensagens.afastamentos; }
   function R() { return RW.afastamentosRascunho; }
@@ -160,7 +161,10 @@
   /* a unidade: a grade do ano ou do mês (no celular, a lista); no Calendário, ela só entra na lista da passada (o
      calendário se desenha no fim, com todas); sem ninguém pelos filtros, o aviso */
   function renderConteudo(container, unidade, pessoas) {
-    pessoas.forEach(function (p) { siglas[String(p.usuario_id)] = unidade.nome || ''; });
+    pessoas.forEach(function (p) {
+      siglas[String(p.usuario_id)] = unidade.nome || '';
+      setores[String(p.usuario_id)] = p.tipo || '';
+    });
     var lista = X().ordenar(pessoas).filter(passa);
     if (noCalendario()) { naPassada.push({ unidade: unidade, pessoas: lista, efetivo: pessoas }); return; }
     var c = contexto();
@@ -344,9 +348,10 @@
     modoBusca = 'marcar';
     aberto = { cpf: null, peca: null };
     siglas = {};
+    setores = {};
     lerEscolha();
 
-    R().iniciar(conteudo);
+    R().iniciar(conteudo, { setor: function (cpf) { return setores[String(cpf)] || ''; } });
     R().ouvir('pagina', aoMudarRascunho);
     if (Cx()) Cx().iniciar({ abrirPainel: function (pessoa) { abrirPainel(pecaDoMilitar(pessoa), pessoa); } });
 

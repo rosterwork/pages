@@ -78,11 +78,11 @@
     });
   }
 
-  /* a caixa do pelotão desta página tem o Adicionar extra neste dia? (o molde é o da escalas-celula-editar-acoes.js ›
-     menuDoPelotao; o da página Estágios não tem) */
+  /* a caixa do pelotão desta página tem o Adicionar extra neste dia? (o molde vem da escalas-celula-editar-acoes.js; o da
+     página Estágios não tem) */
   function temItem() {
-    var pf = RW.paginaFiltrada && RW.paginaFiltrada();
-    var t = document.getElementById((pf && pf.moldePelotao) || 'tpl-escala-celula-pelotao');
+    var A = RW.escalasCelulaAcoes;
+    var t = A && document.getElementById(A.moldeDoPelotao());
     return !!t && !!t.content.querySelector('[data-acao="extra"]');
   }
 

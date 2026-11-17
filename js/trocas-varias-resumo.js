@@ -53,8 +53,7 @@
     if (tudo) {
       limpar();
       var carregando = q('#tv-resumo-carregando');
-      carregando.textContent = '';
-      carregando.appendChild(document.getElementById('carregando-pontos').content.cloneNode(true));
+      RW.etapas.frase(carregando, 'trocasResumo');
       carregando.classList.remove('oculto');
     }
     timer = setTimeout(function () { montar(tudo); }, 300);

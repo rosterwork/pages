@@ -12,14 +12,15 @@
     </div>
     <!-- abas (só administrador): a Distribuição (o ritmo é o bloco 1 dela), o Horário de expediente (um só para a
          companhia e os pelotões), os Feriados (o calendário de cada unidade), os Estágios (as regras de cada estágio da
-         unidade) e o Sobreaviso (as regras da companhia; só o administrador da companhia vê a aba); quem não administra
-         fica sem a linha de abas -->
+         unidade), o Sobreaviso e a Op. Verão (as regras da companhia; só o administrador da companhia vê as duas abas);
+         quem não administra fica sem a linha de abas -->
     <div class="abas" id="ajustes-abas">
       <button type="button" class="aba aba--ativa" data-aba="distribuicao">Distribuição</button>
       <button type="button" class="aba" data-aba="horario" data-manual="horario-expediente">Horário de expediente</button>
       <button type="button" class="aba" data-aba="feriados" data-manual="feriados">Feriados</button>
       <button type="button" class="aba" data-aba="estagios">Estágios</button>
       <button type="button" class="aba" data-aba="sobreaviso">Sobreaviso</button>
+      <button type="button" class="aba" data-aba="op-verao">Op. Verão</button>
     </div>
   </div>
 
@@ -63,6 +64,13 @@
     </div>
   </div>
 
+  <!-- barra de controles da Op. Verão: a companhia (só na aba Op. Verão) -->
+  <div class="pagina-subcabecalho" id="op-verao-barra">
+    <div class="abas abas--seletor" role="tablist" aria-label="Companhia">
+      <button type="button" class="aba aba--ativa" id="op-verao-companhia"></button>
+    </div>
+  </div>
+
   <div class="pagina-corpo pagina-corpo--colado">
     <!-- Distribuição: os blocos do questionário à esquerda; as perguntas do bloco escolhido e o rodapé à direita -->
     <div class="geral-layout-lateral" id="nova-distribuicao-layout" data-aba-painel="distribuicao">
@@ -100,43 +108,37 @@
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="3">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>5. Acúmulos fixos</span>
-            <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
-          </button>
-          <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="5">
-            <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-            <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>6. Acúmulos por falta</span>
+            <span>5. Acúmulos</span>
             <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="4">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>7. Ordem de importância</span>
+            <span>6. Ordem de importância</span>
             <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="6">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>8. Quem escolher</span>
+            <span>7. Quem escolher</span>
             <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="7">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>9. Regras por militar</span>
+            <span>8. Regras por militar</span>
             <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="10">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>10. Regras por graduação</span>
+            <span>9. Regras por graduação</span>
             <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
           </button>
           <button type="button" class="lista-item lista-item--clicavel nova-distribuicao-bloco" data-bloco="8">
             <svg class="icone nova-distribuicao-bloco-pronto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
             <svg class="icone nova-distribuicao-bloco-falta oculto" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-            <span>11. Conferir</span>
+            <span>10. Conferir</span>
             <span class="nova-distribuicao-bloco-muda oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg></span>
           </button>
         </div>
@@ -431,6 +433,80 @@
         </div>
       </div>
     </section>
+
+    <!-- Op. Verão: as perguntas da companhia (ajustes-op-verao.js); o período, os postos e os turnos só com o Sim; o rodapé
+         grava todas -->
+    <section class="geral-corpo-lateral oculto" data-aba-painel="op-verao">
+      <div class="geral-corpo-lateral-rolagem">
+        <div class="nova-distribuicao-carregando esqueleto-painel esqueleto-conjunto" id="op-verao-carregando" role="status" aria-label="Carregando">
+          <div class="esqueleto-caixa">
+            <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+          </div>
+        </div>
+        <div class="nova-distribuicao-conteudo subtela oculto" id="op-verao-conteudo">
+          <p class="nova-distribuicao-ajuda">A Operação Verão da companhia: se ela existe, o período, os postos dos guarda-vidas e os turnos. Quem trabalha em cada dia, o administrador lança na página Op. Verão.</p>
+          <div class="grupo-caixa subtela-pergunta" id="op-verao-ativa">
+            <span class="rotulo-secao">A companhia tem Operação Verão</span>
+            <label class="geral-opcao"><input type="radio" name="op-verao-ativa" data-valor="sim" /><span>Sim</span></label>
+            <label class="geral-opcao"><input type="radio" name="op-verao-ativa" data-valor="nao" /><span>Não</span></label>
+          </div>
+          <div class="grupo-caixa subtela-pergunta oculto" id="op-verao-periodo">
+            <span class="rotulo-secao">Período</span>
+            <div class="nova-distribuicao-regra-linha">
+              <span class="nova-distribuicao-regra-rotulo">De</span>
+              <input type="text" class="campo-entrada" id="op-verao-inicio" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Início da Operação Verão" />
+            </div>
+            <div class="nova-distribuicao-regra-linha">
+              <span class="nova-distribuicao-regra-rotulo">Até</span>
+              <input type="text" class="campo-entrada" id="op-verao-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Fim da Operação Verão" />
+            </div>
+            <span class="subtela-ajuda">Fora do período, a página Op. Verão fica vazia.</span>
+          </div>
+          <!-- os postos: uma linha por posto (molde tpl-op-verao-posto) -->
+          <div class="grupo-caixa subtela-pergunta oculto" id="op-verao-postos">
+            <span class="rotulo-secao">Postos</span>
+            <span class="subtela-ajuda">Os lugares em que os guarda-vidas trabalham. O administrador põe cada um no posto, dia a dia.</span>
+            <div class="ajustes-op-verao-postos" id="op-verao-postos-lista"></div>
+            <span class="subtela-ajuda oculto" id="op-verao-postos-vazio">Nenhum posto.</span>
+            <button type="button" class="botao nova-distribuicao-adicionar" id="op-verao-adicionar-posto">Adicionar posto</button>
+          </div>
+          <!-- os turnos: o nome e o horário do site (geral-horario), como as linhas do Horário de expediente -->
+          <div class="grupo-caixa subtela-pergunta oculto" id="op-verao-turnos">
+            <span class="rotulo-secao">Turnos</span>
+            <span class="subtela-ajuda">Os horários que aparecem prontos ao lançar alguém no dia. No dia, também dá para escolher um horário personalizado.</span>
+            <div class="ajustes-horario-linha" data-turno="manha">
+              <span class="ajustes-horario-dia">Manhã</span>
+              <span class="ajustes-horario-horas"></span>
+            </div>
+            <div class="ajustes-horario-linha" data-turno="tarde">
+              <span class="ajustes-horario-dia">Tarde</span>
+              <span class="ajustes-horario-horas"></span>
+            </div>
+            <div class="ajustes-horario-linha" data-turno="dia">
+              <span class="ajustes-horario-dia">Dia todo</span>
+              <span class="ajustes-horario-horas"></span>
+            </div>
+          </div>
+          <!-- quem não administra a companhia só lê -->
+          <span class="nova-distribuicao-trava oculto" id="op-verao-trava">
+            <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+            <span>Só o administrador da companhia muda a Operação Verão.</span>
+          </span>
+        </div>
+      </div>
+      <!-- o rodapé de salvar, na largura toda: aparece só com alteração; desligado com pergunta sem resposta -->
+      <div class="rodape rodape-linha rodape--largo oculto" id="op-verao-rodape">
+        <span class="rodape-texto">Alterações não salvas.</span>
+        <span class="espacador-flex"></span>
+        <div class="rodape-acoes">
+          <button type="button" class="botao" id="op-verao-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario" id="op-verao-salvar">Salvar</button>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -678,13 +754,10 @@
   <p class="nova-distribuicao-ajuda">O Oficial de Área é sempre o oficial mais antigo de serviço, e o Chefe de Socorro, o praça mais antigo.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-acumulos">
-  <p class="nova-distribuicao-ajuda">Funções que são sempre da mesma pessoa. Elas não precisam de gente própria e entram na linha da 1ª opção na ordem de importância. Sem ninguém na 1ª opção, vale a próxima.</p>
+  <p class="nova-distribuicao-ajuda">Uma função pode ir com quem está em outra. Sempre: ela não precisa de gente própria e é sempre da mesma pessoa. Se faltar: quando ela fica sem gente, quem está na outra faz as duas.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-ordem">
   <p class="nova-distribuicao-ajuda">Cada linha é uma pessoa. Com N militares de serviço, enchem as N primeiras linhas. Quem sobra fica sem função.</p>
-</template>
-<template id="tpl-nova-distribuicao-nota-por-falta">
-  <p class="nova-distribuicao-ajuda">Quando a função fica sem gente, quem está na 1ª opção faz as duas. Sem ninguém nela, vale a próxima. A função sem acúmulo por falta fica vazia.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-escolher">
   <p class="nova-distribuicao-ajuda">As funções escolhem na ordem de importância. Por isso, "o mais antigo que ainda não tem função" da 2ª linha é o 2º mais antigo.</p>
@@ -1072,19 +1145,22 @@
   </span>
 </template>
 
-<!-- acúmulo fixo, o cartão aberto: a função, a 1ª opção, a 2ª... e no fim, fica vazia -->
+<!-- um acúmulo, o cartão aberto: a função, a regra (Sempre ou Se faltar) e quem, em ordem; a última linha é sempre
+     a "Fica vazia" (escolher alguém nela abre outra embaixo) -->
 <template id="tpl-nova-distribuicao-acumulo">
   <div class="nova-distribuicao-cartao-conteudo">
     <div class="nova-distribuicao-regra-linha">
       <span class="nova-distribuicao-regra-rotulo">Função</span>
       <span class="nova-distribuicao-espaco" data-espaco="funcao"></span>
     </div>
+    <div class="nova-distribuicao-opcoes nova-distribuicao-opcoes--lado" role="radiogroup" aria-label="Regra">
+      <label class="geral-opcao"><input type="radio" data-valor="sempre" /><span>Sempre</span></label>
+      <label class="geral-opcao"><input type="radio" data-valor="cobre" /><span>Se faltar</span></label>
+    </div>
     <div class="nova-distribuicao-regra-lista"></div>
     <div class="nova-distribuicao-cartao-botoes">
-      <button type="button" class="botao nova-distribuicao-adicionar">Adicionar opção</button>
       <button type="button" class="botao nova-distribuicao-remover-acumulo">Remover acúmulo</button>
     </div>
-    <p class="nova-distribuicao-ajuda">Se ninguém puder, a função fica vazia.</p>
   </div>
 </template>
 <template id="tpl-nova-distribuicao-novo-acumulo">
@@ -1124,22 +1200,7 @@
   <span class="selo">Sempre o mais antigo</span>
 </template>
 
-<!-- acúmulo por falta, o cartão aberto: Se faltar, 1ª opção, 2ª... e no fim, fica vazia -->
-<template id="tpl-nova-distribuicao-por-falta">
-  <div class="nova-distribuicao-cartao-conteudo">
-    <div class="nova-distribuicao-regra-linha">
-      <span class="nova-distribuicao-regra-rotulo">Se faltar</span>
-      <span class="nova-distribuicao-espaco" data-espaco="funcao"></span>
-    </div>
-    <div class="nova-distribuicao-regra-lista"></div>
-    <div class="nova-distribuicao-cartao-botoes">
-      <button type="button" class="botao nova-distribuicao-adicionar">Adicionar opção</button>
-      <button type="button" class="botao nova-distribuicao-remover-acumulo">Remover acúmulo</button>
-    </div>
-    <p class="nova-distribuicao-ajuda">Se ninguém puder, a função fica vazia.</p>
-  </div>
-</template>
-<!-- uma opção (dos acúmulos fixos e por falta) -->
+<!-- uma opção do acúmulo: o rótulo (É o mesmo que, Quem cobre, Se ele faltar...), a função, as setas e a lixeira -->
 <template id="tpl-nova-distribuicao-opcao">
   <div class="nova-distribuicao-regra-linha nova-distribuicao-regra-linha--opcao">
     <span class="nova-distribuicao-regra-rotulo"></span>
@@ -1156,9 +1217,6 @@
       <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
     </button>
   </div>
-</template>
-<template id="tpl-nova-distribuicao-novo-por-falta">
-  <button type="button" class="botao nova-distribuicao-adicionar">Adicionar regra</button>
 </template>
 
 <!-- quem escolher: as quatro formas, o aviso e o rodízio -->
@@ -1374,8 +1432,8 @@
     </div>
     <p class="nova-distribuicao-legenda">
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--tem_gente" aria-hidden="true"></span><span>Com gente</span></span>
-      <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--acumula" aria-hidden="true">A</span><span>Acúmulo fixo</span></span>
-      <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--coberta" aria-hidden="true">P</span><span>Acúmulo por falta</span></span>
+      <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--acumula" aria-hidden="true">A</span><span>Acúmulo Sempre</span></span>
+      <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--coberta" aria-hidden="true">P</span><span>Acúmulo Se faltar</span></span>
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--companhia" aria-hidden="true">C</span><span>Da companhia</span></span>
       <span class="nova-distribuicao-legenda-item"><span class="nova-distribuicao-estado nova-distribuicao-estado--vazia" aria-hidden="true"></span><span>Vazia</span></span>
       <span class="nova-distribuicao-legenda-item nova-distribuicao-legenda-fora"><span class="nova-distribuicao-estado nova-distribuicao-estado--fora" aria-hidden="true">F</span><span>Posto fora da escala</span></span>
@@ -1648,4 +1706,15 @@
     <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
     <span class="nova-distribuicao-marca-texto"></span>
   </button>
+</template>
+
+<!-- ===== OP. VERÃO (aba Op. Verão; ajustes-op-verao.js) ===== -->
+<!-- um posto: o nome e a lixeira -->
+<template id="tpl-op-verao-posto">
+  <div class="ajustes-op-verao-posto">
+    <input type="text" class="campo-entrada" maxlength="40" placeholder="Ex.: PGV Prainha I" autocomplete="off" aria-label="Nome do posto" />
+    <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Remover o posto" data-dica="Remover o posto">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+    </button>
+  </div>
 </template>

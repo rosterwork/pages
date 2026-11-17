@@ -74,9 +74,9 @@
     }
   }
 
-  /* a página filtrada aberta: o Sobreaviso ou os Estágios, a mesma Escala só com uma situação (sobreaviso.js e estagios.js
-     se registram em RosterWork.paginasFiltradas: { situacao, militares, colunas(lista), impressao(), moldePelotao,
-     podeAdicionar(item) }); null na Escala */
+  /* a página filtrada aberta: o Sobreaviso, os Estágios ou a Op. Verão, a mesma Escala só com uma situação (sobreaviso.js,
+     estagios.js e op-verao.js se registram em RosterWork.paginasFiltradas: { situacao, militares, colunas(lista),
+     impressao(), moldePelotao, semColunas }); null na Escala */
   function paginaFiltrada() {
     var atual = RosterWork.paginaAtual && RosterWork.paginaAtual();
     return (RosterWork.paginasFiltradas || {})[atual] || null;
@@ -99,8 +99,10 @@
     if (!RosterWork.visaoGrade) return;
     var modo = RosterWork.visaoGrade.modo();
     var oculto = !modo || modo === 'dia' || modo === 'semana';
-    /* a página filtrada (o Sobreaviso e os Estágios) só tem o Mês, o Militares e o Colunas (a mesma visão da Escala) */
-    if (paginaFiltrada() && modo !== 'colunas' && modo !== 'militares') oculto = true;
+    /* a página filtrada (o Sobreaviso e os Estágios) só tem o Mês, o Militares e o Colunas (a mesma visão da Escala); a Op.
+       Verão, sem o Colunas */
+    var pf = paginaFiltrada();
+    if (pf && modo !== 'militares' && (modo !== 'colunas' || pf.semColunas)) oculto = true;
     marcarAba('#escala-modos', 'data-modo', oculto ? 'mes' : modo);
     marcarAba('#escala-sub-mes', 'data-mes', RosterWork.visaoGrade.agendaOuCalendario());
     marcarAba('#escala-colunas-tipo', 'data-colunas-tipo', RosterWork.visaoGrade.ler().colunas_tipo);
@@ -345,7 +347,8 @@
       if (!unidades && idsAplicados().length) { esperarUnidades(corpo); return; }
       var pfMil = paginaFiltrada();
       return window.RosterWork.escalasMilitares.renderizar(corpo, { colunas: unidadesColuna(), dataRef: refData, vigente: vigente, rolarHoje: true,
-        estagiarios: !!pfMil && pfMil.militares === 'estagiarios', sobreaviso: !!pfMil && pfMil.militares === 'sobreaviso' });
+        estagiarios: !!pfMil && pfMil.militares === 'estagiarios', sobreaviso: !!pfMil && pfMil.militares === 'sobreaviso',
+        opVerao: !!pfMil && pfMil.militares === 'op-verao' });
     }
     /* modo Semana: grade unidades × 7 dias (visão por unidade) */
     if (modoAtual() === 'semana') {

@@ -28,8 +28,15 @@
    O "Na guarnição do dia" é uma peça só (lerGuarnicao e
    desenharGuarnicao), que o Adicionar à guarnição da caixa
    flutuante da célula da grade (escalas-celula-editar-acoes.js)
-   também usa. O dia vazio da aba Estagiários abre aqui com quem
-   já vem escolhido (abrir({ cpf })).
+   também usa.
+   O Adicionar estagiário (abrir({ estagiario: true }): a aba
+   Estagiários do painel do dia) é a mesma sub-tela, só no dia, sem o
+   Como entra e sem a Unidade: a lista tem só quem participa de um
+   estágio desta unidade no dia, um grupo por estágio; o Adicionar
+   militar não tem os estagiários (cada um entra pelo seu). Escolhido o
+   estagiário, se o filtro da Escala esconde os estagiários, ele volta
+   a mostrar. O dia vazio da grade dos estagiários abre aqui com quem
+   já vem escolhido (abrir({ cpf, estagiario: true })).
    ============================================================ */
 (function () {
   'use strict';
@@ -105,7 +112,8 @@
     return function marcar(valor) { [].forEach.call(radios, function (r) { r.checked = r.value === valor; }); };
   }
 
-  /* opcoes.cpf: quem já vem escolhido no dia (o dia vazio da aba Estagiários), na unidade dele */
+  /* opcoes.cpf: quem já vem escolhido no dia (o dia vazio da grade dos estagiários), na unidade dele; opcoes.estagiario:
+     o Adicionar estagiário */
   function abrir(opcoes) {
     var api = ed(), H = api.horas, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     if (!api.dados()) return;
@@ -115,6 +123,7 @@
     var el = {}, pedido = 0, combo = null, onde = null, livres = null, efeito = null;
     var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece com quem muda de guarnição (lido uma vez)
     var preset = (opcoes && opcoes.cpf) || null;            // quem já vem escolhido (uma vez só)
+    var estagiario = !!(opcoes && opcoes.estagiario);       // o Adicionar estagiário
 
     /* a Unidade (só no dia): as unidades com alguém de horas livres; começa na do painel */
     function montarUnidades() {
@@ -139,7 +148,21 @@
     }
     function preencherDia() {
       montarUnidades();
-      combo.preencher(listas().dia(livres, est.unidade));
+      if (!estagiario) { combo.preencher(listas().dia(livres, est.unidade)); return; }
+      /* o estagiário: um grupo por estágio da unidade no dia, com o nome dele em cima (de qualquer lotação) */
+      var itens = [], lista = [];
+      listas().unidadesDia(livres).forEach(function (u) { itens = itens.concat(listas().dia(livres, u.id)); });
+      ((api.dados() || {}).estagios_unidade || []).forEach(function (e) {
+        var deste = itens.filter(function (it) { return String(it.m.estagio_id) === String(e.id); });
+        if (deste.length) lista = lista.concat([{ titulo: e.nome }], deste);
+      });
+      combo.preencher(lista);
+    }
+    /* no Adicionar estagiário, só quem participa de um estágio desta unidade no dia; no Adicionar militar, ninguém dos
+       estágios */
+    function doModo(r) {
+      var ids = ((api.dados() || {}).estagios_unidade || []).map(function (e) { return String(e.id); });
+      return r.filter(function (m) { return estagiario ? !!m.estagio && ids.indexOf(String(m.estagio_id)) >= 0 : !m.estagio; });
     }
     /* quem já vem escolhido: a unidade dele e ele no campo, com as horas livres (sem horas livres no dia, nada) */
     function escolherPreset() {
@@ -169,7 +192,7 @@
       leitura.then(function (r) {
         if (meu !== pedido || !el.combo.isConnected) return;
         if (!r) { combo.definir(msg().falhaCarregar, true); return; }
-        if (est.como === 'dia') { livres = r; preencherDia(); escolherPreset(); return; }
+        if (est.como === 'dia') { livres = doModo(r); preencherDia(); escolherPreset(); return; }
         combo.preencher(r);
       });
     }
@@ -178,6 +201,8 @@
       var m = item.m;
       est.item = item; est.mil = m;
       est.banco = m.estagio ? 'nao' : 'sim';   // o estagiário: as horas são só registro
+      /* o estagiário escolhido aparece na grade, mesmo com o filtro escondendo os estagiários */
+      if (estagiario && RosterWork.escalasFiltros && RosterWork.escalasFiltros.mostrarSituacao) RosterWork.escalasFiltros.mostrarSituacao('estagio');
       if (onde) onde.reiniciar();
       if (est.como === 'dia') est.periodos = (m.livres || []).length ? m.livres.map(function (l) { return { hi: l.hi, hf: l.hf }; }) : [{ hi: '08:00', hf: '08:00' }];
       atualizar();
@@ -212,6 +237,10 @@
       if (!tela) return;
       var q = function (s) { return tela.querySelector(s); };
       [].forEach.call(tela.querySelectorAll('.escala-adicionar-data'), function (s) { s.textContent = D.diaMesExtenso(iso); });
+      /* o Adicionar estagiário: o título dele, sem o Como entra (só no dia) */
+      q('.escala-adicionar-titulo-militar').classList.toggle('oculto', estagiario);
+      q('.escala-adicionar-titulo-estagiario').classList.toggle('oculto', !estagiario);
+      q('.escala-adicionar-como').classList.toggle('oculto', estagiario);
       /* a guarnição do dia (sem a letra, o "do dia" do molde) */
       q('.escala-adicionar-letra').textContent = letra || '';
       q('.escala-adicionar-sem-letra').classList.toggle('oculto', !!letra);
@@ -270,10 +299,10 @@
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
       var m = est.mil, como = est.como;
       mostra(el.quem, true);
-      [].forEach.call(el.ajudas, function (a) { mostra(a, a.getAttribute('data-como') === como); });
-      /* a Unidade e o rótulo do Militar só no dia (na guarnição, o campo fica como sempre) */
-      mostra(el.unidadeCampo, como === 'dia');
-      mostra(el.militarRotulo, como === 'dia');
+      [].forEach.call(el.ajudas, function (a) { mostra(a, a.getAttribute('data-como') === (estagiario ? 'estagiario' : como)); });
+      /* a Unidade e o rótulo do Militar só no dia (na guarnição e no estagiário, o campo fica como sempre) */
+      mostra(el.unidadeCampo, como === 'dia' && !estagiario);
+      mostra(el.militarRotulo, como === 'dia' && !estagiario);
       ['horario', 'ondeBloco', 'banco', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
       efeito.esconder();
       nota(el.assume, m && m.assume ? (m.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(m), '') : '');

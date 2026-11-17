@@ -1,0 +1,140 @@
+/* ============================================================
+   OP. VERÃO — a página do menu
+   A mesma Escala (escalas.html e os mesmos arquivos), com a marca
+   .escala-pagina--op-verao na página (js/op-verao.js). Aqui o que ela
+   esconde ou troca (os textos, a Minha escala, o Colunas, o Filtros,
+   a Legenda e o Imprimir, e as notas embaixo da barra) e as peças
+   dela: o título de cada posto, o Sem posto, o dia vazio, os Oficiais
+   de Praia no título do dia (um embaixo do outro, com o horário), o
+   nome em vermelho de quem está afastado ou de serviço no mesmo
+   horário, a caixa 2 de quem trabalha, o Cadastrar guarda-vidas civil
+   da barra (só na aba Guarda-vidas) e a mão só onde o clique abre algo.
+   Montagem: js/op-verao*.js
+   ============================================================ */
+
+/* os textos da página (o título, a aba Guarda-vidas e o total dela) */
+.escala-pagina--op-verao .escala-so-escala,
+.escala-pagina--op-verao .escala-fora-op-verao {
+  display: none;
+}
+
+.escala-pagina--op-verao .escala-so-op-verao {
+  display: inline;
+}
+
+/* as abas: Mês e Guarda-vidas; a barra, sem o Filtros, a Legenda e o Imprimir; embaixo dela, sem as notas */
+.escala-pagina--op-verao #escala-modo-minha,
+.escala-pagina--op-verao [data-modo="colunas"],
+.escala-pagina--op-verao #escala-filtros,
+.escala-pagina--op-verao #escala-legenda-grade,
+.escala-pagina--op-verao #escala-imprimir,
+.escala-pagina--op-verao #escala-volta-aviso,
+.escala-pagina--op-verao #escala-cotas-aviso,
+.escala-pagina--op-verao #escala-extra-servico-aviso,
+.escala-pagina--op-verao .escala-atualizando {
+  display: none;
+}
+
+/* sem a Minha escala, a divisória que a separava das outras abas sai */
+.escala-pagina--op-verao #escala-modo-visoes::before {
+  content: none;
+}
+
+/* o Cadastrar guarda-vidas civil, na frente da barra: só na aba Guarda-vidas */
+.escala-barra:has(#escala-sub-militares.oculto) > .op-verao-barra-cadastrar {
+  display: none;
+}
+
+/* a mão só onde o clique abre algo: o dia de quem administra a companhia e o nome do guarda-vidas civil para ele */
+.escala-pagina--op-verao .escala-mes-celula:not(.op-verao-celula--edita),
+.escala-pagina--op-verao .escala-calendario-unidade:not(:has(.op-verao-celula--edita)),
+.escala-pagina--op-verao .escala-mil-celula {
+  cursor: default;
+}
+
+.op-verao-civil--edita {
+  cursor: pointer;
+}
+
+/* o título de cada posto e o Sem posto (em amarelo, com quantos) */
+.op-verao-posto {
+  padding: 2px 0 2px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--texto-suave);
+}
+
+.op-verao-posto--sem {
+  color: var(--alerta);
+}
+
+/* o dia do período sem ninguém */
+.op-verao-vazio {
+  padding: 8px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* afastado ou de serviço na escala no mesmo horário: a graduação e o nome em vermelho (o porquê na dica) */
+.linha-escalado--op-verao-conflito .linha-escalado-grad,
+.linha-escalado--op-verao-conflito .linha-escalado-nome,
+.op-verao-oficial--conflito .escala-oficial-grad,
+.op-verao-oficial--conflito .escala-oficial-nome {
+  color: var(--erro);
+}
+
+/* os Oficiais de Praia no título do dia: um embaixo do outro, cada um com o horário */
+.escala-pagina--op-verao .escala-mes-oficial,
+.escala-pagina--op-verao .geral-calendario-mes-dia-centro {
+  flex-direction: column;
+  gap: 2px;
+}
+
+.escala-pagina--op-verao .geral-calendario-mes-dia-centro:has(.op-verao-oficial + .op-verao-oficial) {
+  position: static;
+  transform: none;
+  max-width: none;
+  flex: 1 1 auto;
+}
+
+.escala-pagina--op-verao .geral-calendario-mes-dia-topo:has(.op-verao-oficial + .op-verao-oficial) {
+  display: flex;
+  align-items: flex-start;
+}
+
+.op-verao-oficial {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.op-verao-oficial-hora {
+  display: inline-flex;
+  margin-left: 8px;
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+/* a caixa 2 de quem trabalha: o horário (no personalizado), o campo e o Cadastrar, um embaixo do outro */
+.op-verao-quem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px;
+}
+
+.op-verao-quem-horario {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.op-verao-cadastrar {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}

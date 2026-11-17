@@ -264,7 +264,8 @@
       /* a lista padrão: o nome que aparece no dia; no Outro, o nome escrito (até 10 letras) */
       padroes: [
         { valor: 'ferias', rotulo: 'Férias' }, { valor: 'atestado', rotulo: 'Atestado' }, { valor: 'licenca', rotulo: 'Licença' },
-        { valor: 'dispensa', rotulo: 'Dispensa' }, { valor: 'op_verao', rotulo: 'Op. Verão' }, { valor: 'forca_tarefa', rotulo: 'F. Tarefa' }
+        { valor: 'dispensa', rotulo: 'Dispensa' }, { valor: 'op_verao', rotulo: 'Op. Verão' }, { valor: 'op_verao_litoral', rotulo: 'Litoral' },
+        { valor: 'forca_tarefa', rotulo: 'F. Tarefa' }
       ],
       outro: 'Outro',
       /* no filtro Afastamento, os nomes escritos no Outro */
@@ -320,6 +321,50 @@
     },
 
     /* ajustes (a Distribuição e o ritmo, bloco 1 dela, ficam em mensagens.novaDistribuicao) */
+    /* a página Op. Verão (op-verao*.js e escalas-*-op-verao*.js) */
+    opVerao: {
+      /* a página (op-verao.js): sem Operação Verão nas unidades escolhidas, no mês da tela */
+      paginaVazia: 'As unidades escolhidas não têm Operação Verão neste mês.',
+      impressao: { titulo: 'Op. Verão', arquivo: 'Op-Verao' },
+      /* a célula e o título do dia (op-verao-celula.js) */
+      semPosto: function (n) { return 'Sem posto (' + n + ')'; },
+      horas: function (inicio, fim) { return inicio + ' às ' + fim; },
+      conflito: {
+        afastado: function (nome, ate) { return 'Afastado no dia: ' + nome + ' até ' + ate + '.'; },
+        servico: function (unidade, inicio, fim) { return 'De serviço na escala no mesmo horário: ' + unidade + ', ' + inicio + ' às ' + fim + '.'; }
+      },
+      /* as caixas do clique (op-verao-caixa.js) */
+      turno: function (nome, inicio, fim) { return nome + ', ' + inicio + ' às ' + fim; },
+      grupos: { em_op: 'Em Op. Verão neste dia', civis: 'Guarda-vidas civis', outros: 'Outros militares da companhia',
+        oficiais: 'Oficiais da companhia' },
+      info: { servico: 'de serviço', oa: 'Oficial de Área no dia', noDia: 'já no dia neste horário' },
+      escolher: 'Escolha quem trabalha',
+      escolherOficial: 'Escolha o Oficial de Praia',
+      escolherNoLugar: function (nome) { return 'Quem fica no lugar de ' + nome; },
+      semNinguem: 'Ninguém para escolher neste dia.',
+      filtroVazio: 'Ninguém encontrado.',
+      carregando: 'Carregando…',
+      falhaLista: 'Não foi possível carregar a lista. Feche e tente de novo.',
+      fimAntes: 'O fim tem que ser depois do início.',
+      diaAntigo: function (data) { return 'Os dias antes de ' + data + ' não mudam mais.'; },
+      /* o rodapé (op-verao-rascunho.js) */
+      descartar: function (n) { return n === 1 ? 'Descartar a alteração não salva?' : 'Descartar as ' + n + ' alterações não salvas?'; },
+      /* a aba Guarda-vidas (op-verao-militares.js) */
+      civilSub: 'Guarda-vidas civil',
+      oficialDica: 'Oficial de Praia',
+      semNinguemMes: 'Ninguém na Operação Verão neste mês.',
+      /* o cadastro do guarda-vidas civil (op-verao-civil.js) */
+      civil: {
+        pagina: 'Op. Verão',
+        tituloNovo: 'Cadastrar guarda-vidas civil',
+        tituloMudar: 'Guarda-vidas civil',
+        subtitulo: function (companhia) { return 'Op. Verão · ' + companhia; },
+        removerConfirmar: function (nome) {
+          return 'Remover ' + nome + ' do cadastro? Os dias em que ele já trabalhou continuam na escala.';
+        }
+      }
+    },
+
     ajustes: {
       /* abas Horário de expediente e Feriados: o expediente dos administrativos */
       expediente: {
@@ -390,6 +435,12 @@
         salvarAntes: 'A fila do sobreaviso muda a partir de ',
         salvarDepois: ' (próximo serviço). Para mudar desde o plantão de hoje, escolha outra data.',
         botaoSalvar: 'Salvar'
+      },
+      /* aba Op. Verão (ajustes-op-verao.js): o Não com lançamentos e o Salvar */
+      opVerao: {
+        pagina: 'Ajustes',
+        desligar: 'Com o Não, a página Op. Verão fica vazia. Os lançamentos ficam guardados e voltam se marcar Sim de novo.',
+        botaoDesligar: 'Marcar Não'
       }
     },
 
@@ -957,6 +1008,10 @@
       militaresFuncoes: function (lugares) { return juntarComE(lugares); },
       militaresSemFuncao: function (periodos, comFuncao) { return (comFuncao ? '; sem função' : 'Sem função') + (periodos ? ' ' + periodos : ''); },
       militaresVazio: 'Ninguém de serviço neste dia.',
+      /* a aba Estagiários do painel do dia: um grupo por estágio e o vazio */
+      estagiariosGrupo: function (nome, n) { return nome + ' (' + n + ')'; },
+      estagiariosVazio: 'Nenhum estagiário neste dia.',
+      estagiariosSemNome: 'Estagiários',
       /* o Cabo de Dia sem ninguém na Central (só para quem administra) */
       semCaboDia: 'Sem cabo ou soldado de serviço',
       /* Funções do posto (o ícone no título do posto, para quem edita o dia): o título do menu, o que vai ao lado da
@@ -1026,6 +1081,9 @@
         },
         motivoCobrir: function (lugar, dia) { return 'Para cobrir o ' + lugar + ' em ' + dia; },
         bancoSim: function (horas) { return 'Contabilizar +' + horas; },
+        /* o pontual já contabilizado que muda o total de horas: o banco de horas acompanha ou fica como estava */
+        bancoCorrigir: function (horas) { return 'Corrigir para +' + horas; },
+        bancoManter: function (horas) { return 'Manter +' + horas; },
         /* o que acontece com quem sai */
         efeitoSai: function (militar, funcao) { return 'O ' + militar + ' sai do ' + funcao + '.'; },
         /* Onde ele já está: quem entra e já tem outra função no horário */
@@ -1670,7 +1728,7 @@
        {chave} = valor preenchido na hora; os textos fixos ficam em ajustes.html */
     novaDistribuicao: {
       pagina: 'Distribuição',
-      contagem: '{n} de 11 prontos',
+      contagem: '{n} de 10 prontos',
       soDeste: 'Só deste pelotão',
       compartilhado: 'Compartilhado com todos os pelotões',
       faltaResponder: 'Falta responder',
@@ -1745,17 +1803,20 @@
         'Se não houver ninguém disponível, não aparece e não exibe erro.',
         'Se não houver ninguém disponível, aparece com erro amarelo.'
       ],
-      /* blocos 3 e 5: acúmulos fixos e por falta */
-      opcaoN: '{n}ª opção',
-      opcaoLinha: '{n}ª opção {quem}',
-      opcaoSemResposta: '{n}ª opção sem resposta',
-      tituloFixo: '{funcao} é sempre de quem está em',
-      tituloPorFalta: 'Se faltar {funcao}',
+      /* bloco 5: acúmulos (Sempre e Se faltar); a frase do cartão fechado e os rótulos das linhas de quem */
+      fraseSempre: 'Sempre, o {funcao} é o mesmo que {quem}',
+      fraseFalta: 'Se faltar {funcao}, quem cobre é o {quem}',
+      fraseReserva: 'Se ele faltar, o {quem}',
+      rotuloMesmo: 'É o mesmo que',
+      rotuloCobre: 'Quem cobre',
+      rotuloSeFaltar: 'Se ele faltar',
+      rotuloTambem: 'Se também faltar',
+      ficaVazia: 'Fica vazia',
       semFuncao: 'Escolha a função',
-      opcoesIncompletas: 'Escolha a função e as opções.',
-      opcoesVazias: 'Escolha as opções.',
-      automaticaSempre: '{funcao} é sempre de quem está em {quem}.',
-      /* bloco 8: quem escolher */
+      opcoesIncompletas: 'Escolha a função e quem.',
+      opcoesVazias: 'Escolha quem.',
+      automaticaSempre: 'Sempre, o {funcao} é o mesmo que {quem}.',
+      /* bloco 7: quem escolher */
       quemSenta: 'Quem senta em {funcao}?',
       ordemMovida: 'Movida para a {n}ª posição.',
       papelFixo: 'Sempre o {perfil} mais antigo de serviço.',
@@ -1770,15 +1831,15 @@
       avisoLinha: ['Sem aviso', 'Com aviso amarelo', 'Com erro vermelho'],
       comCarteira: 'Com a CNH',
       comRodizio: 'Com rodízio',
-      /* bloco 9: regras por militar */
+      /* bloco 8: regras por militar */
       regraIncompleta: 'Escolha o militar, a regra, o posto e a função.',
       semMilitar: 'Escolha o militar',
       regraTexto: { proibido: 'Não pode {funcao}', exclusivo: 'Só pode {funcao}' },
-      /* bloco 10: regras por graduação */
+      /* bloco 9: regras por graduação */
       graduacaoIncompleta: 'Escolha a graduação, a regra, o posto e a função.',
       semGraduacao: 'Escolha a graduação',
       graduacaoTitulo: { apenas: 'Apenas {grau}', mais_antigo: 'Igual ou mais antigo que {grau}', mais_moderno: 'Igual ou mais moderno que {grau}', entre: 'De {grau} a {ate}' },
-      /* bloco 11: conferir */
+      /* bloco 10: conferir */
       estados: { tem_gente: 'Com gente', acumula: 'Acumulada', coberta: 'Coberta', companhia: 'Da companhia', vazia: 'Vazia', fora: 'Fora da escala' },
       porQuem: '{estado} por {quem}',
       sobraUm: '1 militar fica sem função.',
@@ -1959,6 +2020,8 @@
       faltam: function (n) { return n === 1 ? 'Falta 1 dia' : 'Faltam ' + n + ' dias'; },
       amanha: 'Amanhã',
       hoje: 'Hoje',
+      /* a volta cujo dia já passou sem a decisão do administrador */
+      jaPassou: 'Já passou',
       /* a linha do administrador: só o urgente para aprovar */
       admPedidos: function (n) { return n === 1 ? '1 pedido urgente para aprovar' : n + ' pedidos urgentes para aprovar'; },
       admMeta: function (dia) { return 'o mais próximo com serviço em ' + dia; },
@@ -2591,6 +2654,16 @@
       },
       /* a conta de uma mudança na Distribuição, no rodapé */
       ajustesConta: { passos: ['Fazendo as contas'] },
+      /* as leituras curtas dentro de um pedaço da tela (etapas.frase): a pergunta, a nota, a lista pequena */
+      escalaDiaOutra: { passos: ['Buscando o dia da outra unidade'] },
+      escalaPodeFuncao: { passos: ['Conferindo se ele pode nessa função'] },
+      trocaDias: { passos: ['Buscando os dias da troca'] },
+      trocaOQueMuda: { passos: ['Conferindo o que muda'] },
+      trocasMes: { passos: ['Buscando as trocas do mês'] },
+      trocaSaldo: { passos: ['Buscando o saldo entre vocês'] },
+      trocasResumo: { passos: ['Montando o resumo'] },
+      filaTroca: { passos: ['Buscando a troca'] },
+      filaPedido: { passos: ['Buscando o pedido'] },
       /* ao salvar na Escala */
       salvarDia: function (v) {
         var passos = ['Gravando as alterações de ' + v.dia];
@@ -2643,6 +2716,12 @@
       afastamento: function (v) {
         return { titulo: 'Salvando ' + v.oQue + ' do ' + v.militar, passos: ['Gravando ' + v.oQue, 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' };
       },
+      /* a página Afastamentos: o Refazendo só quando mudam os dias de quem está na escala (v.refaz) */
+      afastamentosSalvar: function (v) {
+        return v.refaz
+          ? { titulo: 'Salvando os afastamentos', passos: ['Gravando os afastamentos', 'Refazendo os próximos 7 dias da escala', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' }
+          : { titulo: 'Salvando os afastamentos', passos: ['Gravando os afastamentos', 'Atualizando a tela'] };
+      },
       promover: { titulo: 'Salvando a promoção', passos: ['Gravando a promoção', 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' },
       transferir: { titulo: 'Salvando a transferência', passos: ['Gravando a transferência', 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' },
       dadosMilitar: { titulo: 'Salvando os dados', passos: ['Gravando os dados', 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' },
@@ -2661,6 +2740,11 @@
       ajustesSobreaviso: function (v) {
         return { titulo: 'Salvando o sobreaviso', passos: v.soOnde ? ['Gravando as regras', 'Atualizando a tela']
           : ['Gravando as regras', 'Refazendo a fila dos dias seguintes', 'Atualizando a tela'] };
+      },
+      ajustesOpVerao: { titulo: 'Salvando a Operação Verão', passos: ['Gravando as respostas', 'Atualizando a tela'] },
+      opVeraoSalvar: { titulo: 'Salvando a Operação Verão', passos: ['Gravando os dias', 'Atualizando a grade'] },
+      opVeraoCivil: function (v) {
+        return { titulo: v.remover ? 'Removendo do cadastro' : 'Salvando o guarda-vidas civil', passos: ['Gravando o cadastro'] };
       },
       /* o que costuma ser rápido nos Ajustes: a caixa só aparece se demorar */
       ajustesPrevia: function (v) {

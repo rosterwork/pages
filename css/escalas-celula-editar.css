@@ -61,6 +61,27 @@
   gap: 4px;
 }
 
+/* a caixa 2 do estagiário: no Mudar onde fica, as caixas de marcar dos postos; no Adicionar estagiário, a escolha do
+   estágio (as bolinhas, com mais de um no dia) em cima do campo de quem entra */
+.escala-celula-onde,
+.escala-celula-estagiario {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px;
+}
+
+.escala-celula-estagios {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.escala-celula-estagios .geral-opcao {
+  min-height: 24px;
+  font-size: 12px;
+}
+
 /* a pergunta do banco de horas: a frase e as duas respostas */
 .escala-celula-pergunta {
   display: flex;

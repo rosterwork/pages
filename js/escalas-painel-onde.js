@@ -87,6 +87,29 @@
     else r.estagio_onde[cpf] = indices.map(function (i) { return { posto: lista[i].posto.id, funcao: lista[i].funcao }; });
   }
 
+  /* a sub-tela Mudar onde fica (o lápis do estagiário no painel do dia): as mesmas caixas de marcar da célula, a escolha
+     ao vivo no rascunho (pelo menos uma) */
+  function abrirEstagio(opcoes) {
+    var api = ed(), cpf = opcoes && opcoes.cpf, dados = api.dados();
+    var linhas = dados && dados.estagios && dados.estagios[cpf], mil = linhas ? api.militarDoDia(cpf) : null;
+    if (!mil) return;
+    api.abrir(function (corpo) {
+      var tela = RosterWork.tpl('tpl-escala-onde-estagio');
+      if (!tela) return;
+      var p = String(api.iso() || '').split('-');
+      tela.querySelector('.escala-onde-estagio-quem').textContent = L().noDia(nomeDe(mil), p.length === 3 ? p[2] + '/' + p[1] : '');
+      var lista = postos(linhas, dados), atuais = marcadas(cpf, linhas, dados);
+      var marcar = RosterWork.escalasPainelQuem.marcar(tela.querySelector('.escala-marcar-lista'),
+        lista.map(function (v, i) { return { texto: v.texto, marcado: atuais.indexOf(i) >= 0 }; }),
+        function (indices) {
+          if (!indices.length) { marcar(atuais); return; }
+          atuais = indices;
+          api.aoVivo(function () { aplicarOnde(cpf, indices, linhas, dados); }, false);
+        });
+      corpo.appendChild(tela);
+    });
+  }
+
   function criar(caixa, cfg) {
     var api = ed(), H = api.horas, Q = RosterWork.escalasPainelQuem;
     var listas = RosterWork.escalasPainelAdicionarListas;
@@ -377,7 +400,8 @@
 
   window.RosterWork.escalasPainelOnde = {
     criar: criar,
-    /* os postos do estagiário (o Mudar onde fica da célula usa o mesmo código) */
-    estagio: { postos: postos, marcadas: marcadas, aplicar: aplicarOnde }
+    /* os postos do estagiário (o Mudar onde fica da célula usa o mesmo código) e a sub-tela do lápis dele no painel */
+    estagio: { postos: postos, marcadas: marcadas, aplicar: aplicarOnde },
+    abrirEstagio: abrirEstagio
   };
 })();

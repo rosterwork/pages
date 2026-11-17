@@ -3,7 +3,7 @@
     <!-- o mesmo fragmento abre a Escala e o Sobreaviso (o menu; js/sobreaviso.js): os textos de cada uma (o título e o total do
          Militares); o css/sobreaviso.css mostra os da página Sobreaviso -->
     <div class="pagina-titulos">
-      <h1><span class="escala-so-escala">Escala</span><span class="escala-so-sobreaviso">Sobreaviso</span><span class="escala-so-estagios">Estágios</span></h1>
+      <h1><span class="escala-so-escala">Escala</span><span class="escala-so-sobreaviso">Sobreaviso</span><span class="escala-so-estagios">Estágios</span><span class="escala-so-op-verao">Op. Verão</span></h1>
     </div>
     <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
     <div class="dropdown pagina-ajuda" data-manual="escala">
@@ -25,7 +25,7 @@
       </div>
       <div class="abas" id="escala-modo-visoes">
         <button type="button" class="aba aba--ativa" data-modo="mes">Mês</button>
-        <button type="button" class="aba" data-modo="militares">Militares</button>
+        <button type="button" class="aba" data-modo="militares"><span class="escala-fora-op-verao">Militares</span><span class="escala-so-op-verao">Guarda-vidas</span></button>
         <button type="button" class="aba oculto" data-modo="semana">Semana</button>
         <button type="button" class="aba" data-modo="colunas">Colunas</button>
       </div>
@@ -133,10 +133,10 @@
        (escalas-extra-servico.js) -->
   <div class="escala-extra-servico-aviso oculto" id="escala-extra-servico-aviso"></div>
 
-  <!-- com dia à vista que ainda pode mudar: a nota amarela com os pontinhos (o texto, com as unidades, vem do
+  <!-- com dia à vista que ainda pode mudar: a nota amarela com a barra (o texto, com as unidades, vem do
        escalas-atualizando.js); esses dias ficam com a borda amarela -->
   <div class="nota nota--alerta escala-atualizando oculto" role="status">
-    <span class="carregando-pontos" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>
+    <span class="cobertura-viva cobertura-viva--curta" aria-hidden="true"></span>
     <span class="nota-texto escala-atualizando-texto"></span>
   </div>
 
@@ -160,6 +160,26 @@
     <div class="rodape-acoes">
       <button type="button" class="botao escala-painel-cancelar">Cancelar</button>
       <button type="button" class="botao botao--primario escala-painel-salvar">Salvar</button>
+    </div>
+  </div>
+
+  <!-- o Salvar da página Op. Verão (op-verao-rascunho.js): os dias mexidos na grade, com o Desfazer e o Refazer (também
+       Ctrl+Z e Ctrl+Y) à esquerda do Cancelar; aparece só com mudança não salva (a frase vem do JS). Só nesta página: o
+       painel do dia não abre nela, e o rodapé de cima nunca aparece junto -->
+  <div class="rodape rodape-linha rodape--largo op-verao-rodape oculto">
+    <span class="rodape-texto op-verao-rodape-texto"></span>
+    <span class="espacador-flex"></span>
+    <div class="rodape-historico">
+      <button type="button" class="botao botao--quadrado op-verao-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg>
+      </button>
+      <button type="button" class="botao botao--quadrado op-verao-refazer" aria-label="Refazer" data-dica="Refazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
+      </button>
+    </div>
+    <div class="rodape-acoes">
+      <button type="button" class="botao op-verao-cancelar">Cancelar</button>
+      <button type="button" class="botao botao--primario op-verao-salvar">Salvar</button>
     </div>
   </div>
 </div>
@@ -579,7 +599,7 @@
 <template id="tpl-escala-mil-total">
   <div class="escala-mil-linha escala-mil-total">
     <!-- na página Sobreaviso, o css/sobreaviso.css mostra o segundo texto -->
-    <div class="escala-mil-total-rotulo"><span class="escala-so-escala">Efetivo de serviço</span><span class="escala-so-sobreaviso">De sobreaviso</span><span class="escala-so-estagios">Estagiários de serviço</span></div>
+    <div class="escala-mil-total-rotulo"><span class="escala-so-escala">Efetivo de serviço</span><span class="escala-so-sobreaviso">De sobreaviso</span><span class="escala-so-estagios">Estagiários de serviço</span><span class="escala-so-op-verao">Guarda-vidas no dia</span></div>
   </div>
 </template>
 
@@ -601,12 +621,25 @@
   </div>
 </template>
 
-<!-- a caixa 2 do Mudar a viatura (o estagiário): as viaturas do estágio dele (as bolinhas do tpl-escala-onde-fica-vaga,
-     o texto vem do JS) e O sistema distribui -->
-<template id="tpl-escala-celula-viatura">
-  <div class="escala-celula-pergunta">
-    <div class="escala-onde-fica-vagas"></div>
-    <label class="geral-opcao"><input type="radio" value="sistema" /><span>O sistema distribui</span></label>
+<!-- a caixa 2 do Mudar onde fica (o estagiário): uma caixa de marcar por posto do estágio dele (as do tpl-escala-marcar,
+     o texto vem do JS); todas marcadas, o sistema distribui -->
+<template id="tpl-escala-celula-onde">
+  <div class="escala-celula-onde">
+    <div class="escala-marcar-lista"></div>
+  </div>
+</template>
+
+<!-- a caixa 2 do Adicionar estagiário (o pelotão, na Escala e na página Estágios): com mais de um estágio na unidade no dia,
+     a escolha do estágio em cima (as bolinhas do tpl-escala-onde-fica-vaga, o texto vem do JS); embaixo, o campo de quem
+     participa do estágio escolhido -->
+<template id="tpl-escala-celula-estagiario">
+  <div class="escala-celula-estagiario">
+    <div class="escala-celula-estagios oculto"></div>
+    <div class="dropdown campo-combo escala-celula-adicionar">
+      <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar estagiário" />
+      <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Estagiários"></div>
+    </div>
   </div>
 </template>
 
@@ -618,12 +651,13 @@
 <!-- a caixa 1 do pelotão (o clique fora dos nomes): os Adicionar, com a setinha da caixa 2; o Trazer de outra unidade,
      com o ícone do painel (abre o painel já no Trazer; para quem administra outra unidade da companhia); o Voltar o dia ao
      automático, sem sinal (a confirmação e na hora; só com ajuste manual no dia); e o Abrir o painel do dia. A letra é a
-     da guarnição do dia (sem ela, "do dia"). O Adicionar extra neste dia aparece para o administrador da companhia, no
-     mês lançado (escalas-celula-extra.js) -->
+     da guarnição do dia (sem ela, "do dia"). O Adicionar estagiário aparece quando a unidade tem estágio no dia. O Adicionar
+     extra neste dia aparece para o administrador da companhia, no mês lançado (escalas-celula-extra.js) -->
 <template id="tpl-escala-celula-pelotao">
   <div class="escala-celula-pelotao">
     <button type="button" class="dropdown-item" data-acao="neste-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item" data-acao="guarnicao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg><span>Adicionar à guarnição <span class="escala-celula-letra"></span><span class="escala-celula-sem-letra oculto">do dia</span></span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item oculto" data-acao="estagiario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-estagio"/></svg><span>Adicionar estagiário</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Adicionar extra neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="trazer"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Trazer de outra unidade</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
     <button type="button" class="dropdown-item oculto" data-acao="automatico"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span>Voltar o dia ao automático</span></button>
@@ -660,7 +694,7 @@
      um estágio, com horas livres) e o Abrir o painel do dia -->
 <template id="tpl-escala-celula-pelotao-estagios">
   <div class="escala-celula-pelotao">
-    <button type="button" class="dropdown-item" data-acao="neste-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar estagiário</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item oculto" data-acao="estagiario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-estagio"/></svg><span>Adicionar estagiário</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <div class="dropdown-divisor"></div>
     <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
   </div>
@@ -784,4 +818,89 @@
       <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar" /></svg>
     </button>
   </div>
+</template>
+
+<!-- ===== OP. VERÃO (a página Op. Verão; op-verao*.js) ===== -->
+<!-- na célula: o título de cada posto (e o Sem posto, com quantos) e o dia do período sem ninguém -->
+<template id="tpl-op-verao-posto">
+  <span class="op-verao-posto"></span>
+</template>
+<template id="tpl-op-verao-vazio">
+  <span class="op-verao-vazio">Ninguém neste dia.</span>
+</template>
+<!-- no título do dia: um Oficial de Praia (o posto e o nome, como o Oficial de Área, e o horário) e o dia sem nenhum -->
+<template id="tpl-op-verao-oficial">
+  <span class="escala-oficial op-verao-oficial"><span class="escala-oficial-grad"></span><span class="escala-oficial-nome"></span><span class="op-verao-oficial-hora"></span></span>
+</template>
+<template id="tpl-op-verao-sem-oficial">
+  <span class="escala-oficial escala-oficial--sem op-verao-oficial"><span class="escala-oficial-nome">Sem Oficial de Praia</span></span>
+</template>
+<!-- a caixa 1 do clique no dia e no título: o título e os turnos (os itens vêm dos Ajustes) -->
+<template id="tpl-op-verao-caixa-dia">
+  <div class="op-verao-caixa">
+    <div class="dropdown-titulo">Adicionar no dia</div>
+    <div class="op-verao-caixa-itens"></div>
+  </div>
+</template>
+<template id="tpl-op-verao-caixa-titulo">
+  <div class="op-verao-caixa">
+    <div class="dropdown-titulo">Adicionar Oficial de Praia</div>
+    <div class="op-verao-caixa-itens"></div>
+  </div>
+</template>
+<!-- um turno (o nome e o horário dos Ajustes) e o Horário personalizado, nas caixas -->
+<template id="tpl-op-verao-item-turno">
+  <button type="button" class="dropdown-item"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span class="op-verao-item-texto"></span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+</template>
+<template id="tpl-op-verao-item-personalizado">
+  <button type="button" class="dropdown-item" data-turno="personalizado"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Horário personalizado</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+</template>
+<!-- a caixa 1 do clique no nome: do guarda-vidas e do Oficial de Praia -->
+<template id="tpl-op-verao-caixa-nome">
+  <div class="op-verao-caixa">
+    <button type="button" class="dropdown-item" data-acao="posto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg><span>Pôr num posto</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="horario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Mudar o horário</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remover-usuario"/></svg><span>Remover do dia</span></button>
+  </div>
+</template>
+<template id="tpl-op-verao-caixa-oficial">
+  <div class="op-verao-caixa">
+    <button type="button" class="dropdown-item" data-acao="outro"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg><span>Pôr outro no lugar dele</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="horario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Mudar o horário</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="mais"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar outro Oficial de Praia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remover-usuario"/></svg><span>Remover do dia</span></button>
+  </div>
+</template>
+<!-- a caixa 2 em lista: os postos (o Sem posto por último) ou os turnos -->
+<template id="tpl-op-verao-lista">
+  <div class="op-verao-caixa op-verao-caixa-itens"></div>
+</template>
+<template id="tpl-op-verao-item-posto">
+  <button type="button" class="dropdown-item"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg><span class="op-verao-item-texto"></span></button>
+</template>
+<template id="tpl-op-verao-item-sem-posto">
+  <button type="button" class="dropdown-item" data-posto=""><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg><span>Sem posto</span></button>
+</template>
+<!-- a caixa 2 de quem trabalha: o horário (no personalizado), o campo com a lista (componente geral-combo-militar) e o
+     Cadastrar guarda-vidas civil (o painel direito) -->
+<template id="tpl-op-verao-quem">
+  <div class="op-verao-quem">
+    <div class="op-verao-quem-horario oculto"></div>
+    <div class="dropdown campo-combo escala-celula-adicionar">
+      <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Quem trabalha" />
+      <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Quem pode trabalhar"></div>
+    </div>
+    <button type="button" class="botao-discreto op-verao-cadastrar oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Cadastrar guarda-vidas civil</span></button>
+  </div>
+</template>
+<!-- a caixa 2 do Horário personalizado do Mudar o horário: o horário do site -->
+<template id="tpl-op-verao-horario">
+  <div class="op-verao-quem">
+    <div class="op-verao-quem-horario"></div>
+  </div>
+</template>
+<!-- a aba Guarda-vidas: o Cadastrar guarda-vidas civil, na barra (só o administrador da companhia) -->
+<template id="tpl-op-verao-barra-cadastrar">
+  <button type="button" class="botao op-verao-barra-cadastrar">Cadastrar guarda-vidas civil</button>
 </template>

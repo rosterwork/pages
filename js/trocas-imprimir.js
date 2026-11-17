@@ -184,13 +184,13 @@
 
   function idsMarcados() { return form.doMes.filter(function (t) { return form.marcadas[t.troca_id]; }).map(function (t) { return t.troca_id; }); }
 
-  function mostrarNaLista(molde, texto, pontos) {
+  /* a lista sem trocas: o texto ou, enquanto lê (espera = a chave das etapas), a frase com a barra */
+  function mostrarNaLista(molde, texto, espera) {
     form.lista.textContent = '';
     var el = RW.tpl(molde);
     if (!el) return;
-    if (texto) el.textContent = texto;
-    var pts = pontos && document.getElementById('carregando-pontos');
-    if (pts) el.appendChild(pts.content.cloneNode(true));
+    if (espera) RW.etapas.frase(el, espera);
+    else if (texto) el.textContent = texto;
     form.lista.appendChild(el);
   }
 
@@ -334,7 +334,7 @@
 
     /* as trocas das unidades da tela, uma vez; o mês filtra aqui */
     var ref = form;
-    mostrarNaLista('tpl-troca-vazio', '', true);
+    mostrarNaLista('tpl-troca-vazio', '', 'trocasMes');
     RW.trocasDados.listar(unidades()).then(function (todas) {
       if (form !== ref) return;
       if (!Array.isArray(todas)) throw new Error('lista');

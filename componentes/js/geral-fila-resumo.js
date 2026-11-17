@@ -119,10 +119,12 @@
     });
   }
 
-  function carregando(corpo) {
-    corpo.textContent = '';
-    var pts = document.getElementById('carregando-pontos');
-    if (pts) corpo.appendChild(pts.content.cloneNode(true));
+  /* enquanto lê: com a análise, as etapas dela na linha (a conta anda sozinha); sem ela, a frase do que busca. Devolve o
+     parar (a linha tem relógio; a frase sai quando o resumo toma o lugar dela) */
+  function carregando(corpo, chaveAnalise, chaveBusca) {
+    if (chaveAnalise) return RW.etapas.linha(corpo, chaveAnalise).parar;
+    RW.etapas.frase(corpo, chaveBusca);
+    return function () {};
   }
   function mostrar(corpo, c) { corpo.textContent = ''; corpo.appendChild(c); }
 
@@ -148,12 +150,13 @@
   }
 
   function troca(corpo, t, ctx, mapa, aoDetalhes) {
-    carregando(corpo);
     var emAberto = t.status === 'pendente_confirmacao' || t.status === 'pendente_aprovacao';
+    var parar = carregando(corpo, emAberto ? 'trocaAnalisar' : null, 'filaTroca');
     Promise.all([
       t.registro_varias ? RW.trocasDados.registro(t.troca_id) : Promise.resolve(null),
       emAberto ? RW.trocasDados.analisar(t.troca_id).catch(function () { return null; }) : Promise.resolve(null)
     ]).then(function (r) {
+      parar();
       var c = RosterWork.tpl('tpl-pedido-resumo');
       if (!c) return;
       var p = M().pendencias;
@@ -167,7 +170,7 @@
       aceites(secao(c, 'aceites'), t.aceites || []);
       acoes(c, mapa, function (acao, b) { RW.trocasPainel.acao(acao, t, ctx, b); }, aoDetalhes);
       mostrar(corpo, c);
-    }).catch(function () { falha(corpo, aoDetalhes); });
+    }).catch(function () { parar(); falha(corpo, aoDetalhes); });
   }
 
   /* o que cada um faz na troca da fila: o administrador aprova (com pendências, se falta aceite); o militar aceita */
@@ -193,8 +196,9 @@
 
   /* ---------- folga e correção de dados ---------- */
   function folga(corpo, f, ctx, mapa, aoDetalhes, comAnalise) {
-    carregando(corpo);
+    var parar = carregando(corpo, comAnalise ? 'folgaAnalisar' : null, 'filaPedido');
     (comAnalise ? RW.folgasDados.analisar(f.id).catch(function () { return null; }) : Promise.resolve(null)).then(function (a) {
+      parar();
       var c = RosterWork.tpl('tpl-pedido-resumo');
       if (!c) return;
       var lista = secao(c, 'folga');
@@ -203,7 +207,7 @@
       if (a && a.ok) { f._analise = a; analise(secao(c, 'analise'), a); }
       acoes(c, mapa, function (acao, b) { RW.folgasAprovacaoPainel.acao(acao, f, ctx, b); }, aoDetalhes);
       mostrar(corpo, c);
-    }).catch(function () { falha(corpo, aoDetalhes); });
+    }).catch(function () { parar(); falha(corpo, aoDetalhes); });
   }
 
   /* a correção de dados: decide-se item por item, no painel (o resumo só mostra e leva ao Ver detalhes) */
@@ -227,7 +231,7 @@
   /* um pedido do próprio militar (Pendências › Seus pedidos): troca, folga ou correção de dados */
   function meuPedido(corpo, p, ctx, irPara) {
     if (p.tipo === 'troca') {
-      carregando(corpo);
+      carregando(corpo, null, 'filaTroca');
       RW.trocasDados.listar([]).then(function (todas) {
         var t = (Array.isArray(todas) ? todas : []).filter(function (x) { return x.troca_id === p.id; })[0];
         if (!t) { falha(corpo, function () { irPara('trocas', 'minhas'); }); return; }
@@ -237,7 +241,7 @@
       folga(corpo, { id: p.id, data_ref: p.data, horario_inicio: p.horario_inicio, horario_fim: p.horario_fim },
         ctx, p.situacao === 'pendente' ? { cancelar: 'cancelar' } : {}, function () { irPara('folgas', 'minhas'); }, false);
     } else {
-      carregando(corpo);
+      carregando(corpo, null, 'filaPedido');
       RW.rpc('perfil_solicitacoes_minhas', {}).then(function (lista) {
         var s = (Array.isArray(lista) ? lista : []).filter(function (x) { return String(x.solicitacao_id) === String(p.id); })[0];
         dados(corpo, s ? s.itens || [] : [], true, function () { irPara('perfil'); });

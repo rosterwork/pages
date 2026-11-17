@@ -5,7 +5,7 @@
    index-avisos.js chama definir(grupos)): cada grupo que entra traz
    a `faixa` do banco (quantos, a data mais próxima, os dias até
    ela e se é urgente; no do militar, o primeiro pedido visto por
-   ele). Duas linhas no máximo:
+   ele). Três linhas no máximo:
      · a do militar: o assunto mais urgente entre a troca para
        responder (Ver detalhes · Recusar · Aceitar), o prazo da
        extra (Responder) e o aceite que falta (Ver detalhes ·
@@ -17,7 +17,8 @@
      · a da volta de férias ou de afastamento (ADM): a volta mais
        próxima que espera a guarnição (o mesmo item da Pendências,
        de 5 dias antes da volta até o administrador decidir), o
-       selo do prazo e o Ver sugestão (a sugestão na Escala)
+       selo do prazo (Já passou quando o dia passou sem decisão) e
+       o Ver sugestão (a sugestão na Escala)
    A faixa fica vermelha quando há urgente. O X oculta até trocar
    de página ou recarregar e ela volta na hora se chegar pedido
    novo ou algum ficar urgente (nada fica guardado no navegador).
@@ -254,7 +255,8 @@
     linha.querySelector('.chamada-quem').textContent = M().chamada.volta({
       ferias: !!g.ferias, quantos: militares.length || 1, quem: nome(um.grad, um.nome), unidade: g.unidade || '', dia: dia(g.dia)
     });
-    linha.querySelector('.chamada-selo').textContent = textoDias(volta.dias);
+    /* a volta esquecida (o dia já passou sem decisão) diz que já passou, e não Hoje */
+    linha.querySelector('.chamada-selo').textContent = volta.dias < 0 ? M().chamada.jaPassou : textoDias(volta.dias);
     linha.querySelector('[data-chamada="volta"]').addEventListener('click', function () { ir(g.pagina, g.aba, g.referencia); });
     return linha;
   }

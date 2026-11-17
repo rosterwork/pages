@@ -332,11 +332,13 @@
   /* põe o militar numa função nos horários escolhidos (formulário). Quem estava lá fica sem função naquele
      trecho: o automático é substituído só naquela parte; a colocação manual é cortada.
      c = { cpf, posto, funcao, periodos, sistema, refazer (o sistema refaz o dia do zero; o fixado fica),
-     pontual: { contabilizar } | null, dados (a leitura do dia da unidade do posto, quando não é a do painel) } */
+     pontual: { contabilizar, manter (o pontual gravado e contabilizado que muda as horas: o banco de horas fica como
+     estava) } | null, dados (a leitura do dia da unidade do posto, quando não é a do painel) } */
   function aplicarColocacao(c) {
     if (c.pontual) {
-      rasc.pontuais = rasc.pontuais.filter(function (x) { return x.cpf !== c.cpf; })
-        .concat([{ cpf: c.cpf, periodos: c.periodos, contabilizar: !!c.pontual.contabilizar }]);
+      var entra = { cpf: c.cpf, periodos: c.periodos, contabilizar: !!c.pontual.contabilizar };
+      if (c.pontual.manter) entra.manter_banco = true;
+      rasc.pontuais = rasc.pontuais.filter(function (x) { return x.cpf !== c.cpf; }).concat([entra]);
       rasc.estornar = rasc.estornar.filter(function (x) { return x !== c.cpf; });
     }
     if (c.refazer) rasc.automatico = true;
@@ -549,6 +551,15 @@
   }
 
   function pontualSalvo(cpf) { return (base.pontuais || []).some(function (x) { return x.cpf === cpf; }); }
+  /* o pontual gravado no dia, como a leitura do dia gravado traz: { periodos, contabilizado, minutos (as horas que ele
+     tem no banco de horas por este dia; sem o número na leitura, as do horário) } ou null */
+  function pontualGravado(cpf) {
+    var x = base && ((base.dados || {}).pontuais || []).filter(function (p) { return p.cpf === cpf; })[0];
+    if (!x) return null;
+    var minutos = x.contabilizado_min != null ? Number(x.contabilizado_min)
+      : uniao((x.periodos || []).map(faixa)).reduce(function (t, f) { return t + f[1] - f[0]; }, 0);
+    return { periodos: x.periodos || [], contabilizado: !!x.contabilizado, minutos: minutos };
+  }
 
   /* uma mudança da lista: o rascunho de antes entra no desfazer, o refazer zera, e a lista mostra a prévia; nada grava
      até o Salvar do rodapé. O lápis aberto guarda a mudança dele antes (um passo próprio) */
@@ -800,20 +811,31 @@
       ? RosterWork.escalasImpressao.botaoDoDia(abrirImpressao) : null;
     var como = !ctx.emSub && !ctx.comparar && RosterWork.escalasPainelComo
       ? RosterWork.escalasPainelComo.botaoDoDia(abrirComo) : null;
-    var solicitar = !ctx.emSub && !ctx.comparar && RosterWork.escalasPainelTroca ? RosterWork.tpl('tpl-escala-dia-solicitar') : null;
-    if (ctx.emSub || (!ctx.admin && !imprimir && !como && !solicitar)) { sub.classList.add('oculto'); return; }
+    var solicitar = !ctx.emSub && !ctx.comparar && ctx.visao !== 'estagiarios' && RosterWork.escalasPainelTroca ? RosterWork.tpl('tpl-escala-dia-solicitar') : null;
+    /* a aba Estagiários num dia sem estágio na unidade: sem o Editar o dia */
+    var editar = ctx.admin && !(ctx.visao === 'estagiarios' && !((ctx.dados || {}).estagios_unidade || []).length);
+    if (ctx.emSub || (!editar && !imprimir && !como && !solicitar)) { sub.classList.add('oculto'); return; }
     /* o menu Editar o dia, só com o que é do dia todo: Adicionar militar e Trazer de outra unidade abrem as perguntas;
        Registrar troca de serviço abre o formulário da troca ali mesmo; Voltar o dia ao automático (só com ajuste manual)
        confirma. O que é de um militar fica no lápis dele, na aba Militares */
-    var menu = ctx.admin ? RosterWork.tpl('tpl-escala-edicao-acoes') : null;
+    var menu = editar ? RosterWork.tpl('tpl-escala-edicao-acoes') : null;
     if (menu) {
       var botaoMenu = menu.querySelector('.botao'), itemAutomatico = menu.querySelector('[data-acao="automatico"]');
       botaoMenu.disabled = !!ctx.salvando || !!ctx.carregando;
       /* o clique no botão chega aqui antes do ouvinte do document, que abre o menu: o Voltar ao automático vale agora? */
       itemAutomatico.classList.toggle('oculto', !podeVoltarAoAutomatico());
       botaoMenu.addEventListener('click', function () { itemAutomatico.classList.toggle('oculto', !podeVoltarAoAutomatico()); });
+      /* na aba Estagiários, o menu tem só o Adicionar estagiário */
+      var soEstagiario = ctx.visao === 'estagiarios';
+      var titulo = menu.querySelector('.dropdown-titulo');
+      [].forEach.call(menu.querySelector('.dropdown-menu').children, function (filho) {
+        if (filho.getAttribute('data-acao') === 'adicionar-estagiario') filho.classList.toggle('oculto', !soEstagiario);
+        else if (soEstagiario && filho !== titulo) filho.classList.add('oculto');
+      });
+      if (soEstagiario) botaoMenu.addEventListener('click', function () { itemAutomatico.classList.add('oculto'); });
       var acoes = {
         adicionar: function () { if (RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir(); },
+        'adicionar-estagiario': function () { if (RosterWork.escalasPainelAdicionar) RosterWork.escalasPainelAdicionar.abrir({ estagiario: true }); },
         trazer: function () { abrirRemanejar({ fazer: 'trazer' }); },
         troca: function () { abrirTroca(true); },
         automatico: voltarAoAutomatico
@@ -1335,12 +1357,14 @@
     corpo.textContent = '';
     p.anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (do banco)
     if (editavel()) notaMudou(corpo);
-    /* a aba Militares: o mesmo dia, por pessoa (escalas-painel-militares.js) */
-    if (ctx.visao === 'militares' && RosterWork.escalasPainelMilitares) {
+    /* as abas Militares e Estagiários: o mesmo dia, por pessoa (escalas-painel-militares.js) */
+    if ((ctx.visao === 'militares' || ctx.visao === 'estagiarios') && RosterWork.escalasPainelMilitares) {
       ctx.reabrirMenu = null;
       ctx.funcoesMenu = null;
       ctx.lugarNovo = null;
-      RosterWork.escalasPainelMilitares.montar(corpo, dados);
+      /* a aba Estagiários: o Editar o dia depende dos estágios do dia, que chegam com a leitura */
+      if (ctx.visao === 'estagiarios' && !ctx.emSub) montarSubcabecalho();
+      RosterWork.escalasPainelMilitares.montar(corpo, dados, { estagiarios: ctx.visao === 'estagiarios' });
       ctx.listaNaTela = true;
       abrirMenuPedido();
       return;
@@ -1399,7 +1423,10 @@
   function verMilitar(cpf, visao) {
     if (!ctx || !cpf) return;
     ctx.abrirMenuDe = cpf;
-    RosterWork.escalasPainel.abrirAba(visao === 'militares' ? 'militares' : 'distribuicao');
+    /* o estagiário fica na aba Estagiários */
+    var estagiario = visao === 'militares' && ctx.dados && ctx.dados.estagios && ctx.dados.estagios[cpf]
+      && RosterWork.escalasPainel.temAba('estagiarios');
+    RosterWork.escalasPainel.abrirAba(estagiario ? 'estagiarios' : visao === 'militares' ? 'militares' : 'distribuicao');
   }
   /* o menu abre depois do clique que o pediu: o clique no item ainda chega ao document, e o geral-dropdown fecharia o
      menu recém-aberto */
@@ -1409,9 +1436,9 @@
     ctx.fazerAcao = null;
     ctx.adicionar = null;
     ctx.trazer = false;
-    /* o dia vazio da aba Estagiários: o Adicionar militar, já com ele (quem administra) */
+    /* o dia vazio da grade dos estagiários: o Adicionar estagiário, já com ele (quem administra) */
     if (adicionar && ctx.admin && RosterWork.escalasPainelAdicionar) {
-      setTimeout(function () { RosterWork.escalasPainelAdicionar.abrir({ cpf: adicionar }); }, 0);
+      setTimeout(function () { RosterWork.escalasPainelAdicionar.abrir({ cpf: adicionar, estagiario: true }); }, 0);
       return;
     }
     /* o Trazer de outra unidade do pelotão na célula da grade: as perguntas dele, já no Trazer */
@@ -1571,7 +1598,7 @@
      dia; os outros só leem. Sem rodape, o rodapé não é usado. semLista: o dia da célula (corpo nulo), sem a lista */
   function montar(corpo, rodape, unidadeId, iso, opcoes) {
     opcoes = opcoes || {};
-    var visao = opcoes.visao === 'militares' ? 'militares' : 'funcoes';
+    var visao = opcoes.visao === 'militares' || opcoes.visao === 'estagiarios' ? opcoes.visao : 'funcoes';
     /* a outra aba do mesmo dia (Funções e Militares): só a lista se refaz, com o dia que já está na tela; o rascunho e o
        desfazer ficam. Com a prévia para refazer (ou uma sub-tela aberta), o caminho de sempre */
     if (corpo && ctx && ctx.corpo === corpo && ctx.unidadeId === unidadeId && ctx.iso === iso && !ctx.comparar && !opcoes.comparar
@@ -1746,6 +1773,7 @@
       postoFeminino: postoFeminino,
       tirarPontual: tirarPontual,
       pontualSalvo: pontualSalvo,
+      pontualGravado: pontualGravado,
       funcoesDoMilitar: funcoesDoMilitar,
       militarDoDia: militarDoDia,
       acharFuncao: acharFuncao,

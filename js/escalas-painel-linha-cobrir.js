@@ -75,8 +75,8 @@
       origemSim: q('.escala-linha-origem-sim'), origemNao: q('.escala-linha-origem-nao')
     };
     el.unidadeVazio = el.unidade.querySelector('.campo-selecao-texto').textContent;
-    /* os pontos de quem espera o banco: o mês do Dia da folga e o dia da outra unidade */
-    [el.carregando, el.lendo].forEach(function (lugar) { var p = RosterWork.tpl('carregando-pontos'); if (p) lugar.appendChild(p); });
+    /* o dia da outra unidade, enquanto o banco busca: a frase com a barra (o mês do Dia da folga tem a barra no molde) */
+    RosterWork.etapas.frase(el.lendo, 'escalaDiaOutra');
     /* resp = a lista do banco; unidade = a escolhida; item/c = quem cobre; jeito = 'folga' | 'dia' | 'outra'; folga = 'sim'
        | 'nao' | null; dia = o dia da folga; banco = 'sim' | 'nao' | null; origem = 'sai' | 'fica' | null; outra = o dia da
        unidade dele (de serviço em outra unidade) e o serviço dele lá; lendoOutra = esse dia ainda não chegou */

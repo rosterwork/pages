@@ -8,8 +8,10 @@
    lugar; a página pode dar o desenho dela). No computador, a caixa 1
    abre ao lado, a 4px da peça, com o primeiro item na altura do nome
    (ou, no bloco, com o topo a opcoes.topo do topo dele); com
-   opcoes.esperar, ela só aparece quando o conteúdo chega (ou quando a
-   página mostra os pontos), já no lugar e no tamanho dela. Um item
+   opcoes.esperar, o conteúdo que já chega no clique aparece direto; o
+   que ainda não chegou no quadro seguinte dá lugar à forma (as faixas
+   do esqueleto, molde #tpl-caixa-flutuante-forma), que aparece na hora
+   e fica o mínimo na tela (faltaForma, geral-etapas.js). Um item
    escolhido abre a caixa 2 ao lado da caixa 1, cobrindo 4px da borda
    dela, com a primeira linha na altura do item, e o item fica cinza.
    No celular, a folha de baixo, sobre o véu, com a alça e o título; a
@@ -23,11 +25,11 @@
    painel do dia (o painel só abre por ele).
    API: RosterWork.caixaFlutuante.abrir(opcoes) -> caixa
         opcoes = { peca, junto (o que é marcado com ela), topo (o bloco: o topo da caixa, em px, abaixo do topo dele;
-                   sem ele, o primeiro item no meio da peça), titulo (o da folha), conteudo, esperar (a caixa só aparece
-                   com o conteúdo), ignorar (o seletor dos cliques da página), aoFechar() (fechou pelo clique fora, pelo
-                   Esc ou pela peça que saiu), aoVoltar() (o Voltar da folha) }
-        caixa = { conteudo(el), espera(sim), segunda(item, el, titulo), fecharSegunda(), trocarPeca(peca, junto),
-                  fechar(), aberta() }
+                   sem ele, o primeiro item no meio da peça), titulo (o da folha), conteudo, esperar (sem o conteúdo no
+                   quadro seguinte, a forma), ignorar (o seletor dos cliques da página), aoFechar() (fechou pelo clique
+                   fora, pelo Esc ou pela peça que saiu), aoVoltar() (o Voltar da folha) }
+        caixa = { conteudo(el), espera(sim), faltaForma() (quantos ms a forma à vista ainda fica), segunda(item, el,
+                  titulo), fecharSegunda(), trocarPeca(peca, junto), fechar(), aberta() }
    ============================================================ */
 (function () {
   'use strict';
@@ -56,10 +58,13 @@
     if (menosMovimento()) fim(); else setTimeout(fim, SAIDA);
   }
 
-  /* o primeiro item à vista do corpo (ou os pontos, enquanto espera): a caixa 1 o põe na altura do nome */
+  /* o primeiro item à vista do corpo (ou a barra, ou a 1ª faixa da forma, enquanto espera): a caixa 1 o põe na altura
+     do nome */
   function primeiraLinha(caixa) {
     var espera = caixa.querySelector('.caixa-flutuante-espera');
     if (espera && !espera.classList.contains('oculto')) return espera;
+    var faixa = caixa.querySelector('.caixa-flutuante-corpo > .caixa-flutuante-forma .caixa-flutuante-forma-fila');
+    if (faixa) return faixa;
     var itens = caixa.querySelectorAll('.caixa-flutuante-corpo .dropdown-item');
     for (var i = 0; i < itens.length; i++) if (itens[i].offsetHeight) return itens[i];
     return caixa.querySelector('.caixa-flutuante-corpo');
@@ -125,9 +130,19 @@
     if (opcoes.conteudo) c.c1.querySelector('.caixa-flutuante-corpo').appendChild(opcoes.conteudo);
     atual = c;
     marcar(c, true);
-    /* esperando o conteúdo, a caixa fica no lugar, sem aparecer (a peça já fica escolhida) */
+    /* esperando o conteúdo, a caixa fica no lugar, sem aparecer (a peça já fica escolhida), com a forma dentro: o que já
+       chega no clique (a leitura guardada) aparece direto; senão, no quadro seguinte, a forma aparece */
     c.esperando = !!opcoes.esperar && !opcoes.conteudo;
-    if (c.esperando) c.c1.classList.add('caixa-flutuante--esperando');
+    if (c.esperando) {
+      c.c1.classList.add('caixa-flutuante--esperando');
+      var forma = RW.tpl('tpl-caixa-flutuante-forma');
+      if (forma) c.c1.querySelector('.caixa-flutuante-corpo').appendChild(forma);
+      requestAnimationFrame(function () {
+        if (atual !== c || !c.esperando || !forma) return;
+        c.formaEm = performance.now();
+        revelar(c);
+      });
+    }
     if (c.folha) {
       c.c1.classList.add('caixa-flutuante--folha');
       c.veu = RW.tpl('tpl-caixa-flutuante-veu');
@@ -146,7 +161,7 @@
     return api(c);
   }
 
-  /* a caixa que esperava aparece (o conteúdo chegou, ou a página mostrou os pontos): já está no lugar e no tamanho */
+  /* a caixa que esperava aparece (o conteúdo chegou, ou a página mostrou a barra): já está no lugar e no tamanho */
   function revelar(c) {
     if (!c.esperando) return;
     c.esperando = false;
@@ -280,17 +295,20 @@
       conteudo: function (el) {
         if (atual !== c) return;
         var corpo = c.c1.querySelector('.caixa-flutuante-corpo');
+        c.formaEm = null;   // a forma sai com o conteúdo (o lugar se acerta pelo tamanho novo, geral-flutuante.js)
         if (c.guardado) { c.guardado.filhos = el ? [el] : []; return; }
         corpo.textContent = '';
         if (el) corpo.appendChild(el);
         if (el) revelar(c);
       },
-      /* os pontos (a página os mostra quando o conteúdo demora): com eles, a caixa que esperava aparece */
+      /* a barra (a página a mostra quando uma ação demora): com ela, a caixa que esperava aparece */
       espera: function (sim) {
         if (atual !== c) return;
         c.c1.querySelector('.caixa-flutuante-espera').classList.toggle('oculto', !sim);
         if (sim) revelar(c);
       },
+      /* a forma que apareceu fica o mínimo na tela (não pisca): quantos ms ainda faltam (0: o conteúdo pode entrar) */
+      faltaForma: function () { return c.formaEm != null && RW.etapas ? RW.etapas.falta(c.formaEm, null) : 0; },
       segunda: function (item, el, titulo) { segunda(c, item, el, titulo); },
       fecharSegunda: function () { if (atual === c) fecharSegunda(c); },
       trocarPeca: function (nova, junto) { trocarPeca(c, nova, junto); },

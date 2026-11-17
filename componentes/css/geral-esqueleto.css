@@ -5,7 +5,7 @@
    navegador, sem pesar. Respira devagar e para para quem pediu menos
    movimento no aparelho. A casca (.casca-pagina) é a forma de uma
    página que ainda não chegou: o título, as abas e a barra. As outras
-   são os moldes gerais: a árvore de unidades, os cartões das listas e
+   são os moldes gerais: a árvore de unidades (e o nome no seletor), os cartões das listas e
    as caixas dos painéis. Quem mostra é o componente geral-etapas.js,
    ou a própria tela, onde a área está vazia.
    ============================================================ */
@@ -252,6 +252,13 @@
   width: 56px;
   min-height: 16px;
   margin-left: auto;
+}
+
+/* o nome no seletor de unidades do cabeçalho, enquanto a lista das unidades chega */
+.esqueleto-seletor {
+  width: 120px;
+  max-width: 100%;
+  min-height: 12px;
 }
 
 /* ---------- os cartões das listas (Pendências, Trocas, Folgas, Avisos) ---------- */

@@ -133,8 +133,6 @@
         conferindo: q('.escala-mudar-dia-conferindo'), papel: q('.escala-mudar-dia-papel'),
         minimo: q('.escala-mudar-dia-minimo'), erro: q('.escala-mudar-dia-erro')
       };
-      /* os pontos de quem espera: ao lado do mês (o calendário e o dia novo) e no Como fica (o banco confere) */
-      [el.carregando, el.conferindo].forEach(function (lugar) { var p = RosterWork.tpl('carregando-pontos'); if (p) lugar.appendChild(p); });
       var inp = el.combo.querySelector('input');
       inp.id = 'escala-mudar-dia-campo-' + (++conta);
       combo = RosterWork.comboMilitar.criar(inp, el.combo.querySelector('.dropdown-menu'), {

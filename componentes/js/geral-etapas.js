@@ -1,6 +1,6 @@
 /* ============================================================
    COMPONENTE geral-etapas — o carregando que diz o que está sendo feito
-   Quatro formas, com as frases de RosterWork.mensagens.etapas:
+   Cinco formas, com as frases de RosterWork.mensagens.etapas:
    - área: até 0,5 s nada muda na tela; depois, a forma do conteúdo
      (o esqueleto) e, passando de 1,5 s, o cartão das etapas por cima;
    - ação: o cartão sobre a tela, com o clique travado; a tela continua
@@ -10,7 +10,10 @@
      (opcoes.botao, opcoes.atraso, opcoes.semFila);
    - janela: o cartão no meio da tela escurecida, com o Cancelar, e a
      tela de trás desligada (o cálculo que trava a tela);
-   - linha: uma frase com a barra, no rodapé ou no painel.
+   - linha: uma frase com a barra, no rodapé ou no painel;
+   - frase: a frase com a barra de uma leitura curta, dentro de um
+     pedaço da tela (uma pergunta, uma lista pequena), até o resultado
+     tomar o lugar dela.
    O que apareceu não pisca: a forma fica pelo menos 0,4 s e o cartão
    0,8 s. Quem lê segura a leitura (segurar) e só desenha depois; a
    leitura rápida, que chega antes de a forma aparecer, não espera nada.
@@ -20,7 +23,8 @@
    espera a resposta. Passando de 10 s, entra a frase de demora.
    API: RosterWork.etapas.area(lugar, opcoes) · .acao(chave, valores,
    opcoes) · .janela(chave, valores, opcoes) · .linha(lugar, chave,
-   valores, opcoes). Cada uma devolve { ir(n), ultima(), parar() }, e
+   valores, opcoes) · .frase(lugar, chave, valores), que devolve a
+   frase posta. As outras devolvem { ir(n), ultima(), parar() }, e
    a área também segurar(leitura); o parar() da ação devolve a promessa
    do cartão saindo.
    opcoes.doServidor = quantas etapas acontecem no banco (as outras,
@@ -188,7 +192,6 @@
     };
   }
 
-  /* a frase com a barra em lugar (o conteúdo dele sai); opcoes.atraso = só aparece depois disso */
   /* devolve o foco a quem estava com ele ou, se ele fechou com um menu (o item do Ações), ao botão desse menu; não tira o
      foco de uma janela que abriu nesse meio-tempo (um aviso de falha) */
   function voltarFoco(antes) {
@@ -247,6 +250,7 @@
     return { ir: passos.ir, ultima: passos.ultima, parar: parar };
   }
 
+  /* a frase com a barra em lugar (o conteúdo dele sai); opcoes.atraso = só aparece depois disso */
   function linha(lugar, chave, valores, opcoes) {
     var f = frases(chave, valores);
     var total = f.passos.length;
@@ -280,6 +284,17 @@
         el.remove();
       }
     };
+  }
+
+  /* a frase de uma leitura curta dentro de um pedaço da tela (uma pergunta, uma lista pequena): a frase com a barra em
+     lugar, no lugar do que estava. Sem relógio nem parar: ela sai quando quem lê põe o resultado em lugar */
+  function frase(lugar, chave, valores) {
+    var el = RW.tpl('tpl-etapas-linha');
+    el.querySelector('.etapas-linha-texto').textContent = frases(chave, valores).passos[0];
+    el.querySelector('.etapas-linha-conta').classList.add('oculto');
+    lugar.textContent = '';
+    lugar.appendChild(el);
+    return el;
   }
 
   /* a leitura de uma área: opcoes = { forma (o id do molde, ou uma função que desenha em lugar), etapas, valores,
@@ -355,6 +370,6 @@
   }
 
   RW.etapas = {
-    area: area, acao: acao, janela: janela, linha: linha, segurarDesde: segurarDesde, falta: falta, abrindoDaCasca: abrindoDaCasca
+    area: area, acao: acao, janela: janela, linha: linha, frase: frase, segurarDesde: segurarDesde, falta: falta, abrindoDaCasca: abrindoDaCasca
   };
 })();

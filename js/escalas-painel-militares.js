@@ -18,7 +18,10 @@
    'militares'); o de quem foi para outra unidade, o Devolver. Os
    avisos do dia, as Observações, o Lançar no SYSBM e as Alterações
    manuais ficam na aba Funções. Ninguém no dia: o vazio.
-   API: RosterWork.escalasPainelMilitares.montar(corpo, dados)
+   Os estagiários (a leitura do dia, estagios) ficam fora dela: na aba
+   Estagiários (opcoes.estagiarios), um grupo por estágio (o nome e
+   quantos), com as mesmas linhas; ninguém, o vazio dela.
+   API: RosterWork.escalasPainelMilitares.montar(corpo, dados, opcoes)
    ============================================================ */
 (function () {
   'use strict';
@@ -78,31 +81,61 @@
     return { servico: servico, fora: fora };
   }
 
-  function montar(corpo, dados) {
-    var api = ed(), P = api.lista, H = api.horas, editavel = P.editavel(), alguem = false;
-    var pessoas = pessoasDoDia(dados);
+  /* a linha de quem está de serviço no dia, com as funções embaixo e o lápis */
+  function linhaServico(pm, semFuncao) {
+    var api = ed(), P = api.lista, H = api.horas, mil = api.militarDoDia(pm.cpf);
+    if (!mil) return null;
+    var janelas = (mil.janelas || []).slice().sort(function (a, b) { return H.emMin(a.hi) - H.emMin(b.hi); });
+    var fs = api.funcoesDoMilitar(pm.cpf), deFuncao = (fs[0] && fs[0].m) || semFuncao[pm.cpf] || {};
+    /* a linha de sempre (os ícones de regra, CNH e outra unidade vêm do militar da função), com o horário de serviço
+       dele e sem o Fixado, que é de cada função */
+    var m = Object.assign({}, deFuncao, { cpf: pm.cpf, grad: mil.grad, nome: mil.nome, fixado: false,
+      periodos: janelas.map(function (j) { return { hi: j.hi, hf: j.hf }; }) });
+    /* quem veio de outro dia leva o ícone da mudança com a dica de onde veio, como na aba Funções */
+    var linha = P.linhaMilitar(m, { icone: deFuncao.origem === 'mudanca' ? null : Q().iconeDe(janelas) });
+    if (!linha) return null;
+    funcoesEmbaixo(linha, pm.cpf, semFuncao[pm.cpf]);
+    if (P.editavel()) P.menuNaLinha(linha, { tipo: 'militar', visao: 'militares', militar: m, periodos: m.periodos });
+    return linha;
+  }
+
+  /* a aba Estagiários: um grupo por estágio (o nome e quantos), na ordem da lista do dia; ninguém, o vazio */
+  function montarEstagiarios(corpo, dados) {
+    var estagios = dados.estagios || {}, de = dados.estagio_de || {}, semFuncao = {}, grupos = [], porId = {};
+    (dados.sem_funcao || []).forEach(function (m) { semFuncao[m.cpf] = m; });
+    var nomes = {};
+    (dados.estagios_unidade || []).forEach(function (e) { nomes[e.id] = e.nome; });
+    pessoasDoDia(dados).servico.forEach(function (pm) {
+      if (!estagios[pm.cpf]) return;
+      var id = de[pm.cpf] || '';
+      if (!porId[id]) { porId[id] = { nome: nomes[id] || msg().estagiariosSemNome, pessoas: [] }; grupos.push(porId[id]); }
+      porId[id].pessoas.push(pm);
+    });
+    grupos.forEach(function (gr) {
+      var g = caixaGrupo(msg().estagiariosGrupo(gr.nome, gr.pessoas.length));
+      if (!g) return;
+      gr.pessoas.forEach(function (pm) { var l = linhaServico(pm, semFuncao); if (l) g.linhas.appendChild(l); });
+      corpo.appendChild(g.caixa);
+    });
+    if (!grupos.length) {
+      var vazio = RosterWork.tpl('tpl-escala-distribuicao-estado');
+      if (vazio) { vazio.textContent = msg().estagiariosVazio; corpo.appendChild(vazio); }
+    }
+  }
+
+  function montar(corpo, dados, opcoes) {
+    if (opcoes && opcoes.estagiarios) { montarEstagiarios(corpo, dados); return; }
+    var P = ed().lista, editavel = P.editavel(), alguem = false;
+    var pessoas = pessoasDoDia(dados), estagios = dados.estagios || {};
+    /* os estagiários ficam na aba deles */
+    pessoas.servico = pessoas.servico.filter(function (pm) { return !estagios[pm.cpf]; });
     var semFuncao = {};
     (dados.sem_funcao || []).forEach(function (m) { semFuncao[m.cpf] = m; });
 
     if (pessoas.servico.length) {
       var g = caixaGrupo(msg().militaresServico(pessoas.servico.length));
       if (g) {
-        pessoas.servico.forEach(function (pm) {
-          var mil = api.militarDoDia(pm.cpf);
-          if (!mil) return;
-          var janelas = (mil.janelas || []).slice().sort(function (a, b) { return H.emMin(a.hi) - H.emMin(b.hi); });
-          var fs = api.funcoesDoMilitar(pm.cpf), deFuncao = (fs[0] && fs[0].m) || semFuncao[pm.cpf] || {};
-          /* a linha de sempre (os ícones de regra, CNH e outra unidade vêm do militar da função), com o horário de serviço
-             dele e sem o Fixado, que é de cada função */
-          var m = Object.assign({}, deFuncao, { cpf: pm.cpf, grad: mil.grad, nome: mil.nome, fixado: false,
-            periodos: janelas.map(function (j) { return { hi: j.hi, hf: j.hf }; }) });
-          /* quem veio de outro dia leva o ícone da mudança com a dica de onde veio, como na aba Funções */
-          var linha = P.linhaMilitar(m, { icone: deFuncao.origem === 'mudanca' ? null : Q().iconeDe(janelas) });
-          if (!linha) return;
-          funcoesEmbaixo(linha, pm.cpf, semFuncao[pm.cpf]);
-          if (editavel) P.menuNaLinha(linha, { tipo: 'militar', visao: 'militares', militar: m, periodos: m.periodos });
-          g.linhas.appendChild(linha);
-        });
+        pessoas.servico.forEach(function (pm) { var l = linhaServico(pm, semFuncao); if (l) g.linhas.appendChild(l); });
         corpo.appendChild(g.caixa);
         alguem = true;
       }

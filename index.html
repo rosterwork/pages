@@ -135,7 +135,7 @@
       <div class="dropdown cabecalho-unidades" id="dropdown-unidades">
         <button type="button" class="seletor">
           <svg class="icone seletor-icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg>
-          <span class="seletor-texto" id="seletor-unidades-texto">Carregando</span>
+          <span class="seletor-texto" id="seletor-unidades-texto"></span>
           <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
         </button>
         <div class="dropdown-menu dropdown-menu--largo">
@@ -293,6 +293,13 @@
           <button type="button" class="menu-item" data-pagina="estagios" data-lugar-celular="mais" aria-label="Estágios">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-estagio" /></svg>
             <span class="menu-item-label">Estágios</span>
+          </button>
+
+          <!-- a Operação Verão da companhia: a mesma Escala, só com os guarda-vidas e os Oficiais de Praia (js/op-verao.js);
+               para todos (sem Operação Verão nas unidades escolhidas, a página fica vazia) -->
+          <button type="button" class="menu-item" data-pagina="op-verao" data-lugar-celular="mais" aria-label="Op. Verão">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-boia" /></svg>
+            <span class="menu-item-label">Op. Verão</span>
           </button>
 
           <!-- o que só alguns veem fica abaixo do que todos veem: os itens comuns ficam no mesmo lugar para todos -->
@@ -891,6 +898,11 @@
     </div>
   </template>
 
+  <!-- a forma do nome no seletor de unidades do cabeçalho, enquanto a lista das unidades chega -->
+  <template id="tpl-seletor-carregando">
+    <span class="esqueleto esqueleto-conjunto esqueleto-seletor" role="status" aria-label="Carregando"></span>
+  </template>
+
   <!-- a forma dos cartões de uma lista, enquanto os dados chegam -->
   <template id="tpl-esqueleto-cartoes">
     <div class="esqueleto-cartoes esqueleto-conjunto" role="status" aria-label="Carregando">
@@ -1268,8 +1280,8 @@
 
   <!-- MOLDES: a caixa flutuante (componente geral-caixa-flutuante; a célula da grade da Escala): a caixa (no computador,
        ao lado da peça escolhida; no celular, a folha de baixo, com a alça, a seta de voltar e o título, que só aparecem
-       nela), os pontos enquanto o conteúdo espera e o corpo, onde a página põe o menu ou as perguntas; e o véu da
-       folha -->
+       nela), a barra enquanto uma ação espera e o corpo, onde a página põe o menu ou as perguntas; a forma enquanto o
+       conteúdo chega; e o véu da folha -->
   <template id="tpl-caixa-flutuante">
     <div class="caixa-flutuante">
       <span class="caixa-flutuante-alca"></span>
@@ -1279,8 +1291,18 @@
         </button>
         <span class="caixa-flutuante-titulo"></span>
       </div>
-      <span class="caixa-flutuante-espera oculto"><span class="carregando-pontos" aria-label="Carregando"><span>.</span><span>.</span><span>.</span></span></span>
+      <span class="caixa-flutuante-espera oculto" role="status" aria-label="Carregando"><span class="cobertura-viva cobertura-viva--curta" aria-hidden="true"></span></span>
       <div class="caixa-flutuante-corpo"></div>
+    </div>
+  </template>
+
+  <!-- a forma da caixa flutuante enquanto o conteúdo chega (as faixas do esqueleto, geral-esqueleto.css): a caixa 1 mostra
+       duas, no lugar dos itens; a lista do campo de militar da caixa 2 (escalas-celula-editar-acoes.js), três -->
+  <template id="tpl-caixa-flutuante-forma">
+    <div class="caixa-flutuante-forma esqueleto-conjunto" role="status" aria-label="Carregando">
+      <span class="caixa-flutuante-forma-fila"><span class="esqueleto caixa-flutuante-forma-faixa"></span></span>
+      <span class="caixa-flutuante-forma-fila"><span class="esqueleto caixa-flutuante-forma-faixa"></span></span>
+      <span class="caixa-flutuante-forma-fila"><span class="esqueleto caixa-flutuante-forma-faixa"></span></span>
     </div>
   </template>
 
@@ -3265,6 +3287,39 @@
     <div class="pedido-vazio"></div>
   </template>
 
+  <!-- Op. Verão: o cadastro do guarda-vidas civil no painel direito (op-verao-civil.js): o nome completo e o RG ou o CPF;
+       mudando um cadastrado, o Remover do cadastro no fim -->
+  <template id="tpl-op-verao-civil-form">
+    <div class="subtela">
+      <div class="grupo-caixa subtela-pergunta">
+        <span class="rotulo-secao">Nome completo</span>
+        <input type="text" class="campo-entrada" data-civil="nome" maxlength="120" autocomplete="off" aria-label="Nome completo" />
+      </div>
+      <div class="grupo-caixa subtela-pergunta">
+        <span class="rotulo-secao">Documento</span>
+        <span class="subtela-ajuda">O RG ou o CPF, um dos dois basta.</span>
+        <label class="campo">
+          <span class="campo-rotulo">RG</span>
+          <input type="text" class="campo-entrada" data-civil="rg" inputmode="numeric" maxlength="14" autocomplete="off" />
+        </label>
+        <label class="campo">
+          <span class="campo-rotulo">CPF</span>
+          <input type="text" class="campo-entrada" data-civil="cpf" inputmode="numeric" maxlength="14" autocomplete="off" />
+        </label>
+      </div>
+      <div class="grupo-caixa subtela-pergunta oculto" data-civil="remover-caixa">
+        <span class="rotulo-secao">Remover do cadastro</span>
+        <span class="subtela-ajuda">Os dias em que ele já trabalhou continuam na escala. Ele sai da lista para os dias novos.</span>
+        <button type="button" class="botao botao--perigo" data-civil="remover">Remover do cadastro</button>
+      </div>
+    </div>
+  </template>
+  <template id="tpl-op-verao-civil-acoes">
+    <button type="button" class="botao" data-civil="cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario" data-civil="cadastrar" disabled>Cadastrar</button>
+    <button type="button" class="botao botao--primario oculto" data-civil="salvar" disabled>Salvar</button>
+  </template>
+
   <!-- Novo comunicado (painel direito, só admin): destinatário + título + mensagem, da página Avisos
        (módulo avisos-comunicado.js); o molde fica no shell, com o estilo no css/index-comunicado.css -->
   <template id="tpl-avisos-comunicado-form">
@@ -3688,7 +3743,8 @@
        REGRAS §4, Abas e barras), só com o que é do dia todo: Trazer para o dia (Adicionar militar,
        escalas-painel-adicionar.js; Trazer de outra unidade, o Remanejar já no Trazer, escalas-painel-remanejar.js) e O dia
        todo (Registrar troca de serviço, o formulário da troca, escalas-painel-troca.js; Voltar o dia ao automático, só com
-       ajuste manual no dia). O que é de um militar fica no lápis dele, na aba Militares -->
+       ajuste manual no dia). Na aba Estagiários, só o Adicionar estagiário (o mesmo Adicionar, com os estagiários). O que é
+       de um militar fica no lápis dele, na aba Militares -->
   <template id="tpl-escala-edicao-acoes">
     <div class="dropdown escala-edicao-menu">
       <button type="button" class="botao">
@@ -3699,6 +3755,7 @@
       <div class="dropdown-menu">
         <div class="dropdown-titulo">Trazer para o dia</div>
         <button type="button" class="dropdown-item" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar militar</span></button>
+        <button type="button" class="dropdown-item oculto" data-acao="adicionar-estagiario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-estagio"/></svg><span>Adicionar estagiário</span></button>
         <button type="button" class="dropdown-item" data-acao="trazer"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Trazer de outra unidade</span></button>
         <div class="dropdown-divisor"></div>
         <div class="dropdown-titulo">O dia todo</div>
@@ -3767,7 +3824,7 @@
         <div class="escala-edicao-opcoes-parte" data-parte="dia">
           <div class="dropdown-titulo escala-edicao-opcoes-titulo"></div>
           <button type="button" class="dropdown-item" data-acao="horario-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Mudar o horário do serviço</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
-          <button type="button" class="dropdown-item" data-acao="viatura-estagio"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-funcao"/></svg><span>Mudar onde fica</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+          <button type="button" class="dropdown-item" data-acao="onde-estagio"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-funcao"/></svg><span>Mudar onde fica</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="mudar-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg><span>Mudar o dia do serviço</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
           <button type="button" class="dropdown-item" data-acao="mudar-unidade"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Mudar de unidade neste dia</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
           <button type="button" class="dropdown-item" data-acao="oficial-area"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Pôr como Oficial de Área</span></button>
@@ -3838,15 +3895,16 @@
       </div>
       <div class="escala-linha-corpo">
         <div class="grupo-caixa subtela-pergunta escala-linha-para oculto">
-          <span class="rotulo-secao escala-linha-para-rotulo">Para qual função<span class="escala-linha-conferindo oculto"></span></span>
+          <span class="rotulo-secao escala-linha-para-rotulo">Para qual função</span>
           <div class="escala-linha-onde"></div>
+          <span class="escala-linha-conferindo oculto"></span>
         </div>
         <div class="nota nota--erro escala-linha-nao-pode oculto">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span class="nota-texto"></span>
         </div>
         <div class="grupo-caixa subtela-pergunta escala-linha-militar">
-          <span class="rotulo-secao escala-linha-cobre-rotulo"><span class="escala-linha-militar-titulo">Militar</span><span class="escala-linha-cobre-titulo oculto">Quem cobre</span><span class="escala-linha-cobre-carregando oculto"></span></span>
+          <span class="rotulo-secao escala-linha-cobre-rotulo"><span class="escala-linha-militar-titulo">Militar</span><span class="escala-linha-cobre-titulo oculto">Quem cobre</span></span>
           <div class="campo-unidade-militar">
             <div class="campo escala-linha-unidade-campo oculto">
               <span class="campo-rotulo">Unidade</span>
@@ -3868,6 +3926,7 @@
               </div>
             </div>
           </div>
+          <span class="escala-linha-cobre-carregando oculto"></span>
         </div>
         <div class="grupo-caixa subtela-pergunta escala-linha-folga oculto">
           <span class="rotulo-secao">Folga em outro dia</span>
@@ -3882,7 +3941,7 @@
             <button type="button" class="botao botao--quadrado escala-linha-mes-anterior" aria-label="Mês anterior">
               <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
             </button>
-            <span class="mini-calendario-mes-nome"><span class="escala-linha-mes"></span><span class="escala-linha-mes-carregando oculto"></span></span>
+            <span class="mini-calendario-mes-nome"><span class="escala-linha-mes"></span><span class="cobertura-viva cobertura-viva--curta escala-linha-mes-carregando oculto" aria-hidden="true"></span></span>
             <button type="button" class="botao botao--quadrado escala-linha-mes-proximo" aria-label="Próximo mês">
               <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
             </button>
@@ -4006,12 +4065,12 @@
        depois da outra e só as que valem. Como entra; Quem entra (o campo de militar, geral-combo-militar, com a lista do
        como; no dia, a Unidade e o Militar na mesma linha). No dia: o horário, onde fica (o molde comum tpl-escala-onde-fica)
        e o banco de horas. Na guarnição do dia (a letra vem do JS; sem ela, "do dia"): o que acontece com as trocas, folgas
-       e extras de quem muda de guarnição (o molde comum tpl-escala-ciclo-efeito). A resposta completa entra no rascunho ao
-       vivo ===== -->
+       e extras de quem muda de guarnição (o molde comum tpl-escala-ciclo-efeito). O Adicionar estagiário usa o mesmo molde,
+       com o título dele, sem o Como entra e sem a Unidade. A resposta completa entra no rascunho ao vivo ===== -->
   <template id="tpl-escala-adicionar">
     <div class="subtela escala-adicionar">
       <div class="subtela-cab">
-        <span class="subtela-titulo">Adicionar militar</span>
+        <span class="subtela-titulo"><span class="escala-adicionar-titulo-militar">Adicionar militar</span><span class="escala-adicionar-titulo-estagiario oculto">Adicionar estagiário</span></span>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-adicionar-como">
         <span class="rotulo-secao">Como entra</span>
@@ -4042,6 +4101,7 @@
         </div>
         <span class="subtela-ajuda escala-adicionar-ajuda" data-como="dia">Quem tem horas livres no dia, de folga, no pelotão escolhido.</span>
         <span class="subtela-ajuda escala-adicionar-ajuda" data-como="ciclo">Quem está fora da escala e quem é de outra guarnição, para mudar de guarnição.</span>
+        <span class="subtela-ajuda escala-adicionar-ajuda" data-como="estagiario">Quem participa de um estágio deste pelotão e tem horas livres no dia.</span>
         <div class="nota escala-adicionar-assume oculto">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span class="nota-texto"></span>
@@ -4118,6 +4178,21 @@
       <div class="nota nota--alerta escala-onde-fica-efeito oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
+      </div>
+    </div>
+  </template>
+
+  <!-- a sub-tela Mudar onde fica do estagiário (o lápis da aba Estagiários do painel do dia): uma caixa de marcar por
+       posto do estágio dele (as do tpl-escala-marcar, o texto vem do JS); todas marcadas, o sistema distribui -->
+  <template id="tpl-escala-onde-estagio">
+    <div class="subtela">
+      <div class="subtela-cab">
+        <span class="subtela-titulo">Mudar onde fica</span>
+      </div>
+      <div class="grupo-caixa subtela-pergunta">
+        <span class="rotulo-secao">Onde fica</span>
+        <span class="subtela-ajuda escala-onde-estagio-quem"></span>
+        <div class="escala-marcar-lista"></div>
       </div>
     </div>
   </template>
@@ -4371,7 +4446,7 @@
         </div>
         <div class="escala-horario-dia-contabilizar">
           <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-horario-dia-contabilizar-sim"></span></label>
-          <label class="geral-opcao"><input type="radio" value="nao" /><span>Não contabilizar</span></label>
+          <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-horario-dia-contabilizar-nao">Não contabilizar</span></label>
         </div>
       </div>
     </div>
@@ -4411,7 +4486,7 @@
           <button type="button" class="botao botao--quadrado escala-mudar-dia-anterior" aria-label="Mês anterior">
             <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
           </button>
-          <span class="mini-calendario-mes-nome"><span class="escala-mudar-dia-mes"></span><span class="escala-mudar-dia-carregando oculto"></span></span>
+          <span class="mini-calendario-mes-nome"><span class="escala-mudar-dia-mes"></span><span class="cobertura-viva cobertura-viva--curta escala-mudar-dia-carregando oculto" aria-hidden="true"></span></span>
           <button type="button" class="botao botao--quadrado escala-mudar-dia-proximo" aria-label="Próximo mês">
             <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
           </button>
@@ -4435,7 +4510,7 @@
         <div class="escala-mudar-dia-como-corpo">
           <span class="nota-titulo">Como fica</span>
           <ul class="escala-mudar-dia-como-lista"></ul>
-          <span class="escala-mudar-dia-conferindo oculto">Conferindo a mudança</span>
+          <span class="etapas-linha escala-mudar-dia-conferindo oculto" role="status"><span class="cobertura-viva" aria-hidden="true"></span><span class="etapas-linha-texto">Conferindo a mudança</span></span>
         </div>
       </div>
       <div class="nota escala-mudar-dia-papel oculto">
@@ -4525,6 +4600,7 @@
     <div class="abas">
       <button type="button" class="aba aba--ativa" data-secao="distribuicao">Funções</button>
       <button type="button" class="aba" data-secao="militares">Militares</button>
+      <button type="button" class="aba" data-secao="estagiarios" data-so-admin data-so-estagio>Estagiários</button>
       <button type="button" class="aba" data-secao="continuos" data-so-admin>Guarnições</button>
       <button type="button" class="aba" data-secao="extra">Extrajornada</button>
     </div>

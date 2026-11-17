@@ -53,19 +53,58 @@
   display: none;
 }
 
-/* os pontos enquanto o conteúdo espera (na altura de um item) */
+/* a barra enquanto o conteúdo espera (na altura de um item) */
 .caixa-flutuante-espera {
   display: flex;
   align-items: center;
   min-height: 30px;
   padding: 0 8px;
-  font-size: 12px;
-  color: var(--texto-fraco);
 }
 
 .caixa-flutuante-corpo {
   display: flex;
   flex-direction: column;
+}
+
+/* a forma enquanto o conteúdo chega: as faixas do esqueleto (geral-esqueleto.css, que dá a cor e o respirar), cada uma na
+   altura de um item (.dropdown-item, 30px); na caixa 1, duas, na largura da caixa das opções; na lista do campo de militar
+   da caixa 2, três */
+.caixa-flutuante-forma {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
+
+.caixa-flutuante-forma-fila {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 8px;
+}
+
+.caixa-flutuante-forma-faixa {
+  width: 132px;
+  min-height: 10px;
+}
+
+.caixa-flutuante-forma-fila:nth-child(2) .caixa-flutuante-forma-faixa {
+  width: 104px;
+}
+
+.caixa-flutuante-forma-fila:nth-child(3) {
+  display: none;
+}
+
+.combo-militar-menu .caixa-flutuante-forma {
+  width: auto;
+}
+
+.combo-militar-menu .caixa-flutuante-forma-fila:nth-child(3) {
+  display: flex;
+}
+
+.combo-militar-menu .caixa-flutuante-forma-fila:nth-child(3) .caixa-flutuante-forma-faixa {
+  width: 120px;
 }
 
 /* o item escolhido: o cinza da seleção, enquanto a caixa 2 dele está aberta */
@@ -185,8 +224,14 @@
     font-size: var(--fonte-padrao-celular);
   }
 
-  html[data-celular] .caixa-flutuante--folha .caixa-flutuante-aviso {
+  html[data-celular] .caixa-flutuante--folha .caixa-flutuante-aviso,
+  html[data-celular] .caixa-flutuante--folha .caixa-flutuante-forma {
     width: auto;
+  }
+
+  /* as faixas na altura das linhas da folha */
+  html[data-celular] .caixa-flutuante-forma-fila {
+    min-height: var(--toque-altura-celular);
   }
 
   /* os campos de escolher na altura das linhas da folha */

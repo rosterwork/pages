@@ -30,6 +30,7 @@
   var seq = 0;
   var raiz = null;          // a página Afastamentos
   var salvando = false;
+  var setorDe = null;       // cpf -> o setor do militar (da página), para saber se o Salvar refaz a escala
   var teclasLigadas = false;
 
   function M() { return RW.mensagens.afastamentos; }
@@ -309,29 +310,56 @@
     });
   }
 
+  /* o banco refaz a escala quando mudam os dias de um afastamento de quem está nela (o operacional), ou a guarnição e
+     as trocas dele, até o fim da escala já calculada (hoje + 90 dias); o nome, a extra, o sobreaviso e o que fica
+     depois disso só gravam */
+  function refazEscala() {
+    var fimDaEscala = isoLimite(97);
+    function entra(iso) { return !!iso && iso <= fimDaEscala; }
+    return Object.keys(mudancas).some(function (cpf) {
+      if (setorDe && String(setorDe(cpf) || 'Operacional').toUpperCase() !== 'OPERACIONAL') return false;
+      var x = mudancas[cpf], g = gravados[cpf] || {};
+      return x.novos.some(function (af) { return !vazio(af) && entra(af.inicio); })
+        || Object.keys(x.removidos).some(function (id) { return !!g[id] && entra(g[id].inicio); })
+        || Object.keys(x.mudados).some(function (id) {
+          var a = g[id], d = x.mudados[id];
+          if (!a) return false;
+          if (a.inicio !== d.inicio || a.gua !== d.gua || a.tro !== d.tro) return entra(a.inicio < d.inicio ? a.inicio : d.inicio);
+          return a.fim !== d.fim && (a.fim < d.fim ? a.fim : d.fim) < fimDaEscala;   // muda do dia seguinte ao fim mais cedo
+        });
+    });
+  }
+
   function salvar(confirmar) {
     if (salvando || !contar() || problema()) return;
     var militaresMexidos = pedido();
+    var refaz = refazEscala();
     salvando = true;
     pintarRodape();
-    if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // refaz a escala: o círculo e a tela travada
-    RW.afastamentosDados.salvar(militaresMexidos, confirmar).then(function (r) {
-      if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
+    /* refaz a escala: a caixa na hora; só grava: os pontinhos no Salvar na hora e a caixa se passar de 1,5 s */
+    var espera = refaz
+      ? RW.etapas.acao('afastamentosSalvar', { refaz: true }, { doServidor: 2 })
+      : RW.etapas.acao('afastamentosSalvar', { refaz: false },
+        { doServidor: 1, botao: el('afastamentos-salvar'), atraso: true, semFila: true });
+    function soltar() {
+      var saiu = espera.parar();
       salvando = false;
       pintarRodape();
+      return Promise.resolve(saiu);
+    }
+    RW.afastamentosDados.salvar(militaresMexidos, confirmar).then(function (r) {
+      var saiu = soltar();
       if (r && r._falha === 'servidor') {
         RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaServidor });
       } else if (r && r.precisa_confirmar) {
-        confirmarAvisos(r.militares || [], function () { salvar(true); });
+        saiu.then(function () { confirmarAvisos(r.militares || [], function () { salvar(true); }); });   // depois que a caixa sai
       } else if (r && r.success) {
         concluir(r);
       } else {
         RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });
       }
     }).catch(function () {
-      if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
-      salvando = false;
-      pintarRodape();
+      soltar();
       RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
   }
@@ -379,9 +407,11 @@
     else if (tecla === 'y' || (tecla === 'z' && ev.shiftKey)) { ev.preventDefault(); refazer(); }
   }
 
-  /* a navegação abriu a página: o rascunho começa vazio e o rodapé é ligado (as abas mostram o mesmo rascunho) */
-  function iniciar(conteudo) {
+  /* a navegação abriu a página: o rascunho começa vazio e o rodapé é ligado (as abas mostram o mesmo rascunho);
+     opcoes.setor(cpf) diz o setor de cada militar */
+  function iniciar(conteudo, opcoes) {
     raiz = conteudo;
+    setorDe = (opcoes && opcoes.setor) || null;
     gravados = {};
     mudancas = {};
     pilhaDesfazer = [];

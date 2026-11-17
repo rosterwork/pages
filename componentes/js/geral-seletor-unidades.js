@@ -405,17 +405,12 @@
       }
     }
 
-    /* enquanto busca: "Carregando" + pontos animados (reaproveita #carregando-pontos) */
+    /* enquanto busca: a forma cinza do nome */
     function mostrarCarregando() {
       if (!textoEl) return;
-      textoEl.textContent = 'Carregando ';
-      var tpl = document.getElementById('carregando-pontos');
-      if (!tpl) return;
-      var pontos = tpl.content.cloneNode(true).firstElementChild;
-      if (!pontos) return;
-      pontos.setAttribute('aria-hidden', 'true');
-      pontos.removeAttribute('aria-label');
-      textoEl.appendChild(pontos);
+      textoEl.textContent = '';
+      var forma = window.RosterWork.tpl('tpl-seletor-carregando');
+      if (forma) textoEl.appendChild(forma);
     }
 
     /* ----- API da instância ----- */

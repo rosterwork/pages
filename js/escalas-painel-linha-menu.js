@@ -47,7 +47,8 @@
    (escalas-painel-linha.js: o militar, só o horário ou para qual
    função), as sub-telas já com ele escolhido (Mudar o horário do
    serviço, Mudar o dia do serviço, Mudar de unidade neste dia, a do
-   Remover do dia para quem foi a outra unidade e a folga no dia), o
+   Remover do dia para quem foi a outra unidade, a folga no dia e, do
+   estagiário, a do Mudar onde fica), o
    Dar folga e o Remover deste dia (escalas-painel-remover.js › doDia) e, na hora, com o
    Desfazer, o Liberar e o Remover desta função.
    Na célula da grade (visao 'celula', escalas-celula-editar.js), o
@@ -102,6 +103,11 @@
     r['folga-dia'] = !!analise && analise.tipo === 'folga';
     r['remover-dia'] = tirar && !r['folga-dia'];
     r['remover-guarnicao'] = !!RW.escalasPainelCiclo && RW.escalasPainelCiclo.podeSair(cpf);
+    /* o estagiário: o Mudar onde fica (os postos do estágio dele), sem troca de serviço e sem mudar de unidade (ele é do
+       estágio desta unidade) */
+    var dd = ed().dados() || {};
+    r['onde-estagio'] = !!(dd.estagios && dd.estagios[cpf]);
+    if (r['onde-estagio']) { r['registrar-troca'] = false; r['mudar-unidade'] = false; }
   }
 
   /* os itens que valem para a linha: { acao: true }. Na aba Funções, só o que é do lugar (e o Ver o dia); na Militares,
@@ -113,9 +119,6 @@
       delete c['ver-funcoes'];
       delete c['ver-dia'];
       c['abrir-painel'] = true;
-      /* o estagiário no dia: o Mudar a viatura (as viaturas do estágio dele) */
-      var dd = ed().dados() || {};
-      c['viatura-estagio'] = cfg.tipo === 'militar' && !!cfg.militar && !!(dd.estagios && dd.estagios[cfg.militar.cpf]) && !!ed().militarDoDia(cfg.militar.cpf);
       return c;
     }
     var r = {}, m = cfg.militar, militares = cfg.visao === 'militares';
@@ -224,6 +227,7 @@
     liberar: function (cfg) { ed().mudar(function () { A().liberar(cfg); }); },
     'remover-funcao': function (cfg) { ed().mudar(function () { A().tirarDaFuncao(cfg, cfg.periodos.map(copiar)); }); },
     'horario-dia': function (cfg) { RosterWork.escalasPainelHorarioDia.abrir({ cpf: cfg.militar.cpf }); },
+    'onde-estagio': function (cfg) { RosterWork.escalasPainelOnde.abrirEstagio({ cpf: cfg.militar.cpf }); },
     'mudar-dia': function (cfg) { RosterWork.escalasPainelMudarDia.abrir({ cpf: cfg.militar.cpf }); },
     'mudar-unidade': function (cfg) { RosterWork.escalasPainelRemanejar.abrir({ cpf: cfg.militar.cpf }); },
     'oficial-area': function (cfg) { RosterWork.escalasCelulaOficial.porComoOficial(cfg.militar.cpf); },

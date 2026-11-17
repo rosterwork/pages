@@ -160,6 +160,12 @@
     }
   }
 
+  /* a situação está escondida pelo filtro? então os filtros voltam ao começo (todos), para quem foi adicionado aparecer
+     (o Adicionar estagiário) */
+  function mostrarSituacao(situacao) {
+    if (filtros && filtrosValem() && !passa(situacao)) { filtros.limpar(); aplicar(); }
+  }
+
   window.RosterWork.escalasFiltros = { iniciar: iniciar, aplicarModo: aplicarModo, passaPessoa: passaPessoa, passaSituacao: passa,
-    resumo: resumo };
+    resumo: resumo, mostrarSituacao: mostrarSituacao };
 })();

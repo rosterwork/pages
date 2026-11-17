@@ -99,15 +99,17 @@
     if (!tela) return;
     var titulo = tela.querySelector('[data-como-titulo]');
     titulo.textContent = msg().titulo(RW.data.isoParaBR(opcoes.iso));
-    var pontos = RW.tpl('carregando-pontos');
-    if (pontos) titulo.appendChild(pontos);
     [].forEach.call(tela.querySelectorAll('[data-como-caixa]'), function (c) { c.classList.add('oculto'); });
     corpo.appendChild(tela);
     /* o texto começa do alto (a lista do dia podia estar rolada) */
     for (var el = corpo; el; el = el.parentElement) { if (el.scrollTop) el.scrollTop = 0; }
-    ler(opcoes.unidadeId, opcoes.iso).then(function (dados) {
+    /* enquanto lê, a forma das caixas do painel embaixo do título (a leitura guardada abre direto) */
+    var espera = RW.etapas.area(tela, { forma: function (lugar) { lugar.appendChild(RW.tpl('tpl-painel-carregando')); } });
+    espera.segurar(ler(opcoes.unidadeId, opcoes.iso)).then(function (dados) {
+      espera.parar();
+      var forma = tela.querySelector('.esqueleto-painel');
+      if (forma) forma.remove();
       if (!tela.isConnected) return;
-      if (pontos && pontos.parentNode) pontos.remove();
       if (!dados) { RW.avisar({ tipo: 'erro', mensagem: msg().erro }); return; }
       preencherTela(tela, dados);
     });
@@ -172,7 +174,7 @@
     var tituloEl = conteudo.querySelector('.escala-como-funcao-titulo');
     tituloEl.textContent = titulo;
     if (RW.celular && RW.celular()) tituloEl.classList.add('oculto');   // no celular, o título vai na folha
-    /* a caixa abre quando as frases chegam; se demoram, com os pontos */
+    /* a caixa abre quando as frases chegam; se demoram, com a barra */
     var caixa = RW.caixaFlutuante.abrir({ peca: b, copiar: true, titulo: titulo });
     if (!caixa) return;
     caixaAberta = caixa;

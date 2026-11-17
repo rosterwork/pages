@@ -256,11 +256,9 @@
     if (f.registrar || !f.servicoSel || !f.parceiroSel) { elSaldo.classList.add('oculto'); return; }
     /* no "Marcar dia", o aviso espera o dia da devolução (sem ele, diria que o serviço inteiro fica devido) */
     if (devMarcarDia() && !f.devDia) { elSaldo.classList.add('oculto'); return; }
-    /* ainda buscando o saldo já existente entre os dois: três pontinhos */
+    /* ainda buscando o saldo já existente entre os dois: a frase com a barra */
     if (f.saldoCarregando || f.saldoEntre === null || f.saldoEntre === undefined) {
-      elTexto.textContent = '';
-      var pts = document.getElementById('carregando-pontos');
-      if (pts) elTexto.appendChild(pts.content.cloneNode(true));
+      RW.etapas.frase(elTexto, 'trocaSaldo');
       elSaldo.classList.remove('oculto');
       return;
     }

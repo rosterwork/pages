@@ -49,6 +49,8 @@
     sobreaviso: 'icone-sobreaviso',
     /* o operacional sem guarnição, no Fora da escala (escalas-celula-fora.js) */
     fora: 'icone-remover-usuario',
+    /* o guarda-vidas da página Op. Verão (op-verao-celula.js) */
+    'op-verao': 'icone-boia',
     /* quem inseriu a extra, no PDF da grade da Extrajornada (a escala nunca traz estas origens) */
     extra_sistema: 'icone-extra-sistema',
     extra_admin: 'icone-extra-administrador'
@@ -71,7 +73,9 @@
     saida_guarnicao: 'prontidao',
     sobreaviso: 'sobreaviso',
     /* o operacional da unidade sem guarnição (o grupo Fora da escala, escalas-celula-fora.js) */
-    fora: 'fora'
+    fora: 'fora',
+    /* o guarda-vidas da página Op. Verão (op-verao-celula.js) */
+    'op-verao': 'op-verao'
   };
 
   /* o posto curto das células pequenas (os calendários e o PDF deles); o que não está aqui sai inteiro */
@@ -395,6 +399,8 @@
      os da última leitura do dia (guardarEstagiarios) */
   function preencherCelula(celula, cobDia, erroDia, pessoas, maxUnidade, fora, opcoes) {
     var curto = !!(opcoes && opcoes.postoCurto);
+    /* a página Op. Verão: só os guarda-vidas do dia, por posto (op-verao-celula.js) */
+    if (RosterWork.opVeraoCelula && RosterWork.opVeraoCelula.ativa()) { RosterWork.opVeraoCelula.preencher(celula, curto); return; }
     celula.textContent = '';
     /* o dia com mudança do painel do dia ainda não salva: a borda tracejada (escalas-painel-salvar.js) */
     var S = RosterWork.escalasPainelSalvar;
@@ -492,6 +498,8 @@
      alto da faixa do dia da Agenda e do Colunas › Unidades. O dia sem a chave (sem escala) fica sem nada; null é o dia com
      escala e ninguém na função: "Sem Oficial de Área", em vermelho. Devolve se o lugar ficou à vista */
   function preencherOficial(lugar, oficial, iso) {
+    /* a página Op. Verão: os Oficiais de Praia no lugar dele (op-verao-celula.js) */
+    if (RosterWork.opVeraoCelula && RosterWork.opVeraoCelula.ativa()) return RosterWork.opVeraoCelula.preencherTitulo(lugar, iso);
     if (!lugar) return false;
     lugar.textContent = '';
     var tem = !!oficial && Object.prototype.hasOwnProperty.call(oficial, iso);

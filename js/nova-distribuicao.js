@@ -5,10 +5,10 @@
    e as respostas em edição; cada mudança aparece na hora e pede a
    conta ao banco (-conta: abrir a unidade, a conta a cada mudança, a
    resposta mais nova vence; com a outra versão, o banco diz o que
-   muda); desenha o menu dos 11 blocos, o corpo e o rodapé.
+   muda); desenha o menu dos 10 blocos, o corpo e o rodapé.
    Blocos: -ritmo (1), -postos (2), -efetivo (3), -funcoes
-   (4), -acumulos (5 e 6), -blocos (7 e 8), -militares (9),
-   -graduacao (10), -conferir (11); peças comuns em -pecas; as
+   (4), -acumulos (5), -blocos (6 e 7), -militares (8),
+   -graduacao (9), -conferir (10); peças comuns em -pecas; as
    mudanças dos postos com data em -caixas; o aviso, o Salvar com a
    data e o começo da unidade em -versoes. Cancelar e a unidade
    moram aqui. O banco grava no Histórico a cada Salvar.
@@ -188,9 +188,11 @@
   }
 
   /* blocos prontos (o Ritmo, data-bloco 9, sempre; as Regras por graduação, data-bloco 10, vêm do banco depois do de
-     tudo); no pelotão, Funções especiais e Conferir dependem também da companhia */
+     tudo); os Acúmulos (data-bloco 3) juntam o Sempre (3) e o Se faltar (5) do banco; no pelotão, Funções especiais e
+     Conferir dependem também da companhia */
   function prontos() {
     var r = ((E.calc && E.calc.prontos) || []).slice(0, 9);
+    r[3] = !!(r[3] && r[5]);
     r[9] = true;
     r[10] = !!(E.calc && E.calc.prontos && E.calc.prontos[9]);
     if (ehPelotao()) {
@@ -206,7 +208,8 @@
   function desenharMenu() {
     var pr = prontos();
     var lista = el('nova-distribuicao-blocos');
-    var blocosMudam = ((E.calc && E.calc.diferencas) || []).map(function (d) { return d.bloco; });
+    /* o que muda no Se faltar (o bloco 5 do banco) marca os Acúmulos (data-bloco 3) */
+    var blocosMudam = ((E.calc && E.calc.diferencas) || []).map(function (d) { return d.bloco === 5 ? 3 : d.bloco; });
     var dica = E.dados && E.dados.agendada
       ? (E.vendoAgendada ? M().blocoDiferente : P().texto(M().blocoMuda, { data: RosterWork.data.isoParaBR(E.dados.agendada.inicio) })) : '';
     lista.classList.toggle('oculto', !E.periodo);
@@ -220,7 +223,11 @@
       muda.classList.toggle('oculto', blocosMudam.indexOf(n) < 0);
       muda.setAttribute('data-dica', dica);
     });
-    el('nova-distribuicao-contagem').textContent = E.periodo ? P().texto(M().contagem, { n: pr.filter(Boolean).length }) : '';
+    /* conta só os blocos do menu */
+    var feitos = [].filter.call(lista.querySelectorAll('.nova-distribuicao-bloco'), function (botao) {
+      return pr[Number(botao.getAttribute('data-bloco'))];
+    }).length;
+    el('nova-distribuicao-contagem').textContent = E.periodo ? P().texto(M().contagem, { n: feitos }) : '';
     /* o botão do menu dos blocos (no celular) diz o bloco aberto */
     var ativo = lista.querySelector('.lista-item--ativo > span');
     el('nova-distribuicao-bloco-atual').textContent = ativo ? ativo.textContent : '';
@@ -272,7 +279,7 @@
       function () { R.novaDistribuicaoFuncoes.funcoes(conteudo, ctxs, api); },
       function () { R.novaDistribuicaoAcumulos.acumulos(conteudo, ctx, api); },
       function () { R.novaDistribuicaoBlocos.ordem(conteudo, ctx, api); },
-      function () { R.novaDistribuicaoAcumulos.porFalta(conteudo, ctx, api); },
+      function () { R.novaDistribuicaoAcumulos.acumulos(conteudo, ctx, api); },   /* o 5 (Se faltar) mora nos Acúmulos */
       function () { R.novaDistribuicaoBlocos.escolher(conteudo, ctx, api); },
       function () { R.novaDistribuicaoMilitares.regras(conteudo, ctx, api); },
       function () { R.novaDistribuicaoConferir.desenhar(conteudo, ctx, api); },

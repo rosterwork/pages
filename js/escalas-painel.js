@@ -855,7 +855,7 @@
     var sub = RosterWork.painel.subcabecalho();
     if (sub) { sub.textContent = ''; sub.classList.add('oculto'); }
     /* ao entrar numa seção, as outras param de desenhar (os rascunhos delas ficam até o Salvar do rodapé) */
-    if (secao !== 'distribuicao' && secao !== 'militares' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
+    if (secao !== 'distribuicao' && secao !== 'militares' && secao !== 'estagiarios' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (secao !== 'continuos' && RosterWork.escalasPainelGuarnicoes) RosterWork.escalasPainelGuarnicoes.reset();
     if (secao !== 'volta' && RosterWork.escalasPainelVolta) RosterWork.escalasPainelVolta.reset();
     if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
@@ -877,15 +877,16 @@
         if (pCtx === esperado) mostrarSecao(pCtx.secao);
       });
     }
-    if (naFila && !(esperado.consulta && (secao === 'distribuicao' || secao === 'militares'))) {
+    if (naFila && !(esperado.consulta && (secao === 'distribuicao' || secao === 'militares' || secao === 'estagiarios'))) {
       corpo.textContent = '';
       corpo.appendChild(RosterWork.painel.criarAtualizando(RosterWork.mensagens.escala.diaAtualizando));
       if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
       return;
     }
     if (naFila) notaConsulta(true);
-    if ((secao === 'distribuicao' || secao === 'militares') && RosterWork.escalasPainelEditar) {
-      /* o dia é de quem tem a unidade na área do papel; as abas Funções e Militares são o mesmo dia, por posto e por pessoa.
+    if ((secao === 'distribuicao' || secao === 'militares' || secao === 'estagiarios') && RosterWork.escalasPainelEditar) {
+      /* o dia é de quem tem a unidade na área do papel; as abas Funções, Militares e Estagiários são o mesmo dia, por posto
+         e por pessoa (os estagiários na aba deles).
          O menu pedido na abertura (o Oficial de Área, vindo do pelotão) abre quando a lista chegar, uma vez só */
       var menuDe = pCtx.abrirMenuDe || null, fazerDe = pCtx.fazerAcao || null, adicionarDe = pCtx.adicionar || null, trazerDe = !!pCtx.trazer;
       pCtx.abrirMenuDe = null;
@@ -895,7 +896,7 @@
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
         admin: !naFila && RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId),
         consulta: naFila,
-        visao: secao === 'militares' ? 'militares' : 'funcoes',
+        visao: secao === 'militares' || secao === 'estagiarios' ? secao : 'funcoes',
         abrirMenuDe: menuDe,
         fazerAcao: fazerDe,
         adicionar: adicionarDe,
@@ -934,7 +935,7 @@
   /* o dia de uma unidade sem a célula (a companhia do Oficial de Área, que pode não estar na tela; o lápis dele no
      pelotão), com a mesma pergunta de trocar de dia quando há mudança não salva. opcoes.abrirMenuDe: o cpf de quem fica
      com o menu aberto quando a lista chegar; opcoes.fazerAcao: em vez do menu, o item dele já feito (a célula da grade);
-     opcoes.adicionar: o cpf de quem já vem escolhido no Adicionar militar (o dia vazio da aba Estagiários); opcoes.trazer:
+     opcoes.adicionar: o cpf de quem já vem escolhido no Adicionar estagiário (o dia vazio da grade dos estagiários); opcoes.trazer:
      já no Trazer de outra unidade (o pelotão na célula da grade) */
   function abrirDia(dia, secao, opcoes) {
     if (secaoSuja() && !daCelula(dia.unidadeId, dia.iso)) {
@@ -966,7 +967,10 @@
     var admin = RosterWork.sessao.podeAdministrar('pelotao', unidadeId);
     var comExtra = RosterWork.sessao.temPapel('pelotao');
     var inicial = secao || (naExtra ? 'extra' : 'distribuicao');
-    if (((inicial === 'continuos' || inicial === 'volta') && !admin) || (inicial === 'extra' && !comExtra) || (inicial === 'militares' && !admin && !comExtra)) inicial = 'distribuicao';
+    /* a aba Estagiários: para quem administra a unidade, quando ela tem estágio */
+    var comEstagio = admin && RosterWork.sessao.estagioUnidades().map(String).indexOf(String(unidadeId)) >= 0;
+    if (((inicial === 'continuos' || inicial === 'volta') && !admin) || (inicial === 'extra' && !comExtra) || (inicial === 'militares' && !admin && !comExtra)
+        || (inicial === 'estagiarios' && !comEstagio)) inicial = 'distribuicao';
     pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial, unidadeNome: dia.unidadeNome, semCelula: !marcada,
       abrirMenuDe: (opcoes && opcoes.abrirMenuDe) || null, fazerAcao: (opcoes && opcoes.fazerAcao) || null,
       adicionar: (opcoes && opcoes.adicionar) || null, trazer: !!(opcoes && opcoes.trazer) };
@@ -991,6 +995,7 @@
       linha.appendChild(tpl.content.cloneNode(true));
       if (!admin) linha.querySelectorAll('[data-so-admin]').forEach(function (a) { a.remove(); });
       if (!comExtra) linha.querySelectorAll('[data-secao="extra"]').forEach(function (a) { a.remove(); });
+      if (!comEstagio) linha.querySelectorAll('[data-so-estagio]').forEach(function (a) { a.remove(); });
       linha.classList.remove('oculto');
       var trilho = linha.querySelector('.abas');
       if (trilho) {
@@ -1077,6 +1082,7 @@
     if (!conteudo || conteudo.dataset.painelDiaLigado) return;
     conteudo.dataset.painelDiaLigado = '1';
     conteudo.addEventListener('click', function (evento) {
+      if (RosterWork.opVeraoCaixa && RosterWork.opVeraoCaixa.clique(evento)) return;   // a página Op. Verão: as caixas dela
       if (RosterWork.escalasCelulaOficial && RosterWork.escalasCelulaOficial.clique(evento)) return;   // o Oficial do título
       /* célula da grade OU bloco marcado (ex.: a unidade do modo Dia em árvore); no Calendário (Mês e
          Colunas → Dias), o bloquinho inteiro da unidade (nome incluso) vale como a célula que está dentro dele */
@@ -1239,7 +1245,7 @@
        quantas: quantas alterações saem (sem ela, todas) */
     confirmarDescarte: confirmarDescarte,
     recarregarSecao: function () { if (pCtx) mostrarSecao(pCtx.secao); },
-    /* a aba do painel existe (secao = 'distribuicao' | 'militares' | 'continuos' | 'extra') e a abre como o clique nela (o Mudar a
+    /* a aba do painel existe (secao = 'distribuicao' | 'militares' | 'estagiarios' | 'continuos' | 'extra') e a abre como o clique nela (o Mudar a
        extrajornada do menu da linha; o Ver o dia da aba Guarnições, com opcoes.abrirMenuDe: o cpf de quem fica com o menu
        aberto quando a lista chegar) */
     temAba: function (secao) { var l = RosterWork.painel.linhaAbas(); return !!(l && l.querySelector('.aba[data-secao="' + secao + '"]')); },

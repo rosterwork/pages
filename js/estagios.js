@@ -58,7 +58,6 @@
     militares: 'estagiarios',
     colunas: colunas,
     moldePelotao: 'tpl-escala-celula-pelotao-estagios',
-    podeAdicionar: function (item) { return !!(item.m && item.m.estagio); },
     vazia: function () { return RW.mensagens.escala.estagiarios.semUnidade; },
     impressao: function () { return RW.mensagens.escala.estagiarios.impressao; }
   };

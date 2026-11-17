@@ -3,7 +3,7 @@
    (escalas-celula-editar.js), no rascunho do Dia, com o mesmo código
    do painel:
    - na caixa 2: Mudar o horário do serviço (escalas-painel-horario-dia
-     › criar), Mudar a viatura do estagiário (escalas-painel-onde ›
+     › criar), Mudar onde fica do estagiário (escalas-painel-onde ›
      estagio), Dar folga neste dia e Remover deste dia (escalas-painel-
      remover › analisarDoDia), Remover da guarnição (escalas-painel-ciclo
      › perguntarSaida), Cancelar a folga e Desfazer a mudança
@@ -21,7 +21,9 @@
      outra unidade (o painel, já no Trazer), Voltar o dia ao automático
      (a confirmação do painel) e Abrir o painel do dia. O Oficial de Área do título (escalas-celula-
      oficial.js) usa o campo do Adicionar, o Remover e a pergunta, e o
-     Pôr como Oficial de Área do nome vai para ele. Trocar
+     Pôr como Oficial de Área do nome vai para ele. A lista do campo de
+     militar da caixa 2 mostra as faixas enquanto chega, e as do pelotão
+     já começam a ser lidas quando a caixa 1 dele aparece. Trocar
      de item: o concluído fica (um passo do desfazer) e o que estava pela
      metade sai. Não cria HTML (clona os moldes) nem escreve estilo.
      RosterWork.escalasCelulaAcoes.
@@ -128,7 +130,7 @@
       if (campos) horario.appendChild(campos);
       if (calc.pergunta) {
         pergunta(caixa, s.pontual
-          ? { texto: '', sim: calc.sim, nao: RW.mensagens.botoes.naoContabilizar, naoPrimeiro: false, escolha: s.est.banco }
+          ? { texto: '', sim: calc.sim, nao: calc.nao, naoPrimeiro: false, escolha: s.est.banco }
           : { texto: RW.escalasPainelRemoverListas.textoFolga(calc.folga.periodos, s.nome, calc.folga.horas, diaMes(a.iso)),
             sim: calc.sim, nao: L().naoDescontar, naoPrimeiro: true, escolha: s.est.banco, motivo: motivoDaFolga(c) }, function (v) { responder(c, v); });
       }
@@ -170,7 +172,7 @@
   }
 
   function horario(botao, c) {
-    var a = c.a, sessao = RW.escalasPainelHorarioDia.criar(a.cpf, { sempreBanco: !!a.novo });
+    var a = c.a, sessao = RW.escalasPainelHorarioDia.criar(a.cpf);
     if (!sessao) { c.fecharTudo('guardar'); c.abrirPainel(a.cpf, { fazerAcao: 'horario-dia' }); return; }
     vivo(a);
     a.acao = 'horario';
@@ -230,34 +232,24 @@
     a.caixa.segunda(botao, caixa, textoDo(botao));
   }
 
-  /* ---------- a caixa 2 do Mudar a viatura (o estagiário) ---------- */
+  /* ---------- a caixa 2 do Mudar onde fica (o estagiário) ---------- */
 
-  /* O sistema distribui ou uma das viaturas do estágio dele; a escolha vai na hora ao rascunho (a mesma do Onde fica do
-     Adicionar: RosterWork.escalasPainelOnde.estagio) */
-  function viaturaEstagio(botao, c) {
-    var a = c.a, el = RW.tpl('tpl-escala-celula-viatura'), E = RW.escalasPainelOnde.estagio;
-    var dados = api().dados(), linhas = dados && dados.estagios && dados.estagios[a.cpf], mil = api().militarDoDia(a.cpf);
-    if (!el || !linhas || !mil) return;
-    var periodos = mil.janelas.map(copiar), lista = E.viaturas(linhas, dados), atual = E.fixada(a.cpf, linhas, dados);
-    var lugar = el.querySelector('.escala-onde-fica-vagas'), nome = 'escala-celula-viatura-' + (++conta);
-    lista.forEach(function (v) {
-      var op = RW.tpl('tpl-escala-onde-fica-vaga');
-      if (!op) return;
-      op.querySelector('input').value = v.chave;
-      op.querySelector('.escala-onde-fica-vaga-texto').textContent = v.texto;
-      lugar.appendChild(op);
-    });
-    [].forEach.call(el.querySelectorAll('input[type="radio"]'), function (r) {
-      r.name = nome;
-      r.checked = atual ? r.value === atual.chave : r.value === 'sistema';
-      r.addEventListener('change', function () {
-        if (!r.checked) return;
-        var v = lista.filter(function (x) { return x.chave === r.value; })[0] || null;
-        api().aoVivo(function () { E.aplicar(a.cpf, v, periodos, linhas, dados, null); }, false);
+  /* uma caixa de marcar por posto do estágio dele (todas = o sistema distribui; pelo menos uma); a escolha vai na hora ao
+     rascunho (a mesma do Onde fica do Adicionar: RosterWork.escalasPainelOnde.estagio) */
+  function ondeFica(botao, c) {
+    var a = c.a, el = RW.tpl('tpl-escala-celula-onde'), E = RW.escalasPainelOnde.estagio;
+    var dados = api().dados(), linhas = dados && dados.estagios && dados.estagios[a.cpf];
+    if (!el || !linhas) return;
+    var lista = E.postos(linhas, dados), atuais = E.marcadas(a.cpf, linhas, dados);
+    var marcar = RW.escalasPainelQuem.marcar(el.querySelector('.escala-marcar-lista'),
+      lista.map(function (v, i) { return { texto: v.texto, marcado: atuais.indexOf(i) >= 0 }; }),
+      function (indices) {
+        if (!indices.length) { marcar(atuais); return; }
+        atuais = indices;
+        api().aoVivo(function () { E.aplicar(a.cpf, indices, linhas, dados); }, false);
       });
-    });
     vivo(a);
-    a.acao = 'viatura';
+    a.acao = 'onde';
     a.botao = botao;
     a.caixa.segunda(botao, el, textoDo(botao));
   }
@@ -266,7 +258,7 @@
 
   var ACOES = {
     'horario-dia': horario,
-    'viatura-estagio': viaturaEstagio,
+    'onde-estagio': ondeFica,
     'remover-dia': remover,
     'folga-dia': remover,
     'remover-guarnicao': sairDaGuarnicao,
@@ -335,11 +327,16 @@
 
   /* ---------- o pelotão ---------- */
 
-  /* a caixa 1 do pelotão, com a letra da guarnição do dia; na página Estágios, a dela (o Adicionar estagiário e o Abrir o
+  /* o molde da caixa 1 do pelotão nesta página: o da Escala, ou o da página Estágios (o Adicionar estagiário e o Abrir o
      painel do dia; RosterWork.paginaFiltrada) */
-  function menuDoPelotao(c) {
+  function moldeDoPelotao() {
     var pf = RW.paginaFiltrada && RW.paginaFiltrada();
-    var el = RW.tpl((pf && pf.moldePelotao) || 'tpl-escala-celula-pelotao');
+    return (pf && pf.moldePelotao) || 'tpl-escala-celula-pelotao';
+  }
+
+  /* a caixa 1 do pelotão, com a letra da guarnição do dia */
+  function menuDoPelotao(c) {
+    var el = RW.tpl(moldeDoPelotao());
     if (!el) return null;
     var letra = (api().dados() || {}).guarnicao || null, comLetra = el.querySelector('.escala-celula-letra');
     if (comLetra) {
@@ -352,6 +349,16 @@
     var trazer = el.querySelector('[data-acao="trazer"]'), automatico = el.querySelector('[data-acao="automatico"]');
     if (trazer) trazer.classList.toggle('oculto', !(RW.escalasPainelRemanejar && RW.escalasPainelRemanejar.podeTrazer()));
     if (automatico) automatico.classList.toggle('oculto', !api().podeVoltarAoAutomatico());
+    /* o Adicionar estagiário: a unidade tem estágio no dia */
+    var estagiario = el.querySelector('[data-acao="estagiario"]');
+    if (estagiario) estagiario.classList.toggle('oculto', !((api().dados() || {}).estagios_unidade || []).length);
+    /* as listas da caixa 2 dos itens à vista já começam a ser lidas (escalas-dados.js guarda): quase sempre chegam antes do
+       clique no item */
+    var aVista = function (s) { var b = el.querySelector(s); return !!b && !b.classList.contains('oculto'); };
+    if (RW.escalasDados && c.a) {
+      RW.escalasDados.adiantarListas(c.a.unidadeId, c.a.iso, { disponiveis: aVista('[data-acao="neste-dia"]') || aVista('[data-acao="estagiario"]'),
+        guarnicao: aVista('[data-acao="guarnicao"]') });
+    }
     [].forEach.call(el.querySelectorAll('[data-acao]'), function (b) {
       b.addEventListener('click', function () { fazerNoPelotao(b.getAttribute('data-acao'), b, c); });
     });
@@ -367,8 +374,50 @@
     else if (acao === 'trazer') { c.fecharTudo('guardar'); c.abrirPainel(null, { trazer: true }); }
     else if (acao === 'automatico') { c.fecharTudo(); api().voltarAoAutomatico(); }
     else if (acao === 'neste-dia') nesteDia(botao, c);
+    else if (acao === 'estagiario') adicionarEstagiario(botao, c);
     else if (acao === 'guarnicao') naGuarnicao(botao, c);
     else if (acao === 'extra') RW.escalasCelulaExtra.adicionar(botao, c);
+  }
+
+  /* a lista do campo de militar da caixa 2 enquanto chega: o campo desligado e, se ela não chegou até a caixa 2 parar no
+     lugar, o menu aberto com as faixas (a forma da caixa flutuante). Devolve quandoChegar(fn): fn põe a lista, com a caixa
+     parada e quando as faixas que apareceram cumpriram o mínimo na tela (não piscam) */
+  function faixasNaLista(combo, menu) {
+    var esperando = true, em = null;
+    combo.habilitar(false);
+    combo.definir(L().digiteOuEscolha, true);
+    /* com a caixa 2 parada (o clique do item, que fecha os menus abertos, também já passou) */
+    quandoParada(menu, function () {
+      var forma = esperando && menu.isConnected && RW.tpl('tpl-caixa-flutuante-forma');
+      if (!forma) return;
+      menu.textContent = '';
+      menu.appendChild(forma);
+      combo.abrir();
+      em = performance.now();
+    });
+    return function quandoChegar(fn) {
+      esperando = false;
+      quandoParada(menu, function () {
+        var falta = em != null && RW.etapas ? RW.etapas.falta(em, null) : 0;
+        if (falta > 0) setTimeout(fn, falta); else fn();
+      });
+    };
+  }
+  /* o menu do campo é fixo na tela: aberto enquanto a caixa 2 ainda entra (a animação mexe no transform dela), ele ficaria
+     fora do lugar até ela parar; e aberto dentro do clique do item, o próprio clique o fecharia (geral-dropdown.js). fn roda
+     no quadro seguinte, ou no primeiro em que ela já parou (no máximo uns 30 quadros) */
+  function quandoParada(el, fn) {
+    var caixa = el.closest('.caixa-flutuante'), quadros = 0;
+    requestAnimationFrame(function ver() {
+      if (!caixa || !caixa.isConnected || getComputedStyle(caixa).transform === 'none' || ++quadros > 30) { fn(); return; }
+      requestAnimationFrame(ver);
+    });
+  }
+  /* a lista não abre (a leitura falhou ou ninguém pode entrar; comItens: ele já vem escolhido, e a lista fica para trocar):
+     o menu das faixas fecha */
+  function fecharLista(combo, comItens) {
+    if (!comItens) combo.esvaziar();
+    if (RW.fecharDropdowns) RW.fecharDropdowns();
   }
 
   /* Adicionar neste dia: o campo, com quem tem horas livres no dia, por pelotão (o do bloco primeiro). oficial (o Oficial
@@ -385,22 +434,80 @@
       aoEscolher: function (item) { if (oficial) oficial.aoEscolher(item); else escolher(item, c); },
       textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDisponivel, filtroVazio: msg().ninguemEncontrado }
     });
-    combo.habilitar(false);
-    combo.definir(L().carregando, true);
     a.caixa.segunda(botao, el, textoDo(botao));
+    var quandoChegar = faixasNaLista(combo, menu);
     RW.escalasDados.disponiveis(a.unidadeId, a.iso, a.unidadeId, null, !!oficial).then(function (r) {
-      if (c.a !== a || a.acao !== (oficial ? oficial.acao : 'neste-dia') || !el.isConnected) return;
-      if (!r) { combo.definir(msg().falhaCarregar, true); return; }
-      var Ls = RW.escalasPainelAdicionarListas, lista = [];
-      /* na página Estágios, o Adicionar estagiário: só quem participa de um estágio (podeAdicionar) */
-      var pf = !oficial && RW.paginaFiltrada && RW.paginaFiltrada();
-      Ls.unidadesDia(r).forEach(function (u) {
-        var itens = Ls.dia(r, u.id);
-        if (pf && pf.podeAdicionar) itens = itens.filter(pf.podeAdicionar);
-        if (itens.length) lista = lista.concat([{ titulo: u.nome }], itens);
+      quandoChegar(function () {
+        if (c.a !== a || a.acao !== (oficial ? oficial.acao : 'neste-dia') || !el.isConnected) return;
+        if (!r) { fecharLista(combo); combo.definir(msg().falhaCarregar, true); return; }
+        var Ls = RW.escalasPainelAdicionarListas, lista = [];
+        /* quem seria estagiário fica fora: ele entra pelo Adicionar estagiário */
+        Ls.unidadesDia(r).forEach(function (u) {
+          var itens = Ls.dia(r, u.id).filter(function (it) { return oficial || !(it.m && it.m.estagio); });
+          if (itens.length) lista = lista.concat([{ titulo: u.nome }], itens);
+        });
+        if (!combo.preencher(lista)) { fecharLista(combo); return; }
+        inp.focus(); combo.abrir();
       });
-      if (!combo.preencher(lista)) return;
-      inp.focus(); combo.abrir();
+    });
+  }
+
+  /* Adicionar estagiário: o campo com quem participa do estágio, livre no dia; com mais de um estágio na unidade no dia, a
+     escolha do estágio em cima (as bolinhas), e o campo mostra só os dele. Escolhido, ele entra como no Adicionar neste dia
+     (o sistema distribui; as horas, só registro) e, se o filtro da Escala esconde os estagiários, ele volta a mostrar */
+  function adicionarEstagiario(botao, c) {
+    var a = c.a, el = RW.tpl('tpl-escala-celula-estagiario');
+    if (!el) return;
+    a.acao = 'estagiario';
+    a.botao = botao;
+    var estagios = (api().dados() || {}).estagios_unidade || [], escolhido = estagios.length ? estagios[0].id : null;
+    var inp = el.querySelector('input'), menu = el.querySelector('.dropdown-menu'), resposta = null;
+    inp.id = 'escala-celula-estagiario-campo-' + (++conta);
+    var combo = RW.comboMilitar.criar(inp, menu, {
+      atual: function () { return a.escolhido || null; },
+      aoEscolher: function (item) {
+        if (RW.escalasFiltros && RW.escalasFiltros.mostrarSituacao) RW.escalasFiltros.mostrarSituacao('estagio');
+        escolher(item, c);
+      },
+      textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDisponivel, filtroVazio: msg().ninguemEncontrado }
+    });
+    /* a lista do estágio escolhido, com o nome dele em cima */
+    function preencher() {
+      if (!resposta) return;
+      var est = estagios.filter(function (e) { return e.id === escolhido; })[0];
+      var itens = [];
+      RW.escalasPainelAdicionarListas.unidadesDia(resposta).forEach(function (u) {
+        itens = itens.concat(RW.escalasPainelAdicionarListas.dia(resposta, u.id)
+          .filter(function (it) { return it.m && it.m.estagio && it.m.estagio_id === escolhido; }));
+      });
+      combo.preencher(itens.length ? [{ titulo: est ? est.nome : '' }].concat(itens) : []);
+    }
+    /* dois estágios ou mais: as bolinhas */
+    var lugar = el.querySelector('.escala-celula-estagios');
+    if (estagios.length > 1) {
+      var nome = 'escala-celula-estagio-' + (++conta);
+      estagios.forEach(function (e) {
+        var op = RW.tpl('tpl-escala-onde-fica-vaga');
+        if (!op) return;
+        var r = op.querySelector('input');
+        r.name = nome;
+        r.checked = e.id === escolhido;
+        op.querySelector('.escala-onde-fica-vaga-texto').textContent = e.nome;
+        r.addEventListener('change', function () { if (r.checked) { escolhido = e.id; preencher(); inp.focus(); combo.abrir(); } });
+        lugar.appendChild(op);
+      });
+      lugar.classList.remove('oculto');
+    }
+    a.caixa.segunda(botao, el, textoDo(botao));
+    var quandoChegar = faixasNaLista(combo, menu);
+    RW.escalasDados.disponiveis(a.unidadeId, a.iso, a.unidadeId, null, false).then(function (r) {
+      quandoChegar(function () {
+        if (c.a !== a || a.acao !== 'estagiario' || !el.isConnected) return;
+        if (!r) { fecharLista(combo); combo.definir(msg().falhaCarregar, true); return; }
+        resposta = r;
+        preencher();
+        inp.focus(); combo.abrir();
+      });
     });
   }
 
@@ -445,23 +552,26 @@
       aoEscolher: function (item) { escolhido = item; g.efeito.esconder(); P.desenharGuarnicao(item.m, g); },
       textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDisponivel, filtroVazio: msg().ninguemEncontrado }
     });
-    combo.habilitar(false);
-    combo.definir(L().carregando, true);
     a.caixa.segunda(botao, el, textoDo(botao));
+    var quandoChegar = faixasNaLista(combo, menu);
     P.lerGuarnicao(a.unidadeId, a.iso, letra).then(function (r) {
-      if (c.a !== a || a.acao !== 'guarnicao' || !el.isConnected) return;
-      if (!r) { combo.definir(msg().falhaCarregar, true); return; }
-      if (!combo.preencher(r)) return;
-      /* quem está fora da escala, clicado na grade (cpf, escalas-celula-fora.js): já vem escolhido */
-      var dele = cpf && r.filter(function (x) { return x.cpf === cpf && !x.inativo; })[0];
-      if (dele) { escolhido = dele; combo.mostrarAtual(); P.desenharGuarnicao(dele.m, g); return; }
-      inp.focus(); combo.abrir();
+      quandoChegar(function () {
+        if (c.a !== a || a.acao !== 'guarnicao' || !el.isConnected) return;
+        if (!r) { fecharLista(combo); combo.definir(msg().falhaCarregar, true); return; }
+        if (!combo.preencher(r)) { fecharLista(combo); return; }
+        /* quem está fora da escala, clicado na grade (cpf, escalas-celula-fora.js): já vem escolhido */
+        var dele = cpf && r.filter(function (x) { return x.cpf === cpf && !x.inativo; })[0];
+        if (dele) { fecharLista(combo, true); escolhido = dele; combo.mostrarAtual(); P.desenharGuarnicao(dele.m, g); return; }
+        inp.focus(); combo.abrir();
+      });
     });
   }
 
   RW.escalasCelulaAcoes = {
     fazer: fazer, menuDoPelotao: menuDoPelotao, prepararMenu: prepararMenu, aoMostrarMenu: aoMostrarMenu, chegou: chegou,
     encerrar: encerrar, fechar: fechar,
+    /* o molde da caixa do pelotão, que também diz se ela tem o Adicionar extra neste dia (escalas-celula-extra.js) */
+    moldeDoPelotao: moldeDoPelotao,
     /* o Adicionar à guarnição do dia, também com quem está fora da escala já escolhido, e a entrada no dia de quem foi
        escolhido no Adicionar neste dia (escalas-celula-fora.js) */
     naGuarnicao: naGuarnicao, escolher: escolher,

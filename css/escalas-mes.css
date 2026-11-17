@@ -614,8 +614,9 @@
 
 /* os dias que ainda podem mudar (escalas-atualizando.js): a nota no alto da grade e a borda amarela por dentro do dia, sem
    mudar o tamanho (como a do dia não salvo). Na caixa do pelotão no dia, no bloco inteiro do pelotão do Calendário, no
-   cabeçalho do dia dos Militares e no dia da Minha escala */
+   cabeçalho do dia dos Militares e no dia da Minha escala. A barra fica no meio da altura da frase */
 .escala-atualizando {
+  align-items: center;
   margin: 12px 16px 0;
 }
 

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icone-boia" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9"/>
+    <circle cx="12" cy="12" r="4"/>
+    <path d="M9.17 9.17L5.64 5.64M14.83 9.17L18.36 5.64M14.83 14.83L18.36 18.36M9.17 14.83L5.64 18.36"/>
+  </symbol>
+</svg>

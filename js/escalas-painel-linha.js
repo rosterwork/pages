@@ -178,8 +178,7 @@
     /* ---------- Para qual função: a vaga ou a função escolhida; o banco diz se ele pode nela ---------- */
 
     function montarPara() {
-      var conferindo = q('.escala-linha-conferindo'), pontos = RosterWork.tpl('carregando-pontos');
-      if (pontos) conferindo.appendChild(pontos);
+      RosterWork.etapas.frase(q('.escala-linha-conferindo'), 'escalaPodeFuncao');
       var caixa = RosterWork.tpl('tpl-escala-onde-fica');
       if (!caixa) return;
       q('.escala-linha-onde').appendChild(caixa);

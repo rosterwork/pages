@@ -6,10 +6,12 @@
    subgrupos, a caixa da Legenda e a faixa de unidades do celular.
    ============================================================ */
 
-/* os textos do Sobreaviso e dos Estágios (o mesmo fragmento abre as três páginas: o título e o total do Militares):
-   escondidos na Escala; o css/sobreaviso.css e o css/estagios.css os mostram */
+/* os textos do Sobreaviso, dos Estágios e da Op. Verão (o mesmo fragmento abre as quatro páginas: o título, o nome da aba
+   Militares e o total dela): escondidos na Escala; o css/sobreaviso.css, o css/estagios.css e o css/op-verao.css os
+   mostram */
 .escala-so-sobreaviso,
-.escala-so-estagios {
+.escala-so-estagios,
+.escala-so-op-verao {
   display: none;
 }
 
