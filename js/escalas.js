@@ -650,8 +650,11 @@
           if (RosterWork.escalasMinha) RosterWork.escalasMinha.antecipar(mes);
           return;
         }
+        /* o mesmo período que a tela vai pedir: no Calendário, a grade inteira (com os dias de outro mês das pontas) */
+        var faixa = subMesAtual() === 'calendario' && RosterWork.geralCalendarioMes ? RosterWork.geralCalendarioMes.periodo(mes)
+          : { inicio: mes, fim: new Date(mes.getFullYear(), mes.getMonth() + 1, 0) };
         if (RosterWork.escalasDados) RosterWork.escalasDados.antecipar(unidadesColuna().map(function (c) { return c.id; }),
-          dataISO(mes), dataISO(new Date(mes.getFullYear(), mes.getMonth() + 1, 0)));
+          dataISO(faixa.inicio), dataISO(faixa.fim));
       },
       ir: function (direcao) { return Promise.resolve(navegar(direcao)); }
     }) : null;

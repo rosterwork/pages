@@ -14,10 +14,13 @@
    salvas", o Desfazer e o Refazer da aba aberta (também o Ctrl+Z e o
    Ctrl+Y; o rodapé fica enquanto há o que refazer), o Cancelar (descarta
    tudo, com a confirmação) e o Salvar, que grava as três de uma vez,
-   tudo ou nada (escala_painel_salvar). Só o Dia: as etapas no rodapé,
-   e só aquele dia é lido de novo na grade (escalas-dia-na-grade.js);
-   com o Ciclo ou a Extrajornada, o cartão das etapas sobre a tela
-   (geral-etapas.js), e o período é lido de novo, com a grade na tela.
+   tudo ou nada (escala_painel_salvar). Só o Dia que não muda a escala
+   (as observações): as etapas no rodapé, e só aquele dia é lido de
+   novo na grade (escalas-dia-na-grade.js); com o Ciclo ou a
+   Extrajornada, e com o Dia que muda a escala (o banco refaz também
+   os dias seguintes, porque o rodízio conta o que cada um fez no dia),
+   o cartão das etapas sobre a tela (geral-etapas.js), e o período é
+   lido de novo, com a grade na tela.
    Depois, o resumo com o que cada parte gravou. Enquanto há mudança,
    as telas da Escala mostram o rascunho
    (a prévia, escala_previa, pela escalas-dados.js) e o dia mudado
@@ -294,12 +297,18 @@
   function nomeCurto(c) { return (c.unidadeNome || '').split('/').pop().trim(); }
 
   /* o que aparece enquanto grava: só o Dia, as etapas no rodapé, com o dia sendo refeito na grade ("Refazendo a
-     distribuição" só quando o banco refaz); com o Ciclo ou a Extrajornada, que mudam muitos dias, o cartão sobre a tela */
-  function mostrarEtapas(c, ciclo, soDoDia, extra) {
+     distribuição" só quando o banco refaz); com o Ciclo ou a Extrajornada, que mudam muitos dias, e com o Dia que refaz
+     os dias seguintes, o cartão sobre a tela */
+  function mostrarEtapas(c, ciclo, soDoDia, extra, seguintes) {
     if (linhaNoRodape) linhaNoRodape.parar();
     linhaNoRodape = null;
     if (ciclo) return RW.etapas.acao('salvarCiclo', { unidade: nomeCurto(c) }, { doServidor: 2 });
     if (!soDoDia && extra) return RW.etapas.acao('salvarExtra', null, { doServidor: 1 });
+    if (seguintes) {
+      var refazDia = !!(E() && E().refazDistribuicao());
+      return RW.etapas.acao('salvarDiaSeguintes', { dia: RW.data.isoParaBR(c.iso).slice(0, 5), unidade: nomeCurto(c), refaz: refazDia },
+        { doServidor: refazDia ? 3 : 2 });
+    }
     /* o sobreaviso refaz a fila dos dias seguintes: o período é lido de novo */
     if (!soDoDia) return RW.etapas.acao('salvarSobreaviso', null, { doServidor: 2 });
     var refaz = !!(E() && E().refazDistribuicao());
@@ -323,10 +332,13 @@
      (quem chama avisa). O dia que mudou depois da leitura (outro administrador ou o sistema) tira o rascunho do Dia e lê o
      dia de novo */
   function enviar(c, dia, ciclo, extra, botao, sobreaviso) {
-    var soDoDia = !ciclo && !extra && !sobreaviso;
+    /* o Dia que muda a escala: o banco refaz também os dias seguintes (o rodízio conta o que cada um fez no dia); como o
+       Ciclo, o cartão na hora e o período lido de novo */
+    var seguintes = !ciclo && !extra && !sobreaviso && !!(dia && E() && E().refazDiasSeguintes());
+    var soDoDia = !ciclo && !extra && !sobreaviso && !seguintes;
     var doisDias = !!(dia && E() && E().outrosDias().length);   // a mudança de dia: a gravação muda outro dia também
     salvando = true;
-    var etapas = mostrarEtapas(c, ciclo, soDoDia, extra);
+    var etapas = mostrarEtapas(c, ciclo, soDoDia, extra, seguintes);
     atualizar();
     if (botao) RW.iniciarCarregando(botao);
     /* o fim: a linha do rodapé completa em segundo plano os dias distantes do recálculo (a fila em blocos), como o cartão */

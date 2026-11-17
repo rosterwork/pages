@@ -44,9 +44,10 @@
   /* com mudança do painel do dia esperando o Salvar, a leitura pede a prévia (o que vai ficar; escalas-dados.js) */
   function previa(leitura, args) { return RW.escalasDados && RW.escalasDados.lerPrevia ? RW.escalasDados.lerPrevia(leitura, args) : null; }
 
+  /* o período inteiro do calendário: os dias de outro mês das pontas também */
   function buscarMes(mes) {
-    var fim = new Date(mes.getFullYear(), mes.getMonth() + 1, 0);
-    var args = { p_inicio: iso(mes), p_fim: iso(fim) };
+    var faixa = RW.miniCalendario.periodo(mes);
+    var args = { p_inicio: iso(faixa.inicio), p_fim: iso(faixa.fim) };
     return previa('escala_minha_calendario', args) || RW.rpc('escala_minha_calendario', args);
   }
 
@@ -108,15 +109,21 @@
     }
   }
 
+  /* os dias do mês da tela (a leitura traz também os dias de outro mês das pontas) */
+  function chavesDoMes(dias) {
+    var mes = iso(estado.mes).slice(0, 7);
+    return Object.keys(dias).filter(function (k) { return k.slice(0, 7) === mes; }).sort();
+  }
+
   /* o dia que abre com o mês: o próximo serviço de hoje em diante; sem ele, hoje; fora do mês de hoje, o primeiro
-     dia com algo marcado */
+     dia com algo marcado (só os dias do mês) */
   function diaPadrao() {
     var dias = estado.dados.dias;
     var hoje = hojeIso();
-    var chaves = Object.keys(dias).sort();
+    var chaves = chavesDoMes(dias);
     var proximo = chaves.filter(function (k) { return k >= hoje && temServico(dias[k]); })[0];
     if (proximo) return proximo;
-    if (dias[hoje]) return hoje;
+    if (chaves.indexOf(hoje) >= 0) return hoje;
     return chaves.filter(function (k) { return (dias[k].linhas || []).length; })[0] || chaves[0] || null;
   }
 
@@ -132,10 +139,10 @@
     el.guarnicao.classList.toggle('oculto', !texto);
   }
 
-  /* o mês sem serviço: a nota diz por quê (o botão leva à aba Mês) */
+  /* o mês sem serviço (só os dias do mês contam): a nota diz por quê (o botão leva à aba Mês) */
   function mostrarSemServico() {
     var dias = estado.dados.dias;
-    var algum = Object.keys(dias).some(function (k) { return temServico(dias[k]); });
+    var algum = chavesDoMes(dias).some(function (k) { return temServico(dias[k]); });
     el.semServico.classList.toggle('oculto', algum);
     el.semServicoTexto.textContent = algum ? '' : RW.mensagens.escala.minhaSemServico(MESES[estado.mes.getMonth()]);
   }
@@ -228,7 +235,7 @@
 
   /* a forma do mês: os dias de verdade, sem os serviços */
   function formaDoMes(lugar, mes) {
-    var grade = RW.miniCalendario.renderizar(lugar, { dataRef: mes });
+    var grade = RW.miniCalendario.renderizar(lugar, { dataRef: mes, comDiasDeFora: true });
     if (!grade) return;
     grade.classList.add('esqueleto-conjunto');
     grade.inert = true;
@@ -270,7 +277,8 @@
       estado.mes = mes;
       estado.dados = { dias: r.dias, unidades: r.unidades || {}, sobreaviso: r.sobreaviso || [] };
       estado.selecionado = diaPadrao();
-      RW.miniCalendario.renderizar(el.calendario, { dataRef: mes, aoDia: desenharDia });
+      /* os dias de outro mês das pontas também, mais escuros; o clique abre o dia ao lado, como os outros */
+      RW.miniCalendario.renderizar(el.calendario, { dataRef: mes, aoDia: desenharDia, comDiasDeFora: true });
       mostrarGuarnicao(r.guarnicao);
       mostrarSemServico();
       if (estado.selecionado) mostrarDia(estado.selecionado);

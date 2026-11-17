@@ -14,6 +14,10 @@
      · a do administrador (ADM): os pedidos urgentes para aprovar
        e o Ver pedidos (a Pendências; o militar e o administrador
        se dizem pelo campo adm do banco)
+     · a da volta de férias ou de afastamento (ADM): a volta mais
+       próxima que espera a guarnição (o mesmo item da Pendências,
+       de 5 dias antes da volta até o administrador decidir), o
+       selo do prazo e o Ver sugestão (a sugestão na Escala)
    A faixa fica vermelha quando há urgente. O X oculta até trocar
    de página ou recarregar e ela volta na hora se chegar pedido
    novo ou algum ficar urgente (nada fica guardado no navegador).
@@ -92,11 +96,22 @@
     return { quantos: quantos, data: maisPerto.data, dias: Number(maisPerto.dias) || 0 };
   }
 
-  /* o que a faixa mostra, resumido: depois do X, um pedido novo, mais pedidos ou um urgente novo a trazem de volta */
-  function retrato(mil, adm) {
+  /* a linha da volta: a mais próxima entre as que esperam a guarnição (as outras ficam na Pendências) */
+  function linhaDaVolta() {
+    var voltas = grupos.filter(function (g) { return g.adm && g.tipo === 'volta_afastamento' && g.dia; });
+    if (!voltas.length) return null;
+    voltas.sort(function (a, b) { return a.dia < b.dia ? -1 : (a.dia > b.dia ? 1 : String(a.unidade).localeCompare(String(b.unidade))); });
+    var p = voltas[0].dia.split('-');
+    var dias = Math.round((new Date(+p[0], +p[1] - 1, +p[2]) - RW.data.diaDeServico()) / 86400000);
+    return { grupo: voltas[0], dias: dias, chaves: voltas.map(function (g) { return 'volta:' + g.referencia; }) };
+  }
+
+  /* o que a faixa mostra, resumido: depois do X, um pedido novo, mais pedidos, um urgente novo ou uma volta nova a
+     trazem de volta */
+  function retrato(mil, adm, volta) {
     return {
-      chaves: mil ? [mil.grupo.tipo + ':' + ((mil.grupo.faixa.primeiro || {}).registro_id || '')] : [],
-      total: (mil ? mil.total : 0) + (adm ? adm.quantos : 0),
+      chaves: (mil ? [mil.grupo.tipo + ':' + ((mil.grupo.faixa.primeiro || {}).registro_id || '')] : []).concat(volta ? volta.chaves : []),
+      total: (mil ? mil.total : 0) + (adm ? adm.quantos : 0) + (volta ? volta.chaves.length : 0),
       urgente: !!((mil && mil.urgente) || adm)
     };
   }
@@ -232,19 +247,31 @@
     return linha;
   }
 
+  function montarLinhaVolta(volta) {
+    var g = volta.grupo, militares = Array.isArray(g.militares) ? g.militares : [], um = militares[0] || {};
+    var linha = RW.tpl('tpl-chamada-linha-volta');
+    if (!linha) return null;
+    linha.querySelector('.chamada-quem').textContent = M().chamada.volta({
+      ferias: !!g.ferias, quantos: militares.length || 1, quem: nome(um.grad, um.nome), unidade: g.unidade || '', dia: dia(g.dia)
+    });
+    linha.querySelector('.chamada-selo').textContent = textoDias(volta.dias);
+    linha.querySelector('[data-chamada="volta"]').addEventListener('click', function () { ir(g.pagina, g.aba, g.referencia); });
+    return linha;
+  }
+
   /* põe a faixa como o primeiro elemento da página (o topo do celular a leva junto com o título) */
   function desenhar() {
     var velha = document.querySelector('.conteudo > .pagina > .chamada:not(.chamada--manutencao)');
     if (velha) velha.parentNode.removeChild(velha);
-    var mil = linhaDoMilitar(), adm = linhaDoAdministrador();
-    var agora = retrato(mil, adm);
+    var mil = linhaDoMilitar(), adm = linhaDoAdministrador(), volta = linhaDaVolta();
+    var agora = retrato(mil, adm, volta);
     if (oculta && trazDeVolta(agora)) { oculta = false; antes = null; }
     var pagina = document.querySelector('.conteudo > .pagina');
-    if (oculta || !pagina || (!mil && !adm)) return;
+    if (oculta || !pagina || (!mil && !adm && !volta)) return;
     var faixa = RW.tpl('tpl-chamada');
     if (!faixa) return;
     var fechar = faixa.querySelector('.chamada-fechar');
-    [mil ? montarLinhaMilitar(mil) : null, adm ? montarLinhaAdministrador(adm) : null].forEach(function (l) {
+    [mil ? montarLinhaMilitar(mil) : null, adm ? montarLinhaAdministrador(adm) : null, volta ? montarLinhaVolta(volta) : null].forEach(function (l) {
       if (l) faixa.insertBefore(l, fechar);
     });
     faixa.classList.toggle('chamada--urgente', agora.urgente);

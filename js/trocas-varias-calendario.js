@@ -1,6 +1,7 @@
 /* ============================================================
    TROCAS — o calendário do formulário da troca
-   O mês em miniatura (geral-mini-calendario) com os dias da troca:
+   O mês em miniatura (geral-mini-calendario, com os dias de outro mês
+   das pontas, que se marcam ali também) com os dias da troca:
    aceso = um militar da troca de serviço e outro livre (o banco diz,
    fn_trocas_varias_dias, de amanhã em diante; no Registrar, de 7 dias
    atrás em diante, e a seta volta até esse mês); marcado = verde, com
@@ -71,7 +72,8 @@
     var espera = q('#tv-dias-espera');
     if (espera) espera.classList.toggle('oculto', est.militares.length > 1);
     if (est.militares.length < 2) { desenhar(); return; }
-    var ini = est.mes, fim = new Date(est.mes.getFullYear(), est.mes.getMonth() + 1, 0);
+    /* o período inteiro do calendário: os dias de outro mês das pontas também podem ser marcados ali */
+    var faixa = RW.miniCalendario.periodo(est.mes), ini = faixa.inicio, fim = faixa.fim;
     /* o de 7 dias atrás: no Registrar e no Editar do administrador de fora; no Editar, como se o registro não existisse */
     var seteDias = est.registrar || !!(est.editar && est.editar.admin), registroId = est.editar ? est.editar.registroId : null;
     RW.trocasDados.variasDias(est.militares.map(function (m) { return m.cpf; }), iso(ini), iso(fim), seteDias, registroId).then(function (r) {
@@ -95,6 +97,7 @@
     var dias = [];
     RW.miniCalendario.renderizar(q('#tv-calendario'), {
       dataRef: est.mes,
+      comDiasDeFora: true,
       aoDia: function (botao, dia) {
         var pares = paresDoDia(dia), op = opcoesDoDia(dia);
         var aceso = pares.length > 0 || (!travado(dia) && op.trabalha.length > 0 && op.folga.length > 0);

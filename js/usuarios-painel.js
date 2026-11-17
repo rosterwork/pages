@@ -2,10 +2,9 @@
    USUÁRIOS — painel lateral com a ficha do militar
    No padrão do painel da Escala: sem Ver/Editar. Título = graduação
    + nome de guerra, com a lotação ao lado; subtítulo = nome
-   completo; abas Dados · Carreira · Afastamentos (abre na aba de onde
-   veio o clique; a de afastamentos em usuarios-painel-afastamentos.js,
-   com o ano no subcabeçalho e o mesmo rascunho da aba da página). Quem
-   não administra o militar (a área do papel) só lê. A administração,
+   completo; abas Dados · Carreira (os afastamentos do militar ficam
+   na página Afastamentos, no painel de lá). Quem não administra o
+   militar (a área do papel) só lê. A administração,
    que tem aba própria na página, a ficha só mostra. O admin já abre
    editando o resto: o lápis de cada bloco abre
    a correção e, na Carreira, a barra do painel traz Promover e
@@ -31,7 +30,6 @@
   var pessoaAtual = null;     // pessoa do card (CPF, situação)
   var aoFecharPagina = null;  // callback da página (limpa o realce do card)
   var secaoAtual = 'dados';   // aba ativa
-  var anoInicial = null;      // o ano da página, quando a ficha abre por uma aba de afastamento
   var sub = null;             // a sub-tela aberta: { textoAplicar, perigo, mudancas, podeAplicar, sujo, aplicar }
 
   /* edita quem administra o militar (qualquer admin cuja área tem a lotação dele); os demais só leem */
@@ -97,9 +95,6 @@
   /* gravou: volta à ficha relida e abre o resumo; opcoes.fechar (baixa, readmissão) fecha o painel */
   function concluirSubtela(r, opcoes) {
     sub = null;
-    /* os afastamentos relidos na ficha (no mesmo ano) e na grade da página */
-    if (RosterWork.usuariosPainelAfastamentos) RosterWork.usuariosPainelAfastamentos.esquecer(true);
-    if (RosterWork.usuariosAfastamentos) RosterWork.usuariosAfastamentos.recarregar();
     if (opcoes && opcoes.fechar) {
       RosterWork.painel.fechar();
       if (RosterWork.paginas && RosterWork.paginas.usuarios && RosterWork.paginas.usuarios.recarregarInativos) RosterWork.paginas.usuarios.recarregarInativos();
@@ -149,8 +144,7 @@
   /* ---------- a ficha (leitura) ---------- */
 
   function resetarModulos() {
-    ['usuariosPainelEditar', 'usuariosPainelDatas', 'usuariosPainelPromover', 'usuariosPainelTransferir', 'usuariosPainelBaixa', 'usuariosPainelAcesso',
-      'usuariosPainelAfastamentos']
+    ['usuariosPainelEditar', 'usuariosPainelDatas', 'usuariosPainelPromover', 'usuariosPainelTransferir', 'usuariosPainelBaixa', 'usuariosPainelAcesso']
       .forEach(function (nome) { if (RosterWork[nome] && RosterWork[nome].reset) RosterWork[nome].reset(); });
   }
 
@@ -200,15 +194,7 @@
     limparRodape();
     var L = RosterWork.usuariosPainelLeitura;
     var admin = ehAdmin(), ativo = !ehInativo();
-    var afast = RosterWork.usuariosPainelAfastamentos;
-    if (afast && afast.ehSecao(secaoAtual)) {
-      /* Afastamentos: o ano no subcabeçalho, o resumo e os afastamentos (quem administra o militar ativo edita); a aba
-         desenha depois de ler (e a cada troca de ano), e então põe a nota e as Alterações */
-      afast.montar(corpo, RosterWork.painel.subcabecalho(), {
-        pessoa: pessoaAtual, anoInicial: anoInicial, admin: admin && ativo,
-        aoDesenhar: function () { porCorrecao(corpo); porAlteracoes(corpo); }
-      });
-    } else if (secaoAtual === 'carreira') {
+    if (secaoAtual === 'carreira') {
       if (admin && ativo && RosterWork.usuariosPainelTransferir) {
         RosterWork.usuariosPainelTransferir.montarMarcada(corpo, fichaAtual, { concluir: concluirSubtela });
       }
@@ -262,7 +248,7 @@
     linha.classList.remove('oculto');
     var trilho = linha.querySelector('.abas');
     if (!trilho) return;
-    /* a aba de onde veio o clique (Dados, ou a Afastamentos da página) */
+    /* a aba de onde veio a ficha (Dados, ou a que estava aberta antes do painel de decisão) */
     Array.prototype.forEach.call(trilho.querySelectorAll('.aba'), function (aba) {
       aba.classList.toggle('aba--ativa', aba.getAttribute('data-secao') === secaoAtual);
     });
@@ -340,7 +326,6 @@
   /* a gaveta foi fechada: zera o estado e avisa a página (limpa o realce) */
   function aoFecharGaveta() {
     resetarModulos();
-    if (RosterWork.usuariosPainelAfastamentos) RosterWork.usuariosPainelAfastamentos.esquecer();
     sub = null;
     fichaAtual = null;
     pessoaAtual = null;
@@ -359,8 +344,6 @@
     pessoaAtual = pessoa;
     aoFecharPagina = aoFechar || null;
     secaoAtual = (opcoes && opcoes.secao) || 'dados';
-    anoInicial = (opcoes && opcoes.ano) || null;
-    if (RosterWork.usuariosPainelAfastamentos) RosterWork.usuariosPainelAfastamentos.esquecer();
     var grad = pessoa.grau_abreviacao || '';
     var guerra = pessoa.nome_de_guerra || '';
     RosterWork.painel.abrir({

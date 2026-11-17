@@ -141,7 +141,8 @@
             </li>
             <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#historico">Histórico</a></li>
             <li><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#legenda">Cores e selos</a></li>
-            <li><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#treinamento">Treinamento e ajuda</a></li>
+            <!-- oculto para todos, com a seção: os treinos e o ? estão desatualizados -->
+            <li class="oculto"><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#treinamento">Treinamento e ajuda</a></li>
             <li><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#onde-buscar-ajuda">Onde buscar ajuda</a></li>
             <li><a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#logica">Apêndice: a lógica por trás</a></li>
           </ul>
@@ -420,7 +421,7 @@
 
               <p><strong>Menu (à esquerda).</strong> Lista as áreas do sistema. Clique numa para abri-la, e a área aberta fica destacada. O sistema abre na <strong>Escala</strong>, e a <strong>Pendências</strong>, a primeira do menu, mostra ao lado o número do que espera você.</p>
               <figure class="manual-figura manual-comum">
-                <img src="manual/imagens/mold-menu-comum.png" width="180" height="309" alt="Menu lateral: Pendências, Escala, Trocas, Folgas, Extrajornada, Usuários e Treinamento." />
+                <img src="manual/imagens/mold-menu-comum.png" width="180" height="309" alt="Menu lateral: Pendências, Escala, Trocas, Folgas, Extrajornada e Usuários." />
               </figure>
               <figure class="manual-figura manual-admin">
                 <img src="manual/imagens/mold-menu-admin.png" width="180" height="396" alt="Menu lateral do administrador: as áreas comuns e, logo abaixo do Usuários, o Histórico e os Ajustes, com o número de pedidos ao lado de Pendências." />
@@ -468,7 +469,7 @@
               <p class="manual-nota"><strong>Tela que não abriu.</strong> Se a tela não chegar ao seu aparelho, por falha na internet, ou não abrir por um erro do sistema, um aviso aparece no lugar dela, com o botão Tentar de novo, que abre a mesma tela outra vez. Se o erro continuar, avise pelo Fale conosco.</p>
 
               <h3 id="no-celular">No celular</h3>
-              <p>No celular, o sistema se ajusta à tela do aparelho. O menu vira uma <strong>barra embaixo</strong>, com Escala, Trocas, Folgas, <strong>Pendências</strong> (com o número do que espera você) e <strong>Mais</strong>. Toque em Mais para ver as outras telas (Extrajornada, Usuários e Treinamento). Para fechar o Mais, arraste a folha para baixo ou toque fora dela.</p>
+              <p>No celular, o sistema se ajusta à tela do aparelho. O menu vira uma <strong>barra embaixo</strong>, com Escala, Trocas, Folgas, <strong>Pendências</strong> (com o número do que espera você) e <strong>Mais</strong>. Toque em Mais para ver as outras telas (Extrajornada e Usuários). Para fechar o Mais, arraste a folha para baixo ou toque fora dela.</p>
               <p><strong>Tamanho da tela.</strong> No menu das suas iniciais, em <strong>Tamanho da tela</strong> (1), escolha <strong>Normal</strong> ou <strong>Menor</strong>. No Menor, tudo fica um pouco menor, na mesma proporção, e cabe mais coisa na tela: a barra de baixo ganha a <strong>Extra</strong> (a Extrajornada), que sai do Mais. Se os botões ficarem pequenos para o seu dedo, volte ao Normal. A escolha vale na hora e fica guardada para as próximas vezes.</p>
               <figure class="manual-figura">
                 <img src="manual/imagens/celular-tamanho-tela.png" width="228" height="465" alt="O menu das iniciais no celular, com o Tamanho da tela (1): o Normal, marcado, e o Menor." />
@@ -963,7 +964,7 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p><strong>Salvar ou descartar.</strong> O que você muda no painel não grava na hora: fica esperando o <strong>Salvar</strong>. Nas perguntas e no lápis não há botão no fim: assim que as respostas ficam completas, a mudança entra, e a escala da página já mostra o dia como vai ficar, com o dia mudado marcado por uma borda tracejada. Enquanto o sistema prepara esse dia, a escala continua na tela: só o dia que você mudou fica apagado, com uma barra se enchendo no lugar do gráfico, e a lista do painel fica apagada, com a frase <strong>Mostrando como o dia vai ficar</strong>. Com uma pergunta pela metade ou um horário em conflito, a mudança fica de fora e o Salvar fica desligado até resolver. De volta à lista, ela também mostra o dia como vai ficar, com a nota <strong>O que mudou</strong> no alto (uma frase por militar, como "O Cb. Paixão passou do Efetivo 3 para o Condutor."). No rodapé largo da página, embaixo da escala e do painel, aparecem quantas alterações faltam salvar, o <strong>Cancelar</strong>, que pergunta antes de descartar tudo, e o <strong>Salvar</strong>, que grava de uma vez as mudanças das abas Funções, Militares, Guarnições e Extrajornada e mostra o resumo. Enquanto grava, o rodapé conta o que o sistema está fazendo, como <strong>Gravando as alterações de 21/11</strong> e <strong>Atualizando o dia na grade</strong>, e o dia salvo acende em verde por um instante. Com mudança nas Guarnições ou na Extrajornada, que mexem em vários dias, as etapas aparecem num cartão no meio da tela, e a escala continua à vista até a nova chegar. Trocar de aba não perde nada; trocar de dia ou fechar o painel com mudança não salva pergunta antes. Se outro administrador mexeu no mesmo dia depois que você abriu, o Salvar não grava nada: o sistema avisa e mostra o dia atualizado, e você faz a mudança de novo.</p>
+                <p><strong>Salvar ou descartar.</strong> O que você muda no painel não grava na hora: fica esperando o <strong>Salvar</strong>. Nas perguntas e no lápis não há botão no fim: assim que as respostas ficam completas, a mudança entra, e a escala da página já mostra o dia como vai ficar, com o dia mudado marcado por uma borda tracejada. Enquanto o sistema prepara esse dia, a escala continua na tela: só o dia que você mudou fica apagado, com uma barra se enchendo no lugar do gráfico, e a lista do painel fica apagada, com a frase <strong>Mostrando como o dia vai ficar</strong>. Com uma pergunta pela metade ou um horário em conflito, a mudança fica de fora e o Salvar fica desligado até resolver. De volta à lista, ela também mostra o dia como vai ficar, com a nota <strong>O que mudou</strong> no alto (uma frase por militar, como "O Cb. Paixão passou do Efetivo 3 para o Condutor."). No rodapé largo da página, embaixo da escala e do painel, aparecem quantas alterações faltam salvar, o <strong>Cancelar</strong>, que pergunta antes de descartar tudo, e o <strong>Salvar</strong>, que grava de uma vez as mudanças das abas Funções, Militares, Guarnições e Extrajornada e mostra o resumo. Quando a escala do dia muda, o sistema refaz também os dias seguintes da unidade, porque o rodízio conta o que cada um fez no dia: enquanto grava, as etapas aparecem num cartão no meio da tela, como <strong>Gravando as alterações de 21/11</strong> e <strong>Refazendo os próximos 7 dias do 1ºPEL</strong>, a escala continua à vista até a nova chegar, e o resumo diz a partir de quando a escala foi refeita. O resto do período continua sozinho, e você pode seguir trabalhando. Só uma observação grava sem o cartão: o rodapé conta o que o sistema está fazendo, e o dia salvo acende em verde por um instante. Com mudança nas Guarnições ou na Extrajornada, que mexem em vários dias, também aparece o cartão. Trocar de aba não perde nada; trocar de dia ou fechar o painel com mudança não salva pergunta antes. Se outro administrador mexeu no mesmo dia depois que você abriu, o Salvar não grava nada: o sistema avisa e mostra o dia atualizado, e você faz a mudança de novo.</p>
                 <figure class="manual-figura">
                   <img src="manual/imagens/escala-salvar.png" width="488" height="60" alt="O rodapé largo da página, embaixo do painel do dia, com o Desfazer e o Refazer (1) e os botões Cancelar e Salvar (2)." />
                   <figcaption>
@@ -2461,7 +2462,8 @@
               <p>Os <strong>selos</strong> são essas etiquetas coloridas que resumem a situação de um item. Os mais comuns são "Ativo", "Pendente", "Aprovada", "Recusada" (ou "Recusada pela administração") e "Cancelada".</p>
             </section>
 
-            <section class="manual-secao" id="treinamento">
+            <!-- oculta para todos: os treinos e o ? estão desatualizados -->
+            <section class="manual-secao oculto" id="treinamento">
               <h2>Treinamento e ajuda</h2>
               <p>O sistema ensina a usar ele mesmo, de dois jeitos: o <strong>Treinamento</strong>, para aprender sem medo de errar, e o botão <strong>?</strong> de cada tela, para ser guiado na hora de fazer de verdade. Os dois usam o mesmo <strong>passo a passo</strong>: a tela escurece, fica aceso só o que você usa naquele passo, e um balão escuro explica o que fazer. O passo avança quando você faz o que ele pede; o que é só para ler tem o botão <strong>Próximo</strong>.</p>
 
@@ -2537,11 +2539,12 @@
 
             <section class="manual-secao" id="onde-buscar-ajuda">
               <h2>Onde buscar ajuda</h2>
-              <p>Se ficar com uma dúvida ou algo não sair como esperado, você tem quatro caminhos.</p>
+              <p>Se ficar com uma dúvida ou algo não sair como esperado, você tem três caminhos.</p>
               <ul class="manual-lista">
                 <li><strong>O administrador da sua unidade.</strong> É quem cuida do que você não altera sozinho: os seus dados, a escala, as folgas, as trocas, o acesso e as aprovações. Para as questões do dia a dia do serviço, fale com ele.</li>
                 <li><strong>Fale conosco.</strong> No menu do seu nome, no canto do cabeçalho, "Fale conosco" abre uma janela para enviar um recado à equipe do sistema. Você escolhe o tipo (Sugestão, Problema ou Outro), escreve um assunto e a mensagem. Serve para relatar uma falha do sistema ou sugerir uma melhoria; a tela em que você está vai junto, para ajudar a equipe a entender. Quando a equipe corrige um problema que você relatou, você recebe no sino o aviso "Problema corrigido".</li>
-                <li><strong>O Treinamento e o botão ?.</strong> O Treinamento, no menu, ensina cada tela sem gravar nada; o ? de cada tela guia você na hora de fazer. Ver <a href="#treinamento">Treinamento e ajuda</a>.</li>
+                <!-- oculto para todos: os treinos e o ? estão desatualizados -->
+                <li class="oculto"><strong>O Treinamento e o botão ?.</strong> O Treinamento, no menu, ensina cada tela sem gravar nada; o ? de cada tela guia você na hora de fazer. Ver <a href="#treinamento">Treinamento e ajuda</a>.</li>
                 <li><strong>O Manual.</strong> Este documento fica sempre disponível no menu do seu nome, em "Manual", para consultar como cada parte funciona.</li>
               </ul>
               <p>Em resumo: dúvidas sobre o seu serviço e os seus dados são com o administrador; problemas e ideias sobre o sistema vão pelo Fale conosco.</p>
@@ -2586,7 +2589,7 @@
                 </figcaption>
               </figure>
               <p><strong>Quem chega no meio do plantão.</strong> A distribuição começa de novo todo dia, às 08h. Quem chega no meio do plantão vai para a próxima função livre da ordem, e quem já estava continua na função dele.</p>
-              <p><strong>Ajustes finos: graduação e rodízio.</strong> Cada função pode pedir uma graduação, como "Um 3ºSgt. ou o mais próximo" ou "Somente 3ºSgt. ou fica vazia", com o aviso quando ela falta. E o <strong>rodízio</strong> faz a função passar por todos: ela vai para quem a fez há mais tempo, olhando os últimos 30 dias, e ninguém repete a do último serviço se houver outro. Quando não há, ele repete, com o aviso amarelo. Se alguém precisa repetir, repete primeiro quem veio de fora da guarnição, por troca ou extrajornada; no empate da fila, a função também fica com quem veio de fora, e depois com o mais moderno. No painel do dia, o <strong>Como a escala foi feita</strong> (o botão ao lado da impressora, ou o clique no nome da função) mostra de quem era a vez e quem fez depois. Quem tem a regra "Só pode" a função fica fora da fila dela, como o Rádio fixo de cada guarnição.</p>
+              <p><strong>Ajustes finos: graduação e rodízio.</strong> Cada função pode pedir uma graduação, como "Um 3ºSgt. ou o mais próximo" ou "Somente 3ºSgt. ou fica vazia", com o aviso quando ela falta. E o <strong>rodízio</strong> faz a função passar por todos: ela vai para quem a fez há mais tempo, olhando os últimos 30 dias, e ninguém repete a do último serviço se houver outro. Quando não há, ele repete, com o aviso amarelo. O rodízio conta o que cada um fez de verdade, com o que o administrador fixou: cada função do dia conta para quem ficou mais tempo nela. Por isso, salvar uma mudança num dia refaz os dias seguintes da unidade. Se alguém precisa repetir, repete primeiro quem veio de fora da guarnição, por troca ou extrajornada; no empate da fila, a função também fica com quem veio de fora, e depois com o mais moderno. No painel do dia, o <strong>Como a escala foi feita</strong> (o botão ao lado da impressora, ou o clique no nome da função) mostra de quem era a vez e quem fez depois. Quem tem a regra "Só pode" a função fica fora da fila dela, como o Rádio fixo de cada guarnição.</p>
             </section>
 
             <footer class="manual-rodape">

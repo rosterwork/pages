@@ -103,6 +103,11 @@
   color: var(--texto-forte);
 }
 
+/* o dia de outro mês das pontas: só o número no cinza do texto fraco (o fundo continua dizendo se é folga) */
+.ajustes-exp-dia--fora .ajustes-exp-dia-num {
+  color: var(--texto-fraco);
+}
+
 .ajustes-exp-dia-texto {
   font-size: 11px;
   line-height: 1.2;

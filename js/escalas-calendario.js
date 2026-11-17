@@ -53,7 +53,7 @@
   }
 
   /* matriz da navegação por teclado. Uma embaixo da outra: cada linha do calendário vira uma linha por unidade, com a
-     célula dela em cada dia (null nos dias de fora do mês); ↑/↓ passam pelas unidades do dia e seguem para a linha de
+     célula dela em cada dia (os dias de outro mês das pontas também); ↑/↓ passam pelas unidades do dia e seguem para a linha de
      baixo, ←/→ andam entre os dias, na mesma unidade. Lado a lado: cada linha do calendário é uma linha só, com as
      unidades de cada dia em sequência; ←/→ passam pelas unidades e seguem para o dia seguinte, ↑/↓ vão à mesma unidade do
      mesmo dia da semana na linha de cima ou de baixo */
@@ -95,9 +95,10 @@
       return;
     }
 
-    var ano = dataRef.getFullYear(), mes = dataRef.getMonth();
-    var inicio = dataISO(new Date(ano, mes, 1));
-    var fim = dataISO(new Date(ano, mes + 1, 0));
+    /* o período inteiro da grade: os dias de outro mês das pontas também vêm preenchidos */
+    var faixa = RosterWork.geralCalendarioMes.periodo(dataRef, opcoes.diasPorLinha);
+    var inicio = dataISO(faixa.inicio);
+    var fim = dataISO(faixa.fim);
     var ids = colunas.map(function (c) { return c.id; });
 
     /* o mesmo mês lido de novo: o calendário fica até o novo chegar, na mesma rolagem (escalas-dia-na-grade.js) */
@@ -109,7 +110,7 @@
     /* outro mês: o que está na tela fica 0,5 s; depois, a forma do novo, que fica o mínimo na tela (escalas-esqueleto.js) */
     var Esqueleto = window.RosterWork.escalasEsqueleto;
     var esperaDaGrade = rolagem ? null : Esqueleto.abrirMes(corpo, dataRef, function (lugar) {
-      Esqueleto.calendario(lugar, colunas, dataRef, opcoes.diasPorLinha);
+      Esqueleto.calendario(lugar, colunas, dataRef, opcoes.diasPorLinha, true);
     });
 
     var req = ++reqSeq;
@@ -132,15 +133,15 @@
       var opcoesCelula = { postoCurto: !opcoes.diasPorLinha };
       celulaAtual = opcoesCelula;
 
-      /* o componente monta a grade e chama aoDia por dia; só preenchemos os dias do mês exibido
-         (os de outro mês ficam só com o número apagado, como calendário tradicional) */
+      /* o componente monta a grade e chama aoDia por dia; os dias de outro mês das pontas são preenchidos como os outros
+         (mais escuros; clicar e editar, ali mesmo) */
       RosterWork.geralCalendarioMes.renderizar(corpo, {
         dataRef: dataRef,
         diasPorLinha: opcoes.diasPorLinha,
         unidadesPorDia: colunas.length,   // um bloco por unidade em cada dia, alinhados por linha (ou lado a lado)
         ladoALado: ladoALado,
-        aoDia: function (celulaDia, data, noMes) {
-          if (!noMes) return;
+        comDiasDeFora: true,
+        aoDia: function (celulaDia, data) {
           var iso = dataISO(data);
           preencherDia(celulaDia, iso, colunas, dados, cobertura, erro, maxPorUnidade, fora, opcoesCelula);
           /* o Oficial de Área do dia, no meio do título */

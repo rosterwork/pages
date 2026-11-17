@@ -92,16 +92,20 @@
     });
   }
 
-  /* o gráfico de cobertura: 24 barras (uma por hora, a partir das 08h), corpo claro e a linha forte no topo */
+  /* a hora com erro vermelho (1); o 2 é a ressalva amarela */
+  function vermelho(marca) { return !!marca && marca !== 2 && marca !== '2'; }
+
+  /* o gráfico de cobertura: 24 barras (uma por hora, a partir das 08h), corpo claro e a linha forte no topo; a hora sem
+     ninguém de serviço não tem barra, e com erro vermelho (a companhia sem Oficial de Área) tem a barra baixinha */
   function grafico(cobertura, erro, max, largura, c) {
     var passo = (largura + GRAFICO.vao) / 24;
     /* a linha invisível no pé dá ao gráfico a altura inteira, mesmo num dia sem ninguém */
     var formas = [{ type: 'line', x1: 0, y1: GRAFICO.altura, x2: largura, y2: GRAFICO.altura, lineWidth: 0.1, lineColor: c.papel, strokeOpacity: 0 }];
     for (var h = 0; h < 24; h++) {
       var n = Number(cobertura[h]) || 0;
-      if (n <= 0) continue;
-      var altura = Math.max(GRAFICO.minima, Math.min(n, max) / max * (GRAFICO.altura - 0.5));
       var marca = erro && erro[h];
+      if (n <= 0 && !vermelho(marca)) continue;
+      var altura = n > 0 ? Math.max(GRAFICO.minima, Math.min(n, max) / max * (GRAFICO.altura - 0.5)) : GRAFICO.minima;
       var problema = marca === 1 || marca === 2 || marca === '1' || marca === '2';
       var corBarra = (marca === 2 || marca === '2') ? c.alerta : (marca ? c.erro : c.sucesso);
       var x = h * passo, w = passo - GRAFICO.vao, y = GRAFICO.altura - altura;
@@ -280,7 +284,9 @@
     if (o.unidade) {
       corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), fontSize: FONTE.unidade, bold: true, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
     }
-    if (o.mostrar.grafico && o.cobertura && o.max > 0) corpo.push([grafico(o.cobertura, o.erro, o.max, interna, o.c)]);
+    /* a unidade sem ninguém de serviço no período: o gráfico só com erro vermelho, na régua de 1 (como na tela) */
+    var comVermelho = (o.erro || []).some(vermelho);
+    if (o.mostrar.grafico && o.cobertura && (o.max > 0 || comVermelho)) corpo.push([grafico(o.cobertura, o.erro, o.max > 0 ? o.max : 1, interna, o.c)]);
     /* um grupo novo depois de outro: a linha tracejada entre eles */
     var antes = null;
     (o.pessoas || []).forEach(function (p) {

@@ -1,0 +1,377 @@
+<div class="pagina">
+  <div class="pagina-cabecalho">
+    <div class="pagina-titulos">
+      <h1>Afastamentos</h1>
+      <span class="pagina-titulo-contagem"></span>
+    </div>
+    <!-- ajuda da tela: os passo a passo desta página e o manual (componente geral-guia) -->
+    <div class="dropdown pagina-ajuda" data-manual="afastamentos">
+      <button type="button" class="botao botao--icone" aria-label="Ajuda desta tela" data-dica="Ajuda">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-ajuda"/></svg>
+      </button>
+      <div class="dropdown-menu pagina-ajuda-menu"></div>
+    </div>
+    <!-- as abas: o ano inteiro (os 12 meses), o mês com os dias (os militares) e o mês no calendário (afastamentos.js) -->
+    <div class="abas" id="afastamentos-abas">
+      <button type="button" class="aba aba--ativa" data-aba="ano">Ano</button>
+      <button type="button" class="aba" data-aba="mes">Mês</button>
+      <button type="button" class="aba" data-aba="calendario">Calendário</button>
+    </div>
+  </div>
+
+  <!-- barra: à esquerda o período (o ano, #tpl-afastamentos-ano, na aba Ano; o mês, #tpl-afastamentos-periodo-mes, no Mês
+       e no Calendário; postos pelo JS); à direita o botão Filtros (componente geral-filtros), a busca e, depois do traço,
+       as unidades lado a lado e o tamanho (só no Calendário) e a Ordem -->
+  <div class="pagina-subcabecalho">
+    <span class="espacador-flex"></span>
+
+    <!-- Filtros: Graus, Situação no ano ou no mês (some no Calendário) e Afastamento (os nomes do período; escolher um
+         esconde os outros) -->
+    <div class="filtros" id="afastamentos-filtros">
+      <div data-filtro="graus" data-filtro-nome="Grau" data-filtro-titulo="Graus"></div>
+      <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
+      <div data-filtro="afastamento" data-filtro-nome="Afastamento" data-filtro-titulo="Afastamento"></div>
+    </div>
+
+    <div class="busca" id="afastamentos-busca">
+      <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
+      </button>
+      <input type="text" class="busca-entrada" maxlength="100" enterkeyhint="search" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+
+    <span class="pagina-subcabecalho-divisor" aria-hidden="true"></span>
+
+    <!-- só no Calendário, os da Escala: as unidades lado a lado ou uma embaixo da outra (o ícone e a dica mostram o que o
+         clique faz; geral-visao-grade.js) e o tamanho do calendário (molde geral #tpl-calendario-tamanho;
+         geral-calendario-tamanho.js) -->
+    <button type="button" class="botao botao--quadrado oculto" id="afastamentos-disposicao">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-unidades-lado-a-lado"/></svg>
+    </button>
+    <div class="oculto" id="afastamentos-tamanho"></div>
+
+    <!-- a Ordem: a mesma de Usuários (a escolha é uma só; usuarios-exibir.js) -->
+    <div class="dropdown" id="dropdown-ordem">
+      <button type="button" class="botao botao--quadrado" id="ordem-seletor" aria-label="Ordenar" data-dica="Ordenar">
+        <svg class="icone" width="16" height="16" aria-hidden="true" data-ordem-icone="antiguidade"><use href="icones/todos.svg#icone-ordem-antiguidade"/></svg>
+        <svg class="icone oculto" width="16" height="16" aria-hidden="true" data-ordem-icone="antiguidade-inversa"><use href="icones/todos.svg#icone-ordem-antiguidade-inversa"/></svg>
+        <svg class="icone oculto" width="16" height="16" aria-hidden="true" data-ordem-icone="az"><use href="icones/todos.svg#icone-ordem-az"/></svg>
+        <svg class="icone oculto" width="16" height="16" aria-hidden="true" data-ordem-icone="za"><use href="icones/todos.svg#icone-ordem-za"/></svg>
+      </button>
+      <div class="dropdown-menu" id="ordem-menu">
+        <div class="dropdown-titulo">Ordem</div>
+        <button type="button" class="dropdown-item" data-ordem="antiguidade">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ordem-antiguidade"/></svg>
+          <span>Antiguidade · mais antigo primeiro</span>
+        </button>
+        <button type="button" class="dropdown-item" data-ordem="antiguidade-inversa">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ordem-antiguidade-inversa"/></svg>
+          <span>Antiguidade · mais moderno primeiro</span>
+        </button>
+        <div class="dropdown-divisor"></div>
+        <button type="button" class="dropdown-item" data-ordem="az">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ordem-az"/></svg>
+          <span>Alfabética · de A a Z</span>
+        </button>
+        <button type="button" class="dropdown-item" data-ordem="za">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-ordem-za"/></svg>
+          <span>Alfabética · de Z a A</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- as abas Ano e Mês: a árvore de unidades, na largura toda (a grade rola para o lado por dentro) -->
+  <div class="pagina-corpo pagina-corpo--camada afastamentos-corpo">
+    <div class="pagina-corpo-rolagem">
+      <div class="arvore arvore-unidades afastamentos-arvore" id="arvore-afastamentos"></div>
+    </div>
+  </div>
+  <!-- a aba Calendário, no lugar da árvore: o calendário da Escala (componente geral-calendario-mes), um bloquinho por
+       unidade em cada dia (afastamentos-calendario.js) -->
+  <div class="pagina-corpo pagina-corpo--colado afastamentos-calendario oculto" id="afastamentos-calendario"></div>
+
+  <!-- o rodapé de salvar (as abas e o painel do militar), na largura toda (o rodapé único da página): aparece só com
+       alteração; Desfazer e Refazer (Ctrl+Z e Ctrl+Y) à esquerda do Cancelar, que joga fora o que não foi salvo -->
+  <div class="rodape rodape-linha rodape--largo oculto" id="afastamentos-rodape">
+    <span class="rodape-texto" id="afastamentos-mudancas"></span>
+    <span class="espacador-flex"></span>
+    <div class="rodape-historico">
+      <button type="button" class="botao botao--quadrado" id="afastamentos-desfazer" aria-label="Desfazer" data-dica="Desfazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg>
+      </button>
+      <button type="button" class="botao botao--quadrado" id="afastamentos-refazer" aria-label="Refazer" data-dica="Refazer" disabled>
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-refazer"/></svg>
+      </button>
+    </div>
+    <div class="rodape-acoes">
+      <button type="button" class="botao" id="afastamentos-cancelar">Cancelar</button>
+      <button type="button" class="botao botao--primario" id="afastamentos-salvar">Salvar</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- molde: o aviso da unidade quando os filtros não deixam nenhum militar -->
+<template id="tpl-afastamentos-vazio">
+  <div class="afastamentos-vazio">Nenhum militar com os filtros atuais.</div>
+</template>
+
+<!-- molde (no celular): o militar e, embaixo, um afastamento do período por linha -->
+<template id="tpl-afastamentos-item">
+  <div class="linha-militar afastamentos-item">
+    <span class="linha-militar-pessoa">
+      <span class="linha-militar-grad"></span>
+      <span class="linha-militar-nome"></span>
+    </span>
+    <span class="afastamentos-item-pilha"></span>
+  </div>
+</template>
+
+<!-- molde: a forma de um afastamento, enquanto a página lê o ano -->
+<template id="tpl-esqueleto-afastamento">
+  <span class="esqueleto esqueleto-conjunto afastamentos-forma"></span>
+</template>
+
+<!-- molde: um afastamento na linha do militar (o nome e as datas e os dias) -->
+<template id="tpl-afastamentos-item-linha">
+  <span class="afastamentos-item-linha">
+    <span class="linha-militar-coluna afastamentos-item-texto"></span>
+    <span class="selo afastamentos-item-dias"></span>
+  </span>
+</template>
+
+<!-- molde: o ano (na barra da aba Ano e no painel do militar): as setas passam de ano,
+     o ano abre a lista dos anos, o Hoje (só fora do ano atual) volta a ele -->
+<template id="tpl-afastamentos-ano">
+  <div class="geral-periodo">
+    <button type="button" class="botao botao--icone" data-ano-anterior aria-label="Ano anterior">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+    </button>
+    <span class="dropdown">
+      <button type="button" class="geral-periodo-nome" data-ano-nome aria-label="Escolher o ano"></button>
+      <div class="dropdown-menu" data-ano-lista></div>
+    </span>
+    <button type="button" class="botao botao--icone" data-ano-proximo aria-label="Próximo ano">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+    </button>
+    <button type="button" class="botao geral-periodo-hoje oculto" data-ano-hoje>Hoje</button>
+  </div>
+</template>
+
+<template id="tpl-afastamentos-ano-item">
+  <button type="button" class="dropdown-item"></button>
+</template>
+
+<!-- ===== a grade dos 12 meses ou dos dias do mês (afastamentos-grade.js), o calendário do mês
+     (afastamentos-calendario.js) e a caixa da célula (afastamentos-celula.js). A linha do militar, a célula e o dia são
+     os da grade dos Militares da Escala (#tpl-escala-mil-pessoa, #tpl-escala-mil-celula e #tpl-escala-mil-dia, no
+     index.html); o bloquinho da unidade e a linha do afastado no calendário, os do Calendário da Escala
+     (#tpl-escala-calendario-unidade e #tpl-escala-mes-pessoa, no index.html) ===== -->
+
+<!-- molde: o mês na barra (nas abas Mês e Calendário): as setas passam de mês, o nome abre o calendário de escolher o
+     mês (o da Escala), o Hoje (só fora do mês atual) volta a ele -->
+<template id="tpl-afastamentos-periodo-mes">
+  <div class="geral-periodo">
+    <button type="button" class="botao botao--icone" data-mes-anterior aria-label="Mês anterior">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+    </button>
+    <button type="button" class="geral-periodo-nome" data-mes-nome aria-label="Escolher o mês"></button>
+    <button type="button" class="botao botao--icone" data-mes-proximo aria-label="Próximo mês">
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+    </button>
+    <button type="button" class="botao geral-periodo-hoje oculto" data-mes-hoje>Hoje</button>
+  </div>
+</template>
+
+<!-- molde: a grade de uma unidade: o cabeçalho dos meses ou dos dias (preso no alto ao rolar) e, embaixo, uma linha por
+     militar -->
+<template id="tpl-afastamentos-grade">
+  <div class="bloquinho afastamentos-grade">
+    <div class="escala-mil-linha escala-mil-cabecalho afastamentos-grade-cabecalho">
+      <div class="escala-mil-canto"></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: um mês no cabeçalho da grade do ano (o de hoje fica escuro); o nome abre a caixa do mês -->
+<template id="tpl-afastamentos-mes">
+  <div class="escala-mil-dia afastamentos-mes"><button type="button" class="afastamentos-mes-nome"></button></div>
+</template>
+
+<!-- molde: a caixa do mês do cabeçalho do ano (o título é o nome do mês; no celular, o da folha): o mês na aba Mês ou no
+     Calendário -->
+<template id="tpl-afastamentos-menu-mes">
+  <div class="afastamentos-menu">
+    <div class="dropdown-titulo afastamentos-menu-titulo"></div>
+    <button type="button" class="dropdown-item" data-acao="mes"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lista"/></svg><span>Ver o mês</span></button>
+    <button type="button" class="dropdown-item" data-acao="calendario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Ver o calendário</span></button>
+  </div>
+</template>
+
+<!-- molde: um afastamento num mês: o listrado do afastado, com o nome e os dias daquele mês -->
+<template id="tpl-afastamentos-selo">
+  <span class="afastamentos-selo">
+    <span class="afastamentos-selo-nome"></span>
+    <span class="afastamentos-selo-dias"></span>
+  </span>
+</template>
+
+<!-- molde: a caixa de um afastamento (caixa 1): os itens com a setinha abrem as perguntas na caixa 2, ao lado;
+     o Remover vai para o rascunho; o último abre o painel do militar -->
+<template id="tpl-afastamentos-menu">
+  <div class="afastamentos-menu">
+    <button type="button" class="dropdown-item" data-acao="periodo"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg><span>Mudar o período</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="nome"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg><span>Mudar o nome</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="marcas"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lista"/></svg><span>Mudar o que ele sai</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg><span>Remover o afastamento</span></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span>Abrir o painel do militar</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do militar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+  </div>
+</template>
+
+<!-- molde: a caixa da célula vazia: o Adicionar abre as perguntas na caixa 2 -->
+<template id="tpl-afastamentos-menu-vazio">
+  <div class="afastamentos-menu">
+    <button type="button" class="dropdown-item" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg><span>Adicionar afastamento</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span>Abrir o painel do militar</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do militar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+  </div>
+</template>
+
+<!-- molde: a caixa do espaço vazio do bloquinho da unidade, no calendário: o Adicionar abre as perguntas na caixa 2,
+     a primeira é o militar -->
+<template id="tpl-afastamentos-menu-dia">
+  <div class="afastamentos-menu">
+    <button type="button" class="dropdown-item" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg><span>Adicionar afastamento</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+  </div>
+</template>
+
+<!-- molde: a caixa do afastamento que terminou há mais de uma semana: o aviso e o painel do militar -->
+<template id="tpl-afastamentos-menu-travado">
+  <div class="afastamentos-menu afastamentos-menu--travado">
+    <div class="nota">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="nota-texto">Terminou há mais de uma semana, por isso não muda.</span>
+    </div>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span>Abrir o painel do militar</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do militar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+  </div>
+</template>
+
+<!-- molde: a caixa 2, com as perguntas do item escolhido (os campos de um afastamento) -->
+<template id="tpl-afastamentos-cartao">
+  <div class="escala-celula-perguntas afastamentos-cartao"></div>
+</template>
+
+<!-- ===== os campos de um afastamento (afastamentos-campos.js): na caixa 2 da célula e no painel do militar ===== -->
+
+<!-- molde: o Militar, no Adicionar do calendário (o efetivo da unidade do bloquinho, por antiguidade); escolhido ele, as
+     outras perguntas aparecem embaixo -->
+<template id="tpl-afastamento-militar">
+  <div class="campo afastamento-campo-militar">
+    <span class="campo-rotulo">Militar</span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao" aria-label="Militar" data-af-militar>
+        <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: o Nome, no campo com a lista (a lista padrão e o Outro) -->
+<template id="tpl-afastamento-nome">
+  <div class="campo afastamento-campo-nome">
+    <span class="campo-rotulo">Nome</span>
+    <div class="dropdown">
+      <button type="button" class="campo-entrada campo-selecao" aria-label="Nome do afastamento" data-af-nome>
+        <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu"></div>
+    </div>
+  </div>
+</template>
+
+<!-- molde: o nome escrito no Outro (até 10 letras), com o aviso de que todos o veem -->
+<template id="tpl-afastamento-outro">
+  <label class="campo afastamento-campo-outro oculto">
+    <span class="campo-rotulo">Nome no dia</span>
+    <input class="campo-entrada" type="text" maxlength="10" autocomplete="off" data-af-outro />
+    <span class="campo-ajuda">Até 10 letras. Todos veem este nome na escala: não escreva doença nem diagnóstico.</span>
+  </label>
+</template>
+
+<!-- molde: o Período, início → fim, com os dias -->
+<template id="tpl-afastamento-periodo">
+  <div class="campo afastamento-campo-periodo">
+    <span class="campo-rotulo">Período</span>
+    <span class="horario ficha-periodo-datas">
+      <span class="horario-par">
+        <input class="campo-entrada" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de início" autocomplete="off" data-af-inicio />
+        <svg class="icone horario-seta" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita-longa"/></svg>
+        <input class="campo-entrada" type="text" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" aria-label="Data de fim" autocomplete="off" data-af-fim />
+      </span>
+      <span class="selo oculto" data-af-dias></span>
+    </span>
+  </div>
+</template>
+
+<!-- molde: a Guarnição, em bolinhas (o sistema sugere sair a partir de 16 dias, até o administrador escolher) -->
+<template id="tpl-afastamento-guarnicao">
+  <div class="campo afastamento-campo-guarnicao">
+    <span class="campo-rotulo">Guarnição</span>
+    <label class="geral-opcao"><input type="radio" value="nao" /><span>Continua na guarnição e volta sozinho no fim</span></label>
+    <label class="geral-opcao"><input type="radio" value="sim" /><span>Sai da guarnição (a volta é manual)</span></label>
+  </div>
+</template>
+
+<!-- molde: o que ele deixa nesses dias, em caixas de marcar -->
+<template id="tpl-afastamento-marcas">
+  <div class="campo afastamento-campo-marcas">
+    <span class="campo-rotulo">Nesses dias</span>
+    <button type="button" class="geral-opcao" role="checkbox" aria-checked="false" data-af-marca="tro"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span>Sai das trocas e do serviço avulso</span></button>
+    <button type="button" class="geral-opcao" role="checkbox" aria-checked="false" data-af-marca="ext"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span>Sai da extrajornada</span></button>
+    <button type="button" class="geral-opcao" role="checkbox" aria-checked="false" data-af-marca="sob"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span>Sai do sobreaviso</span></button>
+  </div>
+</template>
+
+<!-- molde: o problema do afastamento, embaixo dos campos -->
+<template id="tpl-afastamento-nota">
+  <div class="nota nota--erro oculto" data-af-nota>
+    <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+    <span class="nota-texto"></span>
+  </div>
+</template>
+
+<!-- molde: o afastamento que terminou há mais de uma semana (os campos ficam travados) -->
+<template id="tpl-afastamento-travado">
+  <span class="subtela-ajuda">Terminou há mais de uma semana, por isso não muda.</span>
+</template>
+
+<!-- molde (painel do militar, quem administra o militar): um afastamento do ano, com a situação no título e a
+     lixeira; os campos vêm dos moldes #tpl-afastamento-* (afastamentos-campos.js) -->
+<template id="tpl-ficha-afastamento">
+  <div class="grupo-caixa ficha-periodo">
+    <div class="ficha-bloco-cab">
+      <span class="rotulo-secao" data-af-situacao></span>
+      <button type="button" class="botao-discreto oculto" data-af-remover aria-label="Remover este afastamento" data-dica="Remover este afastamento">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+      </button>
+    </div>
+    <div class="ficha-afastamento-campos" data-af-campos></div>
+  </div>
+</template>
+
+<!-- molde (painel do militar): o Adicionar afastamento, no fim (quem administra o militar) -->
+<template id="tpl-ficha-afastamento-adicionar">
+  <div class="ficha-acoes-fim">
+    <button type="button" class="botao" data-af-adicionar>Adicionar afastamento</button>
+  </div>
+</template>

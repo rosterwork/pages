@@ -1,7 +1,7 @@
 /* ============================================================
-   USUÁRIOS — afastamentos: acesso ao banco
-   (RosterWork.usuariosAfastamentosDados)
-   Camada única da aba Afastamentos e da aba da ficha: a lista do
+   AFASTAMENTOS — acesso ao banco
+   (RosterWork.afastamentosDados)
+   Camada única da página Afastamentos e do painel do militar: a lista do
    ano (afastamentos_ano_listar, de todos ou de um militar; sem ano,
    todos os anos) e a gravação de um ou mais militares, tudo ou nada
    (afastamentos_salvar). A UI não fala com o banco.
@@ -29,5 +29,5 @@
     }).then(function (resp) { if (!resp.ok) return { _falha: 'servidor' }; return resp.json(); });
   }
 
-  window.RosterWork.usuariosAfastamentosDados = { listarAno: listarAno, salvar: salvar };
+  window.RosterWork.afastamentosDados = { listarAno: listarAno, salvar: salvar };
 })();

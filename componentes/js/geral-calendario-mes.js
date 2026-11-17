@@ -19,8 +19,13 @@
    O título do dia tem o lugar do meio (.geral-calendario-mes-dia-centro),
    vazio e escondido: quem usa põe ali o que quiser (a Escala, o Oficial
    de Área do dia).
+   Opção comDiasDeFora (Escala): os dias de outro mês das pontas também
+   recebem conteúdo e ficam mais escuros (--fundo-dia-fora); quem usa
+   lê os dados do período inteiro (periodo). Sem ela, o dia de outro mês
+   fica só com o número apagado (Extrajornada).
    Componente compartilhado (Escala e Extrajornada).
-   API: RosterWork.geralCalendarioMes.renderizar(corpo, { dataRef, aoDia, diasPorLinha, unidadesPorDia, ladoALado })
+   API: RosterWork.geralCalendarioMes.renderizar(corpo, { dataRef, aoDia, diasPorLinha, unidadesPorDia, ladoALado, comDiasDeFora })
+        RosterWork.geralCalendarioMes.periodo(dataRef, diasPorLinha) -> { inicio, fim } (o 1º e o último dia da grade)
    ============================================================ */
 (function () {
   'use strict';
@@ -46,6 +51,20 @@
       a.getDate() === b.getDate();
   }
 
+  /* o 1º e o último dia que a grade do mês mostra: recua até o início da 1ª linha e avança até o fim da última
+     (semana: domingo e sábado; contínuo, diasPorLinha de 2 a 5: a coluna 1 e a coluna N da contagem) */
+  function periodo(dataRef, diasPorLinha) {
+    var continuo = diasPorLinha >= 2;
+    var n = continuo ? diasPorLinha : 7;
+    var primeiro = new Date(dataRef.getFullYear(), dataRef.getMonth(), 1);
+    var ultimo = new Date(dataRef.getFullYear(), dataRef.getMonth() + 1, 0);
+    var inicio = new Date(primeiro);
+    inicio.setDate(inicio.getDate() - (continuo ? colunaContinua(primeiro, n) : primeiro.getDay()));
+    var fim = new Date(ultimo);
+    fim.setDate(fim.getDate() + (continuo ? (n - 1 - colunaContinua(ultimo, n)) : (6 - ultimo.getDay())));
+    return { inicio: inicio, fim: fim };
+  }
+
   /* desenha o mês de opcoes.dataRef como calendário (domingo → sábado, ou N dias contínuos) */
   function renderizar(corpo, opcoes) {
     if (!corpo) return;
@@ -69,21 +88,14 @@
       wrap.style.setProperty('--calendario-unidades', String(unidades));
       if (opcoes.ladoALado) wrap.classList.add('geral-calendario-mes--lado-a-lado');
     }
+    if (opcoes && opcoes.comDiasDeFora) wrap.classList.add('geral-calendario-mes--com-fora');
 
-    var ano = dataRef.getFullYear(), mes = dataRef.getMonth();
-    var primeiro = new Date(ano, mes, 1);
-    var ultimo = new Date(ano, mes + 1, 0);
-
-    /* recua até o início da 1ª linha e avança até o fim da última
-       (semana: domingo e sábado; contínuo: a coluna 1 e a coluna N da contagem) */
-    var inicio = new Date(primeiro);
-    inicio.setDate(inicio.getDate() - (continuo ? colunaContinua(primeiro, n) : primeiro.getDay()));
-    var fim = new Date(ultimo);
-    fim.setDate(fim.getDate() + (continuo ? (n - 1 - colunaContinua(ultimo, n)) : (6 - ultimo.getDay())));
+    var mes = dataRef.getMonth();
+    var faixa = periodo(dataRef, continuo ? n : 0);
 
     var hoje = new Date();
-    var dia = new Date(inicio);
-    while (dia <= fim) {
+    var dia = new Date(faixa.inicio);
+    while (dia <= faixa.fim) {
       var semana = RosterWork.tpl('tpl-geral-calendario-mes-semana');
       for (var i = 0; i < n; i++) {
         var celula = RosterWork.tpl('tpl-geral-calendario-mes-dia');
@@ -92,7 +104,7 @@
         if (dia.getMonth() !== mes) celula.classList.add('geral-calendario-mes-dia--fora');
         if (mesmoDia(dia, hoje)) celula.classList.add('geral-calendario-mes-dia--hoje');
         /* gancho opcional: quem usa pode pintar/preencher/ligar clique em cada dia
-           (recebe a célula, a data do dia e se é do mês exibido). A Escala não passa. */
+           (recebe a célula, a data do dia e se é do mês exibido) */
         if (opcoes && typeof opcoes.aoDia === 'function') opcoes.aoDia(celula, new Date(dia), dia.getMonth() === mes);
         semana.appendChild(celula);
         dia.setDate(dia.getDate() + 1);
@@ -104,6 +116,7 @@
     corpo.appendChild(wrap);
   }
 
-  /* colunaContinua: o PDF do Colunas → Dias monta as linhas nas mesmas colunas da tela */
-  window.RosterWork.geralCalendarioMes = { renderizar: renderizar, colunaContinua: colunaContinua };
+  /* colunaContinua: o PDF do Colunas → Dias monta as linhas nas mesmas colunas da tela; periodo: quem mostra os dias de
+     fora lê os dados do período inteiro */
+  window.RosterWork.geralCalendarioMes = { renderizar: renderizar, colunaContinua: colunaContinua, periodo: periodo };
 })();

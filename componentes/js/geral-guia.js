@@ -25,6 +25,8 @@
    texto ou, no passo "aparece", quando a condição dele aparece. A dica
    da primeira vez acende o ?. O que a pessoa já viu e a lista do ?
    ficam no geral-guia-ajuda.js. Moldes: #tpl-guia-balao e #tpl-guia-dica.
+   Com AJUDA_OCULTA, o ? de cada tela fica oculto para todos e a dica
+   não aparece: os passo a passo estão desatualizados.
    ============================================================ */
 (function () {
   'use strict';
@@ -40,6 +42,7 @@
   var DISTANCIA = 12;       // distância da dica ao ? e às bordas da tela (px)
   var ESPERAR = '.dropdown--aberto, .calendario--aberto, .modal-veu--aberto';
   var BOTAO_DA_PAGINA = '.conteudo > .pagina > .pagina-cabecalho > .pagina-ajuda > .botao';   // o ? da página (não os exemplos do Guia visual)
+  var AJUDA_OCULTA = true;  // o ? e a dica da primeira vez ocultos para todos (os passo a passo estão desatualizados)
 
   var guia = null;          // o roteiro em curso: { id, titulo, passos, fim, treino, i, fase, mostrado, andando, semAlvo, avisando, pagina }
   var dica = null;          // a dica, clonada do molde uma vez só
@@ -380,12 +383,18 @@
     if (avanca === 'clique' && acertou) avancarDepois();
   }, true);
 
-  /* a página trocou: o roteiro confere a tela nova (no tique) e a dica também */
+  /* a página trocou: o roteiro confere a tela nova (no tique) e a dica também; com a ajuda oculta, o ? da tela nova some
+     antes de ela aparecer, e a dica fica de fora */
   function vigiarPaginas() {
     var c = conteudo();
     if (!c || !window.MutationObserver) return;
-    new MutationObserver(function () { talvezDica(); if (guia) ligarTimer(); }).observe(c, { childList: true });
-    talvezDica();
+    new MutationObserver(function () { paginaNova(); if (guia) ligarTimer(); }).observe(c, { childList: true });
+    paginaNova();
+  }
+  function paginaNova() {
+    if (!AJUDA_OCULTA) { talvezDica(); return; }
+    var botoes = document.querySelectorAll(BOTAO_DA_PAGINA);
+    for (var i = 0; i < botoes.length; i++) botoes[i].parentElement.classList.add('oculto');
   }
 
   RW.guia = {

@@ -269,6 +269,13 @@
             <span class="menu-item-label">Folgas</span>
           </button>
 
+          <!-- os afastamentos do efetivo (férias, licenças, dispensas e os outros): o ano, o mês e o calendário; no celular,
+               no Mais -->
+          <button type="button" class="menu-item" data-pagina="afastamentos" data-lugar-celular="mais" aria-label="Afastamentos">
+            <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos" /></svg>
+            <span class="menu-item-label">Afastamentos</span>
+          </button>
+
           <!-- no celular, no Tamanho da tela Menor, mora na barra de baixo (js/index-sessao.js) -->
           <button type="button" class="menu-item" data-pagina="extrajornada" data-lugar-celular="mais" data-lugar-celular-menor="barra" aria-label="Extrajornada">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada" /></svg>
@@ -310,10 +317,11 @@
             <span class="menu-item-label">Ajustes</span>
           </button>
 
-          <!-- o Treinamento (para todos): o passo a passo no modo treino, em que nada é gravado; no celular, na folha do Mais -->
-          <div class="sidebar-divisor" data-lugar-celular="mais"></div>
+          <!-- o Treinamento: o passo a passo no modo treino, em que nada é gravado; no celular, na folha do Mais. Oculto
+               para todos: os treinos estão desatualizados -->
+          <div class="sidebar-divisor oculto" data-lugar-celular="mais"></div>
 
-          <button type="button" class="menu-item" data-pagina="treinamento" data-lugar-celular="mais" aria-label="Treinamento">
+          <button type="button" class="menu-item oculto" data-pagina="treinamento" data-lugar-celular="mais" aria-label="Treinamento">
             <svg class="icone" width="18" height="18" aria-hidden="true"><use href="icones/todos.svg#icone-treinamento" /></svg>
             <span class="menu-item-label">Treinamento</span>
           </button>
@@ -1276,8 +1284,8 @@
     </div>
   </template>
 
-  <!-- MOLDES: a linha do militar e a célula da grade dos Militares (componente da Escala, modo Militares, e da aba
-       Afastamentos de Usuários; CSS no css/escalas-militares.css) -->
+  <!-- MOLDES: a linha do militar, a célula e o dia da grade dos Militares (componente da Escala, modo Militares, e da página
+       Afastamentos; CSS no css/escalas-militares.css) -->
   <!-- um militar: coluna fixa (avatar + grad/nome + cpf + o selo dos dias) + as células dos dias (o JS anexa). O selo,
        à direita, é o número de dias que ele aparece no mês, pelo filtro (escalas-militares-dias.js) -->
   <template id="tpl-escala-mil-pessoa">
@@ -1298,6 +1306,36 @@
 
   <template id="tpl-escala-mil-celula">
     <div class="escala-mil-celula"></div>
+  </template>
+
+  <!-- um dia no cabeçalho: a sigla do dia da semana e o número -->
+  <template id="tpl-escala-mil-dia">
+    <div class="escala-mil-dia">
+      <span class="escala-mil-dia-semana"></span>
+      <span class="escala-mil-dia-numero"></span>
+    </div>
+  </template>
+
+  <!-- MOLDES: o bloco e a linha de leitura da ficha (usuarios-painel-leitura.js): a ficha de Usuários e o painel do
+       militar dos Afastamentos -->
+  <!-- um bloco da ficha (caixa cinza com o título); o lápis aparece para o admin e abre a correção -->
+  <template id="tpl-ficha-bloco">
+    <div class="grupo-caixa">
+      <div class="ficha-bloco-cab">
+        <span class="rotulo-secao"></span>
+        <button type="button" class="botao-discreto oculto" data-ficha-lapis>
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg>
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- uma linha de dado do bloco (rótulo à esquerda, valor ao lado; o complemento em cinza) -->
+  <template id="tpl-ficha-linha">
+    <div class="ficha-linha">
+      <span class="ficha-linha-rotulo"></span>
+      <span class="ficha-linha-valor"><span data-ficha-valor></span><span class="ficha-linha-extra" data-ficha-extra></span></span>
+    </div>
   </template>
 
   <template id="tpl-caixa-flutuante-veu">
@@ -2524,20 +2562,10 @@
     <p data-trecho="abrir-usuarios"></p>
     <p data-alvo="#usuarios-abas [data-aba='efetivo']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='efetivo'].aba--ativa">Abra a aba <strong>Efetivo</strong>.</p>
     <p data-alvo="#arvore-usuarios .usuario-item" data-um data-avanca="clique">Clique num militar.<span data-so-treino>Clique no militar aceso.</span></p>
-    <p data-alvo=".painel-lateral .abas:has([data-secao='dados'])" data-avanca="proximo" data-livre>A ficha tem as abas <strong>Dados</strong>, <strong>Carreira</strong> e <strong>Afastamentos</strong>.</p>
+    <p data-alvo=".painel-lateral .abas:has([data-secao='dados'])" data-avanca="proximo" data-livre>A ficha tem as abas <strong>Dados</strong> e <strong>Carreira</strong>.</p>
     <p data-alvo=".painel-lateral [data-secao='carreira']" data-avanca="proximo" data-livre>Em <strong>Carreira</strong> ficam as promoções e as transferências.</p>
     <p data-alvo=".painel-corpo .alteracoes" data-opcional data-avanca="proximo">No fim de cada aba, <strong>Alterações na ficha</strong> mostra o que mudou e quem mudou.</p>
     <p data-fim>Pronto.</p>
-  </template>
-
-  <template data-roteiro="afastamentos-ano" data-nas-abas="afastamentos" data-titulo="Ver os afastamentos do ano" data-grupo="Usuários" data-pagina="usuarios">
-    <p data-trecho="abrir-usuarios"></p>
-    <p data-alvo="#usuarios-abas [data-aba='afastamentos']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='afastamentos'].aba--ativa">Abra a aba <strong>Afastamentos</strong>.</p>
-    <p data-alvo=".pagina-subcabecalho .geral-periodo" data-avanca="proximo" data-livre>O ano fica na barra, e as setas mudam o ano.</p>
-    <p data-so-computador data-alvo="#arvore-usuarios .afastamentos-grade-cabecalho" data-um data-avanca="proximo">Cada coluna é um mês, e o de hoje fica escuro. Em cada mês, o nome do afastamento e os dias dele.</p>
-    <p data-so-celular data-alvo="#arvore-usuarios" data-avanca="proximo">Cada militar mostra os afastamentos do ano, um por linha.</p>
-    <p data-alvo="#usuarios-afast-filtros" data-avanca="proximo">No <strong>Filtros</strong>, o <strong>Afastamento</strong> deixa só um nome à vista, como as férias.</p>
-    <p data-fim>Pronto. A ficha do militar mostra o resumo do ano, na aba Afastamentos.</p>
   </template>
 
   <template data-roteiro="cadastrar-militar" data-nas-abas="efetivo" data-titulo="Cadastrar um militar" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
@@ -2569,24 +2597,6 @@
     <p data-alvo="#painel-rodape [data-sub-aplicar]" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong>.</p>
     <p data-fim>Pronto. A mudança aparece em Alterações na ficha.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, a mudança apareceria em Alterações na ficha.</p>
-  </template>
-
-  <template data-roteiro="lancar-afastamento" data-nas-abas="afastamentos" data-titulo="Lançar um afastamento" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
-    <p data-trecho="abrir-usuarios"></p>
-    <p data-alvo="#usuarios-abas [data-aba='afastamentos']" data-avanca="clique" data-pular-se="#usuarios-abas [data-aba='afastamentos'].aba--ativa">Abra a aba <strong>Afastamentos</strong>.</p>
-    <p data-so-computador data-alvo="#arvore-usuarios .afastamentos-celula--clicavel.afastamentos-celula--atual:not(:has(.afastamentos-selo))" data-alvo-senao="#arvore-usuarios .afastamentos-celula--clicavel:not(:has(.afastamentos-selo))" data-um data-avanca="clique">Clique no mês do afastamento, na linha do militar.<span data-so-treino>Clique no mês aceso, na linha do militar.</span></p>
-    <p data-so-computador data-alvo=".caixa-flutuante--aberta:not(.caixa-flutuante--segunda)" data-clique=".caixa-flutuante [data-acao='adicionar']" data-treino-alvo=".caixa-flutuante [data-acao='adicionar']" data-avanca="clique">A caixa abre ao lado da célula. Clique em <strong>Adicionar afastamento</strong>.</p>
-    <p data-so-ajuda data-so-computador data-alvo=".caixa-flutuante--segunda" data-avanca="aparece" data-condicao="#afastamentos-salvar:not(:disabled)" data-livre>Escolha o nome e escreva as datas. A guarnição e o que ele deixa nesses dias vêm do nome; mude se precisar.</p>
-    <p data-so-treino data-so-computador data-alvo=".caixa-flutuante--segunda .afastamento-campo-nome" data-condicao=".caixa-flutuante--segunda [data-af-nome][data-valor]:not([data-valor=''])" data-porta=".caixa-flutuante--segunda [data-af-nome]; .dropdown--aberto .dropdown-item" data-avanca="aparece">Escolha o nome. A guarnição e o que ele deixa nesses dias vêm dele.</p>
-    <p data-so-treino data-so-computador data-alvo=".caixa-flutuante--segunda .afastamento-campo-periodo" data-condicao="#afastamentos-salvar:not(:disabled)" data-porta=".caixa-flutuante--segunda .afastamento-campo-periodo" data-escrever data-avanca="aparece">Escreva o início e o fim.</p>
-    <p data-so-celular data-alvo="#arvore-usuarios .usuario-afastamento-item" data-um data-avanca="clique">Toque no militar.<span data-so-treino>Toque no militar aceso.</span></p>
-    <p data-so-celular data-alvo=".painel-corpo [data-af-adicionar]" data-avanca="clique">Use o <strong>Adicionar afastamento</strong>.</p>
-    <p data-so-ajuda data-so-celular data-alvo=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim)" data-avanca="aparece" data-condicao="#afastamentos-salvar:not(:disabled)" data-livre>Escolha o nome e escreva as datas. A guarnição e o que ele deixa nesses dias vêm do nome; mude se precisar.</p>
-    <p data-so-treino data-so-celular data-alvo=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) .afastamento-campo-nome" data-condicao=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) [data-af-nome][data-valor]:not([data-valor=''])" data-porta=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) [data-af-nome]; .dropdown--aberto .dropdown-item" data-avanca="aparece">Escolha o nome. A guarnição e o que ele deixa nesses dias vêm dele.</p>
-    <p data-so-treino data-so-celular data-alvo=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) .afastamento-campo-periodo" data-condicao="#afastamentos-salvar:not(:disabled)" data-porta=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) .afastamento-campo-periodo" data-escrever data-avanca="aparece">Escreva o início e o fim.</p>
-    <p data-alvo="#afastamentos-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
-    <p data-fim>Pronto. O afastamento já vale.</p>
-    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o afastamento já valeria.</p>
   </template>
 
   <template data-roteiro="carreira-militar" data-nas-abas="efetivo" data-titulo="Promover, transferir ou dar baixa" data-area="admin" data-grupo="Usuários" data-pagina="usuarios">
@@ -2653,6 +2663,44 @@
     </section>
     <p data-fim>Pronto. As alterações aprovadas já valem na ficha. O militar recebe o aviso.</p>
     <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, as alterações aprovadas já valeriam na ficha, e o militar receberia o aviso.</p>
+  </template>
+
+  <!-- ===== AFASTAMENTOS (afastamentos.html). Os dados reais; no Lançar, o salvar não grava. No celular, os
+       Afastamentos moram no Mais ===== -->
+  <template data-roteiro-trecho="abrir-afastamentos">
+    <p data-pagina="qualquer" data-alvo=".barra-celular-mais" data-so-celular data-avanca="clique" data-pular-se=".conteudo #afastamentos-abas, .barra-celular-mais[aria-expanded='true']">Abra o <strong>Mais</strong>.</p>
+    <p data-pagina="qualquer" data-alvo=".sidebar .menu-item[data-pagina='afastamentos']" data-avanca="clique" data-pular-se=".conteudo #afastamentos-abas">Abra os <strong>Afastamentos</strong> no menu.</p>
+  </template>
+
+  <template data-roteiro="afastamentos-ano" data-titulo="Ver os afastamentos" data-grupo="Afastamentos" data-pagina="afastamentos">
+    <p data-trecho="abrir-afastamentos"></p>
+    <p data-alvo="#afastamentos-abas [data-aba='ano']" data-avanca="clique" data-pular-se="#afastamentos-abas [data-aba='ano'].aba--ativa">Abra a aba <strong>Ano</strong>.</p>
+    <p data-alvo=".pagina-subcabecalho .geral-periodo:not(.oculto)" data-avanca="proximo" data-livre>O ano fica na barra, e as setas mudam o ano.</p>
+    <p data-so-computador data-alvo="#arvore-afastamentos .afastamentos-grade-cabecalho" data-um data-avanca="proximo">Cada coluna é um mês, e o de hoje fica escuro. Em cada mês, o nome do afastamento e os dias dele. O nome do mês abre aquele mês.</p>
+    <p data-so-celular data-alvo="#arvore-afastamentos" data-avanca="proximo">Cada militar mostra os afastamentos do ano, um por linha.</p>
+    <p data-alvo="#afastamentos-abas [data-aba='mes']" data-avanca="clique">Abra a aba <strong>Mês</strong>. As setas da barra passam a mudar o mês.</p>
+    <p data-so-computador data-alvo="#arvore-afastamentos .afastamentos-grade--mes .afastamentos-grade-cabecalho" data-um data-avanca="proximo">Cada coluna é um dia, e cada afastamento é uma barra, do primeiro ao último dia dele.</p>
+    <p data-alvo="#afastamentos-abas [data-aba='calendario']" data-avanca="proximo" data-livre>Na aba <strong>Calendário</strong>, o mês fica como o da Escala.</p>
+    <p data-alvo="#afastamentos-filtros" data-avanca="proximo">No <strong>Filtros</strong>, o <strong>Afastamento</strong> deixa só um nome à vista, como as férias.</p>
+    <p data-fim>Pronto. Clicar num militar abre o resumo do ano dele.</p>
+  </template>
+
+  <template data-roteiro="lancar-afastamento" data-titulo="Lançar um afastamento" data-area="admin" data-grupo="Afastamentos" data-pagina="afastamentos">
+    <p data-trecho="abrir-afastamentos"></p>
+    <p data-alvo="#afastamentos-abas [data-aba='ano']" data-avanca="clique" data-pular-se="#afastamentos-abas [data-aba='ano'].aba--ativa">Abra a aba <strong>Ano</strong>.</p>
+    <p data-so-computador data-alvo="#arvore-afastamentos .afastamentos-celula--clicavel.afastamentos-celula--atual:not(:has(.afastamentos-selo))" data-alvo-senao="#arvore-afastamentos .afastamentos-celula--clicavel:not(:has(.afastamentos-selo))" data-um data-avanca="clique">Clique no mês do afastamento, na linha do militar.<span data-so-treino>Clique no mês aceso, na linha do militar.</span></p>
+    <p data-so-computador data-alvo=".caixa-flutuante--aberta:not(.caixa-flutuante--segunda)" data-clique=".caixa-flutuante [data-acao='adicionar']" data-treino-alvo=".caixa-flutuante [data-acao='adicionar']" data-avanca="clique">A caixa abre ao lado da célula. Clique em <strong>Adicionar afastamento</strong>.</p>
+    <p data-so-ajuda data-so-computador data-alvo=".caixa-flutuante--segunda" data-avanca="aparece" data-condicao="#afastamentos-salvar:not(:disabled)" data-livre>Escolha o nome e escreva as datas. A guarnição e o que ele deixa nesses dias vêm do nome; mude se precisar.</p>
+    <p data-so-treino data-so-computador data-alvo=".caixa-flutuante--segunda .afastamento-campo-nome" data-condicao=".caixa-flutuante--segunda [data-af-nome][data-valor]:not([data-valor=''])" data-porta=".caixa-flutuante--segunda [data-af-nome]; .dropdown--aberto .dropdown-item" data-avanca="aparece">Escolha o nome. A guarnição e o que ele deixa nesses dias vêm dele.</p>
+    <p data-so-treino data-so-computador data-alvo=".caixa-flutuante--segunda .afastamento-campo-periodo" data-condicao="#afastamentos-salvar:not(:disabled)" data-porta=".caixa-flutuante--segunda .afastamento-campo-periodo" data-escrever data-avanca="aparece">Escreva o início e o fim.</p>
+    <p data-so-celular data-alvo="#arvore-afastamentos .afastamentos-item" data-um data-avanca="clique">Toque no militar.<span data-so-treino>Toque no militar aceso.</span></p>
+    <p data-so-celular data-alvo=".painel-corpo [data-af-adicionar]" data-avanca="clique">Use o <strong>Adicionar afastamento</strong>.</p>
+    <p data-so-ajuda data-so-celular data-alvo=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim)" data-avanca="aparece" data-condicao="#afastamentos-salvar:not(:disabled)" data-livre>Escolha o nome e escreva as datas. A guarnição e o que ele deixa nesses dias vêm do nome; mude se precisar.</p>
+    <p data-so-treino data-so-celular data-alvo=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) .afastamento-campo-nome" data-condicao=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) [data-af-nome][data-valor]:not([data-valor=''])" data-porta=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) [data-af-nome]; .dropdown--aberto .dropdown-item" data-avanca="aparece">Escolha o nome. A guarnição e o que ele deixa nesses dias vêm dele.</p>
+    <p data-so-treino data-so-celular data-alvo=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) .afastamento-campo-periodo" data-condicao="#afastamentos-salvar:not(:disabled)" data-porta=".painel-corpo .ficha-periodo:has(+ .ficha-acoes-fim) .afastamento-campo-periodo" data-escrever data-avanca="aparece">Escreva o início e o fim.</p>
+    <p data-alvo="#afastamentos-salvar" data-avanca="clique" data-segurar>Grave pelo <strong>Salvar</strong> do rodapé largo.</p>
+    <p data-fim>Pronto. O afastamento já vale.</p>
+    <p data-fim-treino>Pronto. No treino, nada foi gravado. No sistema, o afastamento já valeria.</p>
   </template>
 
   <!-- ===== HISTÓRICO (historico.html). Os dados reais. No celular, o Histórico mora no Mais ===== -->
@@ -3093,6 +3141,20 @@
       <span class="espacador-flex"></span>
       <div class="chamada-botoes">
         <button type="button" class="botao" data-chamada="pedidos">Ver pedidos</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- a linha da volta de férias ou de afastamento (ADM, de 5 dias antes da volta até o administrador decidir): quem
+       volta e o dia, o selo do prazo e o Ver sugestão, que abre a sugestão de guarnição na Escala -->
+  <template id="tpl-chamada-linha-volta">
+    <div class="chamada-linha">
+      <span class="chamada-marca"><span class="etiqueta-adm">ADM</span></span>
+      <span class="chamada-texto"><span class="chamada-quem"></span><span class="chamada-meta"> · A sugestão de guarnição está pronta.</span></span>
+      <span class="selo selo--alerta chamada-selo"></span>
+      <span class="espacador-flex"></span>
+      <div class="chamada-botoes">
+        <button type="button" class="botao" data-chamada="volta">Ver sugestão</button>
       </div>
     </div>
   </template>

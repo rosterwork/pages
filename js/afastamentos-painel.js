@@ -1,31 +1,36 @@
 /* ============================================================
-   USUÁRIOS — a ficha: aba Afastamentos
-   (RosterWork.usuariosPainelAfastamentos)
-   O ano no subcabeçalho do painel (o mesmo seletor da página), o
-   Resumo do ano (os dias de cada nome e o total) e os afastamentos
-   que tocam o ano. Quem administra o militar (ativo) edita aqui: uma
-   caixa por afastamento, com a situação (Em curso, Marcado,
-   Encerrado ou Novo afastamento), a lixeira e os campos
-   (usuarios-afastamentos-campos.js), e o Adicionar afastamento no
-   fim; as respostas entram no mesmo rascunho da aba Afastamentos
-   (o rodapé largo da página salva). Quem só lê vê um afastamento por
-   linha. Lê tudo do militar uma vez (todos os anos) e guarda
-   enquanto a ficha está aberta; gravar esquece o que foi lido.
+   AFASTAMENTOS — o painel do militar
+   (RosterWork.afastamentosPainel)
+   Abre pelo clique no militar (a grade, a lista do celular, o nome
+   no calendário de quem não administra, o Abrir o painel da caixa):
+   no título, o posto e o nome, com a unidade ao lado, e o nome
+   completo embaixo. O ano no subcabeçalho do painel (o mesmo seletor
+   da página), o Resumo do ano (os dias de cada nome e o total) e os
+   afastamentos que tocam o ano. Quem administra o militar (ativo)
+   edita aqui: uma caixa por afastamento, com a situação (Em curso,
+   Marcado, Encerrado ou Novo afastamento), a lixeira e os campos
+   (afastamentos-campos.js), e o Adicionar afastamento no fim; as
+   respostas entram no mesmo rascunho das abas (o rodapé largo da
+   página salva). Quem só lê vê um afastamento por linha. O bloco e a
+   linha de leitura são os da ficha de Usuários
+   (usuarios-painel-leitura.js). Lê tudo do militar uma vez (todos os
+   anos) e guarda enquanto o painel está aberto; gravar esquece o que
+   foi lido.
    ============================================================ */
 (function () {
   'use strict';
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var ano = null;       // o ano da ficha (abre no da página)
+  var ano = null;       // o ano do painel (abre no da página)
   var cpfLido = null;   // de quem já foi lido (todos os anos)
-  var atual = null;     // a aba desenhada agora: { corpo, ctx, caixas, resumo }
-  var token = 0;        // latest-wins: a resposta de outra ficha é ignorada
+  var atual = null;     // o painel desenhado agora: { corpo, ctx, caixas, resumo }
+  var token = 0;        // latest-wins: a resposta de outro militar é ignorada
 
   function M() { return RW.mensagens.afastamentos; }
-  function R() { return RW.usuariosAfastamentosRascunho; }
-  function G() { return RW.usuariosAfastamentosGrade; }
-  function A() { return RW.usuariosAfastamentos; }
+  function R() { return RW.afastamentosRascunho; }
+  function G() { return RW.afastamentosGrade; }
+  function P() { return RW.afastamentosPeriodo; }
 
   function p2(n) { return (n < 10 ? '0' : '') + n; }
   function isoHoje() {
@@ -94,7 +99,7 @@
         lixeira.classList.remove('oculto');
         lixeira.addEventListener('click', function () { R().remover(cpf, af.chave, null); });
       }
-      var campos = RW.usuariosAfastamentosCampos.montar(caixa.querySelector('[data-af-campos]'),
+      var campos = RW.afastamentosCampos.montar(caixa.querySelector('[data-af-campos]'),
         { cpf: cpf, chave: af.chave, origem: 'ficha' });
       if (campos) a.caixas.push(campos);
       a.corpo.appendChild(caixa);
@@ -118,7 +123,7 @@
     var b = L.bloco(M().doAno(ano), null, null);
     if (!b) return;
     afs.forEach(function (af) {
-      var extra = M().dias(RW.usuariosAfastamentosCampos.dias(af)) + (af.gua ? ' · ' + M().extraFora : '');
+      var extra = M().dias(RW.afastamentosCampos.dias(af)) + (af.gua ? ' · ' + M().extraFora : '');
       L.linha(b, situacao(af.inicio, af.fim), af.nome + ' · ' + G().textoDatas(af.inicio, af.fim, ano), extra);
     });
     a.corpo.appendChild(b);
@@ -139,11 +144,9 @@
     }
     if (a.ctx.admin) montarCaixas(a, cpf, afs);
     else if (afs.length) montarLeitura(a, afs);
-    /* o fim do corpo é da ficha (as Alterações na ficha, usuarios-painel.js) */
-    if (a.ctx.aoDesenhar) a.ctx.aoDesenhar();
   }
 
-  /* o rascunho mudou: o que a ficha mesma respondeu só atualiza o que se vê (sem perder o campo que se digita); o
+  /* o rascunho mudou: o que o painel mesmo respondeu só atualiza o que se vê (sem perder o campo que se digita); o
      resto redesenha; gravou: relê */
   function aoMudarRascunho(origem) {
     var a = atual;
@@ -157,11 +160,11 @@
     desenhar();
   }
 
-  /* o ano no subcabeçalho do painel; trocar de ano redesenha a aba (sem reler) */
+  /* o ano no subcabeçalho do painel; trocar de ano redesenha (sem reler) */
   function montarAno(barra) {
     if (!barra) return;
     barra.textContent = '';
-    var s = A().seletorAno(ano, function (novo) { ano = novo; desenhar(); });
+    var s = P().seletorAno(ano, function (novo) { ano = novo; desenhar(); });
     if (!s) return;
     barra.appendChild(s.el);
     barra.classList.remove('oculto');
@@ -173,7 +176,7 @@
     var carregando = RW.painel.criarCarregando();
     if (carregando) a.corpo.appendChild(carregando);
     var meu = ++token;
-    RW.painel.segurar(RW.usuariosAfastamentosDados.listarAno(null, cpf)).then(function (lista) {
+    RW.painel.segurar(RW.afastamentosDados.listarAno(null, cpf)).then(function (lista) {
       if (meu !== token || atual !== a) return;
       if (lista == null) {
         a.corpo.textContent = '';
@@ -187,11 +190,11 @@
     });
   }
 
-  /* desenha a aba da ficha. ctx = { pessoa, anoInicial, admin (pode mudar: administra o militar ativo), aoDesenhar() } */
+  /* desenha o painel. ctx = { pessoa, anoInicial, admin (pode mudar: administra o militar ativo) } */
   function montar(corpo, barra, ctx) {
     if (!corpo || !ctx || !ctx.pessoa) return;
     var cpf = String(ctx.pessoa.usuario_id);
-    if (ano == null) ano = ctx.anoInicial || A().anoAtual();
+    if (ano == null) ano = ctx.anoInicial || P().anoAtual();
     atual = { corpo: corpo, ctx: ctx, caixas: [], resumo: null };
     R().ouvir('ficha', aoMudarRascunho);
     montarAno(barra);
@@ -199,8 +202,7 @@
     else ler(cpf);
   }
 
-  /* a aba saiu da tela (outra aba, sub-tela ou o painel fechou): os novos em branco saem e respostas atrasadas não
-     desenham */
+  /* o painel fechou ou mudou de militar: os novos em branco saem e respostas atrasadas não desenham */
   function reset() {
     if (atual) {
       var cpf = String(atual.ctx.pessoa.usuario_id);
@@ -210,7 +212,7 @@
     token++;
   }
 
-  /* outra ficha (sem o ano) ou depois de gravar (mantém o ano e relê a ficha aberta) */
+  /* outro militar (sem o ano) ou depois de gravar (mantém o ano e relê o painel aberto) */
   function esquecer(manterAno) {
     var a = atual;
     cpfLido = null;
@@ -219,8 +221,23 @@
     reset();
   }
 
-  window.RosterWork.usuariosPainelAfastamentos = {
-    montar: montar, reset: reset, esquecer: esquecer, situacao: situacao,
-    ehSecao: function (secao) { return secao === 'afastamentos'; }
-  };
+  /* abre o painel do militar. opcoes = { ano (o da página), sigla (a unidade, ao lado do nome), aoFechar() (a página
+     tira o realce da linha) } */
+  function abrir(pessoa, opcoes) {
+    if (!RW.painel || !pessoa) return;
+    opcoes = opcoes || {};
+    esquecer();
+    var titulo = ((pessoa.grau_abreviacao || '') + ' ' + (pessoa.nome_de_guerra || '')).trim();
+    RW.painel.abrir({
+      titulo: titulo, tituloExtra: opcoes.sigla ? '- ' + opcoes.sigla : '', subtitulo: pessoa.nome_completo || '',
+      aoFechar: function () {
+        esquecer();
+        if (opcoes.aoFechar) opcoes.aoFechar();
+      }
+    });
+    var admin = pessoa.situacao !== 'Inativo' && RW.sessao.podeAdministrar('pelotao', pessoa.lotacao_atual);
+    montar(RW.painel.corpo(), RW.painel.subcabecalho(), { pessoa: pessoa, anoInicial: opcoes.ano || null, admin: admin });
+  }
+
+  window.RosterWork.afastamentosPainel = { abrir: abrir, esquecer: esquecer, situacao: situacao };
 })();

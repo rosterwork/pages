@@ -1611,6 +1611,12 @@
     return !!rasc.automatico || difPontuais() > 0 || rasc.folgas.length > 0 || rasc.folgas_cancelar.length > 0
       || rasc.remanejar.length > 0 || rasc.devolver.length > 0 || comMudancaDeDia();
   }
+  /* gravar este rascunho muda a escala do dia, e o banco refaz os dias seguintes? (o rodízio conta o que cada um fez no
+     dia: as funções, além de tudo o que refaz a distribuição; escrever uma observação, não) */
+  function refazDiasSeguintes() {
+    if (!rasc || !base) return false;
+    return !mesmosAjustes(base.ajustes, rasc.ajustes) || refazDistribuicao();
+  }
   /* o rascunho do Dia para a prévia das telas: o da gravação e as funções abertas (só na prévia) */
   function previaDia() {
     var r = copiar(paraSalvar());
@@ -1669,6 +1675,7 @@
     desfazer: desfazerPasso,
     refazer: refazerPasso,
     refazDistribuicao: refazDistribuicao,
+    refazDiasSeguintes: refazDiasSeguintes,
     outrosDias: outrosDias,
     previaDia: previaDia,
     paraGravar: paraGravar,

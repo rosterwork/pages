@@ -232,9 +232,14 @@
     /* ---------- o calendário ---------- */
 
     function chaveMes(d) { return est.item.cpf + '|' + iso(d).slice(0, 7); }
+    /* a situação dele no dia, em qualquer mês já lido (o dia de outro mês das pontas vem na leitura do mês da tela) */
     function respostaDoDia(diaIso) {
-      var r = est.item && meses[chaveMes(dataDeIso(diaIso))];
-      return r && r.dias ? r.dias[diaIso] || null : null;
+      if (!est.item) return null;
+      var prefixo = est.item.cpf + '|';
+      var chave = Object.keys(meses).filter(function (k) {
+        return k.indexOf(prefixo) === 0 && meses[k].dias && meses[k].dias[diaIso];
+      })[0];
+      return chave ? meses[chave].dias[diaIso] : null;
     }
 
     function trocarMes(passo) {
@@ -242,16 +247,17 @@
       lerMes();
     }
 
-    /* a situação dele em cada dia do mês (lida uma vez por mês e por militar) */
+    /* a situação dele em cada dia do calendário do mês, com os dias de outro mês das pontas (lida uma vez por mês e por
+       militar) */
     function lerMes() {
       if (!est.item) return;
       var chave = chaveMes(est.mes);
       if (meses[chave]) { carregandoMes = false; desenharCalendario(); return; }
-      var meu = ++pedidoMes, mes = est.mes;
+      var meu = ++pedidoMes;
       carregandoMes = true;
       desenharCalendario();
-      var fim = new Date(mes.getFullYear(), mes.getMonth() + 1, 0);
-      RosterWork.escalasDados.mudarDiaDias(uid, est.item.cpf, deIso, iso(mes), iso(fim)).then(function (r) {
+      var faixa = RosterWork.miniCalendario.periodo(est.mes);
+      RosterWork.escalasDados.mudarDiaDias(uid, est.item.cpf, deIso, iso(faixa.inicio), iso(faixa.fim)).then(function (r) {
         if (meu !== pedidoMes || !el.combo.isConnected) return;
         carregandoMes = false;
         if (!r || r.erro) {
@@ -277,6 +283,7 @@
       el.proximo.disabled = !!est.fim && est.mes.getTime() >= inicioDoMes(dataDeIso(est.fim)).getTime();
       RosterWork.miniCalendario.renderizar(el.calendario, {
         dataRef: est.mes,
+        comDiasDeFora: true,
         aoDia: function (botao, diaIso) { pintarDia(botao, diaIso, r && r.dias ? r.dias[diaIso] : null); }
       });
     }

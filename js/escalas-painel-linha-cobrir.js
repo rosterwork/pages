@@ -191,18 +191,24 @@
     /* ---------- o Dia da folga ---------- */
 
     function chaveMes(d) { return est.item.cpf + '|' + iso(d).slice(0, 7); }
+    /* o dia dele, em qualquer mês já lido (o dia de outro mês das pontas vem na leitura do mês da tela) */
     function infoDoDia(diaIso) {
-      var r = est.item && meses[chaveMes(dataDeIso(diaIso))];
-      return r && r.dias ? r.dias[diaIso] || null : null;
+      if (!est.item) return null;
+      var prefixo = est.item.cpf + '|';
+      var chave = Object.keys(meses).filter(function (k) {
+        return k.indexOf(prefixo) === 0 && meses[k].dias && meses[k].dias[diaIso];
+      })[0];
+      return chave ? meses[chave].dias[diaIso] : null;
     }
+    /* o calendário do mês com os dias de outro mês das pontas (lido uma vez por mês e por militar) */
     function lerMes() {
       if (!est.item) return;
       var chave = chaveMes(est.mes);
       if (meses[chave]) { est.carregandoMes = false; desenharCalendario(); return; }
-      var meu = ++pedidoMes, mes = est.mes, fim = new Date(mes.getFullYear(), mes.getMonth() + 1, 0);
+      var meu = ++pedidoMes, faixa = RosterWork.miniCalendario.periodo(est.mes);
       est.carregandoMes = true;
       desenharCalendario();
-      RosterWork.escalasDados.diaDaFolgaDias(uid, est.item.cpf, dia, iso(mes), iso(fim)).then(function (r) {
+      RosterWork.escalasDados.diaDaFolgaDias(uid, est.item.cpf, dia, iso(faixa.inicio), iso(faixa.fim)).then(function (r) {
         if (meu !== pedidoMes || !inp.isConnected) return;
         est.carregandoMes = false;
         if (!r || r.erro) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.erro) || msg().falhaCarregar }); desenharCalendario(); return; }
@@ -224,6 +230,7 @@
       el.proximo.disabled = !!fim && est.mes.getTime() >= inicioDoMes(dataDeIso(fim)).getTime();
       RosterWork.miniCalendario.renderizar(el.calendario, {
         dataRef: est.mes,
+        comDiasDeFora: true,
         aoDia: function (botao, diaIso) { pintarDia(botao, diaIso, r && r.dias ? r.dias[diaIso] : null); }
       });
     }

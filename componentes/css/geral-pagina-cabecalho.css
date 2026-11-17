@@ -277,9 +277,9 @@
     order: 1;
   }
 
-  /* as abas dividem a linha com o ?: correm só até a borda esquerda do bloco */
-  html[data-celular] .pagina-cabecalho:has(> .pagina-ajuda) > .abas,
-  html[data-celular] .pagina-cabecalho:has(> .pagina-ajuda) > [data-abas-grupo] {
+  /* as abas dividem a linha com o ? à vista: correm só até a borda esquerda do bloco */
+  html[data-celular] .pagina-cabecalho:has(> .pagina-ajuda:not(.oculto)) > .abas,
+  html[data-celular] .pagina-cabecalho:has(> .pagina-ajuda:not(.oculto)) > [data-abas-grupo] {
     flex-basis: 0;
     min-width: 0;
     margin-right: 0;

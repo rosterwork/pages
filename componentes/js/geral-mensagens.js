@@ -258,7 +258,8 @@
       falhaSalvar: 'Não foi possível salvar o posto. Tente de novo.'
     },
 
-    /* afastamentos — a aba Afastamentos de Usuários (a grade dos 12 meses e a caixa da célula) e a aba da ficha */
+    /* afastamentos — a página Afastamentos (a grade dos 12 meses ou dos dias do mês, o calendário do mês e a caixa da
+       célula) e o painel do militar */
     afastamentos: {
       /* a lista padrão: o nome que aparece no dia; no Outro, o nome escrito (até 10 letras) */
       padroes: [
@@ -269,13 +270,21 @@
       /* no filtro Afastamento, os nomes escritos no Outro */
       outros: 'Outros',
       meses: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-      /* filtro Situação no ano e a contagem de cada unidade */
+      /* o mês por extenso: o período da barra no Mês ("novembro 2026") e o título da caixa do mês ("Novembro") */
+      mesesExtenso: ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'],
+      periodoMes: function (mes, ano) { return RosterWork.mensagens.afastamentos.mesesExtenso[mes] + ' ' + ano; },
+      tituloMes: function (mes) { var m = RosterWork.mensagens.afastamentos.mesesExtenso[mes]; return m.charAt(0).toUpperCase() + m.slice(1); },
+      /* filtro Situação no ano ou no mês e a contagem de cada unidade */
       comNoAno: 'Com afastamento no ano',
       semNoAno: 'Sem afastamento no ano',
+      comNoMes: 'Com afastamento no mês',
+      semNoMes: 'Sem afastamento no mês',
       contagem: function (n) { return n + ' com afastamento'; },
+      contagemMes: function (n) { return n + ' com afastamento no mês'; },
       dias: function (n) { return n === 1 ? '1 dia' : n + ' dias'; },
-      /* o selo cinza do militar na grade: os dias afastado no ano */
+      /* o selo cinza do militar na grade: os dias afastado no ano ou no mês */
       diasNoAno: function (n, ano) { return n + (n === 1 ? ' dia afastado em ' : ' dias afastado em ') + ano; },
+      diasNoMes: function (n, mes) { return n + (n === 1 ? ' dia afastado em ' : ' dias afastado em ') + RosterWork.mensagens.afastamentos.mesesExtenso[mes]; },
       /* os dias do afastamento dentro do mês ("05 a 31" ou "17") e a dica do selo */
       diasDoMes: function (a, b) { return a === b ? a : a + ' a ' + b; },
       dicaSelo: function (nome, ini, fim) { return nome + ': ' + ini + ' a ' + fim; },
@@ -1947,6 +1956,13 @@
       /* a linha do administrador: só o urgente para aprovar */
       admPedidos: function (n) { return n === 1 ? '1 pedido urgente para aprovar' : n + ' pedidos urgentes para aprovar'; },
       admMeta: function (dia) { return 'o mais próximo com serviço em ' + dia; },
+      /* a linha da volta (ADM): "Volta de férias do Cb. Vinícius (1ºPEL) em 02/01 (sáb)" ou, com vários no mesmo dia,
+         "Volta de férias de 3 militares do 1ºPEL em 02/01 (sáb)"; a licença e a missão dizem "Volta de afastamento" */
+      volta: function (v) {
+        return (v.ferias ? 'Volta de férias ' : 'Volta de afastamento ')
+          + (v.quantos === 1 ? 'do ' + v.quem + ' (' + v.unidade + ')' : 'de ' + v.quantos + ' militares do ' + v.unidade)
+          + ' em ' + v.dia;
+      },
       naoAchou: 'Este pedido mudou enquanto você olhava. A faixa foi atualizada.'
     },
 
@@ -2575,6 +2591,14 @@
         if (v.refaz) passos.push('Refazendo a distribuição do ' + v.unidade);
         passos.push('Atualizando o dia na grade');
         return { passos: passos };
+      },
+      /* o Dia que muda a escala: o banco refaz também os dias seguintes (o rodízio conta o que cada um fez no dia) */
+      salvarDiaSeguintes: function (v) {
+        var passos = ['Gravando as alterações de ' + v.dia];
+        if (v.refaz) passos.push('Refazendo a distribuição do dia');
+        passos.push('Refazendo os próximos 7 dias do ' + v.unidade, 'Atualizando os dias na grade');
+        return { titulo: 'Salvando a escala de ' + v.dia, passos: passos,
+          pe: 'O resto do período continua sozinho, e você pode seguir trabalhando.' };
       },
       salvarCiclo: function (v) {
         return { titulo: 'Salvando a mudança nas guarnições', passos: ['Gravando a mudança nas guarnições', 'Refazendo os próximos 7 dias do ' + v.unidade, 'Atualizando os dias na grade'],

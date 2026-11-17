@@ -24,6 +24,11 @@
   position: relative;
 }
 
+/* no dia de outro mês (geral-calendario-mes › comDiasDeFora), o bloquinho no mesmo cinza mais escuro do dia */
+.geral-calendario-mes-dia--fora .escala-calendario-unidade {
+  background-color: var(--fundo-dia-fora);
+}
+
 /* passar o mouse e a seleção valem para o bloquinho inteiro (escalas-mes.css › a da célula): a borda por dentro, sem
    mudar o fundo; com o mouse num nome de quem edita o dia, a borda fica só no nome. A borda é o ::before, por cima dos
    nomes e das linhas tracejadas (a célula de dentro fica sem a dela) */

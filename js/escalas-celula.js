@@ -21,7 +21,7 @@
   var BARRA_VAO = 1;              // vão entre as barras
   var BARRA_RAIO = 1.5;           // raio dos cantos de cima da barra
   var BARRA_LINHA = 2;            // espessura da linha forte no topo da barra
-  var BARRA_MINIMA = 2;           // altura mínima de uma hora com alguém de serviço
+  var BARRA_MINIMA = 2;           // altura mínima de uma hora com alguém de serviço (e a da hora sem ninguém com erro vermelho)
   var OPACIDADE_OK = 0.3;         // corpo da barra no "tudo certo" (verde claro)
   var OPACIDADE_PROBLEMA = 0.4;   // corpo da barra com ressalva (amarelo) ou militar sem função (vermelho)
   var OPACIDADE_HOVER = 0.75;     // corpo da barra da hora com o mouse em cima
@@ -180,11 +180,13 @@
     ctx.clearRect(0, 0, Wf, Hf);
     for (var h = 0; h < 24; h++) {
       var n = Number(cob[h]) || 0;
-      if (n <= 0) continue;   // hora sem ninguém de serviço: sem barra
-      var altura = Math.max(Math.round(BARRA_MINIMA * dpr), Math.round(Math.min(n, max) / max * util));
+      var marca = erro.charAt(h);
+      /* hora sem ninguém de serviço: sem barra; com erro vermelho (a companhia sem Oficial de Área), a barra baixinha */
+      if (n <= 0 && marca !== '1') continue;
+      var altura = n > 0 ? Math.max(Math.round(BARRA_MINIMA * dpr), Math.round(Math.min(n, max) / max * util))
+        : Math.round(BARRA_MINIMA * dpr);
       /* bordas da barra no pixel físico inteiro: o vão sai sempre nítido e do mesmo tamanho */
       var x = Math.round(h * passo), largura = Math.round((h + 1) * passo - vao) - x, y = Hf - altura;
-      var marca = erro.charAt(h);
       var problema = marca === '1' || marca === '2';
       ctx.fillStyle = marca === '1' ? tema.erro : marca === '2' ? tema.alerta : tema.sucesso;
       /* corpo claro (forte na hora com o mouse em cima) + linha forte no topo, na mesma cor */
@@ -199,18 +201,23 @@
   /* mini-gráfico de cobertura no topo da célula (barras por hora pintadas em <canvas>; Guia visual › Grade da escala).
      Só guarda os dados; o desenho (que precisa do tamanho real) fica em pintarGrafico */
   function montarGrafico(cobertura, maxUnidade, erro, estagiarios) {
-    if (!(maxUnidade > 0)) return null;
+    var marcas = '';
+    for (var h = 0; h < 24; h++) {
+      var e = erro && erro[h];   // 1 = sem função (vermelho), 2 = ressalva (amarelo), 0 = ok (verde)
+      marcas += (e === 2 || e === '2') ? '2' : (e ? '1' : '0');
+    }
+    /* a unidade sem ninguém de serviço no período (a companhia sem Oficial de Área): o gráfico só aparece com erro
+       vermelho, na régua de 1 */
+    if (!(maxUnidade > 0)) {
+      if (marcas.indexOf('1') < 0) return null;
+      maxUnidade = 1;
+    }
     var g = RosterWork.tpl('tpl-escala-mes-grafico');
     if (!g) return null;
     g.dataset.cob = cobertura.join(',');
     g.dataset.max = maxUnidade;
     /* os estagiários que não são efetivo, por hora (fora da barra; a dica mostra embaixo dos militares) */
     if (estagiarios && estagiarios.some(function (n) { return Number(n) > 0; })) g.dataset.estag = estagiarios.join(',');
-    var marcas = '';
-    for (var h = 0; h < 24; h++) {
-      var e = erro && erro[h];   // 1 = sem função (vermelho), 2 = ressalva (amarelo), 0 = ok (verde)
-      marcas += (e === 2 || e === '2') ? '2' : (e ? '1' : '0');
-    }
     g.dataset.erro = marcas;
     return g;
   }

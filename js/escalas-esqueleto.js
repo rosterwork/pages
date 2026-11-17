@@ -108,8 +108,8 @@
   }
 
   /* ---------- Mês › Calendário e Colunas › Dias: rolado como a grade vai abrir (lado a lado ou uma embaixo da outra,
-     como a escolha da pessoa) ---------- */
-  function calendario(corpo, colunas, dataRef, diasPorLinha) {
+     como a escolha da pessoa); comDiasDeFora: os dias de outro mês das pontas também (a Escala; a Extrajornada não) ---------- */
+  function calendario(corpo, colunas, dataRef, diasPorLinha, comDiasDeFora) {
     var hoje = new Date();
     var ancora = (hoje.getFullYear() === dataRef.getFullYear() && hoje.getMonth() === dataRef.getMonth()) ? hoje : new Date(dataRef.getFullYear(), dataRef.getMonth(), 1);
     RW.geralCalendarioMes.renderizar(corpo, {
@@ -117,8 +117,9 @@
       diasPorLinha: diasPorLinha,
       unidadesPorDia: colunas.length,
       ladoALado: !!(RW.visaoGrade && RW.visaoGrade.disposicao() === 'lado'),
+      comDiasDeFora: !!comDiasDeFora,   // como a grade de verdade (a Escala): os dias de outro mês das pontas também têm a forma
       aoDia: function (celulaDia, data, noMes) {
-        if (!noMes || Math.abs(data - ancora) / 86400000 > DIAS_PERTO) return;
+        if ((!noMes && !comDiasDeFora) || Math.abs(data - ancora) / 86400000 > DIAS_PERTO) return;
         colunas.forEach(function (c, n) {
           var bloco = RW.tpl('tpl-escala-calendario-unidade');
           bloco.querySelector('.escala-calendario-unidade-nome').textContent = c.nome;

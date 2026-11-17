@@ -39,25 +39,10 @@
     return !filtros || filtros.passa('graus', pessoa.grau_nome);
   }
 
-  /* tira acentos e caixa para comparar nomes sem diferença de acentuação */
-
-  /* a pessoa casa com a busca? nome de guerra, nome completo, CPF ou RG */
+  /* a pessoa casa com a busca? nome de guerra, nome completo, CPF ou RG (a regra é a mesma dos Afastamentos,
+     usuarios-exibir.js) */
   function pessoaCasaBusca(pessoa) {
-    if (!termoBusca) return false;
-    var alvo = RosterWork.busca.normalizar(termoBusca);
-    if (RosterWork.busca.normalizar(pessoa.nome_de_guerra).indexOf(alvo) !== -1) return true;
-    if (RosterWork.busca.normalizar(pessoa.nome_completo).indexOf(alvo) !== -1) return true;
-    var digitos = termoBusca.replace(/\D/g, '');
-    if (digitos) {
-      if (String(pessoa.usuario_id || '').indexOf(digitos) !== -1) return true;
-      if (String(pessoa.rg || '').replace(/\D/g, '').indexOf(digitos) !== -1) return true;
-    }
-    return false;
-  }
-
-  /* Oficiais = QOBM/QOEBM; Praças = QPBM */
-  function grupoDoQuadro(quadro) {
-    return quadro === 'QPBM' ? 'Praças' : 'Oficiais';
+    return RosterWork.usuariosExibir.casaBusca(pessoa, termoBusca);
   }
 
   /* formata o CPF (11 dígitos) como XXX.XXX.XXX-XX */
@@ -166,8 +151,8 @@
     return !!(filtros && RosterWork.sessao.temPapel('pelotao') && filtros.passa('situacao', 'Inativo'));
   }
 
-  /* abre a ficha do militar no painel e realça a linha clicada (ver = todos); opcoes = { secao, ano } (a aba
-     Afastamentos abre a ficha na aba dela) */
+  /* abre a ficha do militar no painel e realça a linha clicada (ver = todos); opcoes = { secao } (a ficha que volta do
+     painel de decisão reabre na aba em que estava) */
   function abrirFicha(card, pessoa, opcoes) {
     if (cardSelecionado) cardSelecionado.classList.remove('linha-militar--selecionada');
     cardSelecionado = card;
@@ -196,12 +181,6 @@
     if (cpfAberto === null || String(pessoa.usuario_id) !== cpfAberto) return;
     card.classList.add('linha-militar--selecionada');
     cardSelecionado = card;
-  }
-
-  /* a aba Afastamentos desenha a grade dela (usuarios-afastamentos.js) */
-  function afastamentos() {
-    var m = window.RosterWork.usuariosAfastamentos;
-    return m && m.ativa() ? m : null;
   }
 
   /* a aba Administradores desenha a lista dela (usuarios-administradores.js) */
@@ -250,33 +229,15 @@
     return true;
   }
 
-  /* chave alfabética conforme o Exibir (nome de guerra ou completo) */
-  function chaveAlfabetica(pessoa) {
-    var ex = RosterWork.usuariosExibir ? RosterWork.usuariosExibir.estado() : { nome: 'guerra' };
-    var base = ex.nome === 'completo'
-      ? (pessoa.nome_completo || pessoa.nome_de_guerra || '')
-      : (pessoa.nome_de_guerra || pessoa.nome_completo || '');
-    return RosterWork.busca.normalizar(base);
-  }
-
-  /* ordena a lista conforme o botão de Ordem: antiguidade (a lista já vem
-     ordenada do banco, do mais antigo para o mais moderno), o inverso dela,
-     ou alfabética pelo nome exibido nos dois sentidos */
+  /* ordena a lista conforme o botão de Ordem (a regra é a mesma dos Afastamentos, usuarios-exibir.js) */
   function ordenarPessoas(pessoas) {
-    var ex = RosterWork.usuariosExibir ? RosterWork.usuariosExibir.estado() : { ordem: 'antiguidade' };
-    if (ex.ordem === 'antiguidade') return pessoas;
-    var copia = pessoas.slice();
-    if (ex.ordem === 'antiguidade-inversa') return copia.reverse();
-    copia.sort(function (a, b) { return chaveAlfabetica(a).localeCompare(chaveAlfabetica(b), 'pt'); });
-    if (ex.ordem === 'za') copia.reverse();
-    return copia;
+    return RosterWork.usuariosExibir.ordenar(pessoas);
   }
 
   /* monta as linhas de pessoa num bloquinho branco do bloco da unidade (ativos + inativos quando filtrado);
      unidade sem ninguém fica só com o título */
   function renderConteudo(container, unidade, pessoas) {
     if (administradores()) { administradores().renderConteudo(container, unidade, pessoas); return; }
-    if (afastamentos()) { afastamentos().renderConteudo(container, unidade, pessoas); return; }
     var tpl = document.getElementById('tpl-usuario-item');
     var bloquinho = RosterWork.tpl('tpl-arvore-bloquinho');
     if (!tpl || !bloquinho) return;
@@ -316,23 +277,9 @@
     });
   }
 
-  /* monta a árvore de graus (Oficiais/Praças > patentes) das pessoas visíveis,
-     na ordem de antiguidade (a lista já vem ordenada); só patentes presentes */
+  /* a árvore de graus do filtro (a regra é a mesma dos Afastamentos, usuarios-exibir.js) */
   function arvoreDeGraus(pessoas) {
-    var mapa = { 'Oficiais': [], 'Praças': [] };
-    var vistos = {};
-    pessoas.forEach(function (p) {
-      var valor = p.grau_nome;
-      if (!valor || vistos[valor]) return;
-      vistos[valor] = true;
-      /* na tela mostramos a abreviação; o filtro casa pelo nome por extenso */
-      mapa[grupoDoQuadro(p.quadro)].push({ rotulo: p.grau_abreviacao || valor, valor: valor });
-    });
-    var arvore = [];
-    ['Oficiais', 'Praças'].forEach(function (g) {
-      if (mapa[g].length) arvore.push({ rotulo: g, filhos: mapa[g] });
-    });
-    return arvore;
+    return RosterWork.usuariosExibir.arvoreDeGraus(pessoas);
   }
 
   /* escreve a contagem no subtítulo da página e zera o acumulador para a próxima passada */
@@ -344,18 +291,16 @@
   /* o componente da árvore chama isto a cada render (ao fim da passada), com as pessoas visíveis */
   function aoRenderizarGraus(pessoasVisiveis) {
     if (administradores()) administradores().aoRenderizar(pessoasVisiveis);
-    else if (afastamentos()) afastamentos().aoRenderizar(pessoasVisiveis);
     else if (filtros) filtros.definir('graus', arvoreDeGraus(pessoasVisiveis || []));
     atualizarSubtitulo();
   }
 
-  /* a contagem de cada unidade: os militares (Efetivo) ou quem tem afastamento no ano */
+  /* a contagem de cada unidade: os militares */
   function textoContagem(itens) {
-    if (afastamentos()) return afastamentos().textoContagem(itens);
     return itens.length === 1 ? '1 militar' : itens.length + ' militares';
   }
 
-  /* o que a aba Afastamentos e a Administradores usam daqui: a árvore, a busca, a ordem, os graus, a contagem e a ficha */
+  /* o que a aba Administradores usa daqui: a árvore, a busca, a ordem, os graus e a contagem */
   var emprestado = {
     atualizar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); },
     /* 'marcar' (casa, no marcar) · 'casa' (casa, no filtrar) · 'esconder' (não casa, no filtrar) · '' (sem busca ou não casa, no marcar) */
@@ -366,22 +311,16 @@
     },
     ordenar: function (pessoas) { return ordenarPessoas(pessoas); },
     arvoreDeGraus: function (pessoas) { return arvoreDeGraus(pessoas); },
-    contar: function () { contagemVisivel++; },
-    /* a ficha aberta pela grade (el = a coluna do militar; sem ela, a da linha dele, se estiver na tela) */
-    abrirFicha: function (el, pessoa, opcoes) {
-      var linha = el || document.querySelector('.escala-mil-pessoa-linha[data-cpf="' + pessoa.usuario_id + '"] .afastamentos-pessoa');
-      abrirFicha(linha, pessoa, opcoes);
-    },
-    marcar: function (el, pessoa) { marcarSeAberto(el, pessoa); }
+    contar: function () { contagemVisivel++; }
   };
 
-  /* ---------- abas da página: Efetivo · Afastamentos | Antiguidade · Administradores (só admin) ----------
-     A busca e a Ordem valem para as listas (Efetivo, Afastamentos e Administradores, que usam a
-     mesma árvore); os Filtros e o Exibir do Efetivo, só para ele. O Efetivo e os Afastamentos
-     abrem a ficha no painel; a Antiguidade e a Administradores editam na própria lista. */
+  /* ---------- abas da página: Efetivo | Antiguidade · Administradores (só admin) ----------
+     A busca e a Ordem valem para as listas (Efetivo e Administradores, que usam a mesma árvore);
+     os Filtros e o Exibir do Efetivo, só para ele. O Efetivo abre a ficha no painel; a Antiguidade e
+     a Administradores editam na própria lista. */
   function mostrarAba(conteudo, nome) {
-    /* Afastamentos e Administradores usam a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
-    var lista = ['efetivo', 'afastamentos', 'administradores'].indexOf(nome) >= 0;
+    /* a Administradores usa a árvore do Efetivo, com a busca e a Ordem; o Exibir é só do Efetivo */
+    var lista = ['efetivo', 'administradores'].indexOf(nome) >= 0;
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     for (var i = 0; i < paineis.length; i++) {
       paineis[i].classList.toggle('oculto', paineis[i].getAttribute('data-aba-painel') !== (lista ? 'efetivo' : nome));
@@ -398,8 +337,6 @@
     if (grupoAdmin) grupoAdmin.classList.toggle('oculto', nome !== 'efetivo' || !RosterWork.sessao.temPapel('pelotao'));
     /* a aba Administradores: os Filtros e o rodapé dela */
     if (window.RosterWork.usuariosAdministradores) window.RosterWork.usuariosAdministradores.mostrar(nome);
-    /* a aba Afastamentos: o ano e os Filtros dela; a árvore redesenha a grade da aba */
-    if (window.RosterWork.usuariosAfastamentos) window.RosterWork.usuariosAfastamentos.mostrar(nome);
     if (nome === 'efetivo' || nome === 'administradores') emprestado.atualizar();
     /* a Antiguidade tem a própria busca (o Salvar dela fica no rodapé da aba) */
     var buscaAntiguidade = conteudo.querySelector('#antiguidade-busca');
@@ -473,9 +410,6 @@
     /* o grupo só aparece para o admin, no Efetivo, a aba em que a página abre (a página Usuários é acessível a todos) */
     var grupoAdmin = conteudo.querySelector('.acoes-admin');
     if (grupoAdmin) grupoAdmin.classList.toggle('oculto', !RosterWork.sessao.temPapel('pelotao'));
-
-    /* a aba Afastamentos: o rascunho, o ano e os Filtros dela entram na barra, escondidos */
-    if (window.RosterWork.usuariosAfastamentos) window.RosterWork.usuariosAfastamentos.iniciar(conteudo, emprestado);
 
     ligarAbas(conteudo);
 

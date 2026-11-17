@@ -59,6 +59,8 @@
   --fundo-contraste:       var(--cinza-900);
   --fundo-contraste-hover: var(--cinza-820);
   --fundo-flutuante:       var(--cinza-0);
+  /* o dia de outro mês nos calendários: mais escuro que o fundo da página, nos dois temas */
+  --fundo-dia-fora:        var(--cinza-250);
 
   /* -------------------------------------------------------
      Papéis de texto
@@ -237,6 +239,7 @@ html[data-tema="escuro"] {
   --fundo-contraste:       var(--cinza-200);
   --fundo-contraste-hover: var(--cinza-400);
   --fundo-flutuante:       var(--cinza-900);
+  --fundo-dia-fora:        var(--cinza-950);
 
   --texto-forte:     var(--cinza-100);
   --texto:           var(--cinza-250);

@@ -1,9 +1,8 @@
 /* ============================================================
-   USUÁRIOS — afastamentos: os campos de um afastamento
-   (RosterWork.usuariosAfastamentosCampos)
+   AFASTAMENTOS — os campos de um afastamento
+   (RosterWork.afastamentosCampos)
    As perguntas de um afastamento, iguais na caixa 2 da célula da
-   grade e na aba Afastamentos da ficha (a mesma ação nos dois
-   lugares): o Nome (o campo com a lista padrão e o Outro, que abre o
+   grade e no painel do militar (a mesma ação nos dois lugares): o Nome (o campo com a lista padrão e o Outro, que abre o
    "Nome no dia", até 10 letras), o Período (início → fim e os dias),
    a Guarnição em bolinhas (sem a escolha do administrador, sai a
    partir de 16 dias) e o que ele deixa nesses dias, em caixas de
@@ -24,7 +23,7 @@
 
   function M() { return RW.mensagens.afastamentos; }
   function D() { return RW.data; }
-  function R() { return RW.usuariosAfastamentosRascunho; }
+  function R() { return RW.afastamentosRascunho; }
 
   function rotuloDe(padrao) {
     var p = M().padroes.filter(function (x) { return x.valor === padrao; })[0];
@@ -203,5 +202,5 @@
     return { pintar: pintar };
   }
 
-  window.RosterWork.usuariosAfastamentosCampos = { montar: montar, dias: dias };
+  window.RosterWork.afastamentosCampos = { montar: montar, dias: dias };
 })();

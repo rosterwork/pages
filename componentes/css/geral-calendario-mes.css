@@ -255,6 +255,18 @@
   background-color: var(--fundo-suave);
 }
 
+/* comDiasDeFora (a Escala): o dia de outro mês tem conteúdo e fica mais escuro (o dia, o título e, em quem usa, os blocos
+   de dentro no --fundo-dia-fora); o número e a sigla no cinza do texto fraco (hoje mantém o círculo) */
+.geral-calendario-mes--com-fora .geral-calendario-mes-dia--fora,
+.geral-calendario-mes--com-fora .geral-calendario-mes-dia--fora .geral-calendario-mes-dia-topo {
+  background-color: var(--fundo-dia-fora);
+}
+
+.geral-calendario-mes--com-fora .geral-calendario-mes-dia--fora:not(.geral-calendario-mes-dia--hoje) .geral-calendario-mes-numero,
+.geral-calendario-mes--com-fora .geral-calendario-mes-dia--fora .geral-calendario-mes-sigla {
+  color: var(--texto-fraco);
+}
+
 /* o lugar do meio do título do dia (quem usa põe o conteúdo; a Escala, o Oficial de Área): centralizado na largura do
    dia, na linha do número, com espaço para o número dos dois lados; vazio, fica escondido (.oculto, no molde) */
 .geral-calendario-mes-dia-centro {

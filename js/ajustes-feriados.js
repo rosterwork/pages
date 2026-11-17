@@ -1,7 +1,8 @@
 /* ============================================================
    AJUSTES — aba Feriados: o calendário de uma unidade por vez
    A unidade do seletor da barra (a companhia e os pelotões, como na
-   Distribuição) e o mês (expediente_mes): a folga em cinza com o nome,
+   Distribuição) e o mês (expediente_mes; os vizinhos, lidos junto, dão
+   os dias de outro mês das pontas): a folga em cinza com o nome,
    a parte do dia com o horário da folga e quem marcou; os feriados
    nacionais já vêm marcados. O administrador clica no dia e responde
    no painel direito, em caixas numeradas (Vale para · O que é · Nome
@@ -35,15 +36,27 @@
   function hora(h) { return h ? (h.slice(3) === '00' ? h.slice(0, 2) + 'h' : h.slice(0, 2) + 'h' + h.slice(3)) : ''; }
 
   /* ---------- o mês ---------- */
-  /* gravou: a leitura depois do Salvar: o calendário fica até o novo chegar */
+  /* a leitura de um mês (passo: 0 o da tela, -1 o anterior, 1 o seguinte) */
+  function lerMes(passo) {
+    return RW.rpc('expediente_mes', { p_unidade: unidadeId, p_mes: iso(new Date(mes.getFullYear(), mes.getMonth() + passo, 1)) });
+  }
+
+  /* o mês da tela e, ao mesmo tempo, os dois vizinhos (para os dias de outro mês das pontas; a falha de um vizinho só
+     deixa a casa vazia). gravou: a leitura depois do Salvar: o calendário fica até o novo chegar */
   function carregar(gravou) {
     var meu = ++pedido;
     var nome = mes.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(' de ', ' ');
     el.nome.textContent = nome;
     if (!gravou) el.calendario.textContent = '';
-    return RW.rpc('expediente_mes', { p_unidade: unidadeId, p_mes: iso(mes) }).then(function (r) {
+    var vizinho = function (passo) { return lerMes(passo).then(null, function () { return null; }); };
+    return Promise.all([lerMes(0), vizinho(-1), vizinho(1)]).then(function (lidos) {
+      var r = lidos[0];
       if (meu !== pedido || !el.calendario.isConnected) return;
       if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+      r.fora = {};
+      [lidos[1], lidos[2]].forEach(function (v) {
+        if (v && v.ok) Object.keys(v.dias || {}).forEach(function (k) { r.fora[k] = v.dias[k]; });
+      });
       dados = r;
       unidadeId = r.unidade.id;
       desenharBarra();
@@ -80,18 +93,25 @@
     el.cidade.textContent = u.cidade;
     el.calendario.textContent = '';
     var cal = RW.tpl('tpl-exp-cal');
-    for (var i = 0; i < mes.getDay(); i++) cal.appendChild(RW.tpl('tpl-exp-dia-vazio'));
-    var dias = dados.dias || {};
-    Object.keys(dias).sort().forEach(function (k) { cal.appendChild(celula(u, k, dias[k])); });
+    /* do domingo da 1ª semana ao sábado da última: os dias de outro mês das pontas com a marca --fora (abrem como os
+       outros); o vizinho que não chegou deixa a casa vazia */
+    var dias = dados.dias || {}, fora = dados.fora || {}, faixa = RW.miniCalendario.periodo(mes);
+    for (var d = new Date(faixa.inicio); d <= faixa.fim; d.setDate(d.getDate() + 1)) {
+      var k = iso(d), doMes = d.getMonth() === mes.getMonth(), info = doMes ? dias[k] : fora[k];
+      if (!info) { cal.appendChild(RW.tpl('tpl-exp-dia-vazio')); continue; }
+      var c = celula(u, k, info);
+      if (!doMes) c.classList.add('ajustes-exp-dia--fora');
+      cal.appendChild(c);
+    }
     el.calendario.appendChild(cal);
     el.calendario.appendChild(listaDosDias(cal));
     atualizar();
   }
 
-  /* os dias com nome, embaixo do calendário (no celular, onde o nome não cabe no dia): a linha abre o dia, como ele */
+  /* os dias com nome do mês, embaixo do calendário (no celular, onde o nome não cabe no dia): a linha abre o dia, como ele */
   function listaDosDias(cal) {
     var lista = RW.tpl('tpl-exp-lista');
-    Array.prototype.forEach.call(cal.querySelectorAll('.ajustes-exp-dia[data-dia]'), function (dia) {
+    Array.prototype.forEach.call(cal.querySelectorAll('.ajustes-exp-dia[data-dia]:not(.ajustes-exp-dia--fora)'), function (dia) {
       var nome = dia.querySelector('.ajustes-exp-dia-texto').textContent;
       if (!nome) return;
       var item = RW.tpl('tpl-exp-lista-item');

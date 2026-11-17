@@ -1,6 +1,8 @@
 /* ============================================================
    COMPONENTE geral-mini-calendario — o mês em miniatura
-   7 colunas (dom a sáb), só os dias do mês; cada dia é um botão
+   7 colunas (dom a sáb), só os dias do mês (com comDiasDeFora, também
+   os dias de outro mês das pontas: --fora, o número no cinza do texto
+   fraco; o fundo segue o estado do dia); cada dia é um botão
    com o número (canto de cima à esquerda), um número pequeno no
    canto de cima à direita e um texto embaixo. Os estados pintam o
    dia: --quer (verde), --nao (vermelho), --alerta (amarelo: pode,
@@ -11,8 +13,8 @@
    --afastado (listrado, como o afastamento da Escala) e o número
    pequeno em vermelho (.mini-calendario-conta--erro). Em cima, o
    mês com as setas (.mini-calendario-mes); embaixo, a legenda.
-   Usado no Solicitar extra (Extrajornada), na Minha escala e no
-   Mudar o dia do serviço (Escala).
+   Usado no Solicitar extra (Extrajornada), na Minha escala, no
+   Mudar o dia do serviço e no Cobrir (Escala) e nas Várias trocas.
    Montagem: componentes/js/geral-mini-calendario.js
    ============================================================ */
 
@@ -74,6 +76,11 @@
 .mini-calendario-numero {
   font-size: 12px;
   font-weight: 700;
+}
+
+/* o dia de outro mês (comDiasDeFora): o número no cinza do texto fraco; os estados abaixo mandam por cima */
+.mini-calendario-dia--fora .mini-calendario-numero {
+  color: var(--texto-fraco);
 }
 
 .mini-calendario-conta {

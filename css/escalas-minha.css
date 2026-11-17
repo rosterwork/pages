@@ -47,6 +47,11 @@
   padding: 4px;
 }
 
+/* o dia de outro mês das pontas (o fundo do dia aqui não tem significado): o dia inteiro mais escuro */
+.escala-minha-calendario .mini-calendario-dia--fora {
+  background-color: var(--fundo-dia-fora);
+}
+
 /* o número de todos os dias no mesmo lugar de 24px: o círculo de hoje não o desloca */
 .escala-minha-calendario .mini-calendario-numero {
   align-self: flex-start;

@@ -1,9 +1,9 @@
 /* ============================================================
-   USUÁRIOS — afastamentos: o rascunho
-   (RosterWork.usuariosAfastamentosRascunho)
+   AFASTAMENTOS — o rascunho
+   (RosterWork.afastamentosRascunho)
    O que foi mudado e ainda não foi salvo, de um ou mais militares: a
-   grade da aba Afastamentos e a aba da ficha usam o mesmo rascunho e
-   as duas já mostram o resultado. Guarda os afastamentos gravados que
+   as abas da página e o painel do militar usam o mesmo rascunho e
+   todos já mostram o resultado. Guarda os afastamentos gravados que
    já foram lidos (conhecer) e, por cima deles, os criados, os mudados
    e os removidos. O rodapé largo da página (#afastamentos-rodape)
    aparece com alteração: Desfazer e Refazer (Ctrl+Z e Ctrl+Y),
@@ -11,8 +11,8 @@
    enquanto algum afastamento tem problema (afastamentos_salvar, tudo
    ou nada; os avisos do banco vêm numa lista só, por militar, e o
    administrador decide se segue). Gravou: o que foi lido é esquecido,
-   as telas releem e o resumo abre. Trocar de aba com algo não salvo
-   pergunta antes; fechar ou recarregar avisa (guarda de saída).
+   as telas releem e o resumo abre. Sair da página, fechar ou
+   recarregar com algo não salvo avisa antes (guarda de saída).
    ============================================================ */
 (function () {
   'use strict';
@@ -28,7 +28,7 @@
   var ultimaChave = null;   // o campo que está sendo digitado: as letras seguidas são um passo só
   var ouvintes = {};        // quem redesenha a cada mudança: nome -> fn(origem)
   var seq = 0;
-  var raiz = null;          // a página Usuários
+  var raiz = null;          // a página Afastamentos
   var salvando = false;
   var teclasLigadas = false;
 
@@ -48,7 +48,10 @@
   }
   function copiar(af) { return JSON.parse(JSON.stringify(af)); }
   function igual(a, b) { return !!a && !!b && CAMPOS.every(function (k) { return a[k] === b[k]; }); }
-  function vazio(af) { return !af.nome && !af.inicio && !af.fim; }
+  /* em branco: sem nome e sem datas, ou só com o dia do clique (o Adicionar do mês e do calendário) */
+  function vazio(af) {
+    return !af.nome && ((!af.inicio && !af.fim) || (!!af.doDia && af.inicio === af.doDia && af.fim === af.doDia));
+  }
 
   /* os gravados que chegaram do banco (a lista do ano ou a do militar) */
   function conhecer(lista) {
@@ -104,14 +107,26 @@
 
   /* um afastamento novo, em branco (não conta nem vai para o banco até ter algo; o primeiro campo é o primeiro passo
      do Desfazer); devolve a chave dele */
-  function criar(cpf) {
+  function criar(cpf, dia) {
     cpf = String(cpf);
-    var af = { id: null, chave: 'novo-' + (++seq), cpf: cpf, inicio: '', fim: '', nome: '', padrao: null,
-      gua: false, tro: true, ext: true, sob: true, escolheu: false };
+    var af = { id: null, chave: 'novo-' + (++seq), cpf: cpf, inicio: dia || '', fim: dia || '', nome: '', padrao: null,
+      gua: false, tro: true, ext: true, sob: true, escolheu: false, doDia: dia || null };
     doMilitar(cpf).novos.push(af);
     return af.chave;
   }
-  /* o novo que ficou em branco sai sem deixar passo (a caixa fechou, a ficha fechou) */
+  /* o novo passa para outro militar (a pergunta Militar do Adicionar do calendário mudou), com o que já tem; é um passo
+     do Desfazer quando ele já tem algo */
+  function passarNovo(cpfDe, chave, cpfPara, origem) {
+    var de = mudancas[String(cpfDe)];
+    var af = de ? de.novos.filter(function (a) { return a.chave === chave; })[0] : null;
+    if (!af) return;
+    if (!vazio(af)) passo();
+    de.novos = de.novos.filter(function (a) { return a.chave !== chave; });
+    af.cpf = String(cpfPara);
+    doMilitar(af.cpf).novos.push(af);
+    avisar(origem);
+  }
+  /* o novo que ficou em branco sai sem deixar passo (a caixa fechou, o painel fechou) */
   function largar(cpf, chave) {
     var x = mudancas[String(cpf)];
     if (!x) return;
@@ -300,7 +315,7 @@
     salvando = true;
     pintarRodape();
     if (RW.mostrarVeuGlobal) RW.mostrarVeuGlobal();   // refaz a escala: o círculo e a tela travada
-    RW.usuariosAfastamentosDados.salvar(militaresMexidos, confirmar).then(function (r) {
+    RW.afastamentosDados.salvar(militaresMexidos, confirmar).then(function (r) {
       if (RW.esconderVeuGlobal) RW.esconderVeuGlobal();
       salvando = false;
       pintarRodape();
@@ -321,7 +336,7 @@
     });
   }
 
-  /* gravou: o que foi lido é esquecido, as telas releem (a aba, a ficha e o selo do Efetivo) e o resumo abre */
+  /* gravou: o que foi lido é esquecido, as telas releem (a página e o painel) e o resumo abre */
   function concluir(r) {
     gravados = {};
     mudancas = {};
@@ -330,7 +345,7 @@
     ultimaChave = null;
     avisar('gravou');
     if (RW.arvoreUnidades && RW.arvoreUnidades.recarregar) RW.arvoreUnidades.recarregar();
-    if (r && r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Usuários' });
+    if (r && r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Afastamentos' });
   }
 
   /* ---------- os avisos a quem redesenha ---------- */
@@ -364,7 +379,7 @@
     else if (tecla === 'y' || (tecla === 'z' && ev.shiftKey)) { ev.preventDefault(); refazer(); }
   }
 
-  /* a navegação abriu a página: o rascunho começa vazio, o rodapé é ligado e a troca de aba pergunta antes */
+  /* a navegação abriu a página: o rascunho começa vazio e o rodapé é ligado (as abas mostram o mesmo rascunho) */
   function iniciar(conteudo) {
     raiz = conteudo;
     gravados = {};
@@ -381,17 +396,6 @@
     ligar('afastamentos-cancelar', limpar);
     ligar('afastamentos-desfazer', desfazer);
     ligar('afastamentos-refazer', refazer);
-    var trilho = el('usuarios-abas');
-    if (trilho && !trilho.dataset.rascunhoGuarda) {
-      trilho.dataset.rascunhoGuarda = '1';
-      trilho.addEventListener('click', function (evento) {
-        var aba = evento.target.closest('.aba');
-        if (!aba || aba.classList.contains('aba--ativa') || !contar()) return;
-        evento.preventDefault();
-        evento.stopPropagation();   // segura o ouvinte do geral-abas
-        perguntarAntes(function () { aba.click(); });
-      }, true);
-    }
     if (!teclasLigadas) {
       teclasLigadas = true;
       document.addEventListener('keydown', teclas);
@@ -404,9 +408,9 @@
     RW.guardaSaida.registrar(function () { return !!raiz && raiz.isConnected && contar() > 0; });
   }
 
-  window.RosterWork.usuariosAfastamentosRascunho = {
+  window.RosterWork.afastamentosRascunho = {
     iniciar: iniciar, conhecer: conhecer, lista: lista, achar: achar, gravado: gravado, militares: militares,
-    criar: criar, largar: largar, mudar: mudar, remover: remover, contar: contar, problemaDe: problemaDe,
+    criar: criar, passarNovo: passarNovo, largar: largar, mudar: mudar, remover: remover, contar: contar, problemaDe: problemaDe,
     isoLimite: isoLimite, ouvir: ouvir, perguntarAntes: perguntarAntes, salvando: function () { return salvando; }
   };
 })();
