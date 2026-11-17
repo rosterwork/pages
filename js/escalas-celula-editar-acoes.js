@@ -3,7 +3,8 @@
    (escalas-celula-editar.js), no rascunho do Dia, com o mesmo código
    do painel:
    - na caixa 2: Mudar o horário do serviço (escalas-painel-horario-dia
-     › criar), Dar folga neste dia e Remover deste dia (escalas-painel-
+     › criar), Mudar a viatura do estagiário (escalas-painel-onde ›
+     estagio), Dar folga neste dia e Remover deste dia (escalas-painel-
      remover › analisarDoDia), Remover da guarnição (escalas-painel-ciclo
      › perguntarSaida), Cancelar a folga e Desfazer a mudança
      (escalas-painel-militar › perguntas);
@@ -229,10 +230,43 @@
     a.caixa.segunda(botao, caixa, textoDo(botao));
   }
 
+  /* ---------- a caixa 2 do Mudar a viatura (o estagiário) ---------- */
+
+  /* O sistema distribui ou uma das viaturas do estágio dele; a escolha vai na hora ao rascunho (a mesma do Onde fica do
+     Adicionar: RosterWork.escalasPainelOnde.estagio) */
+  function viaturaEstagio(botao, c) {
+    var a = c.a, el = RW.tpl('tpl-escala-celula-viatura'), E = RW.escalasPainelOnde.estagio;
+    var dados = api().dados(), linhas = dados && dados.estagios && dados.estagios[a.cpf], mil = api().militarDoDia(a.cpf);
+    if (!el || !linhas || !mil) return;
+    var periodos = mil.janelas.map(copiar), lista = E.viaturas(linhas, dados), atual = E.fixada(a.cpf, linhas, dados);
+    var lugar = el.querySelector('.escala-onde-fica-vagas'), nome = 'escala-celula-viatura-' + (++conta);
+    lista.forEach(function (v) {
+      var op = RW.tpl('tpl-escala-onde-fica-vaga');
+      if (!op) return;
+      op.querySelector('input').value = v.chave;
+      op.querySelector('.escala-onde-fica-vaga-texto').textContent = v.texto;
+      lugar.appendChild(op);
+    });
+    [].forEach.call(el.querySelectorAll('input[type="radio"]'), function (r) {
+      r.name = nome;
+      r.checked = atual ? r.value === atual.chave : r.value === 'sistema';
+      r.addEventListener('change', function () {
+        if (!r.checked) return;
+        var v = lista.filter(function (x) { return x.chave === r.value; })[0] || null;
+        api().aoVivo(function () { E.aplicar(a.cpf, v, periodos, linhas, dados, null); }, false);
+      });
+    });
+    vivo(a);
+    a.acao = 'viatura';
+    a.botao = botao;
+    a.caixa.segunda(botao, el, textoDo(botao));
+  }
+
   /* ---------- os itens do nome ---------- */
 
   var ACOES = {
     'horario-dia': horario,
+    'viatura-estagio': viaturaEstagio,
     'remover-dia': remover,
     'folga-dia': remover,
     'remover-guarnicao': sairDaGuarnicao,

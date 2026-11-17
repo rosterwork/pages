@@ -26,7 +26,7 @@
   var rascunho = [];      // os estágios como estão na tela (cada um com a _chave)
   var inicial = '[]';     // os gravados, para saber se mudou
   var escolhida = null;   // a _chave do estágio aberto à direita
-  var aberto = null;      // o cartão aberto ('nome', 'periodo', 'quem', 'funcoes', 'fora', 'acumulos')
+  var aberto = null;      // o cartão aberto ('nome', 'periodo', 'quem', 'escala', 'funcoes', 'maximo', 'fora', 'sobra', 'acumulos')
   var antes = [];         // o Desfazer: as fotos do rascunho
   var depois = [];        // o Refazer
   var juntando = null;    // o campo que está sendo digitado: a digitação seguida vira um passo só do Desfazer
@@ -194,7 +194,7 @@
     if (!dados || el.novo.disabled) return;
     guardarPasso();
     var e = { id: null, nome: '', inicio: '', fim: null, quem: 'graduacao', graus: [], militares: [], funcoes: [],
-              viatura_fora: 'sem_funcao', sobra: null, acumulos: [], _chave: 'novo-' + (++novos) };
+              escala: 'administrador', conta_maximo: true, viatura_fora: 'sem_funcao', sobra: null, acumulos: [], _chave: 'novo-' + (++novos) };
     rascunho.unshift(e);
     escolhida = e._chave;
     aberto = 'nome';

@@ -232,6 +232,8 @@
         dados: function () { return api.dados(); },
         periodos: function () { return est.periodos; },
         cpf: function () { return est.mil && est.mil.cpf; },
+        /* o estagiário no dia: só O sistema distribui e as viaturas do estágio dele */
+        estagio: function () { return est.como === 'dia' && est.mil && est.mil.estagio ? est.mil.estagio_funcoes : null; },
         aoMudar: atualizar
       });
       ligarRadios(q('.escala-adicionar-como'), function (v) {

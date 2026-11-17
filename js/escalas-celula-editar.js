@@ -14,7 +14,8 @@
    em vermelho do Fora da escala, a dele (escalas-celula-fora.js); o
    Oficial de Área do título, o dia da companhia (escalas-celula-
    oficial.js). O que cada item faz: escalas-celula-editar-acoes.js. O
-   dia é lido no clique (os pontos até ele chegar); o clique fora e o
+   dia é lido no clique (os pontos até ele chegar; no pelotão, o mês da
+   extra junto, escalas-celula-extra.js); o clique fora e o
    Esc fecham (o concluído fica, o que ficou pela metade sai); um dia
    por vez (outro dia com mudança não salva pergunta antes). O dia de
    mais de 7 dias atrás abre a caixa com o aviso (o painel só por
@@ -159,12 +160,22 @@
     return false;
   }
 
+  /* o mês da Extrajornada (o Adicionar extra neste dia), pedido já no clique, junto com o dia: a caixa do pelotão espera
+     por ele só na 1ª vez no mês (depois, o que se sabe dele fica, mesmo com o Salvar); se a leitura falha, o menu vem sem
+     o item */
+  function extraPronta(a) {
+    var X = RW.escalasCelulaExtra;
+    if (a.tipo !== 'pelotao' || a.extraLida || !X || !X.falta(dia)) return true;
+    X.adiantar(dia).then(function () { a.extraLida = true; if (aberto === a && a.esperando) mostrar(); });
+    return false;
+  }
+
   /* o conteúdo da caixa 1: o menu do nome ou o do pelotão, quando o dia chega. A caixa só aparece com ele; passando de
      0,5 s, aparece com os pontos (Carregando, REGRAS §4) */
   function mostrar() {
     var a = aberto;
     if (!a || !a.caixa) return;
-    if (!ativo() || !api().livre() || api().carregando() || !api().dados() || !unidadesProntas(a)) {
+    if (!ativo() || !api().livre() || api().carregando() || !api().dados() || !unidadesProntas(a) || !extraPronta(a)) {
       a.esperando = true;
       if (!a.pontos) a.pontos = setTimeout(function () { if (aberto === a && a.esperando) a.caixa.espera(true); }, 500);
       return;
@@ -276,6 +287,8 @@
     var d = diaDe(cel), a = aberto;
     if (a && a.tipo === 'pelotao' && mesmo(a, d.unidadeId, d.iso) && a.caixa && a.caixa.aberta()) return;
     fecharTudo();
+    /* o mês da Extrajornada (o Adicionar extra neste dia) começa a ser lido junto com o dia */
+    if (RW.escalasCelulaExtra) RW.escalasCelulaExtra.adiantar(d);
     irPara(d, function () {
       abrirCaixa({ tipo: 'pelotao', unidadeId: d.unidadeId, iso: d.iso }, pecaDoPelotao(cel), L().noDia(d.unidadeNome, diaMes(d.iso)));
     });

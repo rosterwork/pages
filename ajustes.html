@@ -1472,7 +1472,7 @@
 </template>
 <!-- a frase do alto do corpo -->
 <template id="tpl-estagios-ajuda">
-  <p class="nova-distribuicao-ajuda">As regras do estágio: quem participa, as funções e viaturas em que entra e o que fazer quando a viatura sai da escala. As regras do estágio valem mais que as Regras por militar e por graduação; a CNH vale sempre. Fora do período, o estágio não vale.</p>
+  <p class="nova-distribuicao-ajuda">As regras do estágio: quem participa, as funções e os postos em que entra e o que fazer quando o posto sai da escala. As regras do estágio valem mais que as Regras por militar e por graduação; a CNH vale sempre. Fora do período, o estágio não vale.</p>
 </template>
 <!-- a unidade sem estágio e a unidade sem distribuição -->
 <template id="tpl-estagios-vazio">
@@ -1533,7 +1533,15 @@
     </button>
   </div>
 </template>
-<!-- 4. uma função do estágio: o posto e a função, como entra (junto ou no lugar) e quantos cabem -->
+<!-- 4. a escala dos estagiários: hoje, inseridos pelo administrador, dia a dia (a escala própria virá depois) -->
+<template id="tpl-estagios-escala">
+  <div class="nova-distribuicao-cartao-conteudo">
+    <div class="nova-distribuicao-opcoes">
+      <label class="geral-opcao"><input type="radio" data-valor="administrador" /><span>Inseridos pelo administrador, dia a dia</span></label>
+    </div>
+  </div>
+</template>
+<!-- 5. uma função do estágio: o posto e a função, como entra (junto ou no lugar) e quantos cabem -->
 <template id="tpl-estagios-funcao">
   <div class="ajustes-estagios-parte">
     <div class="ajustes-estagios-linha">
@@ -1563,19 +1571,28 @@
     <div class="nova-distribuicao-cartao-botoes">
       <button type="button" class="botao nova-distribuicao-adicionar">Adicionar função</button>
     </div>
-    <p class="nova-distribuicao-ajuda">Junto: o estagiário fica a mais e conta só no máximo do posto. No lugar: ele fica com a função e conta como quem estaria ali.</p>
+    <p class="nova-distribuicao-ajuda">Junto: o estagiário fica a mais e não conta no mínimo nem no ideal do posto. No lugar: ele fica com a função e conta como quem estaria ali.</p>
   </div>
 </template>
-<!-- 5. se a viatura sair da escala -->
+<!-- 6. o máximo do posto: os que vão junto contam ou não -->
+<template id="tpl-estagios-maximo">
+  <div class="nova-distribuicao-cartao-conteudo">
+    <div class="nova-distribuicao-opcoes">
+      <label class="geral-opcao"><input type="radio" data-valor="contam" /><span>Os que vão junto contam no máximo do posto</span></label>
+      <label class="geral-opcao"><input type="radio" data-valor="nao_contam" /><span>Os que vão junto não contam no máximo do posto</span></label>
+    </div>
+  </div>
+</template>
+<!-- 7. se o posto sair da escala -->
 <template id="tpl-estagios-fora">
   <div class="nova-distribuicao-cartao-conteudo">
     <div class="nova-distribuicao-opcoes">
       <label class="geral-opcao"><input type="radio" data-valor="sem_funcao" /><span>Ficam sem função</span></label>
-      <label class="geral-opcao"><input type="radio" data-valor="outra_viatura" /><span>Vão para outra viatura do estágio, se couber</span></label>
+      <label class="geral-opcao"><input type="radio" data-valor="outra_viatura" /><span>Vão para outro posto do estágio, se couber</span></label>
     </div>
   </div>
 </template>
-<!-- 6. quando não couber nas viaturas do estágio: ficam sem função ou vão para um posto e função (sempre junto) -->
+<!-- 8. quando não couber nos postos do estágio: ficam sem função ou vão para um posto e função (sempre junto) -->
 <template id="tpl-estagios-sobra">
   <div class="nova-distribuicao-cartao-conteudo">
     <div class="nova-distribuicao-opcoes">

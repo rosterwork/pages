@@ -142,8 +142,12 @@
 
   function salvar() {
     var btn = q('#p3-salvar');
-    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RW.etapas.acao('extraDistribuicao', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    /* com o mês lançado, o ajuste vai para a escala e a refaz: o cartão das etapas na hora, e a fila do recálculo no fim;
+       antes de lançar, os pontinhos no botão na hora e o cartão só se passar de 1,5 s */
+    var refaz = G().lancada();
+    var espera = refaz
+      ? RW.etapas.acao('extraDistribuicao', { refaz: true }, { doServidor: 2, botao: btn })
+      : RW.etapas.acao('extraDistribuicao', { refaz: false }, { doServidor: 1, botao: btn, atraso: true, semFila: true });
     RW.rpc('extrajornada_distribuicao_salvar', {
       p_competencia: d.competencia,
       p_mudancas: G().alteracoes().map(function (k) { return G().rascunho()[k]; }),

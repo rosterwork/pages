@@ -5,9 +5,11 @@
    estágio · Período (De e Até; sem Até, vale até alguém pôr) · Quem
    participa (nas bolinhas, Por graduação, com as caixas das
    graduações, ou Por nome, com o campo de militar e os escolhidos)
-   · Funções e viaturas (uma parte por função: o posto e a função,
+   · Escala dos estagiários (hoje, inseridos pelo administrador, dia
+   a dia) · Funções e postos (uma parte por função: o posto e a função,
    Junto com ou No lugar de quem está na função, e quantos cabem) ·
-   Se a viatura sair da escala · Quando não couber nas viaturas
+   Máximo do posto (os que vão junto contam ou não no máximo do
+   posto) · Se o posto sair da escala · Quando não couber nos postos
    (ficam sem função ou vão para um posto e função, sempre junto) ·
    Acúmulo de função (a função acumulada e quem a faz) e, no fim, o
    Remover estágio. Cada
@@ -185,7 +187,7 @@
     });
   }
 
-  /* ---------- 4. Funções e viaturas ---------- */
+  /* ---------- 5. Funções e postos ---------- */
   function cartaoFuncoes(u, ctx) {
     var e = ctx.estagio, dados = ctx.dados;
     var linhas = e.funcoes.filter(completa).map(function (f) { return textoUmaFuncao(dados, f); });
@@ -224,7 +226,31 @@
     });
   }
 
-  /* ---------- 5. Se a viatura sair da escala ---------- */
+  /* ---------- 4. Escala dos estagiários: hoje, inseridos pelo administrador, dia a dia (uma resposta só) ---------- */
+  function cartaoEscala(u, ctx) {
+    var e = ctx.estagio, escala = e.escala || 'administrador';
+    P().cartao(u, ctx.api, { lado: 'e' }, 'escala', msg().tituloEscala, [msg().escala[escala] || msg().escala.administrador], function (lugar) {
+      var c = RW.tpl('tpl-estagios-escala');
+      P().bolinhas(c.querySelector('.nova-distribuicao-opcoes'), 'estagios-escala', function (v) { return v === escala; }, function (v) {
+        ctx.api.mudar(function (x) { x.escala = v; });
+      });
+      lugar.appendChild(c);
+    });
+  }
+
+  /* ---------- 6. Máximo do posto: os que vão junto contam ou não no máximo do posto (sem a resposta, contam) ---------- */
+  function cartaoMaximo(u, ctx) {
+    var e = ctx.estagio, conta = e.conta_maximo !== false;
+    P().cartao(u, ctx.api, { lado: 'e' }, 'maximo', msg().tituloMaximo, [conta ? msg().maximo.contam : msg().maximo.naoContam], function (lugar) {
+      var c = RW.tpl('tpl-estagios-maximo');
+      P().bolinhas(c.querySelector('.nova-distribuicao-opcoes'), 'estagios-maximo', function (v) { return v === (conta ? 'contam' : 'nao_contam'); }, function (v) {
+        ctx.api.mudar(function (x) { x.conta_maximo = v === 'contam'; });
+      });
+      lugar.appendChild(c);
+    });
+  }
+
+  /* ---------- 7. Se o posto sair da escala ---------- */
   function cartaoFora(u, ctx) {
     var e = ctx.estagio;
     P().cartao(u, ctx.api, { lado: 'e' }, 'fora', msg().tituloFora, [msg().fora[e.viatura_fora]], function (lugar) {
@@ -236,7 +262,7 @@
     });
   }
 
-  /* ---------- 6. Quando não couber nas viaturas: ficam sem função ou vão para um posto e função ---------- */
+  /* ---------- 8. Quando não couber nos postos: ficam sem função ou vão para um posto e função ---------- */
   function cartaoSobra(u, ctx) {
     var e = ctx.estagio, dados = ctx.dados;
     var escolhida = e.sobra && e.sobra.posto && e.sobra.funcao ? e.sobra.posto + '|' + e.sobra.funcao : null;
@@ -256,7 +282,7 @@
     });
   }
 
-  /* ---------- 7. Acúmulo de função ---------- */
+  /* ---------- 9. Acúmulo de função ---------- */
   function cartaoAcumulos(u, ctx) {
     var e = ctx.estagio, dados = ctx.dados;
     var linhas = e.acumulos.filter(completo).map(function (a) {
@@ -299,7 +325,9 @@
     cartaoNome(u, ctx);
     cartaoPeriodo(u, ctx);
     cartaoQuem(u, ctx);
+    cartaoEscala(u, ctx);
     cartaoFuncoes(u, ctx);
+    cartaoMaximo(u, ctx);
     cartaoFora(u, ctx);
     cartaoSobra(u, ctx);
     cartaoAcumulos(u, ctx);

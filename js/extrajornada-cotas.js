@@ -232,8 +232,10 @@
   function salvar() {
     var concedidas = {}, btn = q('#p2-salvar');
     comTermo().forEach(function (m) { concedidas[m.cpf] = conc(m); });
-    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RW.etapas.acao('extraCotas', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s; com o mês lançado, a extra que sai vai
+       para a escala, que pode ser refeita: a fila do recálculo no fim */
+    var lancado = !!d.lancamento && !d.lancamento.reaberto;
+    var espera = RW.etapas.acao('extraCotas', null, { doServidor: 1, botao: btn, atraso: true, semFila: !lancado });
     RW.rpc('extrajornada_cotas_salvar', {
       p_competencia: d.competencia, p_cotas_recebidas: p2.modo === 'por_unidade' ? somaUnidades() : (p2.recebidas === '' || p2.recebidas == null ? null : +p2.recebidas),
       p_repartir_por: p2.modo, p_cotas_unidades: p2.modo === 'por_unidade' ? p2.unidades : null, p_concedidas: concedidas

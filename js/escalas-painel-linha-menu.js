@@ -113,6 +113,9 @@
       delete c['ver-funcoes'];
       delete c['ver-dia'];
       c['abrir-painel'] = true;
+      /* o estagiário no dia: o Mudar a viatura (as viaturas do estágio dele) */
+      var dd = ed().dados() || {};
+      c['viatura-estagio'] = cfg.tipo === 'militar' && !!cfg.militar && !!(dd.estagios && dd.estagios[cfg.militar.cpf]) && !!ed().militarDoDia(cfg.militar.cpf);
       return c;
     }
     var r = {}, m = cfg.militar, militares = cfg.visao === 'militares';

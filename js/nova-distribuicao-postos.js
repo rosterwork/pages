@@ -8,7 +8,9 @@
    sair do campo; fora do formato fica só no campo, em vermelho),
    CNH de A a E alinhadas, setas, Substituir temporariamente, Fora
    de serviço e excluir. O posto gravado sai pela exclusão com data
-   (a caixa); o novo, ainda não salvo, sai da lista na hora. Embaixo
+   (a caixa); o novo, ainda não salvo, sai da lista na hora; a
+   Central de Operações do pelotão não tem o excluir nem o Fora de
+   serviço. Embaixo
    de cada posto, os erros, o que muda na mudança agendada e as
    mudanças com data (-caixas).
    ============================================================ */
@@ -57,6 +59,11 @@
     acoesPosto(linha, ctx, api, posto, marcas, function () {
       api.mudar(ctx.lado, function (x) { x.instalacoes.splice(i, 1); });
     });
+    /* a Central de Operações do pelotão nunca sai, nem por um tempo (é ela que exibe as funções especiais): sem Rádio
+       Operador, o efetivo dela fica 0 · 0 · 0 no bloco Efetivo */
+    var centralFixa = !ctx.ehCia && inst.nome === 'Central de Operações';
+    linha.querySelector('.nova-distribuicao-remover').classList.toggle('oculto', centralFixa);
+    linha.querySelector('.nova-distribuicao-fora').classList.toggle('oculto', centralFixa);
     var extra = linha.querySelector('.nova-distribuicao-viatura-extra');
     P().erros(ctx, 'instalacao:' + i).forEach(function (e) { P().erroCampo(extra, e); });
     P().marcarMuda(extra, ctx, 'instalacao:' + inst.nome);

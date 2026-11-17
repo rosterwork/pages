@@ -3,8 +3,9 @@
    Usado no Editar posto do painel do dia da Escala e no painel de
    Postos (viatura e instalação). Duas partes; quem usa põe cada
    uma numa caixa e decide quando salvar:
-   - efetivo(valores, aoMudar): mínimo, ideal e máximo lado a lado
-     (o mínimo vai de 0 a 10; ideal e máximo, de 1 a 10).
+   - efetivo(valores, aoMudar, opcoes): mínimo, ideal e máximo lado a
+     lado (o mínimo vai de 0 a 10; ideal e máximo, de 1 a 10, ou de 0 a
+     10 com opcoes.semVaga, na Central de Operações).
    - viatura(opcoes): o prefixo e a CNH (A a E). Com comDatas, o
      "A partir de" e o "Até" aparecem quando um dos dois muda (sem o
      Até, a troca é para sempre); o aviso amarelo diz se o prefixo já
@@ -33,9 +34,11 @@
 
   /* ---------- efetivo ---------- */
 
-  /* valores = { min, ideal, max } (null = ainda não escolhido); aoMudar(valores) a cada escolha.
+  /* valores = { min, ideal, max } (null = ainda não escolhido); aoMudar(valores) a cada escolha;
+     opcoes.semVaga: o ideal e o máximo também aceitam 0 (a Central de Operações sem Rádio Operador).
      Devolve { el, valores(), valido() } */
-  function efetivo(valores, aoMudar) {
+  function efetivo(valores, aoMudar, opcoes) {
+    var semVaga = !!(opcoes && opcoes.semVaga);
     var atual = { min: valores.min, ideal: valores.ideal, max: valores.max };
     var el = RosterWork.tpl('tpl-posto-editar-efetivo');
     if (!el) return null;
@@ -48,7 +51,7 @@
       var menu = campo.querySelector('.dropdown-menu');
       if (menu && RosterWork.dropdownNumeros) {
         RosterWork.dropdownNumeros.preencher(menu, {
-          opcoes: chave === 'min' ? MINIMOS : DEMAIS,
+          opcoes: chave === 'min' || semVaga ? MINIMOS : DEMAIS,
           valor: atual[chave],
           aoEscolher: function (v) {
             atual[chave] = v;

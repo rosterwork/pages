@@ -16,9 +16,15 @@
    - No lugar de outro militar: quem sai (de serviço no horário) e de
      quais funções, todas marcadas; quem fica sem nenhuma vai para
      Sem função.
+   - O estagiário (cfg.estagio, as Funções e postos do estágio dele):
+     uma caixa de marcar por posto do estágio, todas marcadas no
+     começo (o sistema distribui); uma marcada, ele fica nela; duas ou
+     mais, o sistema escolhe entre elas; pelo menos uma. Vai para o
+     rascunho na chave estagio_onde ({cpf: as linhas marcadas}).
    Embaixo, a nota do que acontece com quem está em volta. Cada
    caixa é de um militar e de uma unidade (a leitura do dia dela),
-   com a sua escolha.
+   com a sua escolha. A escolha do estagiário é a mesma no Mudar onde
+   fica da célula (RosterWork.escalasPainelOnde.estagio).
    API: RosterWork.escalasPainelOnde.criar(caixa, cfg) devolve
    { atualizar(), reiniciar(), estado(), respondido(), falta() (a escolha está pela metade),
      quem(texto), dia(texto) (o dia no título: "Onde fica em 13/11"), aplicar(pontual),
@@ -26,7 +32,8 @@
    cfg = { dados() (a leitura do dia da unidade onde ele entra),
            periodos() (os horários dele), cpf() (quem entra),
            vagas (true: as vagas sem ninguém no horário), so (['funcao']: só as opções da lista, sem o "O sistema
-           distribui", que deixa de ser a resposta de começo: o cartão Para qual função), aoMudar() }
+           distribui", que deixa de ser a resposta de começo: o cartão Para qual função),
+           estagio() (as Funções e postos do estágio de quem entra, ou nada), aoMudar() }
    ============================================================ */
 (function () {
   'use strict';
@@ -41,6 +48,44 @@
   function msg() { return RosterWork.mensagens.escala; }
   function L() { return RosterWork.mensagens.escala.linha; }
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
+
+  /* ---------- o estagiário: em quais postos do estágio ele pode ficar no dia ---------- */
+
+  function noPosto(a, po) { return po.tipo === 'viatura' ? a.viatura_id === po.id : a.instalacao_id === po.id; }
+
+  /* os postos das Funções e postos do estágio (linhas), com o posto da leitura do dia: [{ chave, posto, funcao, texto }]
+     (o Efetivo, só o nome do posto; outra função, a função no posto) */
+  function postos(linhas, dados) {
+    var lista = [];
+    (linhas || []).forEach(function (l) {
+      var po = ed().acharPosto(l.posto, l.posto, dados);
+      if (!po || !l.funcao) return;
+      lista.push({ chave: po.tipo + ':' + po.id + '|' + l.funcao, posto: po, funcao: l.funcao,
+        texto: l.funcao === 'Efetivo' ? po.nome : ed().funcaoNoPosto(l.funcao, po) });
+    });
+    return lista;
+  }
+
+  /* os postos marcados dele no rascunho (os índices de postos()); sem o Onde fica guardado, todos (o sistema distribui) */
+  function marcadas(cpf, linhas, dados) {
+    var lista = postos(linhas, dados), r = ed().rascunho(), sel = r && r.estagio_onde ? r.estagio_onde[cpf] : null;
+    if (!sel || !sel.length) return lista.map(function (v, i) { return i; });
+    return lista.map(function (v, i) {
+      return sel.some(function (m) { return m.posto === v.posto.id && m.funcao === v.funcao; }) ? i : -1;
+    }).filter(function (i) { return i >= 0; });
+  }
+
+  /* põe no rascunho os postos marcados dele (todos = o sistema distribui, sem guardar) e tira o fixado dele nos postos do
+     estágio (o de antes do Onde fica) */
+  function aplicarOnde(cpf, indices, linhas, dados) {
+    var r = ed().rascunho(), lista = postos(linhas, dados);
+    r.ajustes = r.ajustes.filter(function (a) {
+      return !(a.acao === 'colocar' && a.cpf === cpf && lista.some(function (v) { return noPosto(a, v.posto); }));
+    });
+    r.estagio_onde = r.estagio_onde || {};
+    if (!indices || indices.length >= lista.length) delete r.estagio_onde[cpf];
+    else r.estagio_onde[cpf] = indices.map(function (i) { return { posto: lista[i].posto.id, funcao: lista[i].funcao }; });
+  }
 
   function criar(caixa, cfg) {
     var api = ed(), H = api.horas, Q = RosterWork.escalasPainelQuem;
@@ -57,9 +102,13 @@
        respondeu (até lá, a vaga recomendada vem marcada) */
     /* a resposta de começo: o sistema distribui (sem ele nas opções, nenhuma) */
     var padrao = cfg.so && cfg.so.indexOf('sistema') < 0 ? null : 'sistema';
-    var est = { onde: padrao, posto: null, funcao: null, sai: null, funcoes: [], vaga: null, escolheu: false };
+    var est = { onde: padrao, posto: null, funcao: null, sai: null, funcoes: [], vaga: null, marcadas: null, escolheu: false };
     var onde = null, chaveSai = '', marcarOnde = null, comboSai = null;
     var vagas = [], chaveVagas = null;   // as vagas sem ninguém na tela e a marca delas (redesenha só quando mudam)
+    var chavePostos = null, marcarPostos = null;   // os postos do estágio de quem entra (o estagiário): a marca e as caixas
+
+    /* as Funções e postos do estágio de quem entra (o estagiário), ou nada */
+    function linhasEstagio() { var l = cfg.estagio && cfg.estagio(); return l && l.length ? l : null; }
 
     function mudou() { if (cfg.aoMudar) cfg.aoMudar(); }
     function mostra(no, sim) { no.classList.toggle('oculto', !sim); }
@@ -80,7 +129,28 @@
       montarFuncoes();
     }
     /* o dia ou o horário mudou: tudo volta ao começo (com as vagas, a recomendada volta a vir marcada) */
-    function reiniciar() { est.onde = padrao; est.escolheu = false; chaveVagas = null; limpar(); }
+    function reiniciar() { est.onde = padrao; est.escolheu = false; est.marcadas = null; chaveVagas = null; chavePostos = null; limpar(); }
+
+    /* o estagiário: uma caixa de marcar por posto do estágio dele (redesenhadas só quando a lista muda), as marcadas do
+       rascunho (sem elas, todas); desmarcar a última não vale: pelo menos uma */
+    function desenharPostos() {
+      var linhas = linhasEstagio(), lista = linhas ? postos(linhas, cfg.dados()) : [];
+      var chave = lista.map(function (v) { return v.chave; }).join(';');
+      if (chave === chavePostos) return;
+      chavePostos = chave;
+      chaveVagas = null;
+      el.vagas.textContent = '';
+      marcarPostos = null;
+      if (!lista.length) { est.marcadas = null; return; }
+      if (!est.marcadas) est.marcadas = marcadas(cfg.cpf(), linhas, cfg.dados());
+      marcarPostos = Q.marcar(el.vagas, lista.map(function (v, i) { return { texto: v.texto, marcado: est.marcadas.indexOf(i) >= 0 }; }),
+        function (indices) {
+          if (!indices.length) { marcarPostos(est.marcadas); return; }
+          est.marcadas = indices;
+          est.escolheu = true;
+          mudou();
+        });
+    }
 
     /* as vagas sem ninguém em todo o horário de quem entra, na ordem da lista do dia: [{ chave, posto, funcao }]; o lugar
        que falta até o ideal também é vaga (a função aberta e o lugar do meio, não) */
@@ -182,7 +252,16 @@
 
     /* redesenha com a escolha de agora (a caixa em si aparece ou some por quem a usa) */
     function atualizar() {
-      desenharVagas();
+      /* o estagiário: só as caixas dos postos do estágio dele (sem o sistema distribui, as vagas, a função e o lugar de
+         outro: todas marcadas é o sistema distribui) */
+      var estagiario = !!linhasEstagio();
+      [].forEach.call(radios, function (r) {
+        r.closest('.geral-opcao').classList.toggle('oculto', (cfg.so && cfg.so.indexOf(r.value) < 0) || estagiario);
+      });
+      if (estagiario && est.onde !== 'estagio') { limpar(); est.onde = 'estagio'; }
+      if (!estagiario && est.onde === 'estagio') { est.onde = padrao; est.marcadas = null; }
+      if (estagiario || chavePostos) desenharPostos();
+      if (!estagiario) desenharVagas();
       marcarOnde(est.onde);
       mostra(el.funcao, est.onde === 'funcao');
       if (est.onde === 'funcao' && !onde) {
@@ -198,12 +277,13 @@
 
     function respondido() {
       return est.onde === 'sistema' || (est.onde === 'vaga' && !!est.vaga) || (est.onde === 'funcao' && !!est.posto && !!est.funcao)
-        || (est.onde === 'lugar' && !!est.sai && est.funcoes.some(Boolean));
+        || (est.onde === 'lugar' && !!est.sai && est.funcoes.some(Boolean)) || (est.onde === 'estagio' && !!(est.marcadas && est.marcadas.length));
     }
     /* a escolha está pela metade (a vaga, a função, ou quem sai e de quais funções) */
     function falta() {
       if (!est.onde) return true;
       if (est.onde === 'vaga') return !est.vaga;
+      if (est.onde === 'estagio') return !(est.marcadas && est.marcadas.length);
       if (est.onde === 'funcao') return !est.funcao;
       if (est.onde === 'lugar') return !est.sai || !est.funcoes.some(Boolean);
       return false;
@@ -213,7 +293,11 @@
        funções de quem sai, nos trechos delas no horário. pontual = { contabilizar } (o Adicionar no dia) ou null */
     function aplicar(pontual) {
       var cpf = cfg.cpf(), periodos = cfg.periodos(), dados = cfg.dados();
-      if (est.onde === 'vaga') {
+      if (est.onde === 'estagio') {
+        /* o estagiário: entra (o sistema refaz o dia) com os postos marcados */
+        api.aplicarColocacao({ cpf: cpf, periodos: periodos, sistema: true, refazer: true, pontual: pontual });
+        aplicarOnde(cpf, est.marcadas, linhasEstagio(), dados);
+      } else if (est.onde === 'vaga') {
         api.aplicarColocacao({ cpf: cpf, posto: est.vaga.posto, funcao: est.vaga.funcao, periodos: periodos, sistema: false, pontual: pontual, dados: dados });
       } else if (est.onde === 'funcao') {
         api.aplicarColocacao({ cpf: cpf, posto: est.posto, funcao: est.funcao, periodos: periodos, sistema: false, pontual: pontual, dados: dados });
@@ -260,7 +344,7 @@
     /* liga as escolhas */
     var nomeRadios = 'escala-onde-fica-' + (++conta);
     var radios = el.opcoes.querySelectorAll('input[type="radio"]');
-    /* só as opções pedidas (cfg.so) */
+    /* só as opções pedidas (cfg.so; o estagiário, só O sistema distribui: atualizar) */
     [].forEach.call(radios, function (r) { if (cfg.so && cfg.so.indexOf(r.value) < 0) r.closest('.geral-opcao').classList.add('oculto'); });
     [].forEach.call(radios, function (r) {
       r.name = nomeRadios;
@@ -291,5 +375,9 @@
     };
   }
 
-  window.RosterWork.escalasPainelOnde = { criar: criar };
+  window.RosterWork.escalasPainelOnde = {
+    criar: criar,
+    /* os postos do estagiário (o Mudar onde fica da célula usa o mesmo código) */
+    estagio: { postos: postos, marcadas: marcadas, aplicar: aplicarOnde }
+  };
 })();

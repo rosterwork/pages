@@ -159,8 +159,8 @@
 
   function lancar() {
     var d = org().dados(), btn = RW.painel.rodape().querySelector('#p4-lancar');
-    /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RW.etapas.acao('extraLancar', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    /* lançar põe as extras na escala e a refaz: o cartão das etapas na hora, e a fila do recálculo no fim */
+    var espera = RW.etapas.acao('extraLancar', null, { doServidor: 2, botao: btn });
     RW.rpc('extrajornada_lancar', { p_competencia: d.competencia }).then(function (r) {
       espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }

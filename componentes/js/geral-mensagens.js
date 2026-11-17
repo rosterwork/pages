@@ -351,9 +351,11 @@
         tituloNome: 'Nome do estágio',
         tituloPeriodo: 'Período',
         tituloQuem: 'Quem participa',
-        tituloFuncoes: 'Funções e viaturas',
-        tituloFora: 'Se a viatura sair da escala',
-        tituloSobra: 'Quando não couber nas viaturas',
+        tituloEscala: 'Escala dos estagiários',
+        tituloFuncoes: 'Funções e postos',
+        tituloMaximo: 'Máximo do posto',
+        tituloFora: 'Se o posto sair da escala',
+        tituloSobra: 'Quando não couber nos postos',
         tituloAcumulos: 'Acúmulo de função',
         rotuloQuantos: 'Quantos',
         rotuloAcumula: 'Acumula',
@@ -368,7 +370,9 @@
         semUnidade: 'Sem unidade',
         modos: { junto: 'junto', no_lugar: 'no lugar' },
         funcaoLinha: function (funcao, modo, n) { return funcao + ' · ' + modo + ' · até ' + n; },
-        fora: { sem_funcao: 'Ficam sem função', outra_viatura: 'Vão para outra viatura do estágio, se couber' },
+        escala: { administrador: 'Inseridos pelo administrador, dia a dia' },
+        maximo: { contam: 'Os que vão junto contam no máximo do posto', naoContam: 'Os que vão junto não contam no máximo do posto' },
+        fora: { sem_funcao: 'Ficam sem função', outra_viatura: 'Vão para outro posto do estágio, se couber' },
         sobraVaoPara: function (funcao) { return 'Vão para ' + funcao; },
         acumuloLinha: function (acumula, quem) { return 'Acumula ' + acumula + ': quem está em ' + quem; },
         nenhumAcumulo: 'Nenhum acúmulo.',
@@ -792,7 +796,7 @@
         acimaMaximo:         { texto: 'Efetivo acima do máximo: {posto} ({pessoas} de {maximo})', icone: 'icone-alerta', nivel: 'erro' },
         /* militar de serviço sem função com modelo válido (o painel escolhe singular ou plural; o mesmo texto da análise de Trocas e Folgas) */
         semFuncao:           { texto: 'Existe militar sem função', textoPlural: 'Existem militares sem função', icone: 'icone-alerta', nivel: 'erro' },
-        /* o estagiário sem lugar no estágio, ou com a viatura fora da escala (Ajustes › Estágios); {militar} = grad + nome */
+        /* o estagiário sem lugar no estágio, ou com o posto fora da escala (Ajustes › Estágios); {militar} = grad + nome */
         estagioSemFuncao:    { texto: 'Estagiário sem função: {militar}', icone: 'icone-alerta', nivel: 'alerta' },
         /* regras e habilitação, conferidas em toda colocação (automática ou manual); {militar} = grad + nome */
         cnhIncompativel:     { texto: 'Condutor sem a CNH exigida: {militar} em {posto}', icone: 'icone-alerta', nivel: 'erro' },
@@ -1708,6 +1712,8 @@
       viaturaSemCnh: '{nome} · CNH sem resposta',
       efetivoFalta: 'Efetivo: falta responder',
       reservaFrase: 'Vazia, fica fora da escala. Nunca dá erro nem aviso de efetivo.',
+      /* a Central de Operações com efetivo 0 · 0 · 0 (no pelotão ela nunca sai: só o Rádio Operador) */
+      centralSemRadio: 'Sem Rádio Operador. A Central exibe o Oficial de Área, o Chefe de Socorro, o Cabo de Dia e a Extrajornada.',
       semMinimoFrases: [
         'Sem o mínimo, fica fora da escala sem aviso.',
         'Sem o mínimo, fica fora da escala com aviso amarelo.',
@@ -2604,26 +2610,35 @@
         return { titulo: 'Salvando a mudança nas guarnições', passos: ['Gravando a mudança nas guarnições', 'Refazendo os próximos 7 dias do ' + v.unidade, 'Atualizando os dias na grade'],
           pe: 'O resto do período continua sozinho, e você pode seguir trabalhando.' };
       },
-      salvarExtra: { titulo: 'Salvando a extrajornada', passos: ['Gravando a mudança na extrajornada', 'Atualizando os dias na grade'] },
+      salvarExtra: { titulo: 'Salvando a extrajornada', passos: ['Gravando a mudança na extrajornada', 'Refazendo os próximos 7 dias da escala', 'Atualizando os dias na grade'],
+        pe: 'O resto do período continua sozinho, e você pode seguir trabalhando.' },
       salvarSobreaviso: { titulo: 'Salvando o sobreaviso', passos: ['Gravando o sobreaviso', 'Refazendo a fila dos dias seguintes', 'Atualizando os dias na grade'] },
-      removerTroca: { titulo: 'Salvando a mudança na troca', passos: ['Gravando a mudança', 'Refazendo a distribuição dos dias da troca', 'Atualizando a grade'] },
+      removerTroca: { titulo: 'Salvando a mudança na troca', passos: ['Gravando a mudança', 'Refazendo os dias da troca e os próximos 7 dias', 'Atualizando a grade'],
+        pe: 'O resto do período continua sozinho.' },
       /* folgas */
       folgaAprovar: function (v) {
-        return { titulo: 'Aprovando a folga do ' + v.militar, passos: ['Gravando a aprovação', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo a distribuição do dia'] };
+        return { titulo: 'Aprovando a folga do ' + v.militar, passos: ['Gravando a aprovação', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo o dia e os próximos 7 dias'],
+          pe: 'O resto do período continua sozinho.' };
       },
       folgaDar: function (v) {
-        return { titulo: 'Dando a folga ao ' + v.militar, passos: ['Gravando a folga', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo a distribuição do dia'] };
+        return { titulo: 'Dando a folga ao ' + v.militar, passos: ['Gravando a folga', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo o dia e os próximos 7 dias'],
+          pe: 'O resto do período continua sozinho.' };
       },
       folgaCancelar: function (v) {
-        return { titulo: 'Cancelando a folga', passos: ['Gravando o cancelamento', 'Devolvendo o militar ao serviço de ' + v.dia, 'Refazendo a distribuição do dia'] };
+        return { titulo: 'Cancelando a folga', passos: ['Gravando o cancelamento', 'Devolvendo o militar ao serviço de ' + v.dia, 'Refazendo o dia e os próximos 7 dias'],
+          pe: 'O resto do período continua sozinho.' };
       },
       folgaAnalisar: { passos: ['Buscando o serviço do militar', 'Testando a folga na escala, sem gravar', 'Comparando o antes e o depois'] },
       /* trocas */
       trocaAnalisar: { passos: ['Buscando os serviços dos dois militares', 'Testando a troca na escala, sem gravar', 'Comparando o antes e o depois'] },
-      trocaAprovar: { titulo: 'Aprovando a troca', passos: ['Gravando a aprovação', 'Refazendo a distribuição dos dias da troca', 'Atualizando a lista'] },
-      trocaCancelar: { titulo: 'Cancelando a troca', passos: ['Gravando o cancelamento', 'Refazendo a distribuição dos dias da troca', 'Atualizando a lista'] },
-      trocaRegistrar: { titulo: 'Registrando as trocas', passos: ['Gravando as trocas', 'Refazendo a distribuição dos dias', 'Atualizando a lista'] },
-      trocaEditar: { titulo: 'Salvando a alteração da troca', passos: ['Gravando a alteração', 'Refazendo a distribuição dos dias da troca', 'Atualizando a lista'] },
+      trocaAprovar: { titulo: 'Aprovando a troca', passos: ['Gravando a aprovação', 'Refazendo os dias da troca e os próximos 7 dias', 'Atualizando a lista'],
+        pe: 'O resto do período continua sozinho.' },
+      trocaCancelar: { titulo: 'Cancelando a troca', passos: ['Gravando o cancelamento', 'Refazendo os dias da troca e os próximos 7 dias', 'Atualizando a lista'],
+        pe: 'O resto do período continua sozinho.' },
+      trocaRegistrar: { titulo: 'Registrando as trocas', passos: ['Gravando as trocas', 'Refazendo os dias das trocas e os próximos 7 dias', 'Atualizando a lista'],
+        pe: 'O resto do período continua sozinho.' },
+      trocaEditar: { titulo: 'Salvando a alteração da troca', passos: ['Gravando a alteração', 'Refazendo os dias da troca e os próximos 7 dias', 'Atualizando a lista'],
+        pe: 'O resto do período continua sozinho.' },
       /* usuários */
       afastamento: function (v) {
         return { titulo: 'Salvando ' + v.oQue + ' do ' + v.militar, passos: ['Gravando ' + v.oQue, 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' };
@@ -2695,8 +2710,15 @@
       extraPedidosMes: { titulo: 'Salvando os pedidos do mês', passos: ['Gravando o prazo e as regras'] },
       extraCotas: { titulo: 'Salvando as cotas', passos: ['Gravando as cotas'] },
       cotasSugestao: { passos: ['Calculando a sugestão'] },
-      extraDistribuicao: { titulo: 'Salvando a distribuição da extrajornada', passos: ['Gravando as extras'] },
-      extraLancar: { titulo: 'Lançando a extrajornada', passos: ['Gravando o lançamento'] },
+      /* com o mês lançado, as extras mudadas vão para a escala, que é refeita do primeiro dia mudado em diante */
+      extraDistribuicao: function (v) {
+        return v.refaz
+          ? { titulo: 'Salvando a distribuição da extrajornada', passos: ['Gravando as extras', 'Refazendo os próximos 7 dias da escala'],
+              pe: 'O resto do período continua sozinho.' }
+          : { titulo: 'Salvando a distribuição da extrajornada', passos: ['Gravando as extras'] };
+      },
+      extraLancar: { titulo: 'Lançando a extrajornada', passos: ['Gravando o lançamento', 'Refazendo os próximos 7 dias da escala'],
+        pe: 'O resto do período continua sozinho.' },
       sysbmPreparar: function (v) { return { titulo: 'Preparando o envio ao SYSBM', passos: [v.termo ? 'Conferindo o termo' : 'Buscando a escala do dia'] }; },
       bugLigar: { titulo: 'Ligando a mensagem ao bug', passos: ['Gravando a ligação'] },
       bugSituacao: { titulo: 'Salvando o bug', passos: ['Gravando a situação'] },

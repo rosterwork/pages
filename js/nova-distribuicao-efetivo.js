@@ -2,7 +2,9 @@
    NOVA DISTRIBUIÇÃO — bloco 3, Efetivo
    Um cartão por posto. Fechado, o título traz o nome (e a CNH da
    viatura), os números "Mín. · Ideal · Máx." e, com mínimo 0, o
-   selo Reserva com a frase do que isso quer dizer. Aberto, o
+   selo Reserva com a frase do que isso quer dizer (a Central de
+   Operações com 0 · 0 · 0, sem Rádio Operador, leva a frase dela e
+   não o selo; só ela aceita 0 no ideal e no máximo). Aberto, o
    mínimo, o ideal e o máximo (componente geral-posto-editar), o que
    fazer sem gente para o mínimo (sai incompleto ou fica fora da
    escala, com o nível do aviso) e as
@@ -26,7 +28,10 @@
   function cartaoEfetivo(u, ctx, api, item, i, tipo) {
     var nome = item.nome;
     var ef = item.efetivo || [];
-    var reserva = ef[0] === 0;
+    /* a Central de Operações aceita 0 · 0 · 0: sem Rádio Operador, só exibe as funções especiais e a Extrajornada */
+    var central = tipo === 'i' && /^Central de Operações( \d+)?$/.test(nome || '');
+    var semRadio = central && ef[0] === 0 && ef[1] === 0 && ef[2] === 0;
+    var reserva = ef[0] === 0 && !semRadio;
     var funcoes = nome ? ((ctx.calc && ctx.calc.funcoes) || []).filter(function (f) { return f.posto === nome; }) : [];
     var erros = P().erros(ctx, 'efetivo:' + nome);
     var titulo = !nome ? M().semPrefixo : (tipo === 'v' && item.cnh ? P().texto(M().tituloViatura, { nome: nome, cnh: item.cnh }) : nome);
@@ -37,7 +42,8 @@
     var especial = funcoes.filter(function (f) { return f.papel; })[0];
     var fora = comMinimo && !especial && Number(item.sem_minimo) === 1;
     var nivelFora = item.aviso_fora == null ? 1 : Number(item.aviso_fora);
-    var linhas = (reserva ? [M().reservaFrase] : []).concat(fora ? [M().semMinimoFrases[nivelFora]] : [])
+    var linhas = (semRadio ? [M().centralSemRadio] : []).concat(reserva ? [M().reservaFrase] : [])
+      .concat(fora ? [M().semMinimoFrases[nivelFora]] : [])
       .concat(erros.map(function (e) { return { texto: e, falta: true }; }));
 
     function mudarPosto(fn) {
@@ -51,7 +57,7 @@
       var campos = P().tpl('posto-campos');
       var comp = RosterWork.postoEditar.efetivo({ min: ef[0], ideal: ef[1], max: ef[2] }, function (v) {
         mudarPosto(function (alvo) { alvo.efetivo = [v.min, v.ideal, v.max]; });
-      });
+      }, { semVaga: central });
       comp.el.querySelectorAll('.campo-selecao').forEach(function (b) { b.disabled = ctx.soLeitura; });
       var lugarEfetivo = campos.querySelector('.nova-distribuicao-posto-efetivo');
       lugarEfetivo.appendChild(comp.el);

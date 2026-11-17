@@ -8,7 +8,8 @@
    Salvar é o rodapé largo da página, junto com o Dia e o Ciclo
    (escalas-painel-salvar.js, p_extra do escala_painel_salvar). A
    célula da grade, com o painel fechado, usa o mesmo mês e o mesmo
-   rascunho (escalas-celula-extra.js: carregar, pronto, usarNaCelula).
+   rascunho (escalas-celula-extra.js: carregar, pronto, lido, sabido,
+   usarNaCelula).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.escalasPainelExtra.
    ============================================================ */
@@ -22,6 +23,9 @@
   var pedido = 0;      // latest-wins
   var lendo = null;    // a leitura da célula em curso: { comp, promessa }
   var onde = null;     // o dia da célula que mexe na extra, com a aba fechada: { unidadeId, iso, unidadeNome }
+  /* por mês, o que decide se a extra do pelotão se mexe nele, sem ler de novo (fica depois do Salvar e do Cancelar):
+     { 'AAAA-MM-01': { lancada, admin, unidades } } */
+  var sabidos = {};
 
   function msg() { return RW.mensagens.extrajornada.org; }
   function G() { return RW.extrajornadaGrade; }
@@ -58,9 +62,11 @@
     window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho'));
   }
 
-  /* o mês lido: o rascunho dele começa vazio */
+  /* o mês lido: o rascunho dele começa vazio, e o que decide a extra do pelotão nele fica guardado */
   function usarMes(r) {
     mes = r;
+    sabidos[r.competencia] = { lancada: lancada(), admin: r.admin !== false,
+      unidades: (r.unidades || []).map(function (un) { return un.id; }) };
     RW.extrajornadaUtil.usar(r);
     G().iniciar(r, 'ajustes', aoMudar);
     G().limpar();
@@ -144,6 +150,16 @@
     pronto: function (uid, iso) {
       return !!mes && mes.competencia === iso.slice(0, 8) + '01' && lancada() && mes.admin !== false
         && mes.unidades.some(function (un) { return un.id === +uid; });
+    },
+    /* o mês do dia já está lido? */
+    lido: function (iso) { return !!mes && mes.competencia === iso.slice(0, 8) + '01'; },
+    /* a extra do pelotão se mexe no dia, pelo que ficou guardado do mês, sem ler: true, false ou null (nunca lido). Com
+       mudança não salva em outro mês, não (o carregar recusa) */
+    sabido: function (uid, iso) {
+      var comp = iso.slice(0, 8) + '01', s = sabidos[comp];
+      if (sujo() && mes.competencia !== comp) return false;
+      if (!s) return null;
+      return s.lancada && s.admin && s.unidades.indexOf(+uid) >= 0;
     },
     usarNaCelula: function (d) { onde = { unidadeId: d.unidadeId, iso: d.iso, unidadeNome: d.unidadeNome || '' }; },
     naCelula: function () { return !ctx && onde && sujo() ? { unidadeId: onde.unidadeId, iso: onde.iso, secao: 'extra', unidadeNome: onde.unidadeNome } : null; },

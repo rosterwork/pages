@@ -290,8 +290,11 @@
     'mini-calendario': function (lugar) {
       if (!RosterWork.miniCalendario) return;
       var estados = ['quer', 'nao', 'ocupado', 'hoje', 'selecionado', 'afastado'];
+      /* com os dias de outro mês das pontas (comDiasDeFora); os estados de exemplo só nos dias do mês */
       RosterWork.miniCalendario.renderizar(lugar, {
-        aoDia: function (botao, iso, data) {
+        comDiasDeFora: true,
+        aoDia: function (botao, iso, data, doMes) {
+          if (!doMes) return;
           estados.forEach(function (estado) {
             if (numeros(lugar.getAttribute('data-' + estado)).indexOf(data.getDate()) < 0) return;
             botao.classList.add('mini-calendario-dia--' + estado);

@@ -11,8 +11,11 @@
      Adicionar extra neste dia: na caixa 2, o campo de militar (os
      grupos do painel do dia da Extrajornada) e, escolhido o nome, a
      barra dele embaixo, vazia; o clique no horário põe a extra.
-   O mês é lido no primeiro clique (escalas-painel-extra.js ›
-   carregar) e o rascunho é o do mês, o mesmo da aba Extrajornada do
+   O mês é lido no clique (no pelotão, junto com o dia; escalas-
+   painel-extra.js › carregar): a caixa do pelotão espera por ele só na
+   1ª vez no mês, e depois o item vem certo na hora, pelo que ficou
+   guardado do mês (sabido), mesmo depois do Salvar e do Cancelar. O
+   rascunho é o do mês, o mesmo da aba Extrajornada do
    painel: a grade mostra a prévia com ele e o Salvar do rodapé largo
    grava junto com o Dia. Não cria HTML (clona moldes) nem escreve
    estilo (só classList). RosterWork.escalasCelulaExtra.
@@ -56,15 +59,39 @@
     extrajornada: function (uid, k) { if (RW.irParaPagina) RW.irParaPagina('extrajornada', 'organizar', k + '|' + uid); }
   });
 
-  /* o mês do dia lido, com o rascunho começado; a Promise diz se a extra do pelotão se mexe ali (o mês lançado e da
-     companhia, de hoje − 7 em diante). O dia fica para o rodapé (o Salvar e o Desfazer da extra) */
+  /* a extra do pelotão se mexe no dia (o mês lançado e da companhia, de hoje − 7 em diante)? Pelo mês lido; sem ele, pelo
+     que ficou guardado do mês: true, false ou null (o mês nunca foi lido) */
+  function seMexe(d) {
+    if (!d || !daCompanhia(d.unidadeId)) return false;
+    var G = RW.extrajornadaGrade;
+    if (X().lido(d.iso)) return X().pronto(d.unidadeId, d.iso) && !G.soLeitura() && !G.antigo(d.iso);
+    return X().sabido(d.unidadeId, d.iso);
+  }
+
+  /* o mês do dia lido, com o rascunho começado; a Promise diz se a extra do pelotão se mexe ali. O dia fica para o
+     rodapé (o Salvar e o Desfazer da extra) */
   function preparar(d) {
     return X().carregar(d.iso).then(function (lido) {
-      var G = RW.extrajornadaGrade, pode = !!lido && X().pronto(d.unidadeId, d.iso) && !G.soLeitura() && !G.antigo(d.iso);
+      var pode = !!lido && seMexe(d) === true;
       if (pode) X().usarNaCelula(d);
       return pode;
     });
   }
+
+  /* a caixa do pelotão desta página tem o Adicionar extra neste dia? (o molde é o da escalas-celula-editar-acoes.js ›
+     menuDoPelotao; o da página Estágios não tem) */
+  function temItem() {
+    var pf = RW.paginaFiltrada && RW.paginaFiltrada();
+    var t = document.getElementById((pf && pf.moldePelotao) || 'tpl-escala-celula-pelotao');
+    return !!t && !!t.content.querySelector('[data-acao="extra"]');
+  }
+
+  /* o clique no pelotão: o mês do dia já começa a ser lido, junto com o dia (sem mexer no dia do rodapé); a Promise
+     termina com a leitura */
+  function adiantar(d) { return temItem() && daCompanhia(d.unidadeId) ? X().carregar(d.iso) : Promise.resolve(false); }
+
+  /* a caixa do pelotão espera o mês do dia? Só quando o item existe e nada se sabe do mês ainda (a 1ª vez nele) */
+  function falta(d) { return temItem() && seMexe(d) === null; }
 
   /* o clique na linha da extra (escalas-celula-editar.js › clique): a caixa dela, para o administrador da companhia (false:
      o menu de sempre). Sem mudança no Dia, o dia da célula sai: o rodapé e o Desfazer ficam com a extra */
@@ -79,20 +106,38 @@
     return true;
   }
 
-  /* o item Adicionar extra neste dia da caixa do pelotão: aparece quando a extra do pelotão se mexe ali */
+  /* o item Adicionar extra neste dia da caixa do pelotão: já vem certo, pelo que se sabe do mês (na 1ª vez no mês, a
+     caixa espera a leitura dele, escalas-celula-editar.js). Quando o mês chega, o dia fica para o rodapé, e o item só
+     muda se o mês mudou entre uma leitura e outra */
   function prepararItem(item, d) {
     if (!item) return;
-    item.classList.add('oculto');
+    item.classList.toggle('oculto', !seMexe(d));
     if (!d || !daCompanhia(d.unidadeId)) return;
     preparar(d).then(function (pode) { item.classList.toggle('oculto', !pode); });
   }
 
-  /* Adicionar extra neste dia: na caixa 2 da caixa do pelotão, o campo de militar e, escolhido o nome, a barra dele */
+  /* Adicionar extra neste dia: o mês ainda vindo, a caixa espera por ele (os pontos passando de 0,5 s); se a extra não se
+     mexe mais ali (o mês reaberto, a leitura que falhou), o painel do dia na aba Extrajornada, que diz por quê */
   function adicionar(botao, c) {
-    var a = c.a, el = RW.tpl('tpl-escala-celula-extra');
-    if (!a || !el) return;
+    var a = c.a;
+    if (!a) return;
     a.acao = 'extra';
     a.botao = botao;
+    var pontos = setTimeout(function () { if (c.a === a && a.acao === 'extra') a.caixa.espera(true); }, 500);
+    preparar(c.dia).then(function (pode) {
+      clearTimeout(pontos);
+      if (c.a !== a) return;
+      a.caixa.espera(false);
+      if (a.acao !== 'extra' || a.botao !== botao) return;
+      if (!pode) { c.fecharTudo('guardar'); c.abrirPainel(null, { secao: 'extra' }); return; }
+      abrirCampo(botao, c);
+    });
+  }
+
+  /* na caixa 2 da caixa do pelotão, o campo de militar e, escolhido o nome, a barra dele */
+  function abrirCampo(botao, c) {
+    var a = c.a, el = RW.tpl('tpl-escala-celula-extra');
+    if (!el) return;
     var n = { c: c, a: a, uid: +a.unidadeId, k: a.iso, escolhido: null, barra: el.querySelector('.escala-celula-extra-barra') };
     nova = n;
     el.querySelector('.escala-celula-extra-campo').appendChild(C().campo(n.uid, n.k,
@@ -112,5 +157,5 @@
   }
   C().aoRedesenhar(desenharNova);
 
-  RW.escalasCelulaExtra = { clique: clique, prepararItem: prepararItem, adicionar: adicionar };
+  RW.escalasCelulaExtra = { clique: clique, prepararItem: prepararItem, adicionar: adicionar, adiantar: adiantar, falta: falta };
 })();

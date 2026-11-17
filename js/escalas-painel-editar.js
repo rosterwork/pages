@@ -153,6 +153,16 @@
     return n;
   }
 
+  /* o Onde fica dos estagiários: os que mudaram, {cpf: as linhas marcadas | null (o sistema distribui)} */
+  function ondeMudou() {
+    var a = base.estagio_onde || {}, b = rasc.estagio_onde || {}, r = {};
+    Object.keys(a).concat(Object.keys(b)).forEach(function (k) {
+      if (JSON.stringify(a[k] || null) !== JSON.stringify(b[k] || null)) r[k] = b[k] || null;
+    });
+    return r;
+  }
+  function difOnde() { return Object.keys(ondeMudou()).length; }
+
   /* a mudança de dia no rascunho (mudar, desfazer ou tirar)? */
   function comMudancaDeDia() {
     return rasc.mudar_dia.length > 0 || rasc.desfazer_mudanca.length > 0 || rasc.tirar_mudanca.length > 0;
@@ -162,14 +172,15 @@
      devolvidos, a mudança de dia, ou o Voltar ao automático) */
   function haMudanca() {
     if (!rasc || !base) return false;
-    return !!rasc.automatico || !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || rasc.folgas.length > 0
+    return !!rasc.automatico || !mesmosAjustes(base.ajustes, rasc.ajustes) || difPontuais() > 0 || difOnde() > 0 || rasc.folgas.length > 0
       || rasc.folgas_cancelar.length > 0 || rasc.observacoes.adicionar.length > 0 || rasc.observacoes.remover.length > 0
       || rasc.abertas.length > 0 || rasc.remanejar.length > 0 || rasc.devolver.length > 0 || comMudancaDeDia();
   }
 
   /* o rascunho recomeça do dia gravado */
   function novoRascunho() {
-    rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estornar: [], folgas: [], folgas_cancelar: [],
+    rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estagio_onde: copiar(base.estagio_onde || {}),
+      estornar: [], folgas: [], folgas_cancelar: [],
       observacoes: { adicionar: [], remover: [] }, abertas: [], remanejar: [], devolver: [],
       mudar_dia: [], desfazer_mudanca: [], tirar_mudanca: [] };
   }
@@ -179,7 +190,9 @@
     base = {
       dados: dados,
       ajustes: dados.ajustes_salvos || [],
-      pontuais: (dados.pontuais || []).map(function (x) { return { cpf: x.cpf, periodos: x.periodos || [] }; })
+      pontuais: (dados.pontuais || []).map(function (x) { return { cpf: x.cpf, periodos: x.periodos || [] }; }),
+      /* o Onde fica dos estagiários (os postos do estágio marcados para cada um; sem ele, o sistema distribui) */
+      estagio_onde: dados.estagio_onde || {}
     };
     novoRascunho();
     if (!ctx) return;
@@ -195,6 +208,7 @@
   function paraPrevia() {
     var r = { ajustes: rasc.ajustes, folgas: rasc.folgas };
     if (difPontuais() > 0) r.pontuais = rasc.pontuais;
+    if (difOnde() > 0) r.estagio_onde = ondeMudou();
     if (rasc.folgas_cancelar.length) r.folgas_cancelar = rasc.folgas_cancelar;
     if (rasc.abertas.length) r.abertas = rasc.abertas;
     if (rasc.remanejar.length) {
@@ -1608,7 +1622,7 @@
      mudança de dia e o Voltar ao automático; trocar quem está numa função e escrever uma observação, não) */
   function refazDistribuicao() {
     if (!rasc || !base) return false;
-    return !!rasc.automatico || difPontuais() > 0 || rasc.folgas.length > 0 || rasc.folgas_cancelar.length > 0
+    return !!rasc.automatico || difPontuais() > 0 || difOnde() > 0 || rasc.folgas.length > 0 || rasc.folgas_cancelar.length > 0
       || rasc.remanejar.length > 0 || rasc.devolver.length > 0 || comMudancaDeDia();
   }
   /* gravar este rascunho muda a escala do dia, e o banco refaz os dias seguintes? (o rodízio conta o que cada um fez no

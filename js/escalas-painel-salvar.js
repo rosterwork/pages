@@ -303,7 +303,7 @@
     if (linhaNoRodape) linhaNoRodape.parar();
     linhaNoRodape = null;
     if (ciclo) return RW.etapas.acao('salvarCiclo', { unidade: nomeCurto(c) }, { doServidor: 2 });
-    if (!soDoDia && extra) return RW.etapas.acao('salvarExtra', null, { doServidor: 1 });
+    if (!soDoDia && extra) return RW.etapas.acao('salvarExtra', null, { doServidor: 2 });
     if (seguintes) {
       var refazDia = !!(E() && E().refazDistribuicao());
       return RW.etapas.acao('salvarDiaSeguintes', { dia: RW.data.isoParaBR(c.iso).slice(0, 5), unidade: nomeCurto(c), refaz: refazDia },
