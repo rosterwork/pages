@@ -4,6 +4,8 @@
    lógica (mescla automático + manuais, fusão de faixas, cobertura,
    vãos, conflitos) fica no BANCO — princípio do projeto: lógica
    inteligente no Supabase; o frontend só exibe e edita.
+   Depois do Salvar que relê a grade inteira, o dia salvo vem com o
+   dado real, nunca com a cópia guardada velha (os dias certos).
    ============================================================ */
 (function () {
   'use strict';
@@ -42,6 +44,7 @@
     if (daTela && !(RosterWork.treino && RosterWork.treino.ligado())) corpo.p_aceita_copia = true;
     return RosterWork.apiFetch('/rest/v1/rpc/ler_escala_mes', { metodo: 'POST', corpo: corpo })
       .then(function (r) { if (!r.ok) throw new Error('falha'); return r.json(); })   // falha rejeita: o render mostra erro em vez de grade vazia falsa
+      .then(function (grade) { return daTela ? comCertos(grade || {}, ids, inicio, fim) : grade; })
       .then(function (grade) {
         var r = reorganizar(grade || {});
         /* os dias que vieram da cópia guardada: a mesma leitura que os traz diz quais são */
@@ -185,6 +188,48 @@
   window.addEventListener('rosterwork_escala_salva', esquecerGuardados);
   window.addEventListener('rosterwork_escala_recarregar', esquecerGuardados);
 
+  /* ---- os dias certos depois do Salvar ----
+     O Salvar que relê a grade inteira (o Dia que refaz os dias seguintes, a extra mexida na célula) deixa a cópia
+     guardada do dia salvo velha até a tarefa de cada minuto refazê-la, e a grade relida mostraria o dia como era antes.
+     Por isso, no Salvar, o dia salvo é lido com o dado real (sem a cópia), em todas as unidades dele na tela
+     (escalas-painel-salvar.js), e a grade que aceita a cópia o põe no lugar do da cópia antes de desenhar (buscarMes).
+     Ele vale até a cópia ficar pronta (esquecerCertos, escalas-atualizando.js) ou por 2 minutos; a leitura que falha
+     deixa a cópia. No treino, nada: o treino já lê o dado real */
+  var CERTO_MS = 120000;
+  var certos = {};   // 'AAAA-MM-DD' -> { ids, em (quando começou), texto (a Promise do texto da leitura real) }
+
+  function lerCerto(unidadesIds, iso) {
+    if (!guardavel() || !unidadesIds || !unidadesIds.length) return;
+    var ids = unidadesIds.map(Number);
+    certos[iso] = { ids: ids, em: performance.now(), texto: buscarTexto('ler_escala_mes', { p_unidade_ids: ids, p_inicio: iso, p_fim: iso }) };
+  }
+
+  /* a cópia do dia ficou pronta: ele sai dos dias certos (chaves = ['unidade|dia']; a cópia é da companhia toda no dia) */
+  function esquecerCertos(chaves) {
+    (chaves || []).forEach(function (k) { delete certos[String(k).split('|')[1]]; });
+  }
+
+  /* os dias certos do período lido no lugar dos da cópia: grade = { unidade: { dia: {...} } }, como o banco entrega */
+  function comCertos(grade, ids, inicio, fim) {
+    var agora = performance.now();
+    var dias = Object.keys(certos).filter(function (iso) {
+      if (agora - certos[iso].em >= CERTO_MS) { delete certos[iso]; return false; }
+      return iso >= inicio && iso <= fim;
+    });
+    if (!dias.length) return grade;
+    return Promise.all(dias.map(function (iso) {
+      var certo = certos[iso];
+      return emDados(certo.texto).then(function (real) {
+        if (!real) return;
+        certo.ids.forEach(function (uid) {
+          if (ids.indexOf(uid) < 0 || !real[uid] || !real[uid][iso]) return;
+          if (!grade[uid]) grade[uid] = {};
+          grade[uid][iso] = real[uid][iso];
+        });
+      });
+    })).then(function () { return grade; });
+  }
+
   /* os dias que ainda podem mudar (RPC escala_dias_atualizando): [{ unidade, data, fila }], fila = ainda vai ser refeito
      (senão, já foi e só falta a cópia guardada); null em falha */
   function lerDiasAtualizando(ids, inicio, fim) {
@@ -271,7 +316,7 @@
     else return null;
     if (!ids.length) return null;
     ids = ids.slice().sort(function (a, b) { return a - b; });
-    var chave = JSON.stringify([corpo.p_unidade_id, iso, corpo.p_dia, corpo.p_ciclo, corpo.p_extra || null, ids]);
+    var chave = JSON.stringify([corpo.p_unidade_id, iso, corpo.p_dia, corpo.p_ciclo, corpo.p_extra || null, corpo.p_dias || null, ids]);
     if (!junta || junta.chave !== chave) {
       var pedido = enfileirar('dia_e_grade', Object.assign({}, corpo, { p_leitura: 'dia_e_grade', p_args: { p_unidade_ids: ids } }));
       junta = { chave: chave,
@@ -316,6 +361,7 @@
     var corpo = { p_unidade_id: Number(p.unidadeId), p_data: p.iso, p_dia: p.dia, p_ciclo: p.ciclo,
       p_leitura: leitura, p_args: args || {} };
     if (p.extra) corpo.p_extra = p.extra;
+    if (p.dias && p.dias.length) corpo.p_dias = p.dias;   // os outros dias com mudança (o rascunho de vários dias)
     return corpo;
   }
   /* o Salvar do rodapé do painel do dia (RPC escala_painel_salvar): o Dia (o rascunho, com o "antes"), o Ciclo (as
@@ -326,12 +372,41 @@
     var corpo = { p_unidade_id: Number(unidadeId), p_data: iso, p_dia: dia || null, p_ciclo: ciclo || null };
     if (extra) corpo.p_extra = extra;
     if (sobreaviso) corpo.p_sobreaviso = sobreaviso;
-    /* as leituras guardadas saem ao gravar e de novo com a resposta (o que quem chama lê depois já vem do banco) */
+    return gravarNoBanco('escala_painel_salvar', corpo);
+  }
+  /* o Salvar de vários dias (RPC escala_painel_salvar_dias): dias = [{ unidade_id, data, dia, ciclo, sobreaviso, ler }] e a
+     Extrajornada do mês, tudo ou nada. Resolve como o painelSalvar ({success, logs, dias: [{unidade_id, data, mudou,
+     dia?}]}, ou {success:false, error, parte, unidade_id, data, desatualizado}, ou o marcador de falha) */
+  function painelSalvarDias(dias, extra) {
+    var corpo = { p_dias: dias };
+    if (extra) corpo.p_extra = extra;
+    return gravarNoBanco('escala_painel_salvar_dias', corpo);
+  }
+  /* a gravação: as leituras guardadas saem ao gravar e de novo com a resposta (o que quem chama lê depois já vem do banco) */
+  function gravarNoBanco(rpc, corpo) {
     esquecerGuardados();
-    return RosterWork.apiFetch('/rest/v1/rpc/escala_painel_salvar', { metodo: 'POST', corpo: corpo })
+    salvares++;
+    var gravacao = RosterWork.apiFetch('/rest/v1/rpc/' + rpc, { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : { _falha: 'servidor' }; })
       .catch(function () { return { _falha: 'conexao' }; })
-      .then(function (r) { esquecerGuardados(); return r; });
+      .then(function (r) {
+        esquecerGuardados();
+        if (salvarNoAr === gravacao) salvarNoAr = null;
+        return r;
+      });
+    salvarNoAr = gravacao;
+    return gravacao;
+  }
+
+  /* a prévia pedida antes de um Salvar (ou durante ele) ficou velha: no banco ela corre junto com a gravação e pode bater
+     no que ela grava. Quem pede guarda a marca (o número de Salvar começados; -1 com um Salvar no ar) e, com a resposta,
+     pergunta se ela vale: null, vale; senão, a promessa que se cumpre quando o Salvar acaba (depois de a tela tratar a
+     resposta dele), para pedir de novo se ainda espera */
+  var salvares = 0, salvarNoAr = null;
+  function marcaDoSalvar() { return salvarNoAr ? -1 : salvares; }
+  function depoisDoSalvar(marca) {
+    if (marca === salvares && !salvarNoAr) return null;
+    return salvarNoAr ? salvarNoAr.then(function () {}) : Promise.resolve();
   }
 
   /* ---- Guarnições (o ciclo automático) ---- */
@@ -429,7 +504,8 @@
     sobreavisoCandidatos: sobreavisoCandidatos, sobreavisoMilitares: sobreavisoMilitares,
     carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     motivos: motivos,
-    lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, adiantarDia: adiantarDia, adiantarListas: adiantarListas, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar,
+    lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, adiantarDia: adiantarDia, adiantarListas: adiantarListas, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar, painelSalvarDias: painelSalvarDias,
+    marcaDoSalvar: marcaDoSalvar, depoisDoSalvar: depoisDoSalvar, lerCerto: lerCerto, esquecerCertos: esquecerCertos,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
     continuosListar: continuosListar, guarnicoesListar: guarnicoesListar, cicloRetirarAnalisar: cicloRetirarAnalisar,

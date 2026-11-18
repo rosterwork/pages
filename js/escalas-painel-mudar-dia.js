@@ -302,8 +302,15 @@
       if (pode) botao.addEventListener('click', function () { escolherDia(diaIso); });
     }
 
-    /* o dia novo escolhido: a leitura dele (o Onde fica) e o Onde fica volta ao começo */
+    /* o dia novo escolhido: a leitura dele (o Onde fica) e o Onde fica volta ao começo. O dia com alteração não salva na
+       mesma unidade (o rascunho de vários dias, escalas-rascunho-dias.js) não entra: as duas mudariam o mesmo dia, e ela é
+       gravada antes */
     function escolherDia(diaIso) {
+      var G = RosterWork.escalasRascunhoDias;
+      if (G && G.porDia().some(function (d) { return String(d.unidadeId) === String(uid) && d.iso === diaIso; })) {
+        RosterWork.avisar({ tipo: 'aviso', mensagem: M().salveAntes(diaMes(diaIso)) });
+        return;
+      }
       est.para = diaIso;
       conf.limpar();
       onde.reiniciar();

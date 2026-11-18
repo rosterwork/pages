@@ -8,9 +8,10 @@
    o horário. A unidade sem ninguém na fila não aparece. O clique no
    telefone abre a caixa do sobreaviso (escalas-celula-sobreaviso-
    caixa.js); o dia vazio não faz nada. A mudança ainda não salva
-   aparece na grade na hora (rascunho).
+   aparece na grade na hora (rascunho). A dica do nome traz a conta
+   dele até hoje (feitos e o justo).
    Não cria HTML (clona os moldes) nem escreve estilo.
-   RosterWork.escalasMilitaresSobreaviso.{ ler, chips, clique, rascunho }
+   RosterWork.escalasMilitaresSobreaviso.{ ler, chips, linha, clique, rascunho }
    ============================================================ */
 (function () {
   'use strict';
@@ -46,6 +47,13 @@
     });
   }
 
+  /* a linha do militar: a conta até hoje (feitos e o justo, desde o primeiro sobreaviso da companhia) na dica do nome */
+  function linha(el, militar) {
+    var nome = el.querySelector('.escala-mil-pessoa-nome');
+    if (!nome || militar.feitos == null || !militar.conta_desde) return;
+    nome.setAttribute('data-dica', msg().contaMilitar(militar.feitos, militar.justo, diaMes(militar.conta_desde)));
+  }
+
   /* o clique numa célula: no dia de sobreaviso, a caixa dele (estado: o da leitura; a mudança ainda não salva vale pelo
      telefone na célula) */
   function clique(celula, militar, coluna, iso, estado) {
@@ -79,5 +87,5 @@
     });
   }
 
-  RW.escalasMilitaresSobreaviso = { ler: ler, chips: chips, clique: clique, rascunho: rascunho };
+  RW.escalasMilitaresSobreaviso = { ler: ler, chips: chips, linha: linha, clique: clique, rascunho: rascunho };
 })();

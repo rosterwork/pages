@@ -249,20 +249,21 @@
     return { especiais: [], instalacoes: item.postos || [], extra: [], estagiarios: [], viaturas: [] };
   }
 
-  /* as linhas de uma lista de funções (a função à esquerda, no meio da altura das linhas dela); o lugar que falta até o
-     ideal não sai no papel */
+  /* as linhas de uma lista de funções (a função à esquerda, no meio da altura das linhas dela) */
   function linhasDasFuncoes(funcoes, c) {
     var linhas = [];
     funcoes.forEach(function (f) {
-      if (f.lugar_ideal) return;
       var daFuncao = [], alturas = [];
-      if (f.vazio && RW.mensagens.escala.vagaVazia) {
-        daFuncao.push([{ text: RW.mensagens.escala.vagaVazia(f.vazio_motivo), italics: true, fontSize: FONTE.texto, color: c.suave, margin: CELULA.militar }, { text: '' }]);
-        alturas.push(alturaLinha([]));
-      }
+      /* o grupo sem número (f.partes, do mesclarFuncoes): as pessoas na ordem de antiguidade e depois os lugares sem
+         ninguém */
       (f.militares || []).forEach(function (m) {
         daFuncao.push([celulaMilitar(m, c), horarios(m.periodos, c)]);
         alturas.push(alturaLinha(m.periodos));
+      });
+      (f.partes || [f]).forEach(function (pt) {
+        if (!pt.vazio || (f.partes && (pt.militares || []).length) || !RW.mensagens.escala.vagaVazia) return;
+        daFuncao.push([{ text: RW.mensagens.escala.vagaVazia(pt.vazio_motivo), italics: true, fontSize: FONTE.texto, color: c.suave, margin: CELULA.militar }, { text: '' }]);
+        alturas.push(alturaLinha([]));
       });
       if (!daFuncao.length) return;
       if (linhas.length) linhas.push([Object.assign(linhaFina(c), { colSpan: 3 }), {}, {}]);   // a linha entre as funções
@@ -541,7 +542,7 @@
     (item.postos || []).forEach(function (p) {
       h += ESTIMATIVA.posto;
       (p.funcoes || []).forEach(function (f) {
-        h += (f.vazio && !f.lugar_ideal ? ESTIMATIVA.linha : 0) + (f.militares || []).reduce(function (s, m) { return s + linha(m); }, 0);
+        h += (f.vazio ? ESTIMATIVA.linha : 0) + (f.militares || []).reduce(function (s, m) { return s + linha(m); }, 0);
       });
     });
     /* os blocos só para ver (Funções especiais, Extrajornada, Estagiários): o título de cada um e as linhas */

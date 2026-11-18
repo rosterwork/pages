@@ -121,6 +121,36 @@
     ocupantes(cfg.posto, cfg.funcao, periodos, m.cpf).forEach(function (o) { api.deixarFuncao(o.m.cpf, cfg.posto, cfg.funcao, H.periodo(o.x)); });
   }
 
+  /* o Acúmulo (o lápis e o Adicionar militar): as funções que o modelo acumula (acumulo) e que quem sai faz pelo sistema
+     (sem fixado) nos horários; com a cadeira, elas vão para quem entra. saem = [cpf]; fora = as funções que não contam
+     ({ posto, funcao }: a própria cadeira, ou as que quem entra já leva); dados = a leitura do dia (sem ela, a do painel).
+     [{ posto, funcao, periodos }] */
+  function acumuladas(saem, periodos, fora, dados) {
+    var api = ed(), H = api.horas, r = [], foras = [].concat(fora || []);
+    ((dados || api.dados() || {}).postos || []).forEach(function (po) {
+      (po.funcoes || []).forEach(function (f) {
+        if (!f.acumulo || /^(chefe de socorro|oficial de área)$/i.test(f.nome)) return;
+        if (foras.some(function (x) { return x.posto.id === po.id && x.funcao === f.nome; })) return;
+        var xs = [];
+        (f.militares || []).forEach(function (m) {
+          if (saem.indexOf(m.cpf) < 0 || m.fixado) return;
+          (m.periodos || []).forEach(function (per) {
+            periodos.forEach(function (w) { var x = H.cruza(H.faixa(w), H.faixa(per)); if (x) xs.push(x); });
+          });
+        });
+        if (xs.length) r.push({ posto: po, funcao: f.nome, periodos: H.uniao(xs).map(H.periodo) });
+      });
+    });
+    return r;
+  }
+  /* os textos da pergunta do Acúmulo: o vazio da instalação pelo posto ("o Rancho"), o da viatura pela função ("o Condutor
+     da ABT-41") */
+  function textosAcumulo(acs) {
+    var L = RosterWork.mensagens.escala.linha, funcoes = acs.map(function (a) { return a.funcao; });
+    var vazios = acs.map(function (a) { return a.posto.tipo === 'instalacao' ? a.posto.nome : a.funcao + ' da ' + a.posto.nome; });
+    return { pergunta: L.acumulaPergunta(funcoes), sim: L.acumulaSim(funcoes), nao: L.acumulaNao(vazios) };
+  }
+
   /* o Deixa vazio do Acúmulo: a função acumulada fica vazia de propósito no horário (o tirar sem militar, que vale para
      quem estiver nela, e o sistema não passa o acúmulo para ninguém). acs = [{ posto, funcao, periodos }] */
   function deixarVazia(acs) {
@@ -153,6 +183,7 @@
 
   window.RosterWork.escalasPainelLinhaAplicar = {
     ocupantes: ocupantes, trocar: trocar, sugestao: sugestao, tirarDaFuncao: tirarDaFuncao,
-    mudarHorario: mudarHorario, deixarVazia: deixarVazia, liberar: liberar, podeLiberar: podeLiberar
+    mudarHorario: mudarHorario, acumuladas: acumuladas, textosAcumulo: textosAcumulo, deixarVazia: deixarVazia,
+    liberar: liberar, podeLiberar: podeLiberar
   };
 })();

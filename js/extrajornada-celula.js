@@ -4,14 +4,15 @@
    geral-caixa-flutuante). Vale nas duas telas: no Calendário e na
    Agenda da Distribuição e dos Ajustes da Extrajornada (aqui) e na
    grade da Escala (escalas-celula-extra.js, que registra a tela dela).
-   O nome abre a caixa dele: Mudar o horário (na caixa 2, a barra, os
-   campos e o cadeado, sempre com os outros dias dele embaixo; quem
-   passou da cota vê também a nota), Pôr outro no lugar dele (o escolhido fica com o horário),
-   Remover deste dia (na hora, com o Desfazer), na Escala o Abrir na
-   Extrajornada, e Abrir o painel do dia. Na Extrajornada, o pelotão
-   abre Adicionar neste dia (o campo de militar com os grupos do
-   painel; escolhido, ele entra no bloco e a caixa passa para ele, com
-   a barra vazia) e Abrir o painel do dia; o militar em foco abre já
+   O nome abre a caixa dele: Mudar o horário (na caixa 2, o dia, a
+   barra, os campos e o cadeado; sem horário, os campos em branco;
+   sempre com os outros dias dele embaixo; quem passou da cota vê
+   também a nota), Pôr outro no lugar dele (o escolhido fica com o
+   horário), Remover deste dia (na hora, com o Desfazer), na Escala o
+   Abrir na Extrajornada, e Abrir o painel do dia. Na Extrajornada, o
+   pelotão abre Adicionar neste dia (o campo de militar com os grupos
+   do painel; escolhido, ele entra no bloco e a caixa passa para ele,
+   com a barra vazia e os campos em branco) e Abrir o painel do dia; o militar em foco abre já
    com a barra. Tudo vai ao rascunho (RosterWork.extrajornadaGrade) e
    só o Salvar grava. O dia que não muda (a Distribuição lançada e o de
    mais de 7 dias atrás) abre a caixa com o aviso, e o painel só abre
@@ -68,11 +69,10 @@
     return bloco ? bloco.querySelector('.extrajornada-vaga[data-cpf="' + cpf + '"], .extrajornada-foco-ponto[data-cpf="' + cpf + '"]') : null;
   }
 
-  /* cada tela: { grade (os cliques dela cuidam da caixa: não a fecham por fora), peca(uid, k, cpf), junto(uid, k) (o
-     pelotão do nome), painel(uid, k), extrajornada(uid, k) (só na Escala) } */
+  /* cada tela: { peca(uid, k, cpf), junto(uid, k) (o pelotão do nome), painel(uid, k), extrajornada(uid, k) (só na
+     Escala) } */
   var TELAS = {
     extrajornada: {
-      grade: '#p3-cal [data-uid][data-dia]',
       peca: function (uid, k, cpf) { return pecaDe(blocoDe(uid, k), cpf); },
       junto: function (uid, k) { var b = blocoDe(uid, k); return b ? [b] : []; },
       painel: function (uid, k) { dia().abrir(uid, k); }
@@ -89,7 +89,7 @@
     a = c;
     c.caixa = RW.caixaFlutuante.abrir({
       peca: peca, junto: junto, titulo: titulo, conteudo: espera ? null : c.menu, esperar: !!espera,
-      topo: c.tipo === 'pelotao' ? TOPO_PELOTAO : null, ignorar: T(c).grade,
+      topo: c.tipo === 'pelotao' ? TOPO_PELOTAO : null,
       /* o clique fora, o Esc ou a peça que saiu: o que está no rascunho fica */
       aoFechar: function () { if (a === c) fechar(); },
       /* no celular, o Voltar da folha: o menu volta */
@@ -179,9 +179,9 @@
     c.menu.querySelector('[data-acao="remover"]').classList.toggle('oculto', !tem);
   }
 
-  /* a barra da extra de um militar num dia, para uma caixa (a escolhida, com os campos e o cadeado), na cor do pedido; já
-     de extra em outro pelotão no dia, a barra apagada e a nota; passou da cota, a nota; embaixo, sempre, os outros dias
-     dele no mês */
+  /* a barra da extra de um militar num dia, para uma caixa (a escolhida, com os campos e o cadeado; sem horário, os campos
+     em branco), na cor do pedido, com o dia em cima (o mesmo título dos outros dias); já de extra em outro pelotão no
+     dia, a barra apagada e a nota; passou da cota, a nota; embaixo, sempre, os outros dias dele no mês */
   function montarHorario(cpf, uid, k) {
     var m = u().militar(cpf);
     if (!m) return null;
@@ -189,9 +189,11 @@
     var el = RW.tpl('tpl-extrajornada-caixa-horario'), pref = u().pref(m, k);
     if (pref !== 'sem') el.classList.add('extrajornada-caixa-horario--' + pref);
     el.classList.toggle('extrajornada-caixa-horario--outro', outro);
+    el.querySelector('.extrajornada-caixa-horario-dia').textContent =
+      msg().outroDia(k.slice(8, 10), G().SEM_CURTA[G().dataDe(k).getDay()], (u().unidade(uid) || {}).nome || '');
     if (!outro && B().escolhida() !== chaveBarra(cpf, k)) B().escolher(chaveBarra(cpf, k));
     dia().ligarMarcas(el.querySelector('.extrajornada-painel-marcas'), m, k, v && !outro ? G().blocos(v) : [], +uid,
-      { desligado: outro, campos: true, lugar: 'caixa', semLixeira: true });
+      { desligado: outro, campos: true, lugar: 'caixa', semLixeira: true, vazio: true });
     if (outro) {
       var nota = RW.tpl('tpl-escala-nota');
       nota.querySelector('.nota-texto').textContent = msg().jaEmOutro((u().unidade(v.unidade) || {}).nome || '');
@@ -211,7 +213,7 @@
 
   /* ---------- o campo de militar (o Adicionar neste dia e o Pôr outro no lugar dele) ---------- */
 
-  /* um nome da lista: a bolinha do pedido, o posto e o nome; à direita, o pelotão e as cotas */
+  /* um nome da lista: a bolinha do pedido, o posto e o nome; à direita, o pelotão, as cotas e o posto na Op. Verão */
   function item(x) {
     var el = RW.tpl('tpl-extrajornada-adicionar-item');
     var ponto = el.querySelector('.extrajornada-painel-ponto');
@@ -244,6 +246,9 @@
       lista.push({ titulo: msg().grupos[g], aberto: true });
       grupos[g].forEach(function (x) {
         x.info = ((u().unidade(x.m.unidade_id) || {}).nome || '') + ' · ' + msg().deCotas(x.usou, x.m.concedidas || 0);
+        /* o posto na Op. Verão no dia: a extra só fora desse horário */
+        var praia = G().horasServico(x.m, k).filter(function (p) { return p.op; });
+        if (praia.length) x.info += ' · ' + msg().opVeraoCurto(praia.map(function (p) { return [RW.horario.curta(p.hi), RW.horario.curta(p.hf)]; }));
         lista.push(x);
       });
     });
@@ -380,7 +385,7 @@
     /* outro dia no painel, o Salvar, o Cancelar, a sugestão ou o Desfazer: a caixa fecha (quem chama refaz a tela) */
     esquecer: function () { var c = a; a = null; if (c && c.caixa) c.caixa.fechar(); },
     /* ---------- para a Escala (escalas-celula-extra.js) ---------- */
-    /* a tela dela: { grade, peca(uid, k, cpf), junto(uid, k), painel(uid, k), extrajornada(uid, k) } */
+    /* a tela dela: { peca(uid, k, cpf), junto(uid, k), painel(uid, k), extrajornada(uid, k) } */
     tela: function (nome, def) { TELAS[nome] = def; },
     /* a caixa do nome numa tela registrada; espera: a Promise da leitura do mês (true: a extra se mexe ali) */
     abrirNome: function (tela, uid, k, cpf, titulo, espera) {

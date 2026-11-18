@@ -53,6 +53,12 @@
   display: none;
 }
 
+/* a caixa 2, no computador: a linha do alto só com o X, à direita (fecha as duas, como o Esc) */
+.caixa-flutuante--segunda .caixa-flutuante-cabeca {
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* a barra enquanto o conteúdo espera (na altura de um item) */
 .caixa-flutuante-espera {
   display: flex;

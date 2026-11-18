@@ -27,8 +27,6 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  /* o clique numa célula ou num Oficial de Praia é da página (abre outra caixa ou fecha esta): a caixa não fecha por ele */
-  var DA_GRADE = '.conteudo .escala-mes-celula, .conteudo .escala-calendario-unidade, .conteudo .op-verao-oficial';
   var TOPO_DIA = 8;   // a caixa do dia abre com o topo 8px abaixo do topo da célula
   var aberta = null;  // { caixa, peca, cia, iso, chave, s (o dia), nome (da companhia) }
   var conta = 0;      // o id de cada campo da caixa 2
@@ -81,7 +79,7 @@
 
   function abrir(a, conteudo, titulo, topo) {
     fechar();
-    a.caixa = RW.caixaFlutuante.abrir({ peca: a.peca, titulo: titulo, topo: topo, conteudo: conteudo, ignorar: DA_GRADE,
+    a.caixa = RW.caixaFlutuante.abrir({ peca: a.peca, titulo: titulo, topo: topo, conteudo: conteudo,
       aoFechar: function () { if (aberta === a) aberta = null; } });
     if (a.caixa) aberta = a;
   }

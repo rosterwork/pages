@@ -27,7 +27,9 @@
    mudou no topo; o desfazer/refazer anda no rascunho. Nada grava até
    o Salvar do rodapé do painel (escalas-painel-salvar.js), que grava
    junto com o Ciclo. O rascunho fica ao trocar de
-   aba (trocar de dia e fechar o painel perguntam antes). Rascunho:
+   aba e de dia: o do dia de antes fica guardado na gaveta
+   (escalas-rascunho-dias.js) e volta quando ele é aberto de novo, e
+   o Salvar grava todos os dias (fechar o painel pergunta antes). Rascunho:
    { ajustes, pontuais, estornar, folgas, folgas_cancelar,
    observacoes, abertas (as funções abertas sem ninguém, só na
    prévia: salvas vazias, somem), remanejar, devolver, mudar_dia
@@ -57,7 +59,10 @@
    com o painel fechado: montar sem o corpo, com opcoes.semLista; o
    dia é lido e a prévia refeita como no painel, sem a lista, e
    opcoes.aoMostrar(dados) recebe cada leitura (null: falhou). O
-   painel que abre no mesmo dia continua o rascunho.
+   painel que abre no mesmo dia continua o rascunho. Com o painel
+   aberto no dia, a caixa da célula trabalha no rascunho dele: ela
+   pede as leituras com sub.ouvir(fn), e o que muda numa aparece na
+   outra.
    O "Como fica a escala" do painel de decisão (Trocas e Folgas) também,
    no modo comparação (opção comparar): só leitura, com quem saiu
    riscado na função de onde saiu, quem entra pelo pedido com o "Novo"
@@ -92,6 +97,41 @@
   function pecas() { return (RosterWork.escalasPainel && RosterWork.escalasPainel.pecas) || {}; }
   function copiar(o) { return JSON.parse(JSON.stringify(o)); }
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
+  /* a gaveta dos dias (escalas-rascunho-dias.js; só na Escala) */
+  function G() { return RosterWork.escalasRascunhoDias || null; }
+  /* a unidade e o dia do rascunho (dono = unidade|dia) */
+  function donoUnidade() { return dono ? dono.split('|')[0] : ''; }
+  function donoIso() { return dono ? dono.split('|')[1] : ''; }
+
+  /* ---------- o rascunho de outro dia (guardado na gaveta) ---------- */
+
+  function exportar() { return { base: base, rasc: rasc, pilhaDesfazer: pilhaDesfazer, pilhaRefazer: pilhaRefazer, dono: dono }; }
+  function importar(est) {
+    base = est.base; rasc = est.rasc; pilhaDesfazer = est.pilhaDesfazer; pilhaRefazer = est.pilhaRefazer; dono = est.dono;
+  }
+  /* o rascunho de agora, com mudança ou passo, vai para a gaveta (antes de outro dia entrar) */
+  function guardarAgora() {
+    if (!G() || !base || !rasc || !dono || !(haMudanca() || pilhaDesfazer.length || pilhaRefazer.length)) return;
+    fecharLinha('guardar');
+    terminarVivo();
+    G().guardar('dia', { chave: dono, unidadeId: donoUnidade(), iso: donoIso(), estado: exportar() });
+  }
+  /* o dia guardado volta (com a guarnição no subtítulo do painel) */
+  function trazerGuardado(chave) {
+    var item = G() && G().tirar('dia', chave);
+    if (!item) return;
+    importar(item.estado);
+    if (ctx && RosterWork.escalasPainel.mostrarGuarnicao) {
+      RosterWork.escalasPainel.mostrarGuarnicao(ctx.unidadeId, ctx.iso, (base.dados || {}).guarnicao || null);
+    }
+  }
+  /* fn roda com o rascunho de um dia guardado no lugar do de agora (as contas do Salvar e da prévia), sem desenhar nada */
+  function comEstado(est, fn) {
+    var agora = exportar(), vivoAgora = vivo;
+    importar(est);
+    vivo = null;
+    try { return fn(); } finally { importar(agora); vivo = vivoAgora; }
+  }
 
   /* ---------- horas no dia de serviço (minutos desde as 08h): contas do componente geral-horario ---------- */
 
@@ -124,7 +164,10 @@
     if (posto.tipo === 'viatura') return true;
     return /^(central|sala|base|casa|sede|guarita)/i.test(posto.nome || '') || /a$/i.test(posto.nome || '');
   }
-  function funcaoNoPosto(funcao, posto) { return msg().funcaoNoPosto(funcao, posto.nome, postoFeminino(posto)); }
+  /* "Efetivo da ABTR-14462": a função com o nome da tela (sem o número do lugar; o estagiário, "Estagiário") */
+  function funcaoNoPosto(funcao, posto) {
+    return msg().funcaoNoPosto(pecas().rotuloDaFuncao(posto, funcao), posto.nome, postoFeminino(posto));
+  }
 
   /* chave de um ajuste (compara rascunho × salvo) */
   function chave(a) {
@@ -531,10 +574,10 @@
   /* os outros dias que o rascunho do Dia muda (a mudança de dia mexe em dois dias): AAAA-MM-DD, sem repetir */
   function outrosDias() {
     if (!rasc) return [];
-    var dias = [];
-    rasc.mudar_dia.map(function (x) { return x.de && x.de !== ctx.iso ? x.de : x.para; })
+    var dias = [], iso = donoIso();
+    rasc.mudar_dia.map(function (x) { return x.de && x.de !== iso ? x.de : x.para; })
       .concat(rasc.desfazer_mudanca.map(function (x) { return x.dia; }), rasc.tirar_mudanca.map(function (x) { return x.dia; }))
-      .forEach(function (d) { if (d && d !== (ctx && ctx.iso) && dias.indexOf(d) < 0) dias.push(d); });
+      .forEach(function (d) { if (d && d !== iso && dias.indexOf(d) < 0) dias.push(d); });
     return dias;
   }
 
@@ -543,7 +586,7 @@
   function mapaMudancas() {
     var r = {};
     ((rasc && rasc.mudar_dia) || []).forEach(function (x) {
-      if (x.de && x.de !== ctx.iso) return;
+      if (x.de && x.de !== donoIso()) return;
       var p = String(x.para || '').split('-');
       r[x.cpf] = { para: p.length === 3 ? p[2] + '/' + p[1] : '', horas: textoPeriodos(x.periodos || []) };
     });
@@ -563,7 +606,11 @@
 
   /* uma mudança da lista: o rascunho de antes entra no desfazer, o refazer zera, e a lista mostra a prévia; nada grava
      até o Salvar do rodapé. O lápis aberto guarda a mudança dele antes (um passo próprio) */
-  function passo(antes) { pilhaDesfazer.push(antes); pilhaRefazer = []; }
+  function passo(antes) {
+    pilhaDesfazer.push(antes);
+    pilhaRefazer = [];
+    if (G()) G().passou('dia', dono);   // a ordem dos passos de todos os dias (o Desfazer do rodapé)
+  }
   function mudar(fn) { if (!rasc) return; fecharLinha('guardar'); terminarVivo(); passo(copiar(rasc)); fn(); desenhar(); }
 
   /* ---------- ao vivo (as sub-telas e o lápis) ---------- */
@@ -627,6 +674,7 @@
     ctx.corpo.textContent = '';
     var no = RosterWork.tpl('tpl-escala-distribuicao-estado');
     if (no) { no.textContent = msg().falhaCarregar; ctx.corpo.appendChild(no); }
+    avisarCelula(null);   // a caixa da célula aberta no mesmo dia, sobre a lista do painel (sub.ouvir)
   }
 
   /* a lista que já está na tela espera a prévia: fica, apagada e sem responder, na mesma rolagem, com a frase por cima,
@@ -693,6 +741,7 @@
     pronta();
     if (ctx.semLista) { avisarCelula(dados); return; }
     renderLista(dados);
+    avisarCelula(dados);   // a caixa da célula aberta no mesmo dia, sobre a lista do painel (sub.ouvir)
   }
 
   /* o rodapé do painel (escalas-painel-salvar.js) conta as mudanças das duas abas */
@@ -710,10 +759,20 @@
     if (vinhaDaSub && ctx.dados) renderLista(ctx.dados);
     if (ctx.listaNaTela) apagarLista();
     else mostrarCarregando();
-    var pedidoPrevia = RosterWork.escalasDados.lerPrevia('ler_distribuicao_dia', {});
+    var D = RosterWork.escalasDados, marca = D.marcaDoSalvar();
+    var pedidoPrevia = D.lerPrevia('ler_distribuicao_dia', {});
     if (!pedidoPrevia) { exibir(base.dados); return; }
     RosterWork.painel.segurar(pedidoPrevia).then(function (dados) {
       if (ctx !== c || meu !== pedido) return;
+      /* a resposta de antes do Salvar não desenha nem avisa; gravado, o dia gravado já está na tela; recusado, pede de novo */
+      var depois = D.depoisDoSalvar(marca);
+      if (depois) {
+        depois.then(function () {
+          if (ctx !== c || meu !== pedido || !c.carregando) return;
+          if (base) mostrarPrevia(); else desenhar();
+        });
+        return;
+      }
       if (!dados) { mostrarFalha(); return; }
       if (dados.erro_simulacao) {
         RosterWork.avisar({ tipo: 'erro', mensagem: dados.erro_simulacao });
@@ -749,6 +808,7 @@
     ctx.chaveDados = JSON.stringify(paraPrevia());
     if (ctx.semLista) { avisarCelula(dados); return; }
     renderLista(dados);
+    avisarCelula(dados);   // a caixa da célula aberta no mesmo dia, sobre a lista do painel (sub.ouvir)
   }
 
   /* as funções e os horários de cada militar desta unidade numa leitura do dia (quem está sem função entra sem nada) */
@@ -779,12 +839,28 @@
   function podeDesfazer() { return !!ctx && ctx.admin && !ctx.emSub && !!base && pilhaDesfazer.length > 0; }
   function podeRefazer() { return !!ctx && ctx.admin && !ctx.emSub && !!base && pilhaRefazer.length > 0; }
 
+  /* um passo do Desfazer (ou do Refazer) num rascunho est = { rasc, pilhaDesfazer, pilhaRefazer }: o de agora ou o de um dia
+     guardado na gaveta. false: sem passo */
+  function andarEm(est, desfazer) {
+    var de = desfazer ? est.pilhaDesfazer : est.pilhaRefazer, para = desfazer ? est.pilhaRefazer : est.pilhaDesfazer;
+    if (!de.length) return false;
+    para.push(copiar(est.rasc));
+    est.rasc = de.pop();
+    return true;
+  }
+  /* no rascunho de agora (a lista desenha de novo) */
+  function andarAgora(desfazer) {
+    var est = { rasc: rasc, pilhaDesfazer: pilhaDesfazer, pilhaRefazer: pilhaRefazer };
+    var andou = andarEm(est, desfazer);
+    rasc = est.rasc;
+    return andou;
+  }
+
   /* desfazer: o rascunho volta um passo (nada foi gravado) */
   function desfazerPasso() {
     if (!podeDesfazer()) return;
     fecharLinha('guardar');   // a mudança do lápis aberto vira o passo que se desfaz
-    pilhaRefazer.push(copiar(rasc));
-    rasc = pilhaDesfazer.pop();
+    andarAgora(true);
     desenhar();
   }
 
@@ -792,9 +868,7 @@
   function refazerPasso() {
     if (!podeRefazer()) return;
     fecharLinha('guardar');   // a mudança do lápis aberto é um passo novo: o refazer some
-    if (!pilhaRefazer.length) { desenhar(); return; }
-    pilhaDesfazer.push(copiar(rasc));
-    rasc = pilhaRefazer.pop();
+    andarAgora(false);
     desenhar();
   }
 
@@ -955,17 +1029,10 @@
     return linha;
   }
 
-  /* o nível de um horário sem ninguém (vem do banco, pela gente do posto naquele horário): 'erro' abaixo do mínimo,
-     vermelho para todos; 'ideal' do mínimo até o ideal, cinza, só para quem edita o dia; sem o nível (o treino), erro */
-  function nivelVao(v) { return v && v.nivel === 'ideal' ? 'ideal' : 'erro'; }
-  function vaosVisiveis(f) {
-    return (f.vao || []).filter(function (v) { return nivelVao(v) === 'erro' || editavel(); });
-  }
-
-  /* horário sem ninguém na função (dentro do que o modelo pede) ou cadeira vazia do motor: o texto vermelho e,
-     para o admin, o lápis (Pôr um militar aqui). A função aberta sem ninguém (Funções do posto), o lugar até o ideal e
-     o horário até o ideal: "Vazio", em cinza; a que o Adicionar mais um lugar neste posto abriu já abre o cartão
-     (ctx.lugarNovo, no fim da lista) */
+  /* horário sem ninguém na função ou cadeira vazia do motor (o banco só manda o que falta para o mínimo e a função
+     obrigatória): o texto vermelho e, para o admin, o lápis (Pôr um militar aqui). A função aberta sem ninguém (Funções
+     do posto): "Vazio", em cinza; a que o Adicionar mais um lugar neste posto abriu já abre o cartão (ctx.lugarNovo, no
+     fim da lista) */
   function linhaVazia(posto, nomeFuncao, per, ancora, aberta) {
     var p = pecas();
     var linha = novaLinha();
@@ -1005,36 +1072,50 @@
   }
 
   /* o bloco de uma função: militares e os horários sem ninguém, com a função no meio da altura de todas as linhas
-     (na comparação, também quem saiu, riscado). O lápis de cada linha abre o menu dela; no Chefe de Socorro com o
-     Condutor (o mesmo militar), o menu é o do Condutor; o Chefe de Socorro e o Oficial de Área sozinhos têm só a parte
-     do dia (a função é sempre do mais antigo do dia) */
+     (na comparação, também quem saiu, riscado). O grupo sem número ("Efetivo", "Rádio Operador", "Estagiário") junta os
+     lugares da mesma função (f.partes, do mesclarFuncoes): as pessoas na ordem de antiguidade, cada linha com o lápis do
+     lugar dela, e os lugares vazios no fim. No Chefe de Socorro com o Condutor (o mesmo militar), o menu é o do
+     Condutor; o Chefe de Socorro e o Oficial de Área sozinhos têm só a parte do dia (a função é sempre do mais antigo do
+     dia) */
   function linhasFuncao(caixa, posto, f) {
-    /* o lugar que falta até o ideal só aparece para quem edita o dia */
-    if (f.lugar_ideal && !editavel()) return;
+    var partes = f.partes || [f];
     var p = pecas();
-    var aberta = f.vazio_motivo === 'aberta';
-    var vaos = vaosVisiveis(f);
-    var temErro = (!!f.vazio && !aberta) || vaos.some(function (v) { return nivelVao(v) === 'erro'; });
+    var temErro = partes.some(function (pt) { return (!!pt.vazio && pt.vazio_motivo !== 'aberta') || (pt.vao || []).length > 0; });
     var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
     var grupo = novoGrupo(rotulos, temErro ? 'erro' : p.nivelFuncao(f));
     if (!grupo) return;
-    /* na Escala, o nome da função mostra como ela foi escolhida (a escala gravada; na comparação, não) */
-    if (RosterWork.escalasPainelComo && !ctx.comparar && !ctx.consulta) {
-      RosterWork.escalasPainelComo.rotulo(grupo.el.querySelector('.escala-edicao-funcao'),
-        { unidadeId: ctx.unidadeId, iso: ctx.iso, posto: posto.nome, funcoes: rotulos });
+    /* o nome da função: para quem edita o dia, o clique abre o menu Funções do posto embaixo do nome, com o Como foi
+       escolhido no fim; para quem só vê, o Como foi escolhido (a escala gravada; na comparação, não; a busca pelos nomes
+       guardados dos lugares, o título com o nome da tela) */
+    var elFuncao = grupo.el.querySelector('.escala-edicao-funcao');
+    var como = (RosterWork.escalasPainelComo && !ctx.comparar && !ctx.consulta)
+      ? { unidadeId: ctx.unidadeId, iso: ctx.iso, posto: posto.nome, rotulos: rotulos,
+          funcoes: f.partes ? partes.map(function (pt) { return pt.nome; }) : rotulos } : null;
+    if (editavel() && RosterWork.escalasPainelFuncoes) {
+      /* depois da mudança do menu (a prévia), ele volta aberto no mesmo nome */
+      var chaveMenu = posto.tipo + ':' + posto.id + '|' + rotulos.join(' e ');
+      var menuNome = RosterWork.escalasPainelFuncoes.noNome(elFuncao, posto, function (po, mudanca) { mudarFuncao(po, mudanca, chaveMenu); }, como);
+      if (menuNome && ctx.funcoesMenu === chaveMenu) ctx.reabrirMenu = menuNome;
+    } else if (como) {
+      RosterWork.escalasPainelComo.rotulo(elFuncao, como);
     }
     function ancora() { return grupo.el; }
     function por(linha) { if (linha) grupo.linhas.appendChild(linha); }
-    var sobrepostos = cpfsSobrepostos(f);
+    var sobrepostos = {};
+    partes.forEach(function (pt) { Object.assign(sobrepostos, cpfsSobrepostos(pt)); });
     var condutor = rotulos.length > 1 ? rotulos[1] : null;
     (f.militares || []).forEach(function (m) {
-      var cfg = { tipo: 'funcao', grupo: ancora, posto: posto, funcao: f.nome, militar: m, periodos: m.periodos || [] };
+      var cfg = { tipo: 'funcao', grupo: ancora, posto: posto, funcao: m.funcaoDoLugar || f.nome, militar: m, periodos: m.periodos || [] };
       if (condutor) {
         var fc = acharFuncao(posto, condutor);
         var mc = ((fc && fc.militares) || []).filter(function (o) { return o.cpf === m.cpf; })[0] || m;
         cfg = { tipo: 'funcao', grupo: ancora, posto: posto, funcao: condutor, rotulo: rotulos.join(' e '), militar: mc, periodos: mc.periodos || [] };
       } else if (BLOQUEADAS.test(f.nome)) {
         cfg.tipo = 'papel';
+      } else if (f.partes) {
+        /* o grupo sem número: o cartão mostra o nome da tela; o estagiário, o menu dele (escalas-painel-linha-menu.js) */
+        cfg.rotulo = rotulos[0];
+        if (f.estagiario) cfg.estagiario = true;
       }
       /* na comparação, as marcas vêm do banco ("Novo" = quem entra pelo pedido; só a barra = quem o
          sistema remanejou); na edição não há marca, porque cada mudança já está gravada */
@@ -1046,10 +1127,14 @@
     });
     /* riscados: na comparação, quem saiu */
     if (ctx.comparar) (f.ghosts || []).forEach(function (g) { por(linhaMilitar(g, { ghost: true })); });
-    /* a linha vermelha da função obrigatória vazia de propósito leva o Fixado (com quem fez na dica) */
-    function fixar(l, cinza) { if (!cinza) fixadoNoVazio(l, f.fixado_vazio); return l; }
-    if (f.vazio) por(fixar(linhaVazia(posto, f.nome, { hi: '08:00', hf: '08:00' }, ancora, aberta), aberta));
-    vaos.forEach(function (v) { var cinza = nivelVao(v) === 'ideal'; por(fixar(linhaVazia(posto, f.nome, v, ancora, cinza), cinza)); });
+    /* os lugares sem ninguém, cada um com o lápis dele; a linha vermelha da função obrigatória vazia de propósito leva o
+       Fixado (com quem fez na dica) */
+    partes.forEach(function (pt) {
+      var aberta = pt.vazio_motivo === 'aberta';
+      function fixar(l, cinza) { if (!cinza) fixadoNoVazio(l, pt.fixado_vazio); return l; }
+      if (pt.vazio) por(fixar(linhaVazia(posto, pt.nome, { hi: '08:00', hf: '08:00' }, ancora, aberta), aberta));
+      (pt.vao || []).forEach(function (v) { por(fixar(linhaVazia(posto, pt.nome, v, ancora, false), false)); });
+    });
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
@@ -1070,11 +1155,11 @@
     if (noLugar && ancora) ancora.insertAdjacentElement('afterend', noLugar);
   }
 
-  /* o clique numa caixa do menu Funções do posto: abre a função sem ninguém ou fecha a aberta, no rascunho (com o
-     Desfazer); salva vazia, a função some */
-  function mudarFuncao(posto, mudanca) {
+  /* o clique numa caixa do menu Funções do posto (o do título ou o do nome da função, chaveMenu): abre a função sem
+     ninguém ou fecha a aberta, no rascunho (com o Desfazer); salva vazia, a função some */
+  function mudarFuncao(posto, mudanca, chaveMenu) {
     if (!ctx || ctx.salvando) return;
-    ctx.funcoesMenu = posto.tipo + ':' + posto.id;
+    ctx.funcoesMenu = chaveMenu || (posto.tipo + ':' + posto.id);
     abrirOuFechar(posto, mudanca);
   }
   function abrirOuFechar(posto, mudanca) {
@@ -1111,10 +1196,10 @@
       if (np) caixa.classList.add('grupo-caixa--posto-' + np);
       return caixa;
     }
-    /* o vermelho (cadeira vazia ou horário sem ninguém abaixo do mínimo) vence o amarelo; a função aberta sem ninguém, o
-       lugar até o ideal e o horário até o ideal não são erro */
+    /* o vermelho (cadeira vazia ou horário sem ninguém abaixo do mínimo) vence o amarelo; a função aberta sem ninguém não
+       é erro */
     if (np !== 'erro' && (posto.funcoes || []).some(function (f) {
-      return (f.vazio && f.vazio_motivo !== 'aberta') || (f.vao || []).some(function (v) { return nivelVao(v) === 'erro'; });
+      return (f.vazio && f.vazio_motivo !== 'aberta') || (f.vao || []).length > 0;
     })) np = 'erro';
     if (np) caixa.classList.add('grupo-caixa--posto-' + np);
     p.mesclarFuncoes(posto).forEach(function (f) { linhasFuncao(caixa, posto, f); });
@@ -1263,7 +1348,7 @@
   /* "Condutor da ABT-01" (o posto pelo nome, na leitura do dia) */
   function lugarTexto(x) {
     var po = ((ctx.dados && ctx.dados.postos) || []).filter(function (o) { return o.nome === x.posto; })[0];
-    return po ? funcaoNoPosto(x.funcao, po) : [x.funcao, x.posto].filter(Boolean).join(' ');
+    return po ? funcaoNoPosto(x.funcao, po) : [pecas().nomeSemNumero(x.funcao), x.posto].filter(Boolean).join(' ');
   }
 
   /* O que mudou na última gravação: uma frase por militar que mudou de lugar e, quando a troca deixou alguém sem
@@ -1617,10 +1702,13 @@
       sugestao: null, ultima: null, abrirMenuDe: opcoes.abrirMenuDe || null, fazerAcao: opcoes.fazerAcao || null,
       adicionar: opcoes.adicionar || null, trazer: !!opcoes.trazer,
       semLista: !!opcoes.semLista, aoMostrar: opcoes.aoMostrar || null };
-    /* voltou de outra aba ao mesmo dia: o rascunho continua; outro dia, ou quem só lê, começa do dia gravado */
+    /* voltou de outra aba ao mesmo dia: o rascunho continua; outro dia: o de agora vai para a gaveta e o novo começa do
+       que estava guardado nela ou do dia gravado (quem só lê, sempre do gravado) */
     var mesmo = !!(base && rasc && dono === unidadeId + '|' + iso && haMudanca());
     if (!(mesmo && ctx.admin && !ctx.comparar)) {
+      guardarAgora();
       rasc = null; base = null; pilhaDesfazer = []; pilhaRefazer = []; dono = '';
+      if (ctx.admin && !ctx.comparar) trazerGuardado(unidadeId + '|' + iso);
     }
     vivo = null;
     if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
@@ -1669,10 +1757,13 @@
   /* o que vai ao banco: o rascunho e o dia como a tela leu ("antes": se mudou depois, nada é gravado) */
   function paraGravar() {
     var r = copiar(paraSalvar());
-    r.antes = { ajustes: base.ajustes, pontuais: base.pontuais };
-    if (ctx) ctx.mudancasGravando = mapaMudancas();   // a frase da mudança de dia na nota O que mudou, depois de gravar
+    r.antes = antesDoDia();
+    /* a frase da mudança de dia na nota O que mudou, depois de gravar (só a do dia na tela) */
+    if (ctx && dono === ctx.unidadeId + '|' + ctx.iso) ctx.mudancasGravando = mapaMudancas();
     return r;
   }
+  /* o dia como a tela leu (o banco confere se mudou e, no Salvar de vários dias, junta a camada manual sobre ele) */
+  function antesDoDia() { return { ajustes: base.ajustes, pontuais: base.pontuais }; }
   /* gravou: o dia gravado vira a base, o rascunho e o desfazer recomeçam e a nota O que mudou vem do banco */
   function aposGravar(r) {
     fecharLinha('largar');
@@ -1694,6 +1785,7 @@
     if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
     montarSubcabecalho();
     renderLista(r.dia);
+    avisarCelula(r.dia);   // a caixa da célula aberta no mesmo dia, sobre a lista do painel (sub.ouvir)
   }
   /* o Cancelar do rodapé, outro dia ou o dia mudou no banco: o rascunho sai; com o Dia aberto, ele lê o dia de novo */
   function descartar() {
@@ -1722,6 +1814,33 @@
     paraGravar: paraGravar,
     aposGravar: aposGravar,
     descartar: descartar,
+    antesDoDia: antesDoDia,
+    /* uma lista aberta numa sub-tela (o Desfazer do rodapé espera ela fechar) */
+    emSub: function () { return !!ctx && !!ctx.emSub; },
+    /* fn (paraGravar, previaDia, outrosDias, antesDoDia...) com o rascunho de um item da gaveta: o de agora ou um guardado */
+    noDia: function (item, fn) { return item.vivo ? fn() : comEstado(item.estado, fn); },
+    /* para a gaveta dos dias (escalas-rascunho-dias.js) */
+    gaveta: {
+      vivo: function () { return base && rasc && dono ? { chave: dono, unidadeId: donoUnidade(), iso: donoIso(), vivo: true } : null; },
+      contar: function (item) { return item.vivo ? pendentes() : comEstado(item.estado, pendentes); },
+      pode: function (item, desfazer) {
+        if (!item.vivo) return (desfazer ? item.estado.pilhaDesfazer : item.estado.pilhaRefazer).length > 0;
+        if (ctx && ctx.admin && !ctx.comparar) return desfazer ? podeDesfazer() : podeRefazer();
+        return (desfazer ? pilhaDesfazer : pilhaRefazer).length > 0;
+      },
+      andar: function (item, desfazer) {
+        if (!item.vivo) return andarEm(item.estado, desfazer);
+        if (ctx && ctx.admin && !ctx.comparar) {
+          if (desfazer) desfazerPasso(); else refazerPasso();
+          return true;
+        }
+        var andou = andarAgora(desfazer);   // sem a lista na tela (outra aba aberta)
+        avisarRascunho();
+        return andou;
+      },
+      limparRefazer: function (item) { item.estado.pilhaRefazer = []; },
+      soltar: function () {}
+    },
     /* para a edição da linha (escalas-painel-linha.js: ao vivo, como as sub-telas), o Remover do dia (mudar põe a
        mudança no rascunho como um passo só) e as sub-telas (escalas-painel-adicionar.js, -remover.js, -remanejar.js,
        -mudar-dia.js e -militar.js: aoVivo a cada resposta) */
@@ -1730,6 +1849,18 @@
       livre: function () { return !!ctx && !!rasc && ctx.admin && !ctx.comparar && !ctx.salvando; },
       /* o dia da célula (sem a lista) está aberto: { unidadeId, iso } ou null; carregando: a leitura ou a prévia ainda vem */
       celula: function () { return ctx && ctx.semLista ? { unidadeId: ctx.unidadeId, iso: ctx.iso } : null; },
+      /* o dia aberto para editar, na célula ou na lista do painel: { unidadeId, iso, lista } ou null (quem só lê, o "Como
+         fica" das decisões) */
+      diaAberto: function () {
+        return ctx && ctx.admin && !ctx.comparar && !ctx.consulta ? { unidadeId: ctx.unidadeId, iso: ctx.iso, lista: !ctx.semLista } : null;
+      },
+      /* a caixa da célula aberta no dia do painel recebe cada leitura dele (o dado ou null) */
+      ouvir: function (fn) { if (ctx && !ctx.semLista) ctx.aoMostrar = fn; },
+      /* a caixa da célula vai abrir no dia do painel: o lápis ou a sub-tela aberta nele fecha guardando o que foi respondido */
+      fecharAbertos: function () {
+        if (!ctx || ctx.semLista) return;
+        if (ctx.emSub || vivo || (RosterWork.escalasPainelLinha && RosterWork.escalasPainelLinha.aberta())) desenhar();
+      },
       carregando: function () { return !!ctx && !!ctx.carregando; },
       abrirLugar: abrirLugar,
       /* o Voltar o dia ao automático (o do Editar o dia e o do pelotão na célula): vale agora? e a confirmação */

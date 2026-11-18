@@ -14,7 +14,8 @@
    bolinhas de arrastar aparecem com o mouse em cima e na barra
    escolhida (a última mexida ou a linha clicada), que no painel do
    dia também mostra o seletor de horas e, depois dele, o cadeado e a
-   lixeira. O cadeado aberto deixa o horário livre: a bolinha e o
+   lixeira; sem horário no dia, a escolhida do painel do dia e da
+   caixa da célula mostra os campos em branco. O cadeado aberto deixa o horário livre: a bolinha e o
    campo do começo andam de hora em hora e levam a extra junto (as
    cotas não mudam), e o clique põe ou tira 6 horas pela ponta mais
    perto; fechado, volta ao horário padrão (o risco mais perto). A
@@ -52,6 +53,8 @@
   function seguidos(a, b) { var r = []; for (var i = a; i <= b; i++) r.push(i); return r; }
   /* a hora do relógio ("12:00") em horas desde as 08h */
   function hora(t) { return H().emMin(t) / 60; }
+  /* horas desde as 08h na hora do campo de horas: 6 -> "14" */
+  function horaDoCampo(h) { return H().hhmm(h * 60).slice(0, 2); }
   /* a faixa dos horários: do começo (o fim do expediente ou o primeiro horário), 6 horas por horário */
   function faixaDe(bs, inicio) {
     if (!bs.length) return null;
@@ -164,9 +167,28 @@
     return r;
   }
 
+  /* sem horário no dia: os campos em branco. Escolher ou escrever uma hora põe as 6 horas que começam (no início) ou
+     terminam (no fim) ali, como o clique na barra; só as horas em que elas cabem. Sem nenhuma, sem campos */
+  function camposVazios(rg, aplicar) {
+    var porInicio = {}, porFim = {}, inicios = [], fins = [];
+    [0, 6, 12, 18].forEach(function (h) {
+      var f = rg.clique(h);
+      if (!f) return;
+      porInicio[horaDoCampo(h)] = f; inicios.push(horaDoCampo(h));
+      porFim[horaDoCampo(h + 6)] = f; fins.push(horaDoCampo(h + 6));
+    });
+    if (!inicios.length) return null;
+    return H().linha({
+      hi: '', hf: '', semAcoes: true, opcoes: { inicios: inicios, fins: fins },
+      aoInicio: function (t) { var f = porInicio[t.slice(0, 2)]; if (f) aplicar(f); },
+      aoFim: function (t) { var f = porFim[t.slice(0, 2)]; if (f) aplicar(f); }
+    });
+  }
+
   /* a barra na caixa (o lugar das bolinhas). opcoes = { campos (o seletor de horas na barra escolhida), lugar ('painel',
      'lista', 'calendario' ou 'caixa', a caixa 2 da célula; o painel sem ele), linha (o que o clique escolhe; no painel, a
-     linha do militar), desligado, semLixeira (a caixa da célula: o Remover fica no menu dela) } */
+     linha do militar), desligado, semLixeira (a caixa da célula: o Remover fica no menu dela), vazio (sem horário no
+     dia, os campos em branco; com o pedido aberto só dá para tirar, então não) } */
   function ligar(caixa, m, k, marcados, uid, opcoes) {
     opcoes = opcoes || {};
     var v = G().vagaDe(m.cpf, k);
@@ -209,7 +231,8 @@
     caixa.appendChild(barra.el);
     /* no calendário e na lista, mexer na barra não abre nem fecha mais nada (os campos de hora seguem o caminho de sempre) */
     caixa.addEventListener('click', function (ev) { if (ev.target.closest('.regua-barra')) ev.stopPropagation(); });
-    if (!opcoes.campos || !editavel || !faixa) return;
+    var vazio = !faixa && !!opcoes.vazio && !G().travado();
+    if (!opcoes.campos || !editavel || (!faixa && !vazio)) return;
     /* a barra que não é a escolhida: clicar na linha dela, fora da barra, dos botões e dos outros dias, escolhe a barra
        sem mudar nada */
     if (escolhida !== minha) {
@@ -222,12 +245,16 @@
       });
       return;
     }
+    if (vazio) {
+      var embranco = camposVazios(rg, aplicar);
+      if (embranco) caixa.appendChild(embranco);
+      return;
+    }
     /* a barra escolhida: o seletor de horas embaixo, com as paradas das bolinhas, e, depois dele, o cadeado e a lixeira,
        que tira os horários dele no dia (fica cinza até o Salvar) */
-    var texto = function (h) { return H().hhmm(h * 60).slice(0, 2); };
     var linha = H().linha({
       hi: H().hhmm(faixa.ini * 60), hf: H().hhmm(faixa.fim * 60), semAcoes: true,
-      opcoes: { inicios: rg.comecos().map(function (c) { return texto(c.pos); }), fins: rg.fins(faixa).map(texto) },
+      opcoes: { inicios: rg.comecos().map(function (c) { return horaDoCampo(c.pos); }), fins: rg.fins(faixa).map(horaDoCampo) },
       aoInicio: function (t) { var f = rg.arrastar('ini', hora(t), faixa); if (f) aplicar(f); },
       aoFim: function (t) { var p = hora(t); if (p <= faixa.ini) p += 24; var f = rg.arrastar('fim', p, faixa); if (f) aplicar(f); }
     });

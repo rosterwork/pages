@@ -575,7 +575,8 @@
       contaNao: function (n) { return 'Não quero: ' + n + (n === 1 ? ' dia' : ' dias'); },
       quero: 'Quero',
       naoQuero: 'Não quero',
-      motivos: { servico: 'Serviço', troca: 'Troca', folga: 'Folga', ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa' },
+      motivos: { servico: 'Serviço', troca: 'Troca', folga: 'Folga', ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa',
+        litoral: 'Litoral', op_verao: 'Op. Verão' },
       expediente: 'Expediente',
       folga: 'Folga',
       desde: function (h) { return 'desde ' + h; },
@@ -730,10 +731,18 @@
         cotasPassaramUnidade: function (nome, rep, rec) { return nome + ': foram repartidas ' + rep + ' cotas, mas recebeu ' + rec + '.'; },
         extraEm: function (nome) { return 'Extra no ' + nome; },
         expedienteDiaTodo: 'Expediente o dia todo',
-        /* o serviço de parte do dia (o pontual e o que sobra da folga de parte do dia), embaixo do nome no painel do dia:
-           faixas = [['20h', '08h'], ...] */
-        deServicoDas: function (faixas) {
-          return 'De serviço ' + faixas.map(function (f) { return 'das ' + f[0] + ' às ' + f[1]; }).join(' e ') + '. A extra só nas outras horas.';
+        /* o serviço de parte do dia (o pontual e o que sobra da folga de parte do dia) e o posto na Op. Verão, embaixo do
+           nome no painel do dia: servico e praia = [['20h', '08h'], ...], um dos dois pode vir vazio */
+        deServicoDas: function (servico, praia) {
+          function das(faixas) { return faixas.map(function (f) { return 'das ' + f[0] + ' às ' + f[1]; }).join(' e '); }
+          var partes = [];
+          if (servico.length) partes.push('De serviço ' + das(servico));
+          if (praia.length) partes.push((partes.length ? 'na' : 'Na') + ' Op. Verão ' + das(praia));
+          return partes.join(' e ') + '. A extra só nas outras horas.';
+        },
+        /* o posto na Op. Verão no campo Adicionar militar da célula, depois do pelotão e das cotas: faixas = [['08h', '13h']] */
+        opVeraoCurto: function (faixas) {
+          return 'Op. Verão ' + faixas.map(function (f) { return f[0] + ' às ' + f[1]; }).join(' e ');
         },
         /* a regra por militar não deixa nenhum posto do pelotão no dia (embaixo do nome no painel do dia) */
         regraSemPosto: 'Pela regra dele, não há posto para ele neste pelotão.',
@@ -820,6 +829,13 @@
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
       /* abas Funções e Militares: a escala do dia mudou depois que a tela leu (outro administrador ou o sistema) */
       diaDesatualizado: 'A escala deste dia foi alterada por outra pessoa ou pelo sistema. A tela foi atualizada: confira e faça a mudança de novo.',
+      /* o Salvar de vários dias: um deles mudou depois que a tela leu (só as alterações dele saem) */
+      diaDesatualizadoDe: function (dia, unidade) {
+        return 'A escala de ' + dia + (unidade ? ' (' + unidade + ')' : '') + ' foi alterada por outra pessoa ou pelo sistema. '
+          + 'Nada foi salvo. As alterações desse dia saíram e as dos outros dias continuam: confira e faça a mudança de novo.';
+      },
+      /* o clique fora com a resposta pela metade (a caixa da grade e o cartão do lápis): embaixo da pergunta que falta */
+      responderOuDesistir: 'Responda aqui ou feche para desistir.',
       /* catálogo de erros/avisos da distribuição na escala — o aviso-lista do topo mostra uma linha
          [ícone + texto] por item presente; nivel 'erro' (vermelho) ou 'alerta' (amarelo) */
       erros: {
@@ -1027,12 +1043,9 @@
       funcoesTitulo: function (posto) { return (/^Central/.test(posto || '') ? 'Funções da ' : 'Funções do ') + (posto || ''); },
       funcoesMinimo: 'Mínimo',
       funcoesDicaMinimo: 'É do mínimo do posto e fica sempre na escala.',
-      funcoesIdeal: 'Ideal',
-      funcoesDicaIdeal: 'É do ideal do posto e fica na escala para alguém ocupar.',
       /* a dica do selo Fixado (a pessoa fixada ou a função vazia de propósito): quem fixou */
       fixadoPor: function (nome) { return 'Adm: ' + nome; },
       funcoesDicaOcupada: 'Para tirar quem está aqui, use o lápis da linha e escolha Remover desta função.',
-      funcoesDicaAnterior: 'Marque antes a função anterior.',
       funcoesDicaSeguinte: 'Desmarque antes a função seguinte.',
       funcoesDicaLapis: 'Use o lápis da linha para pôr alguém nela.',
       /* a lista Quem da vaga: quem é o mais antigo (assume o papel sozinho) e o motivo de quem não pode */
@@ -1237,6 +1250,8 @@
       /* Mudar o dia do serviço (o menu Editar o dia; escalas-painel-mudar-dia.js): a lista Quem, o mês em miniatura, o
          horário, o Onde fica, o Como fica e os avisos */
       mudarDia: {
+        /* o dia novo com alteração não salva (o rascunho de vários dias): ela é gravada antes */
+        salveAntes: function (dia) { return 'Salve as alterações de ' + dia + ' antes de mudar o serviço para esse dia.'; },
         grupoCiclo: 'De serviço pela guarnição',
         grupoNao: 'Não dá para mudar por aqui',
         ninguem: 'Ninguém de serviço pela guarnição neste dia',
@@ -1301,6 +1316,8 @@
       /* dia sem ninguém de serviço na unidade */
       semDistribuicao: 'Sem distribuição neste dia.',
       alteracoesNaoSalvas: function (n) { return n === 1 ? '1 alteração não salva' : n + ' alterações não salvas'; },
+      /* com o rascunho em mais de um dia, depois da conta: "5 alterações não salvas em 3 dias" */
+      emDias: function (n) { return 'em ' + n + ' dias'; },
       /* o Salvar do rodapé largo (as três abas do painel do dia de uma vez): o Cancelar e a recusa */
       painelDescartar: function (n) { return n === 1 ? 'Descartar a alteração não salva?' : 'Descartar as ' + n + ' alterações não salvas?'; },
       painelRecusado: function (erro) { return 'Nada foi salvo. ' + erro; },
@@ -1312,6 +1329,8 @@
       formBotaoAplicar: 'Aplicar',
       ninguemEncontrado: 'Ninguém encontrado.',
       novaFuncao: function (nome) { return 'Nova função: ' + nome; },
+      /* o lugar novo de uma função que o posto já tem (sem número): "Mais um Efetivo" */
+      maisUm: function (nome) { return 'Mais um ' + nome; },
       /* situação da função no horário (as listas do Onde) */
       itemVazia: 'vazia',
       itemSai: function (nomes) { return nomes.join(' e ') + (nomes.length > 1 ? ' saem' : ' sai'); },
@@ -1389,6 +1408,16 @@
         ultimo: function (dia) { return dia ? 'Último sobreaviso em ' + dia : 'Nunca esteve de sobreaviso'; },
         /* quem ficaria solto no dia (tem plantão perto, mas não no dia antes nem no depois) */
         solto: function (dia) { return 'Solto neste dia, ' + (dia ? 'último em ' + dia : 'nunca esteve de sobreaviso'); },
+        /* a conta de quem pode entrar (a lista do Militar): o saldo arredondado e, depois, o solto ou o último */
+        conta: function (saldo, solto, dia) {
+          var n = Math.round(Math.abs(saldo));
+          var conta = n === 0 ? 'No justo' : n + (saldo < 0 ? ' a menos' : ' a mais') + ' que o justo';
+          return conta + ', ' + (solto ? 'solto neste dia' : dia ? 'último em ' + dia : 'nunca esteve de sobreaviso');
+        },
+        /* a dica do nome na aba Militares da página Sobreaviso: a conta até hoje */
+        contaMilitar: function (feitos, justo, desde) {
+          return 'Fez ' + feitos + ' desde ' + desde + '; o justo é ' + String(justo).replace('.', ',') + '.';
+        },
         motivo: {
           ja_esta: function () { return 'Já está de sobreaviso neste dia'; },
           servico: function () { return 'De serviço neste dia'; },
@@ -2686,6 +2715,15 @@
         passos.push('Refazendo os próximos 7 dias do ' + v.unidade, 'Atualizando os dias na grade');
         return { titulo: 'Salvando a escala de ' + v.dia, passos: passos,
           pe: 'O resto do período continua sozinho, e você pode seguir trabalhando.' };
+      },
+      /* o rascunho de vários dias (v.dias: as datas, 'DD/MM'; v.refaz: algum deles refaz os dias seguintes) */
+      salvarDias: function (v) {
+        var um = v.dias.length === 1;
+        var passos = ['Gravando as alterações de ' + (um ? v.dias[0] : 'cada dia')];
+        if (v.refaz) passos.push('Refazendo os dias seguintes');
+        passos.push('Atualizando os dias na grade');
+        return { titulo: 'Salvando a escala de ' + (um ? v.dias[0] : v.dias.length + ' dias'), passos: passos,
+          pe: v.refaz ? 'O resto do período continua sozinho, e você pode seguir trabalhando.' : '' };
       },
       salvarCiclo: function (v) {
         return { titulo: 'Salvando a mudança nas guarnições', passos: ['Gravando a mudança nas guarnições', 'Refazendo os próximos 7 dias do ' + v.unidade, 'Atualizando os dias na grade'],

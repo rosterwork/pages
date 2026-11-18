@@ -351,10 +351,11 @@
       });
     }
 
-    /* Esc fecha — mas o modal tem precedência (não vaza para o painel atrás) */
+    /* Esc fecha — mas o modal e a caixa flutuante aberta por cima (geral-caixa-flutuante, que marca o Esc que usou) têm
+       precedência: fecham primeiro, e o painel fica */
     document.addEventListener('keydown', function (evento) {
-      if (evento.key !== 'Escape') return;
-      if (document.querySelector('.modal-veu--aberto')) return;
+      if (evento.key !== 'Escape' || evento.defaultPrevented) return;
+      if (document.querySelector('.modal-veu--aberto, .caixa-flutuante--aberta')) return;
       solicitarFechar();
     });
 

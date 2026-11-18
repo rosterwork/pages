@@ -42,8 +42,10 @@
   font-weight: 600;
 }
 
-/* o nome da função, clicável na Escala: o botão discreto em volta dos rótulos, com a cor e a letra deles */
-.escala-como-rotulo {
+/* o nome da função, clicável na Escala: o botão discreto em volta dos rótulos, com a cor e a letra deles (o Como foi
+   escolhido, para quem só vê; o menu Funções do posto, para quem edita o dia) */
+.escala-como-rotulo,
+.escala-funcao-menu-botao {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
@@ -54,7 +56,8 @@
 }
 
 .escala-como-rotulo:hover,
-.escala-como-rotulo:disabled {
+.escala-como-rotulo:disabled,
+.escala-funcao-menu-botao:hover {
   color: inherit;
 }
 

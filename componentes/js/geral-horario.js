@@ -126,7 +126,7 @@
   /* cfg = { hi, hf, opcoes {inicios, fins}, fixo, desligado, erro, aoInicio(hora), aoFim(hora), aoRemover, aoAdicionar,
      adicionarDesligado, semAcoes }: sem aoRemover / aoAdicionar, o botão guarda o lugar escondido; com
      adicionarDesligado (o texto da dica), o Adicionar horário aparece apagado e a dica diz o porquê; semAcoes tira os
-     dois; erro = campos vermelhos */
+     dois; erro = campos vermelhos; hi ou hf vazio = o campo em branco, para escolher ou escrever a hora */
   function linha(cfg) {
     var el = RosterWork.tpl('tpl-horario');
     if (!el) return null;
@@ -140,10 +140,11 @@
       par.appendChild(b);
     } else {
       var opc = cfg.opcoes || opcoesHoras(null);
-      var formato = function (h) { return curta(h + ':00'); };
-      var ini = RosterWork.dropdownNumeros.criar({ opcoes: opc.inicios, valor: String(cfg.hi).slice(0, 2), formato: formato,
+      var formato = function (h) { return h ? curta(h + ':00') : ''; };
+      var hora = function (t) { return t ? String(t).slice(0, 2) : ''; };
+      var ini = RosterWork.dropdownNumeros.criar({ opcoes: opc.inicios, valor: hora(cfg.hi), formato: formato,
         aoEscolher: function (h) { if (cfg.aoInicio) cfg.aoInicio(h + ':00'); } });
-      var fim = RosterWork.dropdownNumeros.criar({ opcoes: opc.fins, valor: String(cfg.hf).slice(0, 2), formato: formato,
+      var fim = RosterWork.dropdownNumeros.criar({ opcoes: opc.fins, valor: hora(cfg.hf), formato: formato,
         aoEscolher: function (h) { if (cfg.aoFim) cfg.aoFim(h + ':00'); } });
       if (!ini || !fim) return null;
       if (cfg.desligado) {

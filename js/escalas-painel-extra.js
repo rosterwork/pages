@@ -4,7 +4,7 @@
    lançado: quem está no dia, quem quer, quem não quer e quem não pode.
    Mês não lançado: só a mensagem. Unidade de fora da companhia de quem
    entrou: a frase. O rascunho é do mês (extrajornada-grade.js): trocar de
-   dia não perde nada, e os dias mudados levam a borda tracejada. O
+   dia e fechar o painel não perdem nada, e os dias mudados levam a borda tracejada. O
    Salvar é o rodapé largo da página, junto com o Dia e o Ciclo
    (escalas-painel-salvar.js, p_extra do escala_painel_salvar). A
    célula da grade, com o painel fechado, usa o mesmo mês e o mesmo
@@ -113,8 +113,10 @@
     }, function () { if (meu === pedido && ctx) frase(corpo, msg().falhaMes); });
   }
 
-  /* a aba saiu da tela (o rascunho fica até o Salvar) */
+  /* a aba saiu da tela (o rascunho fica até o Salvar). Com mudança, o dia dela fica para o rodapé largo, como o da célula
+     (o painel fechado: a conta, o Desfazer e o Salvar continuam) */
   function reset() {
+    if (ctx && sujo()) onde = { unidadeId: ctx.uid, iso: ctx.iso, unidadeNome: '' };
     ctx = null;
     pedido++;
     if (RW.extrajornadaDia) RW.extrajornadaDia.soltar();

@@ -96,6 +96,19 @@
   border-top: 0;
 }
 
+/* a pergunta que falta (o clique fora com a resposta pela metade): a borda e o fundo de erro da caixa numerada
+   (.grupo-caixa--erro); a frase vem embaixo, na nota de erro */
+.escala-celula-pergunta.escala-celula-pergunta--falta {
+  padding: 8px;
+  background-color: var(--erro-fundo);
+  border: 1px solid var(--erro);
+  border-radius: var(--raio-medio);
+}
+
+.escala-celula-falta {
+  margin-top: 8px;
+}
+
 .escala-celula-pergunta-texto {
   padding-bottom: 4px;
   font-size: 12px;

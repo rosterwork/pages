@@ -409,7 +409,7 @@
     } else if (tipo === 'regraGraduacao') {
       motivo = d.motivoRegraGraduacao || '';
     }
-    return preencher(d.linha, { pessoa: pessoa, funcao: f.nome || '', motivo: motivo });
+    return preencher(d.linha, { pessoa: pessoa, funcao: nomeSemNumero(f.nome), motivo: motivo });
   }
 
   /* seção amarela expansível: cabeçalho "Título (N)" + chevron que abre a lista de militares */
@@ -571,11 +571,11 @@
     });
     /* o militar posto pelo administrador contra a regra dele (o "não pode"), com o posto */
     porOcorrencia('regra_proibida', cat.regraProibida, function (p) { return p.cpf + '|' + p.posto_id + '|' + p.funcao; },
-      function (p) { return { militar: militar(p), funcao: (p.posto ? p.posto + ' · ' : '') + (p.funcao || '') }; });
+      function (p) { return { militar: militar(p), funcao: (p.posto ? p.posto + ' · ' : '') + nomeSemNumero(p.funcao) }; });
     porOcorrencia('exclusivo_fora', cat.exclusivoFora, function (p) { return p.cpf + '|' + p.funcao; },
-      function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
+      function (p) { return { militar: militar(p), funcao: nomeSemNumero(p.funcao) }; });
     porOcorrencia('grau_diferente', cat.grauDiferente, function (p) { return p.cpf + '|' + p.funcao; },
-      function (p) { return { militar: militar(p), funcao: p.funcao || '' }; });
+      function (p) { return { militar: militar(p), funcao: nomeSemNumero(p.funcao) }; });
     var det = detalharAvisosMotor(postos, presentes, lista);   // quem + vaga + motivo, para o detalhe expansível
     [['grau_por_falta', 'grauRebaixado'], ['rodizio_quebrado', 'rodizioRepetido'],
      ['afastado', 'afastadoTroca'], ['regra_graduacao', 'regraGraduacao']].forEach(function (par) {
@@ -608,8 +608,9 @@
     return DIAS[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' de ' + d.getFullYear();
   }
 
-  /* manter: o painel abre no dia que a célula estava mexendo (escalas-celula-editar.js), e o rascunho dela continua nele */
-  function desmarcar(manter) {
+  /* o dia sai do painel (outro dia vai abrir, ou o painel fechou): as abas param de desenhar, e o rascunho de todos os dias
+     fica (escalas-rascunho-dias.js; o rodapé largo continua com a conta, o Desfazer e o Salvar) */
+  function desmarcar() {
     notaConsulta(false);
     if (celulaSelecionada) {
       celulaSelecionada.classList.remove('escala-mes-celula--selecionada');
@@ -620,36 +621,14 @@
     if (RosterWork.escalasPainelGuarnicoes) RosterWork.escalasPainelGuarnicoes.reset();
     if (RosterWork.escalasPainelVolta) RosterWork.escalasPainelVolta.reset();
     if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
-    /* o painel fechou (já perguntou antes, se havia mudança): as mudanças do Dia e do Ciclo saem */
-    if (!manter && RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
   }
-  /* o dia que a célula da grade está mexendo (o rascunho dela passa ao painel, sem pergunta) */
-  function daCelula(unidadeId, iso) {
-    var c = RosterWork.escalasCelulaEditar;
-    return !!(c && c.ehDia(unidadeId, iso));
-  }
-  /* o painel do dia fechou de verdade: o rascunho da Extrajornada, que é do mês, sai também (trocar de dia não passa aqui) */
-  function aoFecharDia() {
-    desmarcar();
-    if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.descartar();
-  }
+  /* o formulário da troca preenchido (o Solicitar troca ou o Registrar troca de serviço, escalas-painel-troca.js): ele não
+     fica guardado com o dia */
+  function trocaSuja() { return !!(RosterWork.escalasPainelTroca && RosterWork.escalasPainelTroca.temDados()); }
+  /* o painel do dia fechou: o rascunho de todos os dias fica, e o da Extrajornada (do mês) também */
+  function aoFecharDia() { desmarcar(); }
 
-  /* ---------- guarda de descarte: avisa antes de perder rascunho não salvo ---------- */
-  /* mudança não salva no Dia ou no Ciclo, que são do dia aberto (escalas-painel-salvar.js), ou o formulário da troca
-     preenchido (o Solicitar troca ou o Registrar troca de serviço, escalas-painel-troca.js) */
-  function secaoSuja() {
-    return !!(RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.pendente())
-      || !!(RosterWork.escalasPainelTroca && RosterWork.escalasPainelTroca.temDados());
-  }
-  /* a Extrajornada é do mês: trocar de dia não pergunta; fechar o painel e abrir outro no lugar, sim */
-  function extraSuja() { return !!(RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.sujo()); }
-  function limparSecoesSujas() {
-    if (RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
-    if (RosterWork.escalasPainelGuarnicoes) RosterWork.escalasPainelGuarnicoes.reset();
-    if (RosterWork.escalasPainelVolta) RosterWork.escalasPainelVolta.reset();
-    if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.descartar();
-    if (RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.descartar();
-  }
+  /* ---------- guarda de descarte: só o formulário da troca preenchido, que não fica guardado ---------- */
   /* mesmo aviso do Cancelar do rodapé (Descartar / Continuar editando); o formulário da troca, o aviso dele.
      quantas: quantas alterações saem (sem ela, todas) */
   function confirmarDescarte(aoConfirmar, quantas) {
@@ -663,12 +642,13 @@
       aoConfirmar: aoConfirmar
     });
   }
-  /* interceptador do Esc/X e da troca de período (via geral-painel.aoTentarFechar): segura o fechamento se houver
-     rascunho; no Descartar, o painel fecha e a troca de período segue (geral-painel) */
+  /* interceptador do Esc/X e da troca de período (via geral-painel.aoTentarFechar): o rascunho de todos os dias fica, e o
+     painel fecha sem pergunta; só o formulário da troca preenchido segura o fechamento até confirmar (no Descartar, o
+     painel fecha e a troca de período segue, geral-painel) */
   function tentarFecharPainel() {
-    if (!secaoSuja() && !extraSuja()) return false;   // nada sujo: deixa o painel fechar normalmente
-    confirmarDescarte(function () { limparSecoesSujas(); RosterWork.painel.fechar(); });
-    return true;                                  // segura o fechamento até confirmar
+    if (!trocaSuja()) return false;
+    confirmarDescarte(function () { RosterWork.painel.fechar(); }, 0);
+    return true;
   }
 
   /* um horário: início + seta + fim (a seta some quando não há fim) */
@@ -721,43 +701,86 @@
     return linha;
   }
 
-  /* MESCLA (viatura): junta o papel especial (Chefe/Of. Área) com o Condutor numa entrada de dois
-     rótulos só quando as duas funções têm as mesmas pessoas nos mesmos horários (quem é o Chefe
-     dirige em todos eles); com o Chefe dirigindo só parte do dia, as duas ficam separadas, e o
-     Condutor dos outros horários aparece. A numeração dos "Efetivo N" vem PRONTA do banco
-     (calcular_faixas_onde_dia renumera por cadeira, contando o par acumulado como 1, POR FAIXA);
-     aqui não se renumera, senão a folga/troca parcial quebraria. Copia (não muta o leitor). */
+  /* o nome da função como a Escala mostra, sem o número do lugar ("Efetivo 3" vira "Efetivo", "Rádio Operador 2" vira
+     "Rádio Operador"): o número é só a etiqueta do lugar por dentro, e cada linha continua ligada ao lugar dela */
+  var COM_NUMERO = /^(Efetivo|Rádio Operador|Rancheiro|Almoxarife) \d+$/;
+  function nomeSemNumero(nome) { var m = COM_NUMERO.exec(nome || ''); return m ? m[1] : (nome || ''); }
+  /* a função só de estagiários no Efetivo da viatura (o ícone do livro) não é lugar da guarnição: na tela, "Estagiário" */
+  function soEstagiarios(f) {
+    var ms = (f && f.militares) || [];
+    return /^Efetivo \d+$/.test((f && f.nome) || '') && ms.length > 0 && ms.every(function (m) { return m.estagio; });
+  }
+  function rotuloDe(f) { return soEstagiarios(f) ? RosterWork.mensagens.escala.rotuloEstagiario : nomeSemNumero(f.nome); }
+  function antiguidadeDe(m) { return Number(m && m.antiguidade) || 0; }
+
+  /* as funções do posto como a lista mostra (o painel, o PDF do dia, o menu Funções do posto e o modo Dia). Na viatura,
+     o papel especial (Chefe/Of. Área) e o Condutor numa entrada de dois rótulos só quando as duas funções têm as mesmas
+     pessoas nos mesmos horários (quem é o Chefe dirige em todos eles); com o Chefe dirigindo só parte do dia, as duas
+     ficam separadas. Depois, os lugares da mesma função num grupo só, com o nome sem número ("Efetivo", "Rádio Operador",
+     "Estagiário"): partes = as funções guardadas do grupo (cada linha continua ligada ao lugar dela, e o lápis age nele);
+     militares = as pessoas de todas, na ordem de antiguidade, cada uma com a funcaoDoLugar (a guardada). Copia (não muta
+     o leitor) */
   function mesclarFuncoesViatura(posto) {
     var lista = ((posto && posto.funcoes) || []).map(function (f) {
       var c = {}; for (var k in f) c[k] = f[k]; return c;   // cópia rasa
     });
-    if (!posto || posto.tipo !== 'viatura') return lista;
+    if (!posto) return lista;
     lista.sort(function (a, b) { return (Number(a.ordem) || 0) - (Number(b.ordem) || 0); });
-    var PAPEL = ['Chefe de Socorro', 'Oficial de Área'];
-    var especial = null;
-    lista.forEach(function (f) {
-      if (PAPEL.indexOf(f.nome) >= 0 && f.militares && f.militares.length) especial = f;
-    });
-    /* as pessoas da função com os horários de cada uma, numa ordem só */
-    function pessoasEHorarios(f) {
-      return (f.militares || []).map(function (m) {
-        return m.cpf + '|' + (m.periodos || []).map(function (p) { return (p.hi || '') + '-' + (p.hf || ''); }).join(',');
-      }).sort().join(';');
-    }
-    if (especial) {
-      var chave = pessoasEHorarios(especial), idx = -1;
-      lista.forEach(function (f, i) {
-        if (/^Condutor/i.test(f.nome) && f.militares && f.militares.length && pessoasEHorarios(f) === chave) idx = i;
+    if (posto.tipo === 'viatura') {
+      var PAPEL = ['Chefe de Socorro', 'Oficial de Área'];
+      var especial = null;
+      lista.forEach(function (f) {
+        if (PAPEL.indexOf(f.nome) >= 0 && f.militares && f.militares.length) especial = f;
       });
-      if (idx >= 0) { especial.nomes = [especial.nome, lista[idx].nome]; lista.splice(idx, 1); }
+      /* as pessoas da função com os horários de cada uma, numa ordem só */
+      var pessoasEHorarios = function (f) {
+        return (f.militares || []).map(function (m) {
+          return m.cpf + '|' + (m.periodos || []).map(function (p) { return (p.hi || '') + '-' + (p.hf || ''); }).join(',');
+        }).sort().join(';');
+      };
+      if (especial) {
+        var chave = pessoasEHorarios(especial), idx = -1;
+        lista.forEach(function (f, i) {
+          if (/^Condutor/i.test(f.nome) && f.militares && f.militares.length && pessoasEHorarios(f) === chave) idx = i;
+        });
+        if (idx >= 0) { especial.nomes = [especial.nome, lista[idx].nome]; lista.splice(idx, 1); }
+      }
     }
-    return lista;
+    var saida = [], grupos = {};
+    lista.forEach(function (f) {
+      if (f.nomes && f.nomes.length) { saida.push(f); return; }
+      var rotulo = rotuloDe(f);
+      if (!grupos[rotulo]) { grupos[rotulo] = { rotulo: rotulo, partes: [] }; saida.push(grupos[rotulo]); }
+      grupos[rotulo].partes.push(f);
+    });
+    return saida.map(function (x) {
+      if (!x.partes) return x;
+      var partes = x.partes;
+      if (partes.length === 1 && partes[0].nome === x.rotulo) return partes[0];
+      var militares = [], ghosts = [];
+      partes.forEach(function (p) {
+        (p.militares || []).forEach(function (m) { militares.push(Object.assign({}, m, { funcaoDoLugar: p.nome })); });
+        (p.ghosts || []).forEach(function (m) { ghosts.push(Object.assign({}, m, { funcaoDoLugar: p.nome })); });
+      });
+      militares.sort(function (a, b) { return antiguidadeDe(a) - antiguidadeDe(b); });
+      return Object.assign({}, partes[0], {
+        nomes: [x.rotulo], partes: partes, militares: militares, ghosts: ghosts, vao: [],
+        estagiario: x.rotulo === RosterWork.mensagens.escala.rotuloEstagiario,
+        sobreposicao: partes.some(function (p) { return !!p.sobreposicao; }),
+        vazio: !militares.length && partes.every(function (p) { return !!p.vazio; }),
+        acumulo: partes.some(function (p) { return !!p.acumulo; })
+      });
+    });
   }
 
-  /* um grupo: rótulo da função + as linhas dos militares daquela função; o lugar que falta até o ideal é só do painel de
-     quem edita o dia (o modo Dia e a Minha escala não mostram) */
+  /* o nome de uma função do posto como a tela mostra ("Efetivo", "Rádio Operador", "Estagiário") */
+  function rotuloDaFuncao(posto, nome) {
+    var f = posto ? ((posto.funcoes || []).filter(function (x) { return x.nome === nome; })[0]) : null;
+    return f ? rotuloDe(f) : nomeSemNumero(nome);
+  }
+
+  /* um grupo: rótulo da função + as linhas dos militares daquela função */
   function montarGrupoFuncao(funcao, editar) {
-    if (funcao && funcao.lugar_ideal) return null;
     var grupo = RosterWork.tpl('tpl-escala-distribuicao-grupo');
     if (!grupo) return null;
     var fnEl = grupo.querySelector('.escala-distribuicao-funcao');
@@ -916,14 +939,11 @@
     if (RosterWork.escalasPainelSalvar) RosterWork.escalasPainelSalvar.atualizar();
   }
 
-  /* abrir outra célula com rascunho aberto no Dia ou no Ciclo: confirma o descarte antes de trocar (o da Extrajornada,
-     que é do mês, fica). secao = a aba que abre primeiro (o padrão é o Dia; quem está na Extrajornada continua nela) */
+  /* abrir outra célula: o rascunho do dia de agora fica guardado (escalas-rascunho-dias.js) e volta com ele, sem
+     pergunta; só o formulário da troca preenchido pergunta antes. secao = a aba que abre primeiro (o padrão é o Dia; quem
+     está na Extrajornada continua nela) */
   function abrirParaCelula(celula, secao) {
-    if (secaoSuja() && !daCelula(celula.dataset.unidadeId, celula.dataset.iso)) {
-      var S = RosterWork.escalasPainelSalvar;
-      confirmarDescarte(function () { abrirParaCelulaAgora(celula, secao); }, S ? S.contarDoDia() : 0);
-      return;
-    }
+    if (trocaSuja()) { confirmarDescarte(function () { abrirParaCelulaAgora(celula, secao); }, 0); return; }
     abrirParaCelulaAgora(celula, secao);
   }
 
@@ -933,26 +953,23 @@
   }
 
   /* o dia de uma unidade sem a célula (a companhia do Oficial de Área, que pode não estar na tela; o lápis dele no
-     pelotão), com a mesma pergunta de trocar de dia quando há mudança não salva. opcoes.abrirMenuDe: o cpf de quem fica
+     pelotão), como abrir outra célula (só o formulário da troca preenchido pergunta). opcoes.abrirMenuDe: o cpf de quem fica
      com o menu aberto quando a lista chegar; opcoes.fazerAcao: em vez do menu, o item dele já feito (a célula da grade);
      opcoes.adicionar: o cpf de quem já vem escolhido no Adicionar estagiário (o dia vazio da grade dos estagiários); opcoes.trazer:
      já no Trazer de outra unidade (o pelotão na célula da grade) */
   function abrirDia(dia, secao, opcoes) {
-    if (secaoSuja() && !daCelula(dia.unidadeId, dia.iso)) {
-      var S = RosterWork.escalasPainelSalvar;
-      confirmarDescarte(function () { abrirDiaAgora(dia, secao, null, opcoes); }, S ? S.contarDoDia() : 0);
-      return;
-    }
+    if (trocaSuja()) { confirmarDescarte(function () { abrirDiaAgora(dia, secao, null, opcoes); }, 0); return; }
     abrirDiaAgora(dia, secao, null, opcoes);
   }
 
   /* dia = { unidadeId, iso, unidadeNome, unidadeCidade }; a célula (quando há) fica marcada na grade */
   function abrirDiaAgora(dia, secao, celula, opcoes) {
     var naExtra = !!pCtx && pCtx.secao === 'extra';
-    /* a célula da grade deixa o dia: o que ela mexia neste dia continua no painel; em outro dia, já foi descartado */
-    var manter = daCelula(dia.unidadeId, dia.iso);
+    /* a célula da grade deixa o dia: o que ela mexia continua (neste dia, no painel; em outro dia, guardado na gaveta), e o
+       Ciclo deste dia, se estava guardado, volta */
     if (RosterWork.escalasCelulaEditar) RosterWork.escalasCelulaEditar.passarAoPainel();
-    desmarcar(manter);
+    desmarcar();
+    if (RosterWork.escalasPainelCiclo) RosterWork.escalasPainelCiclo.abrirDia(dia.unidadeId, dia.iso);
     var marcada = celula || encontrarCelula(dia.unidadeId, dia.iso);
     if (marcada) {
       marcada.classList.add('escala-mes-celula--selecionada');
@@ -1089,8 +1106,8 @@
       var alvo = evento.target.closest ? evento.target.closest('.escala-mes-celula, [data-abre-dia], .escala-calendario-unidade') : null;
       var celula = alvo && alvo.classList.contains('escala-calendario-unidade') ? alvo.querySelector('.escala-mes-celula') : alvo;
       if (!celula || !celula.dataset.unidadeId || !celula.dataset.iso) return;
-      /* quem administra o dia, com o painel fechado: o rápido se faz na própria célula, também o do sobreaviso
-         (escalas-celula-editar.js) */
+      /* quem administra o dia: o rápido se faz na própria célula, também o do sobreaviso; com o painel aberto, ele vai
+         junto para o dia (escalas-celula-editar.js) */
       if (RosterWork.escalasCelulaEditar && RosterWork.escalasCelulaEditar.clique(evento, celula)) return;
       /* o sobreaviso, para quem não mexe nele na célula: o painel do dia no bloco, com o lápis do nome clicado
          (escalas-painel-sobreaviso.js) */
@@ -1234,12 +1251,12 @@
     remarcar: remarcarSelecionada,
     /* o dia aberto mudou na grade sem ela ser redesenhada: ele continua inteiro à vista (o rodapé pode ter aparecido) */
     mostrarDia: function () { mostrarDiaAberto(true); },
-    /* outro painel vai abrir no lugar do dia (o do militar): com mudança no Dia ou no Ciclo, a mesma pergunta de trocar
-       de dia (Descartar segue com seguir(true), e as telas leem o gravado de novo; Continuar editando fica); sem
-       mudança, segue na hora com seguir(false) */
+    /* outro painel vai abrir no lugar do dia (o do militar): o rascunho de todos os dias fica, e segue na hora com
+       seguir(false); só o formulário da troca preenchido pergunta antes (Descartar segue, Continuar editando fica).
+       seguir(true) seria com o rascunho descartado (as telas leem o gravado de novo) */
     antesDeSair: function (seguir) {
-      if (!secaoSuja() && !extraSuja()) { seguir(false); return; }
-      confirmarDescarte(function () { limparSecoesSujas(); seguir(true); });
+      if (!trocaSuja()) { seguir(false); return; }
+      confirmarDescarte(function () { seguir(false); }, 0);
     },
     /* o aviso de descartar (Descartar / Continuar editando), o mesmo de trocar de dia: a célula da grade também usa.
        quantas: quantas alterações saem (sem ela, todas) */
@@ -1276,6 +1293,8 @@
       linha: montarLinhaEscalado,
       grupo: montarGrupoFuncao,
       mesclarFuncoes: mesclarFuncoesViatura,
+      rotuloDaFuncao: rotuloDaFuncao,
+      nomeSemNumero: nomeSemNumero,
       exibidas: exibidas,
       blocosDoDia: blocosDoDia,
       marcarConflito: marcarConflito,

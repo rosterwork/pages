@@ -331,10 +331,13 @@
       s24.textContent = msg().so24;
       linhaNome.appendChild(s24);
     }
-    /* embaixo do nome, em amarelo: o serviço de parte do dia (a extra só nas outras horas; a barra mostra em cinza) e a
-       regra do militar que não deixa nenhum posto deste pelotão no dia (o administrador põe mesmo assim; a sugestão nunca) */
-    var servico = G().horasServico(m, k), avisos = [];
-    if (servico.length) avisos.push(msg().deServicoDas(servico.map(function (p) { return [RW.horario.curta(p.hi), RW.horario.curta(p.hf)]; })));
+    /* embaixo do nome, em amarelo: o serviço de parte do dia e o posto na Op. Verão (a extra só nas outras horas; a barra
+       mostra em cinza; a sugestão nunca põe extra no dia do posto) e a regra do militar que não deixa nenhum posto deste
+       pelotão no dia (o administrador põe mesmo assim; a sugestão nunca) */
+    var horas = G().horasServico(m, k), avisos = [];
+    function faixas(lista) { return lista.map(function (p) { return [RW.horario.curta(p.hi), RW.horario.curta(p.hf)]; }); }
+    var servico = faixas(horas.filter(function (p) { return !p.op; })), praia = faixas(horas.filter(function (p) { return p.op; }));
+    if (servico.length || praia.length) avisos.push(msg().deServicoDas(servico, praia));
     if (((m.regra || {})[k] || []).map(String).indexOf(String(uid)) >= 0) avisos.push(msg().regraSemPosto);
     if (avisos.length) {
       var aviso = lin.querySelector('.extrajornada-painel-quem-aviso');
@@ -348,7 +351,8 @@
     var cota = lin.querySelector('.extrajornada-painel-cota');
     cota.textContent = msg().deCotas(usou, m.concedidas);
     cota.classList.toggle('extrajornada-painel-cota--erro', usou > m.concedidas);
-    ligarMarcas(lin.querySelector('.extrajornada-painel-marcas'), m, k, marcados, uid, { campos: true });
+    /* a linha clicada de quem ainda não tem horário mostra os campos em branco */
+    ligarMarcas(lin.querySelector('.extrajornada-painel-marcas'), m, k, marcados, uid, { campos: true, vazio: true });
     RW.extrajornadaDiaOutros.ligarInicio(lin, lin.querySelector('.extrajornada-painel-outros'), m, k, uid);
     RW.extrajornadaDiaOutros.preencher(lin, m, k, usou, desenhar);
     return lin;

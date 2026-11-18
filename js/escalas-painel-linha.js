@@ -20,7 +20,7 @@
      e quem não pode fica em vermelho, com o Salvar desligado.
    E o efeito em quem está em volta. A escolha entra no rascunho ao
    vivo (escalas-painel-editar.js › aoVivo) e as telas mostram como
-   fica; o X fecha, a mudança vira um passo do desfazer e a lista
+   fica; o X e o Esc (só o cartão: o painel fica) fecham, a mudança vira um passo do desfazer e a lista
    mostra o dia como vai ficar. Quem entra e já tem outra função no
    horário responde Onde ele já está: Sai de lá (o lugar fica vazio;
    a nota O que mudou traz o atalho de pôr quem saiu nesse lugar) ou
@@ -46,6 +46,11 @@
   function L() { return RosterWork.mensagens.escala.linha; }
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
   function copiar(p) { return { hi: p.hi, hf: p.hf }; }
+  /* o nome da função como a Escala mostra (sem o número do lugar; o estagiário, "Estagiário") */
+  function nomeDaFuncao(posto, nome) {
+    var P = RosterWork.escalasPainel.pecas;
+    return posto ? P.rotuloDaFuncao(posto, nome) : P.nomeSemNumero(nome);
+  }
   function mostra(no, sim) { no.classList.toggle('oculto', !sim); }
 
   /* fecha o cartão. modo: sem modo, a mudança fica (um passo do desfazer) e a lista mostra o dia como vai ficar;
@@ -92,7 +97,7 @@
     var q = function (s) { return el.querySelector(s); };
 
     /* o topo: a própria linha da lista (a função, o militar e o horário) com o X */
-    q('.escala-linha-funcao').textContent = RosterWork.escalasPainel.pecas.abreviarFuncao(cfg.rotulo || cfg.funcao || '');
+    q('.escala-linha-funcao').textContent = RosterWork.escalasPainel.pecas.abreviarFuncao(cfg.rotulo || nomeDaFuncao(cfg.posto, cfg.funcao));
     var pessoa = linhaLista.querySelector('.escala-edicao-pessoa'), horas = linhaLista.querySelector('.escala-distribuicao-horas');
     if (pessoa) q('.escala-linha-pessoa').appendChild(pessoa.cloneNode(true));
     if (horas) q('.escala-linha-horas').appendChild(horas.cloneNode(true));
@@ -310,31 +315,16 @@
        periodos }] */
     function acumuladasDaCadeira() {
       if (peloCobrir() || !mudouQuem() || !alvo || !alvo.m || !est.c) return [];
-      var H = ed().horas, fa = alvo.cfg, r = [];
-      ((ed().dados() || {}).postos || []).forEach(function (po) {
-        (po.funcoes || []).forEach(function (f) {
-          if (!f.acumulo || PAPEL.test(f.nome) || (po.id === fa.posto.id && f.nome === fa.funcao)) return;
-          var xs = [];
-          (f.militares || []).forEach(function (m) {
-            if (m.cpf !== alvo.m.cpf || m.fixado) return;
-            (m.periodos || []).forEach(function (per) {
-              est.periodos.forEach(function (w) { var x = H.cruza(H.faixa(w), H.faixa(per)); if (x) xs.push(x); });
-            });
-          });
-          if (xs.length) r.push({ posto: po, funcao: f.nome, periodos: H.uniao(xs).map(H.periodo) });
-        });
-      });
-      return r;
+      return A().acumuladas([alvo.m.cpf], est.periodos, { posto: alvo.cfg.posto, funcao: alvo.cfg.funcao });
     }
     function desenharAcumula() {
       var acs = acumuladasDaCadeira();
       mostra(q('.escala-linha-acumula'), acs.length > 0);
       if (!acs.length) return;
-      var funcoes = acs.map(function (a) { return a.funcao; });
-      var vazios = acs.map(function (a) { return a.posto.tipo === 'instalacao' ? a.posto.nome : a.funcao + ' da ' + a.posto.nome; });
-      q('.escala-linha-acumula-texto').textContent = L().acumulaPergunta(funcoes);
-      q('.escala-linha-acumula-sim').textContent = L().acumulaSim(funcoes);
-      q('.escala-linha-acumula-nao').textContent = L().acumulaNao(vazios);
+      var t = A().textosAcumulo(acs);
+      q('.escala-linha-acumula-texto').textContent = t.pergunta;
+      q('.escala-linha-acumula-sim').textContent = t.sim;
+      q('.escala-linha-acumula-nao').textContent = t.nao;
     }
 
     /* o efeito, em frases: quem sai da função (o que mais acontece, a lista mostra quando a mudança entra). O Chefe de
@@ -350,11 +340,11 @@
         return;
       }
       var papel = ((c && c.funcoes) || []).filter(function (f) { return PAPEL.test(f.funcao); })[0];
-      if (mudouQuem() && m && modo !== 'funcao') partes.push(L().efeitoSai(nomeDe(m), fa.funcao));
+      if (mudouQuem() && m && modo !== 'funcao') partes.push(L().efeitoSai(nomeDe(m), nomeDaFuncao(fa.posto, fa.funcao)));
       if (papel) partes.push(L().papelJunto(nomeDe(c), papel.funcao));
       if (!mudouQuem() && m && mudouHora()) {
         var sai = H.menos(alvo.original.map(H.faixa), H.uniao(est.periodos.map(H.faixa)));
-        if (sai.length) partes.push(L().ficaVazioDas(fa.funcao, H.textoPeriodos(sai.map(H.periodo))));
+        if (sai.length) partes.push(L().ficaVazioDas(nomeDaFuncao(fa.posto, fa.funcao), H.textoPeriodos(sai.map(H.periodo))));
         var ocup = A().ocupantes(fa.posto, fa.funcao, est.periodos, m.cpf).map(function (o) {
           var pr = H.periodo(o.x);
           return msg().avisoSemFuncao(nomeDe(o.m), H.curta(pr.hi), H.curta(pr.hf));
@@ -369,29 +359,49 @@
 
     /* a escolha de agora vai ao rascunho (outro militar troca de lugar com quem está; o horário muda só o dele); horários
        que se cruzam, o banco conferindo e quem não pode na função escolhida não entram, e o Salvar espera */
+    /* o que falta para a mudança entrar: 'conferindo' (o banco ainda confere), a caixa da pergunta que falta (quem não
+       pode na função, o Quem cobre pela metade, horários que se cruzam, Onde ele já está ou o Acúmulo sem resposta), ou
+       null (pronta, ou nada escolhido). Com ela, nada muda, o Salvar espera e o clique fora também */
+    function falta() {
+      if (est.conferindo) return 'conferindo';
+      if (est.naoPode) return q(modo === 'funcao' ? '.escala-linha-para' : '.escala-linha-militar');
+      if (peloCobrir()) return cobrir.jeito() && !cobrir.pronto() ? (semResposta() || q('.escala-linha-dia-folga')) : null;
+      if (!alvo || !est.item) return null;
+      if (sobrepostos()) return q('.escala-linha-horario');
+      if (mudouQuem() && est.c) {
+        if (lugaresDeQuemEntra().length > 0 && !est.deixa) return q('.escala-linha-deixa');
+        if (acumuladasDaCadeira().length && !est.acumula) return q('.escala-linha-acumula');
+      }
+      return null;
+    }
+    /* a primeira caixa à vista com as bolinhas sem resposta (as perguntas do Quem cobre) */
+    function semResposta() {
+      return [].filter.call(el.querySelectorAll('.grupo-caixa.subtela-pergunta'), function (cx) {
+        var rs = cx.querySelectorAll('input[type="radio"]');
+        return !cx.classList.contains('oculto') && rs.length && ![].some.call(rs, function (r) { return r.checked; });
+      })[0] || null;
+    }
+
     function aplicarAoVivo() {
       if (!aberto || aberto.el !== el) return;
+      limparFalta(aberto);   // a resposta mudou: a marca da pergunta que faltava sai (o clique fora confere de novo)
       var periodos = est.periodos.map(copiar);
       aberto.sugestao = null;
-      if (est.conferindo || est.naoPode) { api.aoVivo(null, true); return; }
-      /* o Quem cobre: ninguém escolhido não muda nada; a pergunta pela metade deixa o Salvar desligado */
+      if (falta()) { api.aoVivo(null, true); return; }
+      /* o Quem cobre: ninguém escolhido não muda nada */
       if (peloCobrir()) {
         if (!cobrir.jeito()) api.aoVivo(null, false);
-        else if (!cobrir.pronto()) api.aoVivo(null, true);
         else api.aoVivo(function () { cobrir.aplicar(); });
         return;
       }
       if (!alvo || !est.item) { api.aoVivo(null, false); return; }
-      if (sobrepostos()) { api.aoVivo(null, true); return; }
       if (mudouQuem() && est.c) {
         var c = est.c, fa = alvo.cfg, sai = alvo.m ? nomeDe(alvo.m) : '';
-        /* Onde ele já está ou o Acúmulo sem resposta: nada muda, e o Salvar espera */
         var pergunta = lugaresDeQuemEntra().length > 0, acs = acumuladasDaCadeira();
-        if ((pergunta && !est.deixa) || (acs.length && !est.acumula)) { api.aoVivo(null, true); return; }
         var fica = pergunta && est.deixa === 'fica', vazia = acs.length > 0 && est.acumula === 'vazio';
         /* quem fica também lá não deixa lugar: sem o atalho */
         aberto.sugestao = fica ? null
-          : A().sugestao(fa, c, { um: function (f) { return L().atalho(sai, f); }, varios: L().atalhoLugar(sai, nomeDe(c)) });
+          : A().sugestao(fa, c, { um: function (f) { return L().atalho(sai, nomeDaFuncao(null, f)); }, varios: L().atalhoLugar(sai, nomeDe(c)) });
         api.aoVivo(function () {
           A().trocar(fa, c, periodos, fica);
           if (vazia) A().deixarVazia(acs);
@@ -408,12 +418,69 @@
     if (!outrasLinhas.length) esconder.push(cfg.grupo);
     esconder.forEach(function (e) { e.classList.add('oculto'); });
     cfg.grupo.insertAdjacentElement('afterend', el);
-    aberto = { el: el, esconder: esconder, sugestao: null };
+    aberto = { el: el, esconder: esconder, sugestao: null, falta: falta, marcadas: [], nota: null };
     api.comecarVivo();
     if (modo === 'quem') montarQuem();
     if (modo === 'funcao') montarPara();
     else { montarHora(); atualizar(); }
   }
+
+  /* ---------- o clique fora do cartão (como na caixa da grade, geral-caixa-flutuante.js) ---------- */
+
+  /* a pergunta que falta: a caixa com a borda de erro e, se ela não tem frase própria (a nota vermelha), a frase de
+     responder ou fechar embaixo */
+  function marcarFalta(a, caixa) {
+    limparFalta(a);
+    if (!caixa) return;
+    caixa.classList.add('grupo-caixa--erro');
+    a.marcadas.push(caixa);
+    if (caixa.querySelector('.nota--erro:not(.oculto)')) return;
+    var nota = RosterWork.tpl('tpl-escala-nota');
+    if (!nota) return;
+    nota.classList.add('nota--erro');
+    nota.querySelector('.nota-texto').textContent = RosterWork.mensagens.escala.responderOuDesistir;
+    caixa.appendChild(nota);
+    a.nota = nota;
+  }
+  function limparFalta(a) {
+    if (!a) return;
+    a.marcadas.forEach(function (cx) { cx.classList.remove('grupo-caixa--erro'); });
+    a.marcadas = [];
+    if (a.nota) { a.nota.remove(); a.nota = null; }
+  }
+
+  /* o que é do cartão (o clique ali não fecha): ele, as listas que abrem dele, o aviso, a caixa flutuante e o passo a passo */
+  var DENTRO = '.dropdown-menu, .modal-veu, .caixa-flutuante, .guia-balao, .guia-vidro, .treino-barra';
+  /* o clique fora: com a resposta completa (ou nada escolhido), o cartão fecha e a mudança fica, e o clique só fecha (o
+     lápis de outra linha também: um clique fecha, outro abre); o rodapé largo fecha e faz. Com a resposta pela metade, o
+     cartão fica, a pergunta que falta ganha a borda de erro e o clique não faz mais nada (o Cancelar do rodapé, não:
+     ele desiste); com o banco conferindo, também espera, sem a marca */
+  document.addEventListener('click', function (ev) {
+    var a = aberto, t = ev.target;
+    if (!a || !t || !t.closest || !document.contains(t) || a.el.contains(t) || t.closest(DENTRO)) return;
+    var noRodape = !!t.closest('.rodape--largo'), cancelar = noRodape && !!t.closest('.escala-painel-cancelar');
+    var f = cancelar ? null : a.falta();
+    if (f) {
+      ev.stopPropagation();
+      ev.preventDefault();
+      if (f !== 'conferindo') marcarFalta(a, f);
+      return;
+    }
+    fechar();
+    if (noRodape) return;
+    ev.stopPropagation();
+    ev.preventDefault();
+  }, true);
+
+  /* o Esc com o cartão aberto fecha só ele, como o X (a resposta completa fica no rascunho; a pela metade sai), antes do
+     painel (geral-painel.js, que fica; outro Esc fecha o painel). A lista aberta no cartão (geral-dropdown) e a janela de
+     aviso fecham primeiro, e a caixa flutuante aberta por cima também */
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Escape' || !aberto || ev.defaultPrevented) return;
+    if (document.querySelector('.modal-veu--aberto, .dropdown--aberto, .caixa-flutuante--aberta')) return;
+    ev.preventDefault();
+    fechar();
+  }, true);
 
   window.RosterWork.escalasPainelLinha = { abrir: abrir, fechar: fechar, aberta: function () { return !!aberto; } };
 })();

@@ -67,7 +67,7 @@
     var metade = tinha && (acao === 'horario' || !!a.remocao) && pelaMetade(a);
     a.vivo = false;
     a.acao = null;
-    if (!tinha || !api().celula()) return;
+    if (!tinha || !api().diaAberto()) return;   // o dia da célula, ou o do painel aberto nele
     if (modo === 'largar') { api().largarVivo(); return; }
     if (metade) api().aoVivo(null, false);
     if (api().terminarVivo() && modo !== 'guardar') api().redesenhar();
@@ -140,7 +140,32 @@
             sim: calc.sim, nao: L().naoDescontar, naoPrimeiro: true, escolha: s.est.banco, motivo: motivoDaFolga(c) }, function (v) { responder(c, v); });
       }
     }
+    a.el2 = el;   // a pergunta que falta é marcada nela (mostrarFalta)
     a.caixa.segunda(a.botao, el, textoDo(a.botao));
+  }
+
+  /* o clique fora (ou no rodapé largo) pode fechar a caixa? Com a resposta pela metade, não: a pergunta que falta fica
+     marcada e a frase aparece embaixo (escalas-celula-editar.js › aoClicarFora). O Cancelar do rodapé fecha (desiste) */
+  function podeFechar(c, alvo) {
+    var a = c.a;
+    if (!a || !a.acao || !a.vivo || (alvo && alvo.closest && alvo.closest('.escala-painel-cancelar'))) return true;
+    if (!pelaMetade(a)) return true;
+    mostrarFalta(a);
+    return false;
+  }
+  /* a pergunta que falta (a do banco de horas, ou a do Remover do dia) com a borda de erro; o horário fora de onde ele
+     pode ficar já está em vermelho. Embaixo da caixa 2, a frase de responder ou fechar */
+  function mostrarFalta(a) {
+    var el = a.el2;
+    if (!el || !el.isConnected) return;
+    var p = el.querySelector('.escala-celula-pergunta:not(.oculto)');
+    if (p) p.classList.add('escala-celula-pergunta--falta');
+    if (el.querySelector('.escala-celula-falta')) return;
+    var nota = RW.tpl('tpl-escala-nota');
+    if (!nota) return;
+    nota.classList.add('nota--erro', 'escala-celula-falta');
+    nota.querySelector('.nota-texto').textContent = msg().responderOuDesistir;
+    el.appendChild(nota);
   }
 
   /* o Motivo da folga (a do Remover do dia e as horas que viram folga no horário): ao rascunho a cada letra; o Enter fecha */
@@ -668,7 +693,7 @@
 
   RW.escalasCelulaAcoes = {
     fazer: fazer, menuDoPelotao: menuDoPelotao, prepararMenu: prepararMenu, aoMostrarMenu: aoMostrarMenu, chegou: chegou,
-    encerrar: encerrar, fechar: fechar, reporNova: reporNova,
+    encerrar: encerrar, fechar: fechar, reporNova: reporNova, podeFechar: podeFechar,
     /* o molde da caixa do pelotão, que também diz se ela tem o Adicionar extra neste dia (escalas-celula-extra.js) */
     moldeDoPelotao: moldeDoPelotao,
     /* o Adicionar à guarnição do dia e o Adicionar neste dia, também com quem está fora da escala já escolhido

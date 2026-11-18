@@ -17,11 +17,16 @@
    dia, as unidades da companhia e o mês da extra começam a ser lidos
    antes do clique (escalas-celula-adiantar.js); a caixa abre na hora,
    com as faixas enquanto eles chegam; o clique fora e o
-   Esc fecham (o concluído fica, o que ficou pela metade sai); um dia
-   por vez (outro dia com mudança não salva pergunta antes). O dia de
+   Esc fecham (o concluído fica, o que ficou pela metade sai); trocar
+   de dia não pergunta (o rascunho de cada dia fica guardado,
+   escalas-rascunho-dias.js). Com o painel aberto, a caixa abre do
+   mesmo jeito e o painel vai junto para o dia clicado, na aba dele
+   (painelNoDia); no dia do painel, a caixa trabalha no rascunho dele
+   (sub.ouvir), e o que muda numa aparece na outra. O dia de
    mais de 7 dias atrás abre a caixa com o aviso (o painel só por
-   ela); quem só lê, o dia na fila do recálculo, o painel aberto e o
-   Calendário do celular abrem o painel. Não cria HTML nem escreve
+   ela; com o painel aberto, ele vai para o dia); quem só lê, o dia na
+   fila do recálculo e o Calendário do celular abrem o painel (no
+   celular, o painel aberto também). Não cria HTML nem escreve
    estilo.
    RosterWork.escalasCelulaEditar.
    ============================================================ */
@@ -40,8 +45,6 @@
     ['.linha-escalado--trocado, .linha-escalado--afastamento, .linha-escalado--fora', 'nada']
   ];
   var RISCADAS = '.linha-escalado--folga, .linha-escalado--trocado, .linha-escalado--remanejado, .linha-escalado--mudou-dia, .linha-escalado--saiu, .linha-escalado--afastamento, .linha-escalado--fora';
-  /* o clique numa célula ou no Oficial do título é da página (outro nome, o pelotão ou o mesmo): a caixa não fecha por ele */
-  var DA_GRADE = '.conteudo .escala-mes-celula, .conteudo .escala-calendario-unidade, .conteudo .escala-oficial--edita';
   /* a caixa do pelotão abre ao lado dele, com o topo 8px abaixo do topo do pelotão (na altura do nome e da faixa) */
   var TOPO_PELOTAO = 8;
 
@@ -73,36 +76,48 @@
     return RW.data.paraIsoDeData(new Date(h.getFullYear(), h.getMonth(), h.getDate() - 7));
   }
 
-  /* a célula edita este dia? 'antigo': o de mais de 7 dias atrás (a caixa do aviso); false: o painel abre, como sempre */
+  function painelAberto() { return !!(RW.painel && RW.painel.estaAberto()); }
+
+  /* a célula edita este dia? 'antigo': o de mais de 7 dias atrás (a caixa do aviso); false: o painel abre (ou vai para o
+     dia), como sempre */
   function podeNaCelula(cel) {
     if (!naEscala(cel) || !cel.classList.contains('escala-mes-celula')) return false;
-    if (RW.painel && RW.painel.estaAberto()) return false;
+    if (painelAberto() && RW.celular && RW.celular()) return false;   // no celular, o painel cobre a tela
     var uid = cel.dataset.unidadeId, iso = cel.dataset.iso;
     if (!RW.sessao || !RW.sessao.podeAdministrar('pelotao', uid)) return false;
     if (RW.escalaAtualizando && RW.escalaAtualizando.pendente(uid, iso)) return false;
     if (RW.celular && RW.celular() && cel.closest('.escala-calendario-unidade')) return false;
-    return iso < limite() ? 'antigo' : true;
+    if (iso < limite()) return painelAberto() ? false : 'antigo';
+    return true;
   }
 
-  /* ---------- o dia da célula (o rascunho do Dia, sem a lista) ---------- */
+  /* ---------- o dia da célula (o rascunho do Dia: sem a lista, ou o do painel aberto no dia) ---------- */
 
-  function ativo() { return !!dia && !!api().celula() && mesmo(api().celula(), dia.unidadeId, dia.iso); }
+  function ativo() { var x = api().diaAberto(); return !!dia && !!x && mesmo(x, dia.unidadeId, dia.iso); }
 
-  /* começa (ou continua) o dia da célula; seguir() roda com o dia já pedido. Mudança não salva em outro dia: a pergunta de
-     descartar antes (Continuar editando fica como está). d = { unidadeId, iso, unidadeNome, unidadeCidade } */
+  /* com o painel aberto, ele vai junto para o dia clicado, na aba em que estava (a vista da volta de férias, não: ela é do
+     dia dela); no mesmo dia, o lápis ou a sub-tela aberta nele fecha guardando o que foi respondido */
+  function painelNoDia(d) {
+    if (!painelAberto() || !RW.escalasPainel) return;
+    var p = RW.escalasPainel.contexto();
+    if (mesmo(p, d.unidadeId, d.iso)) { api().fecharAbertos(); return; }
+    RW.escalasPainel.abrirDia(d, p && p.secao !== 'volta' ? p.secao : null);
+  }
+
+  /* começa (ou continua) o dia da célula; seguir() roda com o dia já pedido. A mudança não salva de outro dia fica
+     guardada com ele, sem pergunta (escalas-rascunho-dias.js), e a deste dia, se estava guardada, volta. Com o painel
+     aberto no dia (na Funções ou na Militares), a caixa usa o rascunho dele, e cada leitura dele chega a ela.
+     d = { unidadeId, iso, unidadeNome, unidadeCidade } */
   function irPara(d, seguir) {
+    painelNoDia(d);
+    var x = api().diaAberto(), doPainel = !!x && x.lista && mesmo(x, d.unidadeId, d.iso);
+    if (doPainel) api().ouvir(chegou);
     if (ativo() && mesmo(dia, d.unidadeId, d.iso)) { seguir(); return; }
-    function comecar() {
-      fecharTudo('largar');
-      dia = d;
-      E().montar(null, null, d.unidadeId, d.iso, { admin: true, semLista: true, aoMostrar: chegou });
-      seguir();
-    }
-    if (S() && S().pendente()) {
-      RW.escalasPainel.confirmarDescarte(function () { E().reset(); S().descartar(); comecar(); }, S().contarDoDia());
-      return;
-    }
-    comecar();
+    fecharTudo('guardar');
+    dia = d;
+    if (!doPainel) E().montar(null, null, d.unidadeId, d.iso, { admin: true, semLista: true, aoMostrar: chegou });
+    if (RW.escalasPainelCiclo) RW.escalasPainelCiclo.abrirDia(d.unidadeId, d.iso);
+    seguir();
   }
 
   /* a leitura do dia (ou a prévia) chegou ao rascunho: a caixa que esperava mostra o menu; a que está sem a caixa 2 refaz o
@@ -134,9 +149,10 @@
     aberto = a;
     a.caixa = RW.caixaFlutuante.abrir({
       peca: peca, junto: junto || [], titulo: titulo, esperar: true, topo: a.tipo === 'pelotao' ? TOPO_PELOTAO : null,
-      ignorar: DA_GRADE,
       /* o clique fora, o Esc ou a peça que saiu: o que está concluído fica */
       aoFechar: function () { if (aberto === a) fecharTudo(); },
+      /* a resposta pela metade: o clique fora (e o rodapé largo, fora o Cancelar) espera, com a pergunta que falta marcada */
+      aoClicarFora: function (alvo) { return aberto !== a || A().podeFechar(contexto(), alvo); },
       /* no celular, o Voltar da folha: a pergunta pela metade sai e o menu volta */
       aoVoltar: function () { if (aberto === a) A().encerrar(contexto(), true); }
     });
@@ -419,17 +435,16 @@
 
   /* ---------- a página ---------- */
 
-  /* a entrada na Escala, a troca de mês: a célula começa limpa (o rascunho dela sai) */
+  /* a entrada na Escala, a troca de mês: a célula começa limpa, e o rascunho de todos os dias sai (a troca de mês pergunta
+     antes) */
   function largar() {
     var tinha = ativo(), a = aberto;
     aberto = null;
     if (a && a.caixa) a.caixa.fechar();
     if (RW.extrajornadaCelula) RW.extrajornadaCelula.esquecer();
     dia = null;
-    if (tinha) {
-      E().reset();
-      if (S()) S().descartar();
-    }
+    if (tinha && api().celula()) E().reset();   // o rascunho na lista do painel aberto é dele
+    if (S() && S().pendente()) S().descartarTudo();
   }
 
   RW.escalasCelulaEditar = {
@@ -445,8 +460,8 @@
     /* a célula abre a caixa (true), o aviso do dia antigo ('antigo') ou o painel (false)? (escalas-celula-adiantar.js lê
        o dia antes do clique só na que abre a caixa) */
     podeNaCelula: podeNaCelula,
-    /* há mudança não salva no dia da célula? */
-    pendente: function () { return ativo() && !!S() && S().pendente(); },
+    /* há mudança não salva em algum dia? */
+    pendente: function () { return !!S() && S().pendente(); },
     /* o painel do dia vai abrir: a caixa fecha (o que está concluído fica) e a célula deixa o dia */
     passarAoPainel: function () {
       if (RW.extrajornadaCelula) RW.extrajornadaCelula.esquecer();
@@ -458,13 +473,18 @@
     fechar: function () { fecharTudo(); },
     /* o Salvar, o Cancelar ou o dia mudado no banco: nada fica aberto (o rascunho já foi gravado ou descartado) */
     esquecer: function () { fecharTudo('largar'); },
-    /* a troca de mês: com mudança não salva, o aviso de descartar antes; seguir() troca */
+    /* a troca de mês: com mudança não salva em algum dia, o aviso de descartar antes (todos os dias); seguir() troca */
     antesDeMudar: function (seguir) {
-      if (!ativo()) { if (aberto) fecharTudo(); seguir(); return; }
-      if (!(S() && S().pendente())) { largar(); seguir(); return; }
-      RW.escalasPainel.confirmarDescarte(function () { largar(); seguir(); }, S().contarDoDia());
+      if (!(S() && S().pendente())) {
+        if (ativo()) largar(); else if (aberto) fecharTudo();
+        seguir();
+        return;
+      }
+      RW.escalasPainel.confirmarDescarte(function () { largar(); seguir(); });
     },
     largar: largar,
+    /* com o painel aberto, ele vai para o dia clicado (a caixa da extra, escalas-celula-extra.js, também) */
+    painelNoDia: painelNoDia,
     /* o Oficial de Área do título (escalas-celula-oficial.js): a caixa, a peça nova com a grade refeita e o hoje − 7; a
        caixa do sobreaviso fora da grade de células (escalas-celula-sobreaviso-caixa.js) */
     abrirOficial: abrirOficial, acharDeNovo: acharDeNovo, limite: limite, abrirSobreaviso: abrirSobreaviso

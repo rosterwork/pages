@@ -9,13 +9,14 @@
    a companhia (ou o pelotão, no sobreaviso de cada pelotão) tem o
    lápis de cada um (Pôr
    outro no lugar dele, Mudar o horário e Remover do sobreaviso) e o
-   Adicionar ao sobreaviso. Cada escolha entra no rascunho daqui na
+   Adicionar ao sobreaviso. O rascunho de outro dia fica guardado na
+   gaveta (escalas-rascunho-dias.js) e volta com o dia. Cada escolha entra no rascunho daqui na
    hora (o Desfazer e o Refazer da aba Funções passam por aqui antes
    do rascunho do Dia) e só grava no Salvar do rodapé largo
    (escalas-painel-salvar.js manda a parte "sobreaviso" do
    escala_painel_salvar). A lista do Militar vem do banco, na ordem
-   da fila (sobreaviso_candidatos), com quem não pode apagado e o
-   motivo. Na célula da grade, o clique num nome do sobreaviso abre,
+   da fila (sobreaviso_candidatos), com a conta de cada um (o saldo)
+   e quem não pode apagado, com o motivo. Na célula da grade, o clique num nome do sobreaviso abre,
    para quem mexe nele, a caixa ao lado (escalas-celula-sobreaviso-
    caixa.js, pelo naCaixa: o mesmo rascunho, sem o painel); para os
    outros, o painel com o lápis dele aberto. A grade mostra o
@@ -60,14 +61,16 @@
 
   /* ---------- o rascunho ---------- */
 
-  /* o dia ficou diferente do lido: alguém entrou, saiu ou mudou de horário */
-  function mudou() {
-    if (!dia) return false;
-    return dia.agora.some(function (m) {
-      var a = deAntes(m.cpf);
+  /* o dia d ficou diferente do lido: alguém entrou, saiu ou mudou de horário (d: o de agora ou um guardado na gaveta) */
+  function mudouEm(d) {
+    if (!d) return false;
+    function em(lista, cpf) { return lista.filter(function (x) { return x.cpf === cpf; })[0] || null; }
+    return d.agora.some(function (m) {
+      var a = em(d.antes, m.cpf);
       return !a || a.horaInicio !== m.horaInicio || a.horaFim !== m.horaFim;
-    }) || dia.antes.some(function (a) { return !deAgora(a.cpf); });
+    }) || d.antes.some(function (a) { return !em(d.agora, a.cpf); });
   }
+  function mudou() { return mudouEm(dia); }
 
   /* as alterações não salvas, como no rascunho do Dia: os passos dados (pelo menos 1), só com o dia diferente */
   function contar() { return mudou() ? Math.max(1, pilha.length) : 0; }
@@ -78,35 +81,56 @@
   }
 
   /* o rascunho como vai ficar: quem entra e o horário mudado ficam como do administrador (o cadeado), como no Salvar */
-  function comoVaiFicar() {
-    return copia(dia.agora).map(function (m) {
-      var a = deAntes(m.cpf);
+  function comoVaiFicar(d) {
+    return copia(d.agora).map(function (m) {
+      var a = d.antes.filter(function (x) { return x.cpf === m.cpf; })[0] || null;
       m.origem = !a || a.horaInicio !== m.horaInicio || a.horaFim !== m.horaFim ? 'administrador' : a.origem;
       return m;
     });
   }
 
   /* a grade mostra o dia como vai ficar (escalas-celula-sobreaviso.js): com mudança, o rascunho; sem, o gravado. gravou: o
-     que foi gravado fica na grade até a leitura nova chegar */
-  function naGrade(gravou) {
-    if (!dia || !RW.escalasCelulaSobreaviso) return;
-    RW.escalasCelulaSobreaviso.rascunho(dia.chave, dia.iso, gravou || mudou() ? comoVaiFicar() : null, !!gravou);
+     que foi gravado fica na grade até a leitura nova chegar. d: o dia de agora ou um guardado na gaveta */
+  function naGradeDe(d, gravou) {
+    if (!d || !RW.escalasCelulaSobreaviso) return;
+    RW.escalasCelulaSobreaviso.rascunho(d.chave, d.iso, gravou || mudouEm(d) ? comoVaiFicar(d) : null, !!gravou);
+  }
+  function naGrade(gravou) { naGradeDe(dia, gravou); }
+
+  /* ---------- a gaveta dos dias (escalas-rascunho-dias.js; só na Escala) ---------- */
+
+  function G() { return RW.escalasRascunhoDias || null; }
+  /* o dia de agora sai: com mudança ou passo, fica guardado (a grade continua mostrando o rascunho dele) */
+  function guardarAgora() {
+    if (G() && dia && (mudou() || pilha.length || pilhaRefazer.length)) {
+      G().guardar('sobreaviso', { chave: dia.chave, unidadeId: dia.unidadeId, iso: dia.iso,
+        estado: { dia: dia, pilha: pilha, pilhaRefazer: pilhaRefazer } });
+    }
+    dia = null; pilha = []; pilhaRefazer = []; aberta = null;
+  }
+  function trazerGuardado(chave) {
+    var item = G() && G().tirar('sobreaviso', chave);
+    if (!item) return;
+    dia = item.estado.dia; pilha = item.estado.pilha; pilhaRefazer = item.estado.pilhaRefazer; aberta = null;
   }
 
-  /* uma mudança é um passo do Desfazer */
+  /* uma mudança é um passo do Desfazer (também na ordem dos passos de todos os dias, escalas-rascunho-dias.js) */
   function mudar(fazer) {
     pilha.push(copia(dia.agora));
     pilhaRefazer = [];
+    if (G()) G().passou('sobreaviso', dia.chave);
     fazer();
     desenhar();
     avisar();
   }
 
-  /* o que vai para o Salvar: { antes, depois } (cada um [{ cpf, hi, hf }]), ou null sem mudança */
-  function envio() {
-    if (!mudou()) return null;
+  /* o que vai para o Salvar: { antes, depois } (cada um [{ cpf, hi, hf }]), ou null sem mudança (d: um dia guardado na
+     gaveta; sem ele, o de agora) */
+  function envio(d) {
+    d = d || dia;
+    if (!mudouEm(d)) return null;
     var curto = function (lista) { return lista.map(function (m) { return { cpf: m.cpf, hi: m.horaInicio, hf: m.horaFim }; }); };
-    return { antes: curto(dia.antes), depois: curto(dia.agora) };
+    return { antes: curto(d.antes), depois: curto(d.agora) };
   }
 
   function descartar() {
@@ -147,6 +171,9 @@
   function preparar(s, unidadeId, iso) {
     if (!s) return false;
     var chave = (s.unidade_id || s.companhia_id) + '|' + iso;
+    /* outro dia: o de agora, com mudança ou passo, vai para a gaveta (escalas-rascunho-dias.js), e o deste volta dela */
+    if (dia && dia.chave !== chave) guardarAgora();
+    if (!dia) trazerGuardado(chave);
     if (!dia || dia.chave !== chave || (!contar() && !pilha.length && !pilhaRefazer.length)) {
       dia = { chave: chave, companhia: s.companhia_id, unidadeId: unidadeId, iso: iso, falta: s.falta || 0,
         antes: copia(s.militares), agora: copia(s.militares) };
@@ -299,15 +326,18 @@
     });
   }
 
-  /* os grupos do banco para o campo: os dois primeiros abertos; à direita, o último sobreaviso ou o motivo */
+  /* os grupos do banco para o campo: os dois primeiros abertos; à direita, a conta (o saldo) com o último sobreaviso ou o
+     solto, ou o motivo */
   function lista(r, m) {
     var M = msg(), noDia = dia.agora.map(function (x) { return x.cpf; }), itens = [];
     (r.grupos || []).forEach(function (g) {
       var deles = (g.militares || []).filter(function (x) { return !(m && x.cpf === m.cpf); }).map(function (x) {
         var motivo = x.motivo || (noDia.indexOf(x.cpf) >= 0 ? 'ja_esta' : null);
+        var ultimo = x.ultimo ? diaMes(x.ultimo) : '';
         return { cpf: x.cpf, grad: x.grad, nome: x.nome, nome_completo: x.nome_completo, rg: x.rg, inativo: !!motivo,
           info: motivo ? M.motivo[motivo](x.ate ? diaMes(x.ate) : '')
-            : (x.solto ? M.solto : M.ultimo)(x.ultimo ? diaMes(x.ultimo) : '') };
+            : x.saldo != null ? M.conta(Number(x.saldo), x.solto, ultimo)
+            : (x.solto ? M.solto : M.ultimo)(ultimo) };
       });
       if (!deles.length) return;
       itens.push({ titulo: M.grupos[g.grupo], aberto: g.grupo !== 'nao_podem' });
@@ -378,6 +408,37 @@
   RW.escalasPainelSobreaviso = {
     montar: montar, clique: clique, contar: contar, envio: envio, descartar: descartar, aposGravar: aposGravar,
     podeDesfazer: podeDesfazer, podeRefazer: podeRefazer, desfazer: desfazer, refazer: refazer,
-    aberta: function () { return !!aberta; }, naCaixa: naCaixa
+    aberta: function () { return !!aberta; }, naCaixa: naCaixa,
+    /* para a gaveta dos dias (escalas-rascunho-dias.js) */
+    gaveta: {
+      vivo: function () {
+        return dia && (mudou() || pilha.length || pilhaRefazer.length) ? { chave: dia.chave, unidadeId: dia.unidadeId, iso: dia.iso, vivo: true } : null;
+      },
+      contar: function (item) { return item.vivo ? contar() : (mudouEm(item.estado.dia) ? Math.max(1, item.estado.pilha.length) : 0); },
+      /* o que vai para o Salvar (o de agora ou o guardado) */
+      envio: function (item) { return envio(item.vivo ? dia : item.estado.dia); },
+      pode: function (item, voltar) {
+        if (item.vivo) return voltar ? podeDesfazer() : podeRefazer();
+        return (voltar ? item.estado.pilha : item.estado.pilhaRefazer).length > 0;
+      },
+      andar: function (item, voltar) {
+        if (item.vivo) {
+          if (voltar) desfazer(); else refazer();
+          return true;
+        }
+        var e = item.estado, de = voltar ? e.pilha : e.pilhaRefazer, para = voltar ? e.pilhaRefazer : e.pilha;
+        if (!de.length) return false;
+        para.push(copia(e.dia.agora));
+        e.dia.agora = de.pop();
+        naGradeDe(e.dia);
+        return true;
+      },
+      limparRefazer: function (item) { item.estado.pilhaRefazer = []; },
+      /* saiu da gaveta: gravado, a grade mostra o gravado até a leitura nova; descartado, volta ao gravado */
+      soltar: function (item, gravou) {
+        var d = item.estado.dia;
+        if (RW.escalasCelulaSobreaviso) RW.escalasCelulaSobreaviso.rascunho(d.chave, d.iso, gravou && mudouEm(d) ? comoVaiFicar(d) : null, !!gravou);
+      }
+    }
   };
 })();

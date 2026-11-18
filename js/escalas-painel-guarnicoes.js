@@ -286,15 +286,18 @@
   function ler() {
     var c = ctx;
     if (!c) return;
-    var meu = ++c.pedido;
+    var meu = ++c.pedido, D = RosterWork.escalasDados, marca = D.marcaDoSalvar();
     if (c.dados) apagar();
     else {
       c.corpo.textContent = '';
       var carregando = RosterWork.painel.criarCarregando();
       if (carregando) c.corpo.appendChild(carregando);
     }
-    RosterWork.painel.segurar(RosterWork.escalasDados.guarnicoesListar(c.unidadeId, c.iso)).then(function (d) {
+    RosterWork.painel.segurar(D.guarnicoesListar(c.unidadeId, c.iso)).then(function (d) {
       if (ctx !== c || meu !== c.pedido) return;
+      /* a resposta de antes do Salvar não desenha nem avisa: com ele acabado, lê de novo */
+      var depois = D.depoisDoSalvar(marca);
+      if (depois) { depois.then(function () { if (ctx === c && meu === c.pedido) ler(); }); return; }
       acender();
       var verificar = c.verificar;
       c.verificar = false;

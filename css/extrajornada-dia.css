@@ -426,8 +426,9 @@
   flex-direction: column;
 }
 
-/* a caixa 2 do Mudar o horário: a barra com 8px dos lados (a bolinha de arrastar fica dentro da caixa nas 08h), os
-   campos e o cadeado; quem passou da cota, a nota; embaixo, sempre, os outros dias dele (a peça do painel do dia) */
+/* a caixa 2 do Mudar o horário: o dia em cima, a barra com 8px dos lados (a bolinha de arrastar fica dentro da caixa
+   nas 08h), os campos e o cadeado; quem passou da cota, a nota; embaixo, sempre, os outros dias dele (a peça do painel
+   do dia) */
 .extrajornada-caixa-horario {
   display: flex;
   flex-direction: column;
@@ -442,6 +443,13 @@
 }
 
 .extrajornada-caixa-horario > .extrajornada-painel-outro { margin-top: 8px; }
+
+/* o dia que se edita, em cima da barra: o mesmo título dos outros dias, mais forte */
+.extrajornada-caixa-horario-dia {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
 
 /* a faixa na cor do que ele marcou no pedido: verde quer, vermelho não quer, a neutra sem preferência (a hora que o
    clique vai tirar fica tracejada, como em toda barra) */

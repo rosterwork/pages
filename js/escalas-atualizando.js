@@ -7,10 +7,12 @@
    conferência (RPC escala_dias_atualizando) volta de tempos em tempos
    e troca só as células que ficaram prontas, sem o círculo e sem
    mexer na rolagem. O dia na fila faz esperar o painel do dia
-   (escalas-painel.js) e o Imprimir.
+   (escalas-painel.js) e o Imprimir. O dia que o Salvar acabou de
+   gravar fica certo na tela, sem a borda amarela, enquanto a cópia
+   dele é refeita (salvou e certos).
    API: RosterWork.escalaAtualizando.{ ligar, conferir, receberGrade,
-   salvou, atualizarCelula, pendente, naFilaNoDia, soCopia, esperar,
-   corrigir, aoImprimir, conferirImpressao }
+   salvou, certos, atualizarCelula, pendente, naFilaNoDia, soCopia,
+   esperar, corrigir, aoImprimir, conferirImpressao }
    ============================================================ */
 (function () {
   'use strict';
@@ -156,6 +158,8 @@
     dias = agora;
     Object.keys(corrigidos).forEach(function (k) { if (!(k in agora)) delete corrigidos[k]; });
     var filaAcabou = tinhaFila && !temFila();
+    /* a cópia dos dias salvos ficou pronta: eles voltam a ser lidos dela (escalas-dados.js) */
+    if (prontos.length && RosterWork.escalasDados && RosterWork.escalasDados.esquecerCertos) RosterWork.escalasDados.esquecerCertos(prontos);
     if (prontos.length || filaAcabou) redesenharProntos(prontos, filaAcabou);
     relerGrade();
     marcar();
@@ -221,6 +225,15 @@
     if (ativa()) corrigidos[chave(unidadeId, iso)] = true;
     atualizarCelula(unidadeId, iso, leitura);
     if (!ativa()) return;
+    marcar();
+    mostrarNota();
+  }
+
+  /* o Salvar que relê a grade inteira: os dias salvos já vêm com o dado real (escalas-dados.js › lerCerto) e ficam
+     certos na tela, sem a borda amarela, enquanto a cópia deles é refeita. chaves = ['unidade|dia'] */
+  function certos(chaves) {
+    if (!ativa()) return;
+    (chaves || []).forEach(function (k) { corrigidos[k] = true; });
     marcar();
     mostrarNota();
   }
@@ -293,7 +306,7 @@
   });
 
   window.RosterWork.escalaAtualizando = {
-    ligar: ligar, conferir: conferir, receberGrade: receberGrade, salvou: salvou, atualizarCelula: atualizarCelula,
+    ligar: ligar, conferir: conferir, receberGrade: receberGrade, salvou: salvou, certos: certos, atualizarCelula: atualizarCelula,
     pendente: pendente, naFilaNoDia: naFilaNoDia, soCopia: soCopia, esperar: esperar, corrigir: corrigir,
     aoImprimir: aoImprimir, conferirImpressao: conferirImpressao
   };

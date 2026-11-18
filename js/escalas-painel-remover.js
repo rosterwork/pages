@@ -14,8 +14,10 @@
      banco de horas). Pelo ciclo: só no dia (o horário e o banco de horas,
      que vira folga) ou do ciclo (com a lista do que acontece com as
      trocas, folgas e extras dele, para o rascunho do ciclo). O
-     pontual: o horário e, saindo todo e contado no banco, as horas
-     dele. A troca (uma parte para cada troca): cancelada aqui mesmo,
+     pontual: o horário e, contado no banco, as horas que ele tem lá
+     por este dia: saindo todo, Tirar ou Manter as horas; saindo só uma
+     parte, Corrigir (para as que ficam) ou Manter, quando as que
+     ficam são diferentes das do banco. A troca (uma parte para cada troca): cancelada aqui mesmo,
      na hora, pelo escalas-painel-remover-troca.js, com o rodapé
      próprio da sub-tela. A extra não sai por aqui (muda na
      Extrajornada, em Ajustes): quem só está de extra no dia não entra
@@ -25,11 +27,11 @@
      já sai do dia, sem descontar, e a pergunta do banco de horas
      abre embaixo da linha com o Não descontar marcado (a resposta
      fica e fecha; o Cancelar volta); o pontual sai na hora, ou com a
-     pergunta das horas que ele somou; o resto abre a sub-tela. O
+     pergunta das horas que ele tem no banco; o resto abre a sub-tela. O
      que fazer vem do analisarDoDia(m), que a célula da grade
      (escalas-celula-editar.js) também usa.
    - Na sub-tela, a folga começa no Não descontar (primeiro); o
-     pontual, no Tirar as horas.
+     pontual, no Tirar as horas (no Corrigir, saindo só uma parte).
    Sem botão próprio: a resposta completa entra no rascunho do Dia ao
    vivo (escalas-painel-editar.js › aoVivo); nada grava até o Salvar
    do rodapé largo (escalas-painel-salvar.js), menos a troca.
@@ -74,9 +76,11 @@
   function partesDe(mil) { return R().partesDe(mil); }
   function podeTirar(mil) { return R().podeTirar(mil); }
   function textoFolga(periodos, nome, horas, data) { return R().textoFolga(periodos, nome, horas, data); }
-  function pontualSalvo(cpf) { return R().pontualSalvo(cpf); }
   function itensQuem() { return R().itensQuem(); }
-  function tirarDoPontual(cpf, periodos, todo, estornar) { R().tirarDoPontual(cpf, periodos, todo, estornar); }
+  function tirarDoPontual(cpf, periodos, todo, estornar, manter) { R().tirarDoPontual(cpf, periodos, todo, estornar, manter); }
+  /* as horas que o pontual gravado e contabilizado tem no banco por este dia (o Manter pode deixar diferente do horário);
+     null: não foi contabilizado */
+  function creditoDe(cpf) { var g = ed().pontualGravado(cpf); return g && g.contabilizado ? g.minutos : null; }
 
   /* ---------- a sub-tela ---------- */
 
@@ -273,7 +277,7 @@
       /* só no dia (pelo ciclo) ou o pontual: o horário que sai e o banco de horas */
       mostra(el.horario, true);
       montarHorario();
-      var ok = dentro(), toda = ok && inteira();
+      var ok = dentro(), toda = ok && inteira(), parcial = false;
       var horas = H.horasTexto(minutos(est.periodos));
       if (p.origem === 'ciclo') {
         mostra(el.banco, ok);
@@ -285,13 +289,17 @@
         naOrdem(el.bancoSim, el.bancoNao, true);
         if (!est.banco) est.banco = 'nao';
       } else {
-        var salvo = pontualSalvo(mil.cpf), contado = !!(salvo && salvo.contabilizado);
-        mostra(el.banco, ok && toda && contado);
+        /* o contabilizado: saindo todo, Tirar as horas ou Manter as horas; saindo só uma parte, o banco de horas das que
+           ficam, Corrigir (marcado) ou Manter, quando elas ficam diferentes do que ele tem no banco por este dia */
+        var credito = creditoDe(mil.cpf), contado = credito != null;
+        var ficam = toda ? 0 : minutos(H.menos(H.uniao(p.periodos.map(H.faixa)), H.uniao(est.periodos.map(H.faixa))).map(H.periodo));
+        parcial = ok && !toda && contado && ficam !== credito;
+        mostra(el.banco, ok && contado && (toda || parcial));
         if (contado) {
-          var hp = H.horasTexto(salvo.minutos);
+          var hp = H.horasTexto(credito);
           el.bancoTexto.textContent = L().tirarPontualTexto(nome, hp);
-          el.bancoSim.textContent = L().tirarPontualSim(hp);
-          el.bancoNao.textContent = L().tirarPontualNao;
+          el.bancoSim.textContent = toda ? L().tirarPontualSim(hp) : L().bancoCorrigir(H.horasTexto(ficam));
+          el.bancoNao.textContent = toda ? L().tirarPontualNao : L().bancoManter(hp);
         }
         naOrdem(el.bancoSim, el.bancoNao, false);
         if (!est.banco) est.banco = 'sim';
@@ -300,10 +308,11 @@
       /* o horário fora do serviço dele (ou que se cruza) não entra */
       if (!ok) { erro(L().erroRemover); noRascunho(null, true); return; }
       var periodos = H.uniao(est.periodos.map(H.faixa)).map(H.periodo), descontar = est.banco === 'sim';
+      var manter = parcial && est.banco === 'nao';
       noRascunho(function () {
         if (rm) api.largarRemanejado(cpf);
         if (p.origem === 'ciclo') api.darFolga(cpf, descontar, toda && est.partes.length === 1 && !mil.outraUnidade ? null : periodos, est.motivo);
-        else tirarDoPontual(cpf, periodos, toda, descontar);
+        else tirarDoPontual(cpf, periodos, toda, descontar, manter);
       });
     }
 
@@ -382,10 +391,11 @@
   /* o Remover do dia de quem já se sabe, sem tela (a pergunta embaixo da linha daqui e a célula da grade,
      escalas-celula-editar.js, usam o mesmo). m = { cpf, periodos }: quem sai e as horas que saem (o dia todo dele).
      Devolve null (só a extra: nada sai por aqui), { tipo: 'subtela', cpf } (o remanejado, quem entrou de mais de um jeito
-     e a troca: a sub-tela, já com ele), { tipo: 'sai', aplicar() } (o pontual sem pergunta: parte dele, ou não contado no
-     banco) ou { tipo: 'folga' | 'pontual', texto, sim, nao, padrao, motivo, aplicar(escolha, motivo) }: pelo ciclo, a
-     folga, com o Não descontar de começo e o motivo dela já no rascunho; o pontual contado no banco, sem resposta de
-     começo. aplicar muda o rascunho (quem chama o põe no mudar ou no aoVivo) */
+     e a troca: a sub-tela, já com ele), { tipo: 'sai', aplicar() } (o pontual sem pergunta: não contado no banco, ou parte
+     dele com as horas que ficam iguais às do banco) ou { tipo: 'folga' | 'pontual', texto, sim, nao, padrao, motivo,
+     aplicar(escolha, motivo) }: pelo ciclo, a folga, com o Não descontar de começo e o motivo dela já no rascunho; o
+     pontual contado no banco, saindo todo, sem resposta de começo; saindo só uma parte, Corrigir (de começo) ou Manter.
+     aplicar muda o rascunho (quem chama o põe no mudar ou no aoVivo) */
   function analisarDoDia(m) {
     var api = ed(), H = api.horas, mil = api.militarDoDia(m.cpf);
     if (!mil) return null;
@@ -398,10 +408,19 @@
     if (!partes.length) return null;   // só a extra (o botão nem aparece; ver podeTirar)
     if (partes.length !== 1 || (partes[0].origem !== 'ciclo' && partes[0].origem !== 'pontual')) return { tipo: 'subtela', cpf: cpf };
     var p = partes[0];
-    var todoPontual = p.origem === 'pontual' && !H.menos(H.uniao(p.periodos.map(H.faixa)), H.uniao(semF)).length;
-    var salvo = p.origem === 'pontual' ? pontualSalvo(cpf) : null;
-    if (p.origem === 'pontual' && !(todoPontual && salvo && salvo.contabilizado)) {
+    var restoPontual = p.origem === 'pontual' ? H.menos(H.uniao(p.periodos.map(H.faixa)), H.uniao(semF)) : [];
+    var todoPontual = p.origem === 'pontual' && !restoPontual.length;
+    /* o pontual contabilizado: saindo todo, a pergunta de tirar as horas; saindo só uma parte, Corrigir (marcado) ou Manter,
+       quando as horas que ficam são diferentes do que ele tem no banco por este dia */
+    var credito = p.origem === 'pontual' ? creditoDe(cpf) : null;
+    var ficamMin = restoPontual.reduce(function (s, f) { return s + f[1] - f[0]; }, 0);
+    if (p.origem === 'pontual' && (credito == null || (!todoPontual && ficamMin === credito))) {
       return { tipo: 'sai', aplicar: function () { tirarDoPontual(cpf, sem, todoPontual, false); } };
+    }
+    if (p.origem === 'pontual' && !todoPontual) {
+      var hc = H.horasTexto(credito);
+      return { tipo: 'pontual', texto: L().tirarPontualTexto(nome, hc), sim: L().bancoCorrigir(H.horasTexto(ficamMin)), nao: L().bancoManter(hc),
+        padrao: 'sim', aplicar: function (escolha) { tirarDoPontual(cpf, sem, false, false, escolha === 'nao'); } };
     }
     if (p.origem === 'ciclo') {
       /* a folga dele que já está no rascunho (o horário mudado) entra junto: uma folga só no dia (o banco guarda uma por
@@ -415,7 +434,7 @@
         sim: L().descontar(folgaHoras), nao: L().naoDescontar, padrao: 'nao', motivo: R().motivoNoRascunho(cpf),
         aplicar: function (escolha, motivo) { api.darFolga(cpf, escolha === 'sim', todo ? null : folgaPeriodos, motivo); } };
     }
-    var hp = H.horasTexto(salvo.minutos);
+    var hp = H.horasTexto(credito);
     return { tipo: 'pontual', texto: L().tirarPontualTexto(nome, hp), sim: L().tirarPontualSim(hp), nao: L().tirarPontualNao,
       padrao: null, aplicar: function (escolha) { tirarDoPontual(cpf, sem, true, escolha === 'sim'); } };
   }

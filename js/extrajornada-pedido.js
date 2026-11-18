@@ -29,8 +29,7 @@
     if (ed.semDia) return false;   // sem dia livre não há pedido (nem Sim nem Não)
     if (v.vol === false) return true;
     if (v.vol !== true || v.cotas < 1 || v.cotas > 10) return false;
-    var q = contar('quer');
-    return q >= ed.r.min_datas && contar('nao_posso') <= 10;
+    return contar('quer') >= ed.r.min_datas;
   }
 
   function atualizar() {
@@ -200,7 +199,11 @@
     var ajudaDias = f.querySelector('#extrajornada-ajuda-dias');
     ajudaDias.textContent = msg().ajudaDias(r.min_datas);
     ajudaDias.classList.toggle('oculto', !r.min_datas);
-    f.querySelector('#extrajornada-ajuda-servico').classList.toggle('oculto', !Object.keys(r.servico || {}).length);
+    /* a ajuda do dia de serviço; com algum dia de posto na Op. Verão, a que fala dos dois */
+    var motivosServico = Object.keys(r.servico || {}).map(function (dia) { return r.servico[dia]; });
+    var comPraia = motivosServico.indexOf('op_verao') >= 0;
+    f.querySelector('#extrajornada-ajuda-servico').classList.toggle('oculto', !motivosServico.length || comPraia);
+    f.querySelector('#extrajornada-ajuda-servico-op-verao').classList.toggle('oculto', !comPraia);
     f.querySelector('#extrajornada-termo').textContent = ped && ped.termo ? msg().termoRecebido(ped.termo_em) : msg().termoPendente;
     RW.painel.corpo().appendChild(f);
 

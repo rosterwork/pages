@@ -48,7 +48,6 @@
 
   /* a tela da Escala na caixa da extra: a linha da extra na célula e o pelotão dela */
   C().tela('escala', {
-    grade: '.conteudo .escala-mes-celula, .conteudo .escala-calendario-unidade',
     peca: function (uid, k, cpf) {
       var cel = celula(uid, k);
       return cel ? cel.querySelector('.linha-escalado[data-situacao="extra"][data-cpf="' + cpf + '"]') : null;
@@ -101,6 +100,7 @@
     if (C().estaAberto(+d.unidadeId, d.iso, cpf)) return true;
     var E = RW.escalasCelulaEditar, S = RW.escalasPainelSalvar;
     if (S && S.pendente()) E.fechar(); else E.largar();
+    E.painelNoDia(d);   // com o painel aberto, ele vai junto para o dia
     var nome = [linha.querySelector('.linha-escalado-grad').textContent, linha.querySelector('.linha-escalado-nome').textContent].join(' ').trim();
     C().abrirNome('escala', d.unidadeId, d.iso, cpf, L().noDia(nome, diaMes(d.iso)), preparar(d));
     return true;

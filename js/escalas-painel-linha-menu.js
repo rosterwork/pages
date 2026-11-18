@@ -126,6 +126,13 @@
     if (m && cfg.tipo !== 'folga' && cfg.tipo !== 'saida' && ed().mudancaNoRascunho(m.cpf) === 'vem') {
       return militares ? { 'remover-dia': true, 'ver-funcoes': true } : cfg.tipo === 'papel' ? {} : { 'ver-dia': true };
     }
+    /* o estagiário no Efetivo da viatura não é lugar da guarnição: sem Pôr outro no lugar, Outra função, Adicionar mais
+       um lugar e Liberar; o horário, o Mudar onde fica, o Remover deste dia e o Ver o dia */
+    if (cfg.tipo === 'funcao' && cfg.estagiario && m) {
+      var dia = {};
+      itensDoDia(m.cpf, dia);
+      return { 'horario-funcao': true, 'onde-estagio': dia['onde-estagio'], 'remover-dia': dia['remover-dia'], 'ver-dia': true };
+    }
     if (cfg.tipo === 'funcao') {
       r['por-outro'] = true;
       r['outra-funcao'] = true;

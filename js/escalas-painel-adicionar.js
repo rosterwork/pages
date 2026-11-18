@@ -119,7 +119,9 @@
     if (!api.dados()) return;
     var iso = api.iso(), uid = api.unidadeId();
     var letra = api.dados().guarnicao || null;   // a guarnição do dia (sem ela, a companhia não tem o dia da A)
-    var est = { como: 'dia', item: null, mil: null, periodos: [], banco: 'sim', unidade: null };
+    /* acumula = a resposta do Acúmulo ('acumula' | 'vazio' | null); chaveAcumula = de quais funções é a pergunta (outra
+       escolha no Onde fica, a resposta volta em branco) */
+    var est = { como: 'dia', item: null, mil: null, periodos: [], banco: 'sim', unidade: null, acumula: null, chaveAcumula: '' };
     var el = {}, pedido = 0, combo = null, onde = null, livres = null, efeito = null;
     var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece com quem muda de guarnição (lido uma vez)
     var preset = (opcoes && opcoes.cpf) || null;            // quem já vem escolhido (uma vez só)
@@ -285,6 +287,8 @@
       } });
       if (el.barra) q('.escala-adicionar-regua').appendChild(el.barra.el);
       el.marcarBanco = ligarRadios(el.banco, function (v) { est.banco = v; atualizar(); });
+      el.acumula = q('.escala-adicionar-acumula');
+      el.marcarAcumula = ligarRadios(el.acumula, function (v) { est.acumula = v; atualizar(); });
       efeito = C.efeito(q('.escala-adicionar-efeito'));
       corpo.appendChild(tela);
       carregar();
@@ -303,7 +307,7 @@
       /* a Unidade e o rótulo do Militar só no dia (na guarnição e no estagiário, o campo fica como sempre) */
       mostra(el.unidadeCampo, como === 'dia' && !estagiario);
       mostra(el.militarRotulo, como === 'dia' && !estagiario);
-      ['horario', 'ondeBloco', 'banco', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
+      ['horario', 'ondeBloco', 'acumula', 'banco', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
       efeito.esconder();
       nota(el.assume, m && m.assume ? (m.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(m), '') : '');
       if (!m) { api.aoVivo(null, false); return; }
@@ -352,15 +356,50 @@
       /* onde fica: o sistema, a função escolhida ou no lugar de outro militar (a caixa comum) */
       mostra(el.ondeBloco, true);
       onde.atualizar();
-      var respondido = onde.respondido();
+      /* o Acúmulo, com o Onde fica respondido: quem sai da função escolhida (ou de quem ele toma o lugar) faz uma função
+         que o modelo acumula nela; a pergunta, no mesmo código do lápis */
+      var acs = onde.respondido() ? acumuladasDoOnde() : [];
+      desenharAcumula(acs);
+      var respondido = onde.respondido() && (!acs.length || !!est.acumula);
       /* o banco de horas, quando onde fica está respondido (o estagiário não tem: as horas são só registro) */
       mostra(el.banco, respondido && !m.estagio);
       el.contabilizar.textContent = L().bancoSim(H.horasTexto(minutos()));
       el.marcarBanco(est.banco);
 
-      /* tudo respondido e sem conflito: ele entra no rascunho (no horário, onde fica e com o banco de horas) */
-      var pronto = respondido && !conflito;
-      api.aoVivo(pronto ? function () { onde.aplicar({ contabilizar: est.banco === 'sim' }); } : null, !pronto);
+      /* tudo respondido e sem conflito: ele entra no rascunho (no horário, onde fica, o Acúmulo e o banco de horas) */
+      var pronto = respondido && !conflito, vazia = acs.length > 0 && est.acumula === 'vazio';
+      api.aoVivo(pronto ? function () {
+        onde.aplicar({ contabilizar: est.banco === 'sim' });
+        if (vazia) RosterWork.escalasPainelLinhaAplicar.deixarVazia(acs);
+      } : null, !pronto);
+    }
+
+    /* as funções acumuladas que vão com a cadeira para quem entra: na função escolhida, as de quem está nela; no lugar de
+       outro militar, as dele que quem entra não leva marcadas (o estagiário não tem: o sistema distribui) */
+    function acumuladasDoOnde() {
+      var e = onde.estado(), A = RosterWork.escalasPainelLinhaAplicar, dados = api.dados();
+      if (!est.mil || est.mil.estagio) return [];
+      if (e.onde === 'funcao' && e.posto && e.funcao) {
+        var saem = A.ocupantes(e.posto, e.funcao, est.periodos, est.mil.cpf, dados).map(function (o) { return o.m.cpf; });
+        return saem.length ? A.acumuladas(saem, est.periodos, { posto: e.posto, funcao: e.funcao }, dados) : [];
+      }
+      if (e.onde === 'lugar' && e.sai && e.funcoes.some(Boolean)) {
+        var leva = e.sai.s.funcoes.filter(function (f, i) { return e.funcoes[i]; }).map(function (f) { return { posto: f.posto, funcao: f.funcao }; });
+        return A.acumuladas([e.sai.cpf], est.periodos, leva, dados);
+      }
+      return [];
+    }
+    /* a caixa do Acúmulo: os nomes e a resposta, que volta em branco quando a pergunta muda */
+    function desenharAcumula(acs) {
+      var chave = JSON.stringify(acs.map(function (a) { return [a.posto.id, a.funcao, a.periodos]; }));
+      if (chave !== est.chaveAcumula) { est.chaveAcumula = chave; est.acumula = null; }
+      mostra(el.acumula, acs.length > 0);
+      el.marcarAcumula(est.acumula);
+      if (!acs.length) return;
+      var t = RosterWork.escalasPainelLinhaAplicar.textosAcumulo(acs);
+      el.acumula.querySelector('.escala-adicionar-acumula-texto').textContent = t.pergunta;
+      el.acumula.querySelector('.escala-adicionar-acumula-sim').textContent = t.sim;
+      el.acumula.querySelector('.escala-adicionar-acumula-nao').textContent = t.nao;
     }
 
     api.abrir(montar);

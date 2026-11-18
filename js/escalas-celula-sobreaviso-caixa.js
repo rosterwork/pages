@@ -105,12 +105,14 @@
   }
 
   /* a caixa fora da grade de células (a aba Militares da página Sobreaviso): o = { d (o dia: unidadeId, iso, unidadeNome,
-     unidadeCidade), peca, cpf, titulo, pode }. Quem não mexe no sobreaviso e o painel aberto: o painel do dia no bloco; o
-     dia de mais de 7 dias atrás: a caixa do aviso, com o Abrir o painel do dia */
+     unidadeCidade), peca, cpf, titulo, pode }. Quem não mexe no sobreaviso: o painel do dia no bloco; o dia de mais de 7
+     dias atrás: a caixa do aviso, com o Abrir o painel do dia. Com o painel aberto, a caixa abre do mesmo jeito e o painel
+     vai junto para o dia (escalas-celula-editar.js › painelNoDia); no celular e no dia antigo, o painel vai para o dia */
   function abrirFora(o) {
     var E = RW.escalasCelulaEditar;
     function painel() { P().pedirBloco(o.cpf); RW.escalasPainel.abrirDia(o.d, null); }
-    if (!o.pode || !E || (RW.painel && RW.painel.estaAberto())) { painel(); return; }
+    var painelAberto = !!(RW.painel && RW.painel.estaAberto());
+    if (!o.pode || !E || (painelAberto && ((RW.celular && RW.celular()) || o.d.iso < E.limite()))) { painel(); return; }
     if (o.d.iso < E.limite()) {
       RW.caixaFlutuante.aviso({ peca: o.peca, texto: RW.mensagens.escala.diaAntigo, titulo: o.titulo, aoPainel: painel });
       return;

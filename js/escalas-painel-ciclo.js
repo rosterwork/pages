@@ -2,7 +2,9 @@
    ESCALAS — as guarnições pelo painel do dia (o ciclo automático; as
    abas Funções, Militares e Guarnições)
    - o rascunho das guarnições: as mudanças do dia aberto que ainda
-     não foram salvas; marcar e desmarcar não gravam: o Salvar do
+     não foram salvas (as de outro dia ficam guardadas na gaveta,
+     escalas-rascunho-dias.js, e voltam com o dia, abrirDia); marcar e
+     desmarcar não gravam: o Salvar do
      rodapé do painel (escalas-painel-salvar.js) grava junto com o dia
      (escala_ciclo_salvar_lote, pelo escala_painel_salvar). Cada
      mudança pode levar a sua data e a letra da guarnição (a aba
@@ -37,11 +39,32 @@
 
   /* o rodapé do painel conta as mudanças das abas */
   function avisar() { window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho', { detail: { parte: 'ciclo' } })); }
+  /* a gaveta dos dias (escalas-rascunho-dias.js; só na Escala) */
+  function G() { return window.RosterWork.escalasRascunhoDias || null; }
+  /* o rascunho passa a ser o do dia k: o de agora, com mudança ou passo, vai para a gaveta, e o de k volta dela (ou
+     começa vazio) */
+  function trocarDia(k) {
+    if (rascunho.chave === k) return;
+    if (G() && rascunho.chave && (rascunho.lista.length || pilha.length || refeitos.length)) {
+      var p = rascunho.chave.split('|');
+      G().guardar('ciclo', { chave: rascunho.chave, unidadeId: p[0], iso: p[1], estado: { rascunho: rascunho, pilha: pilha, refeitos: refeitos } });
+    }
+    var item = G() && G().tirar('ciclo', k);
+    if (item) { rascunho = item.estado.rascunho; pilha = item.estado.pilha; refeitos = item.estado.refeitos; }
+    else { rascunho = { chave: k, lista: [] }; pilha = []; refeitos = []; }
+  }
+  /* o painel ou a célula abriu o dia: o rascunho dele, se estava guardado, volta (as marcas e o Desfazer da aba) */
+  function abrirDia(unidadeId, iso) {
+    var k = unidadeId + '|' + iso, item = rascunho.chave !== k && G() ? G().tirar('ciclo', k) : null;
+    if (!item) return;
+    G().guardar('ciclo', item);   // o trocarDia guarda o de agora antes de trazer este
+    trocarDia(k);
+  }
   function doDia(unidadeId, iso) { return rascunho.chave === unidadeId + '|' + iso ? rascunho.lista : []; }
   function marcado(unidadeId, iso, cpf) { return doDia(unidadeId, iso).filter(function (x) { return x.cpf === cpf; })[0] || null; }
   function marcar(unidadeId, iso, mudanca) {
     var k = unidadeId + '|' + iso;
-    if (rascunho.chave !== k) { rascunho = { chave: k, lista: [] }; pilha = []; refeitos = []; }
+    trocarDia(k);
     rascunho.lista = rascunho.lista.filter(function (x) { return x.cpf !== mudanca.cpf; }).concat([mudanca]);
     avisar();
   }
@@ -50,9 +73,9 @@
     avisar();
   }
   function contar() { return rascunho.lista.length; }
-  /* o que vai ao banco no Salvar */
-  function envio() {
-    return rascunho.lista.map(function (x) {
+  /* o que vai ao banco no Salvar (lista: a de um dia guardado na gaveta; sem ela, a de agora) */
+  function envio(lista) {
+    return (lista || rascunho.lista).map(function (x) {
       var m = { cpf: x.cpf, acao: x.acao };
       if (x.data) m.data = x.data;
       if (x.letra) m.letra = x.letra;
@@ -79,7 +102,7 @@
   }
   function passo(unidadeId, iso, cpf, depois) {
     var k = unidadeId + '|' + iso;
-    if (rascunho.chave !== k) { rascunho = { chave: k, lista: [] }; pilha = []; refeitos = []; }
+    trocarDia(k);
     pilha.push({ cpf: cpf, antes: marcado(unidadeId, iso, cpf), depois: depois });
     refeitos = [];
     trocarDe(cpf, depois);
@@ -91,13 +114,13 @@
      do rascunho). passoVarios é um passo só do Desfazer; porVarias não é passo (a sugestão que abre a tela) */
   function porVarias(unidadeId, iso, lista) {
     var k = unidadeId + '|' + iso;
-    if (rascunho.chave !== k) { rascunho = { chave: k, lista: [] }; pilha = []; refeitos = []; }
+    trocarDia(k);
     lista.forEach(function (x) { trocarDe(x.cpf, x.mudanca); });
     avisar();
   }
   function passoVarios(unidadeId, iso, lista) {
     var k = unidadeId + '|' + iso;
-    if (rascunho.chave !== k) { rascunho = { chave: k, lista: [] }; pilha = []; refeitos = []; }
+    trocarDia(k);
     pilha.push({ lista: lista.map(function (x) { return { cpf: x.cpf, antes: marcado(unidadeId, iso, x.cpf), depois: x.mudanca }; }) });
     refeitos = [];
     lista.forEach(function (x) { trocarDe(x.cpf, x.mudanca); });
@@ -273,6 +296,23 @@
     analisar: analisar, analisarSair: analisarSair, analisarMudar: analisarMudar, efeito: efeito,
     entrar: entrar, marcarMudar: marcarMudar, marcarSair: marcarSair,
     /* a aba Militares (o menu da linha): o Remover da guarnição e o Cancelar a saída */
-    podeSair: podeSair, perguntarSaida: perguntarSaida, cancelarSaida: cancelarSaida, fecharPergunta: fecharPergunta
+    podeSair: podeSair, perguntarSaida: perguntarSaida, cancelarSaida: cancelarSaida, fecharPergunta: fecharPergunta,
+    abrirDia: abrirDia,
+    /* para a gaveta dos dias (escalas-rascunho-dias.js): o Ciclo fica fora da ordem do Desfazer do rodapé (a aba
+       Guarnições tem o dela) */
+    gaveta: {
+      vivo: function () {
+        if (!rascunho.chave || !(rascunho.lista.length || pilha.length || refeitos.length)) return null;
+        var p = rascunho.chave.split('|');
+        return { chave: rascunho.chave, unidadeId: p[0], iso: p[1], vivo: true };
+      },
+      contar: function (item) { return item.vivo ? rascunho.lista.length : item.estado.rascunho.lista.length; },
+      /* a lista de mudanças do item (a de agora ou a guardada) */
+      lista: function (item) { return item.vivo ? rascunho.lista : item.estado.rascunho.lista; },
+      pode: function () { return false; },
+      andar: function () { return false; },
+      limparRefazer: function () {},
+      soltar: function () {}
+    }
   };
 })();

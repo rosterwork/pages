@@ -27,9 +27,6 @@
 
   var PARTES = { periodo: ['periodo'], nome: ['nome'], marcas: ['guarnicao', 'marcas'], adicionar: ['nome', 'periodo', 'guarnicao', 'marcas'] };
   var TOPO_BLOCO = 8;   // a caixa do bloquinho: o topo dela abaixo do topo dele (px), como no pelotão da Escala
-  /* os cliques da página que a caixa não trata como "fora" (a peça clicada abre a caixa dela) */
-  var IGNORAR = '.afastamentos-celula--clicavel, .afastamentos-barra--clicavel, .afastamentos-linha, ' +
-    '.afastamentos-bloco:not(.afastamentos-bloco--leitura), .afastamentos-mes-nome';
 
   /* a caixa aberta: { tipo ('ano', 'mes', 'cal', 'bloco' ou 'mesNome'), cpf, pessoa, mes, dia, unidadeId, chave, campos,
      caixa } */
@@ -88,7 +85,7 @@
   /* abre a caixa 1 na peça, com o menu; o item escolhido segue em escolher */
   function abrirCaixa(a, peca, junto, menu, titulo, topo) {
     a.caixa = RW.caixaFlutuante.abrir({
-      peca: peca, junto: junto || [], conteudo: menu, titulo: titulo, topo: topo, ignorar: IGNORAR,
+      peca: peca, junto: junto || [], conteudo: menu, titulo: titulo, topo: topo,
       aoFechar: function () {
         if (aberto !== a) return;
         aberto = null;

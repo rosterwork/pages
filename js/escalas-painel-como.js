@@ -47,7 +47,7 @@
     b.setAttribute('data-dica', p ? msg().salveAntes : b.dataset.dicaPadrao);
   }
   function atualizarLigados() {
-    [].forEach.call(document.querySelectorAll('#painel .escala-dia-como, #painel .escala-como-rotulo'), ligar);
+    [].forEach.call(document.querySelectorAll('#painel .escala-dia-como, #painel .escala-como-rotulo, #painel .escala-como-item'), ligar);
   }
 
   /* uma lista de frases: as do banco entram antes das fixas do molde (a regra dos Efetivos, o "Tudo foi cumprido") */
@@ -169,8 +169,9 @@
   function abrirCaixa(b, info) {
     var conteudo = RW.tpl('tpl-escala-como-funcao');
     if (!conteudo) return;
+    /* funcoes = os nomes guardados (a busca); rotulos = os nomes da tela (o título; o estagiário, "Estagiário 1") */
     var funcoes = info.funcoes || [];
-    var titulo = funcoes.join(' e ') + ' (' + info.posto + ')';
+    var titulo = (info.rotulos || funcoes).join(' e ') + ' (' + info.posto + ')';
     var tituloEl = conteudo.querySelector('.escala-como-funcao-titulo');
     tituloEl.textContent = titulo;
     if (RW.celular && RW.celular()) tituloEl.classList.add('oculto');   // no celular, o título vai na folha
@@ -184,12 +185,13 @@
       if (!caixa.aberta()) return;
       caixa.espera(false);
       if (!dados) { caixa.fechar(); RW.avisar({ tipo: 'erro', mensagem: msg().erro }); return; }
-      var M = msg(), frases = [], efetivo = false;
+      /* o nome da função antes de cada pessoa só quando o grupo tem funções diferentes (o Chefe com o Condutor) */
+      var M = msg(), frases = [], efetivo = false, prefixo = funcoes.length > 1 && (info.rotulos || funcoes).length > 1;
       funcoes.forEach(function (nome) {
         (dados.funcoes || []).forEach(function (f) {
           if (f.posto !== info.posto || f.funcao !== nome) return;
           if (f.base === 'Efetivo') efetivo = true;
-          (f.pessoas || []).forEach(function (p) { frases.push(M.pessoa(funcoes.length > 1 ? f.funcao : '', p, frasesDe(p))); });
+          (f.pessoas || []).forEach(function (p) { frases.push(M.pessoa(prefixo ? f.funcao : '', p, frasesDe(p))); });
         });
       });
       encher(conteudo.querySelector('[data-como-lista]'), frases);
@@ -198,5 +200,18 @@
     });
   }
 
-  RW.escalasPainelComo = { botaoDoDia: botaoDoDia, abrirNoDia: abrirNoDia, rotulo: rotulo };
+  /* o item Como foi escolhido do menu do nome da função (escalas-painel-funcoes.js › noNome): fecha o menu e abre a mesma
+     caixa, presa ao nome (peca); desliga com alteração não salva */
+  function item(b, peca, info) {
+    if (!b || !peca) return;
+    ligar(b);
+    b.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (b.disabled) return;
+      if (RW.fecharDropdowns) RW.fecharDropdowns();
+      abrirCaixa(peca, info);
+    });
+  }
+
+  RW.escalasPainelComo = { botaoDoDia: botaoDoDia, abrirNoDia: abrirNoDia, rotulo: rotulo, item: item };
 })();

@@ -16,9 +16,16 @@
    dela, com a primeira linha na altura do item, e o item fica cinza.
    No celular, a folha de baixo, sobre o véu, com a alça e o título; a
    caixa 2 troca o conteúdo da folha, com a seta de voltar.
-   Fecham: o clique fora (fora do que a página pede para ignorar, que
-   é dela), o Esc, a peça que sai da tela ou da página e o Voltar do
-   navegador. Uma caixa por vez. A posição vem do geral-flutuante.js
+   Fecham: o clique fora, o Esc, a peça que sai da tela ou da página
+   e o Voltar do navegador. O clique fora só fecha, como num menu: ele
+   não chega ao que está embaixo (outra célula, um botão, um link); o
+   rodapé largo da página (.rodape--largo) é a exceção: fecha e faz o
+   que o botão diz no mesmo clique. Com a resposta pela metade, a página
+   segura o clique fora (aoClicarFora devolve false): a caixa fica e o
+   clique não faz mais nada (no celular, o toque no véu também). A
+   caixa 2, no computador, tem o X no alto, que fecha as duas como o
+   Esc. O Esc fecha só a caixa (o painel
+   lateral atrás dela fica). Uma caixa por vez. A posição vem do geral-flutuante.js
    (que acompanha a rolagem e o tamanho da peça) e a animação do CSS;
    aqui, só as classes. Não cria HTML (clona os moldes do index.html).
    O dia que não muda: aviso(opcoes) abre a caixa com a nota e o Abrir o
@@ -26,8 +33,9 @@
    API: RosterWork.caixaFlutuante.abrir(opcoes) -> caixa
         opcoes = { peca, junto (o que é marcado com ela), topo (o bloco: o topo da caixa, em px, abaixo do topo dele;
                    sem ele, o primeiro item no meio da peça), titulo (o da folha), conteudo, esperar (sem o conteúdo no
-                   quadro seguinte, a forma), ignorar (o seletor dos cliques da página), aoFechar() (fechou pelo clique
-                   fora, pelo Esc ou pela peça que saiu), aoVoltar() (o Voltar da folha) }
+                   quadro seguinte, a forma), aoFechar() (fechou pelo clique fora, pelo Esc, pelo X ou pela peça que
+                   saiu), aoVoltar() (o Voltar da folha), aoClicarFora(alvo) (false: a caixa fica, e o clique não faz
+                   mais nada; o alvo é o que foi clicado, também no rodapé largo) }
         caixa = { conteudo(el), espera(sim), faltaForma() (quantos ms a forma à vista ainda fica), segunda(item, el,
                   titulo), fecharSegunda(), trocarPeca(peca, junto), fechar(), aberta() }
    ============================================================ */
@@ -40,6 +48,8 @@
   var ESCOLHIDA = 'caixa-flutuante-escolhida';
   /* o que é da caixa (o clique ali não fecha): ela, as listas que abrem dentro dela, o aviso e o passo a passo */
   var DENTRO = '.caixa-flutuante, .dropdown-menu, .modal-veu, .guia-balao, .guia-vidro, .treino-barra';
+  /* o clique fora que fecha e segue para o botão: o rodapé largo (o Salvar, o Cancelar, o Desfazer e o Refazer) */
+  var PASSA = '.rodape--largo';
 
   var atual = null;    // a caixa aberta
   var ligado = false;  // o clique fora, o Esc e o Voltar, ligados uma vez
@@ -201,6 +211,12 @@
     if (!c2) return;
     c2.classList.add('caixa-flutuante--segunda');
     c2.querySelector('.caixa-flutuante-corpo').appendChild(el);
+    /* o X no alto (no computador): fecha as duas, como o Esc (a página decide o que fica, aoFechar) */
+    var x = c2.querySelector('.caixa-flutuante-fechar');
+    if (x) {
+      x.classList.remove('oculto');
+      x.addEventListener('click', function () { fecharDe(c, true); });
+    }
     document.body.appendChild(c2);
     c.c2 = c2;
     c.item = item;
@@ -279,12 +295,22 @@
       var c = atual, t = ev.target;
       if (!c || !t || !t.closest) return;
       if (t.closest(DENTRO)) return;
-      if (c.opcoes.ignorar && t.closest(c.opcoes.ignorar)) return;
+      /* a resposta pela metade (a página diz, aoClicarFora): a caixa fica, e o clique não faz mais nada */
+      if (c.opcoes.aoClicarFora && c.opcoes.aoClicarFora(t) === false) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        return;
+      }
       fecharDe(c, true);
+      /* o primeiro clique fora só fecha: não chega ao que está embaixo (os outros ouvintes do documento seguem) */
+      if (t.closest(PASSA)) return;
+      ev.stopPropagation();
+      ev.preventDefault();
     }, true);
     document.addEventListener('keydown', function (ev) {
       if (ev.key !== 'Escape' || !atual) return;
       if (document.querySelector('.dropdown--aberto, .modal-veu--aberto')) return;
+      ev.preventDefault();   // o Esc foi da caixa: o painel atrás dela fica (geral-painel.js)
       fecharDe(atual, true);
     });
     window.addEventListener('popstate', function () { if (atual) fecharDe(atual, true); });

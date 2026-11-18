@@ -162,8 +162,8 @@
         return;
       }
       if (!window.RosterWork.escalasMilitaresPainel) return;
-      /* com mudança esperando o Salvar no painel do dia: a mesma pergunta de trocar de dia. Descartou: a grade lê o
-         gravado de novo e o militar abre nela (esta célula ainda mostra a mudança) */
+      /* o painel do dia sai sem perder o rascunho (só o formulário da troca preenchido pergunta). Descartou (seguir(true)):
+         a grade lê o gravado de novo e o militar abre nela (esta célula ainda mostra a mudança) */
       if (!RosterWork.escalasPainel || !RosterWork.escalasPainel.antesDeSair) { abrir(); return; }
       RosterWork.escalasPainel.antesDeSair(function (descartou) {
         if (descartou) abrirDepois = { cpf: militar.cpf, iso: iso };
@@ -211,6 +211,7 @@
       linha.setAttribute('data-busca', RosterWork.busca.normalizar((m.grad || '') + ' ' + (m.nome || '')));
       linha.dataset.cpf = m.cpf;
       if (opVerao) RosterWork.opVeraoMilitares.linha(linha, m, coluna);   // o guarda-vidas civil
+      if (sobreaviso) RosterWork.escalasMilitaresSobreaviso.linha(linha, m);   // a conta dele, na dica do nome
       dias.forEach(function (info) {
         var cel = RosterWork.tpl('tpl-escala-mil-celula');
         var estadoDia = m.dias && m.dias[info.iso];

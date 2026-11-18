@@ -749,10 +749,11 @@
       window.addEventListener('rosterwork_units_changed', montarUnidades);
       /* salvou no painel → atualiza só a célula afetada na grade ativa (Mês ou Semana);
          cada grade só age se estiver na tela naquele momento. O Salvar só do Dia já lê o dia em todas as colunas
-         (soDoDia; escalas-dia-na-grade.js) */
+         (soDoDia; escalas-dia-na-grade.js), e o que relê a grade inteira com os dias salvos já certos não lê o dia à
+         parte (certos; escalas-painel-salvar.js) */
       window.addEventListener('rosterwork_escala_salva', function (e) {
         var d = e.detail || {};
-        if (d.unidadeId == null || !d.iso || d.soDoDia) return;
+        if (d.unidadeId == null || !d.iso || d.soDoDia || d.certos) return;
         if (window.RosterWork.escalaAtualizando) RosterWork.escalaAtualizando.salvou(d.unidadeId, d.iso);
       });
       /* mudança de ciclo (Contínuos) afeta muitos dias → re-renderiza a grade inteira; aoTerminar: a grade nova na tela */

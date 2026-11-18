@@ -99,8 +99,9 @@
   }
 
   /* o pontual que sai (a sub-tela e o Remover do dia): todo sai (com as horas que ele somou, se o admin quis), ou só os
-     horários dados */
-  function tirarDoPontual(cpf, periodos, todo, estornar) {
+     horários dados (manter: o contabilizado fica com as horas que tinha no banco; sem ele, o banco acompanha as que
+     ficam) */
+  function tirarDoPontual(cpf, periodos, todo, estornar, manter) {
     var api = ed(), H = api.horas, r = api.rascunho();
     if (todo) {
       var salvo = pontualSalvo(cpf);
@@ -111,8 +112,9 @@
     if (!pont) return;
     var salvo2 = pontualSalvo(cpf);
     var sai = periodos.map(H.faixa), ficam = H.menos(H.uniao((pont.periodos || []).map(H.faixa)), sai);
-    r.pontuais = r.pontuais.filter(function (x) { return x.cpf !== cpf; })
-      .concat([{ cpf: cpf, periodos: ficam.map(H.periodo), contabilizar: !!(salvo2 && salvo2.contabilizado) }]);
+    var entra = { cpf: cpf, periodos: ficam.map(H.periodo), contabilizar: !!(salvo2 && salvo2.contabilizado) };
+    if (manter) entra.manter_banco = true;
+    r.pontuais = r.pontuais.filter(function (x) { return x.cpf !== cpf; }).concat([entra]);
     api.cortarAjustes(cpf, sai);
   }
 

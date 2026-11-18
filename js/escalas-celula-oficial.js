@@ -78,8 +78,11 @@
     var d = diaDo(o);
     if (!podeMexer(d)) return false;
     function painel() { RW.escalasPainel.abrirDia(d, null); }
-    if ((RW.painel && RW.painel.estaAberto()) || (RW.escalaAtualizando && RW.escalaAtualizando.pendente(d.unidadeId, d.iso))
-      || (RW.celular && RW.celular() && o.closest('.geral-calendario-mes-dia'))) {
+    /* com o painel aberto, a caixa abre do mesmo jeito e o painel vai junto para o dia (escalas-celula-editar.js ›
+       painelNoDia); no celular, o painel cobre a tela e vai para o dia */
+    var painelAberto = !!(RW.painel && RW.painel.estaAberto()), celular = !!(RW.celular && RW.celular());
+    if ((painelAberto && celular) || (RW.escalaAtualizando && RW.escalaAtualizando.pendente(d.unidadeId, d.iso))
+      || (celular && o.closest('.geral-calendario-mes-dia')) || (painelAberto && d.iso < C().limite())) {
       C().fechar();
       painel();
       return true;

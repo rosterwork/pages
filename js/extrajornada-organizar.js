@@ -148,7 +148,7 @@
   function periodosNaoPode(m) {
     var ocupado = m.ocupado || {}, mes = d.competencia.slice(0, 8), periodos = [];
     Object.keys(ocupado).sort().forEach(function (k) {
-      if (k.slice(0, 8) !== mes || ['ferias', 'licenca', 'dispensa'].indexOf(ocupado[k]) < 0) return;
+      if (k.slice(0, 8) !== mes || ['ferias', 'licenca', 'litoral', 'dispensa'].indexOf(ocupado[k]) < 0) return;
       var dia = +k.slice(8, 10), ultimo = periodos[periodos.length - 1];
       if (ultimo && ultimo.fim === dia - 1 && ultimo.motivo === ocupado[k]) ultimo.fim = dia;
       else periodos.push({ inicio: dia, fim: dia, motivo: ocupado[k] });

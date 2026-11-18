@@ -36,7 +36,7 @@
     var api = ed(), nomes = [];
     (funcoes || []).forEach(function (f) {
       var posto = api.acharPosto(f.viatura_id, f.instalacao_id);
-      var t = posto ? api.funcaoNoPosto(f.funcao, posto) : msg().funcaoNoPosto(f.funcao, f.posto || '', true);
+      var t = posto ? api.funcaoNoPosto(f.funcao, posto) : msg().funcaoNoPosto(RosterWork.escalasPainel.pecas.nomeSemNumero(f.funcao), f.posto || '', true);
       if (nomes.indexOf(t) < 0) nomes.push(t);
     });
     return nomes;
@@ -204,10 +204,18 @@
       t.textContent = valor || vazio;
       t.classList.toggle('campo-selecao-texto--vazio', !valor);
     }
-    /* a "Nova função" é a próxima numeração do posto, quando ele ainda cabe gente */
+    /* a "Nova função" é o próximo lugar do posto, quando ele ainda cabe gente */
     function eNova(nome) {
       return !!(est.posto && est.posto.adicionar && nome === est.posto.adicionar.nome_funcao
         && !(est.posto.funcoes || []).some(function (f) { return f.nome === nome; }));
+    }
+    /* os nomes sem o número do lugar ("Efetivo", com a situação ao lado); o lugar novo de uma função que o posto já tem
+       é "Mais um Efetivo" */
+    var P = RosterWork.escalasPainel.pecas;
+    function textoNova(nome) {
+      var base = P.nomeSemNumero(nome);
+      var ja = (est.posto.funcoes || []).some(function (f) { return P.nomeSemNumero(f.nome) === base; });
+      return ja ? msg().maisUm(base) : msg().novaFuncao(base);
     }
     function desenhar() {
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
@@ -216,14 +224,16 @@
       if (est.posto) {
         var nomes = [];
         (est.posto.funcoes || []).forEach(function (f) { if (!BLOQUEADAS.test(f.nome) && nomes.indexOf(f.nome) < 0) nomes.push(f.nome); });
-        nomes.forEach(function (nm) { item(menu, nm, cfg.situacao(est.posto, nm), function () { est.funcao = nm; mudou(); }); });
+        nomes.forEach(function (nm) {
+          item(menu, P.rotuloDaFuncao(est.posto, nm), cfg.situacao(est.posto, nm), function () { est.funcao = nm; mudou(); });
+        });
         var nova = est.posto.adicionar && est.posto.adicionar.nome_funcao;
         if (nova && !est.posto.cheio && nomes.indexOf(nova) < 0) {
-          item(menu, msg().novaFuncao(nova), msg().itemVazia, function () { est.funcao = nova; mudou(); });
+          item(menu, textoNova(nova), msg().itemVazia, function () { est.funcao = nova; mudou(); });
         }
       }
       texto(dPosto, est.posto && est.posto.nome, vazioPosto);
-      texto(dFuncao, est.funcao && (eNova(est.funcao) ? msg().novaFuncao(est.funcao) : est.funcao), vazioFuncao);
+      texto(dFuncao, est.funcao && (eNova(est.funcao) ? textoNova(est.funcao) : P.rotuloDaFuncao(est.posto, est.funcao)), vazioFuncao);
     }
     function mudou() { desenhar(); if (cfg.aoMudar) cfg.aoMudar(est.posto, est.funcao); }
 

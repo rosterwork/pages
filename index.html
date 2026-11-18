@@ -1293,6 +1293,10 @@
           <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
         </button>
         <span class="caixa-flutuante-titulo"></span>
+        <!-- o X da caixa 2, no computador (o geral-caixa-flutuante.js mostra): fecha as duas, como o Esc -->
+        <button type="button" class="botao-discreto caixa-flutuante-fechar oculto" aria-label="Fechar" data-dica="Fechar">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+        </button>
       </div>
       <span class="caixa-flutuante-espera oculto" role="status" aria-label="Carregando"><span class="cobertura-viva cobertura-viva--curta" aria-hidden="true"></span></span>
       <div class="caixa-flutuante-corpo"></div>
@@ -4117,6 +4121,13 @@
       </div>
       <!-- o Onde fica (molde tpl-escala-onde-fica, escalas-painel-onde.js) entra aqui -->
       <div class="escala-adicionar-onde-bloco"></div>
+      <!-- Acúmulo: quem sai da função escolhida faz uma função que o modelo acumula nela; os textos com os nomes vêm do JS -->
+      <div class="grupo-caixa subtela-pergunta escala-adicionar-acumula oculto">
+        <span class="rotulo-secao">Acúmulo</span>
+        <span class="subtela-ajuda escala-adicionar-acumula-texto"></span>
+        <label class="geral-opcao"><input type="radio" value="acumula" /><span class="escala-adicionar-acumula-sim"></span></label>
+        <label class="geral-opcao"><input type="radio" value="vazio" /><span class="escala-adicionar-acumula-nao"></span></label>
+      </div>
       <div class="grupo-caixa subtela-pergunta escala-adicionar-banco oculto">
         <span class="rotulo-secao">Banco de horas</span>
         <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-adicionar-contabilizar"></span></label>
@@ -4800,10 +4811,11 @@
     </div>
   </template>
 
-  <!-- a caixa 2 do Mudar o horário (extrajornada-celula.js): a barra da extra com os campos e o cadeado
+  <!-- a caixa 2 do Mudar o horário (extrajornada-celula.js): o dia, a barra da extra com os campos e o cadeado
        (extrajornada-barra.js), a nota de quem passou da cota e, sempre, os outros dias dele (extrajornada-dia-outros.js) -->
   <template id="tpl-extrajornada-caixa-horario">
     <div class="extrajornada-caixa-horario">
+      <span class="extrajornada-caixa-horario-dia"></span>
       <span class="extrajornada-painel-marcas"></span>
     </div>
   </template>
@@ -5895,6 +5907,22 @@
   <!-- a linha do título do posto, para quem edita o dia (escalas-painel-funcoes.js): o nome (o .rotulo-secao da caixa,
        posto aqui pelo JS), o texto do posto sem ninguém e, na ponta direita, o ícone Funções do posto, com o menu das
        caixas de marcar (o título e as caixas vêm do JS) -->
+  <!-- o nome da função na lista do painel do dia, para quem edita o dia (escalas-painel-funcoes.js › noNome): o clique abre
+       o menu Funções do posto embaixo do nome, com o Como foi escolhido no fim -->
+  <template id="tpl-escala-funcao-menu">
+    <div class="dropdown escala-funcao-menu">
+      <button type="button" class="botao-discreto escala-funcao-menu-botao" data-dica="Funções"></button>
+      <div class="dropdown-menu escala-posto-funcoes-menu">
+        <div class="dropdown-titulo"></div>
+        <div class="escala-marcar-lista escala-posto-funcoes-lista"></div>
+        <div class="dropdown-divisor escala-funcao-menu-traco"></div>
+        <button type="button" class="dropdown-item escala-como-item" data-dica="">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao"/></svg><span>Como foi escolhido</span>
+        </button>
+      </div>
+    </div>
+  </template>
+
   <template id="tpl-escala-posto-titulo">
     <div class="escala-posto-titulo">
       <span class="escala-posto-vazio oculto">Vazio, fora da escala</span>
@@ -6030,7 +6058,7 @@
       <div class="escala-legenda-grade">
         <span class="escala-legenda-item">
           <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
-          <span>Função fixada</span>
+          <span>Fixado pelo adm</span>
         </span>
         <span class="escala-legenda-item">
           <svg class="icone escala-distribuicao-marca-aviso" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
