@@ -13,8 +13,11 @@
    - o painel do dia, já na tela do item: Mudar o dia, Mudar de
      unidade, Registrar troca, Devolver, o Remover deste dia de quem
      entrou de mais de um jeito, Mudar a extrajornada e o painel;
-   - o pelotão: Adicionar neste dia (ele entra nas horas livres, já no
-     horário, com o banco em Contabilizar), Adicionar à guarnição
+   - o pelotão: Adicionar neste dia (escolhido o nome, ele já entra no
+     dia, ao vivo, nas horas livres, e a linha dele aparece na célula na
+     hora; a caixa continua com o horário e o banco de horas, com o
+     Contabilizar marcado; o mesmo no nome em vermelho do Fora da
+     escala, já com ele), Adicionar à guarnição
      (escalas-painel-adicionar › lerGuarnicao e desenharGuarnicao; o
      mesmo no nome em vermelho do Fora da escala, escalas-celula-fora.js),
      Adicionar extra neste dia (escalas-celula-extra.js), Trazer de
@@ -80,6 +83,8 @@
     terminar(a);
     a.sessao = null;
     a.remocao = null;
+    a.entrada = null;
+    a.sairam = null;
     a.escolha = a.escolhido = null;
     a.botao = null;
     if (!doVoltar && a.caixa) a.caixa.fecharSegunda();
@@ -421,8 +426,9 @@
   }
 
   /* Adicionar neste dia: o campo, com quem tem horas livres no dia, por pelotão (o do bloco primeiro). oficial (o Oficial
-     de Área do título, escalas-celula-oficial.js): { el, acao, aoEscolher }, só os subtenentes e oficiais */
-  function nesteDia(botao, c, oficial) {
+     de Área do título, escalas-celula-oficial.js): { el, acao, aoEscolher }, só os subtenentes e oficiais. cpf: quem está
+     fora da escala, clicado na grade (escalas-celula-fora.js), já vem escolhido; sem horas livres, o aviso */
+  function nesteDia(botao, c, oficial, cpf) {
     var a = c.a, el = oficial ? oficial.el : RW.tpl('tpl-escala-celula-adicionar');
     if (!el) return;
     a.acao = oficial ? oficial.acao : 'neste-dia';
@@ -431,11 +437,13 @@
     inp.id = 'escala-celula-adicionar-campo-' + (++conta);
     var combo = RW.comboMilitar.criar(inp, menu, {
       atual: function () { return a.escolhido || null; },
-      aoEscolher: function (item) { if (oficial) oficial.aoEscolher(item); else escolher(item, c); },
+      aoEscolher: function (item) { if (oficial) oficial.aoEscolher(item); else escolherNaCaixa(item, c, el); },
       textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDisponivel, filtroVazio: msg().ninguemEncontrado }
     });
     a.caixa.segunda(botao, el, textoDo(botao));
     var quandoChegar = faixasNaLista(combo, menu);
+    /* fora da escala sem horas livres no dia: o aviso, e a caixa 2 fecha */
+    function semHoras() { RW.avisar({ tipo: 'aviso', mensagem: msg().foraSemHoras }); a.acao = null; a.botao = null; a.caixa.fecharSegunda(); }
     RW.escalasDados.disponiveis(a.unidadeId, a.iso, a.unidadeId, null, !!oficial).then(function (r) {
       quandoChegar(function () {
         if (c.a !== a || a.acao !== (oficial ? oficial.acao : 'neste-dia') || !el.isConnected) return;
@@ -446,10 +454,101 @@
           var itens = Ls.dia(r, u.id).filter(function (it) { return oficial || !(it.m && it.m.estagio); });
           if (itens.length) lista = lista.concat([{ titulo: u.nome }], itens);
         });
-        if (!combo.preencher(lista)) { fecharLista(combo); return; }
+        var dele = cpf ? lista.filter(function (x) { return x.cpf === cpf; })[0] : null;
+        if (!combo.preencher(lista)) { fecharLista(combo); if (cpf) semHoras(); return; }
+        if (cpf && !dele) { fecharLista(combo); semHoras(); return; }
+        if (dele) { fecharLista(combo, true); escolherNaCaixa(dele, c, el); combo.mostrarAtual(); return; }
         inp.focus(); combo.abrir();
       });
     });
+  }
+
+  /* ---------- quem entra pelo Adicionar neste dia: o horário e o banco de horas, na mesma caixa ---------- */
+
+  /* escolhido o nome: ele já entra no dia, ao vivo, nas horas livres dele (sem elas, o dia todo; o sistema distribui o
+     dia), com o Contabilizar marcado (o estagiário, sem pergunta: as horas dele são só registro); a linha dele aparece na
+     célula na hora, e a caixa ganha o horário e a pergunta. Outro nome no campo põe o novo no lugar */
+  function escolherNaCaixa(item, c, el) {
+    var a = c.a;
+    if (!a || a.acao !== 'neste-dia') return;
+    if (a.escolhido && a.escolhido.cpf !== item.cpf) {
+      a.sairam = (a.sairam || []).concat([a.escolhido.cpf]);
+      RW.escalasDiaNaGrade.tirarNova(a.unidadeId, a.iso, a.escolhido.cpf);
+    }
+    a.escolhido = item;
+    var livres = (item.m.livres || []).length ? item.m.livres.map(copiar) : [{ hi: '08:00', hf: '08:00' }];
+    a.entrada = { livres: livres, periodos: livres.map(copiar), valido: livres.map(copiar), ok: true,
+      banco: item.m.estagio ? null : 'sim' };
+    vivo(a);
+    aplicarEntrada(c);
+    desenharEntrada(c, el);
+  }
+
+  /* cada horário cabe no seu pedaço de horas livres */
+  function entradaOk(e) {
+    var H = api().horas;
+    return e.periodos.every(function (p, i) {
+      var f = H.faixa(p), w = H.faixa(e.livres[i]);
+      return f[1] > f[0] && f[0] >= w[0] && f[1] <= w[1];
+    });
+  }
+
+  /* a entrada no rascunho, ao vivo, e a linha dele na célula; o horário fora das horas livres fica vermelho, o rascunho
+     guarda o último que cabia e o Salvar fica desligado até resolver (ao fechar a caixa, vale o último que cabia) */
+  function aplicarEntrada(c) {
+    var a = c.a, e = a.entrada, item = a.escolhido;
+    e.ok = entradaOk(e);
+    if (e.ok) e.valido = e.periodos.map(copiar);
+    var periodos = e.valido.map(copiar);
+    api().aoVivo(function () {
+      api().aplicarColocacao({ cpf: item.cpf, periodos: periodos, sistema: true, refazer: true, pontual: { contabilizar: e.banco === 'sim' } });
+    }, !e.ok);
+    porNovaDe(a);
+  }
+
+  /* a linha dele na célula, com o horário do rascunho */
+  function porNovaDe(a) {
+    var item = a.escolhido;
+    RW.escalasDiaNaGrade.porNova(a.unidadeId, a.iso, { cpf: item.cpf, grad: item.m.grad, nome: item.m.nome, rg: item.m.rg,
+      periodos: a.entrada.valido.map(function (p) { return { inicio: p.hi, fim: p.hf }; }) });
+  }
+
+  /* a célula do dia foi refeita com a caixa do Adicionar aberta (a leitura pode ser de antes da última mudança): a linha
+     de quem está entrando volta com o horário do rascunho, e a de quem foi trocado no campo sai */
+  function reporNova(c) {
+    var a = c.a;
+    if (!a || a.acao !== 'neste-dia' || !a.entrada || !a.escolhido) return;
+    (a.sairam || []).forEach(function (cpf) { if (cpf !== a.escolhido.cpf) RW.escalasDiaNaGrade.tirarNova(a.unidadeId, a.iso, cpf); });
+    porNovaDe(a);
+  }
+
+  /* o horário (um campo por pedaço de horas livres) e a pergunta do banco de horas, embaixo do campo do nome */
+  function desenharEntrada(c, el) {
+    var a = c.a, e = a.entrada, H = api().horas;
+    var lugar = el.querySelector('.escala-celula-adicionar-entrada'), cartao = RW.tpl('tpl-escala-celula-cartao');
+    if (!lugar || !cartao) return;
+    var horario = cartao.querySelector('.escala-celula-cartao-horario');
+    e.periodos.forEach(function (p, i) {
+      var linha = RW.horario.linha({ hi: p.hi, hf: p.hf, opcoes: H.opcoesHoras([e.livres[i]]), erro: !e.ok, semAcoes: true,
+        aoInicio: function (h) { p.hi = h; mudouEntrada(c, el); },
+        aoFim: function (h) { p.hf = h; mudouEntrada(c, el); } });
+      if (linha) horario.appendChild(linha);
+    });
+    if (e.banco) {
+      var minutos = H.uniao(e.valido.map(H.faixa)).reduce(function (t, f) { return t + f[1] - f[0]; }, 0);
+      pergunta(cartao.querySelector('.escala-celula-pergunta'), { texto: '', sim: L().bancoSim(H.horasTexto(minutos)),
+        nao: RW.mensagens.botoes.naoContabilizar, naoPrimeiro: false, escolha: e.banco }, function (v) { e.banco = v; mudouEntrada(c, el); });
+    }
+    lugar.textContent = '';
+    lugar.appendChild(cartao);
+    lugar.classList.remove('oculto');
+  }
+
+  function mudouEntrada(c, el) {
+    var a = c.a;
+    if (!a || a.acao !== 'neste-dia' || !a.entrada) return;
+    aplicarEntrada(c);
+    desenharEntrada(c, el);
   }
 
   /* Adicionar estagiário: o campo com quem participa do estágio, livre no dia; com mais de um estágio na unidade no dia, a
@@ -519,7 +618,7 @@
       refazer: true, pontual: { contabilizar: !item.m.estagio } };
   }
 
-  /* escolhido o nome: ele entra no dia, e a caixa dele abre quando o dia vem com ele */
+  /* escolhido o estagiário: ele entra no dia, e a caixa dele abre quando o dia vem com ele */
   function escolher(item, c) {
     c.fecharTudo();
     api().mudar(function () { api().aplicarColocacao(entrada(item)); });
@@ -569,12 +668,12 @@
 
   RW.escalasCelulaAcoes = {
     fazer: fazer, menuDoPelotao: menuDoPelotao, prepararMenu: prepararMenu, aoMostrarMenu: aoMostrarMenu, chegou: chegou,
-    encerrar: encerrar, fechar: fechar,
+    encerrar: encerrar, fechar: fechar, reporNova: reporNova,
     /* o molde da caixa do pelotão, que também diz se ela tem o Adicionar extra neste dia (escalas-celula-extra.js) */
     moldeDoPelotao: moldeDoPelotao,
-    /* o Adicionar à guarnição do dia, também com quem está fora da escala já escolhido, e a entrada no dia de quem foi
-       escolhido no Adicionar neste dia (escalas-celula-fora.js) */
-    naGuarnicao: naGuarnicao, escolher: escolher,
-    /* e o que o Oficial de Área do título usa (escalas-celula-oficial.js) */ nesteDia: nesteDia, entrada: entrada, pergunta: pergunta, vivo: vivo
+    /* o Adicionar à guarnição do dia e o Adicionar neste dia, também com quem está fora da escala já escolhido
+       (escalas-celula-fora.js) */
+    naGuarnicao: naGuarnicao, nesteDia: nesteDia,
+    /* e o que o Oficial de Área do título usa (escalas-celula-oficial.js) */ entrada: entrada, pergunta: pergunta, vivo: vivo
   };
 })();

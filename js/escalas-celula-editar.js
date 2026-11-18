@@ -411,7 +411,10 @@
     var a = aberto;
     if (!a) return;
     var d = diaDe(cel);
-    if (mesmo(a, d.unidadeId, d.iso)) acharDeNovo();
+    if (!mesmo(a, d.unidadeId, d.iso)) return;
+    acharDeNovo();
+    /* quem está entrando pelo Adicionar neste dia: a linha dele volta com o horário do rascunho */
+    if (A() && A().reporNova) A().reporNova(contexto());
   }
 
   /* ---------- a página ---------- */

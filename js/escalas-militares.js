@@ -193,8 +193,8 @@
     if (!militares.length) {
       var vazio = RosterWork.tpl('tpl-escala-estado');
       if (vazio) {
-        vazio.textContent = aba ? RosterWork.mensagens.escala.estagiarios.semEstagiario
-          : opVerao ? RosterWork.mensagens.opVerao.semNinguemMes : 'Nenhum militar nesta unidade.';
+        vazio.textContent = aba && aba.vazio ? aba.vazio : aba ? RosterWork.mensagens.escala.estagiarios.semEstagiario
+          : 'Nenhum militar nesta unidade.';
         vazio.classList.add('escala-mil-vazio');
         corpoU.appendChild(vazio);
       }
@@ -377,8 +377,15 @@
           return;
         }
         if (sobreaviso && !((dados[c.id] || {}).militares || []).length) return;   // a unidade sem ninguém na fila
-        if (opVerao && !dados[c.id]) return;   // a Op. Verão: um bloco por companhia com ela no mês, com o nome dela
-        var bloco = montarUnidade(opVerao ? RosterWork.opVeraoMilitares.coluna(c) : c, dados[c.id], dias);
+        /* a Op. Verão: os blocos Militares e Guarda-vidas civis de cada companhia com ela no mês */
+        if (opVerao) {
+          RosterWork.opVeraoMilitares.blocos(c, dados[c.id]).forEach(function (b) {
+            var blocoOp = montarUnidade(b.coluna, { militares: b.pessoas }, dias, b.aba);
+            if (blocoOp) grade.appendChild(blocoOp);
+          });
+          return;
+        }
+        var bloco = montarUnidade(c, dados[c.id], dias);
         if (bloco) grade.appendChild(bloco);
       });
 

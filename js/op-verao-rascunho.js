@@ -119,7 +119,8 @@
     });
   }
 
-  /* o Salvar: os dias de cada companhia num pedido (quase sempre uma só); no fim, a grade lida de novo e o resumo */
+  /* o Salvar: os dias de cada companhia num pedido (quase sempre uma só; não refaz a escala: os pontinhos no Salvar e o
+     cartão das etapas só se demorar); no fim, a grade lida de novo e o resumo */
   function salvar() {
     var dias = C().diasComRascunho();
     if (!dias.length || salvando) return;
@@ -134,7 +135,8 @@
     var cias = Object.keys(porCia), logs = [];
     salvando = true;
     atualizar();
-    var etapas = RW.etapas.acao('opVeraoSalvar', {}, { doServidor: 1, botao: rodape() && rodape().querySelector('.op-verao-salvar') });
+    var etapas = RW.etapas.acao('opVeraoSalvar', {}, { doServidor: 1, atraso: true, semFila: true,
+      botao: rodape() && rodape().querySelector('.op-verao-salvar') });
     function falhou(texto) {
       salvando = false;
       atualizar();

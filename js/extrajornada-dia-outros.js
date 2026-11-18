@@ -3,7 +3,7 @@
    Embaixo da linha do militar, os outros dias dele com a barra de
    horário, para mudar de dia sem sair do painel. Abrem no clique nas
    cotas e sozinhos quando ele passa da cota, com a nota do que tirar
-   (a mesma peça no cartão aberto na célula do calendário). O
+   (a mesma peça na caixa de horário da célula, onde aparecem sempre). O
    dia que tirar gente de onde falta avisa; o de mais de 7 dias atrás
    fica cinza e travado. E, para o administrativo que começa no fim do
    expediente (a quarta), o aviso da falta que esse começo deixa (a
@@ -63,9 +63,9 @@
       .sort(function (x, y) { return x.data < y.data ? -1 : 1; });
   }
 
-  /* a nota de quem passou da cota e os outros dias dele (a data, o pelotão, o aviso e a barra para tirar horário), na
-     área dada: embaixo da linha do painel do dia e no cartão aberto na célula (extrajornada-celula.js; naCelula: a nota
-     curta e a barra compacta) */
+  /* a nota de quem passou da cota (passou > 0) e os outros dias dele (a data, o pelotão, o aviso e a barra para mudar o
+     horário), na área dada: embaixo da linha do painel do dia e na caixa de horário da célula, sempre
+     (extrajornada-celula.js; naCelula: a nota curta e a barra compacta) */
   function listar(area, m, k, passou, naCelula) {
     var outros = outrosDias(m.cpf, k), opcoes = naCelula ? { lugar: 'calendario' } : undefined;
     if (passou > 0) {

@@ -678,12 +678,12 @@
   </div>
 </template>
 
-<!-- a caixa 1 de quem está fora da escala, em vermelho (escalas-celula-fora.js): o Adicionar neste dia (sem sinal: ele já
-     vem escolhido e entra na hora), o Adicionar à guarnição do dia (o mesmo do pelotão, já com ele, com a setinha da caixa
-     2) e o Abrir o painel do dia. A letra é a da guarnição do dia -->
+<!-- a caixa 1 de quem está fora da escala, em vermelho (escalas-celula-fora.js): o Adicionar neste dia e o Adicionar à
+     guarnição do dia (os mesmos do pelotão, já com ele, com a setinha da caixa 2) e o Abrir o painel do dia. A letra é a da
+     guarnição do dia -->
 <template id="tpl-escala-celula-fora">
   <div class="escala-celula-fora">
-    <button type="button" class="dropdown-item" data-acao="neste-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar neste dia</span></button>
+    <button type="button" class="dropdown-item" data-acao="neste-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item" data-acao="guarnicao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg><span>Adicionar à guarnição <span class="escala-celula-letra"></span><span class="escala-celula-sem-letra oculto">do dia</span></span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <div class="dropdown-divisor"></div>
     <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
@@ -777,12 +777,16 @@
   </div>
 </template>
 
-<!-- a caixa 2 do Adicionar neste dia (componente geral-combo-militar): a busca e quem tem horas livres no dia, por pelotão -->
+<!-- a caixa 2 do Adicionar neste dia (componente geral-combo-militar): a busca e quem tem horas livres no dia, por pelotão;
+     escolhido o nome, embaixo, o horário e o banco de horas (o cartão do horário, escalas-celula-editar-acoes.js) -->
 <template id="tpl-escala-celula-adicionar">
-  <div class="dropdown campo-combo escala-celula-adicionar">
-    <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar neste dia" />
-    <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-    <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+  <div class="escala-celula-adicionar-caixa">
+    <div class="dropdown campo-combo escala-celula-adicionar">
+      <input class="campo-entrada campo-entrada--pequeno" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Adicionar neste dia" />
+      <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
+    </div>
+    <div class="escala-celula-adicionar-entrada oculto"></div>
   </div>
 </template>
 

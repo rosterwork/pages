@@ -144,7 +144,7 @@
     var g = guardados[chave];
     return g && performance.now() - g.em < GUARDA_MS ? g : null;
   }
-  function esquecerGuardados() { guardados = {}; adiantarDepois = null; }
+  function esquecerGuardados() { guardados = {}; adiantarDepois = null; junta = null; }
 
   function textoGuardado(chave, rpc, corpo) {
     var g = guardado(chave);
@@ -254,7 +254,36 @@
   function lerPrevia(leitura, args, soAMaisNova) {
     var corpo = corpoPrevia(leitura, args);
     if (!corpo) return null;
-    var chave = soAMaisNova ? leitura : leitura + '|' + JSON.stringify(args || {});
+    var juntas = previaJunta(leitura, args, corpo);
+    if (juntas) return juntas;
+    return enfileirar(soAMaisNova ? leitura : leitura + '|' + JSON.stringify(args || {}), corpo);
+  }
+
+  /* o painel do dia (ou a célula) e o dia na grade com o mesmo rascunho: o ensaio roda uma vez só (escala_previa ›
+     dia_e_grade), e a metade que ninguém pediu ainda fica guardada para quem pedir depois com o mesmo rascunho (a grade
+     meio segundo depois do clique; a célula ao fechar a caixa). Se a leitura junta falha, cada uma é pedida sozinha.
+     null: não é o caso (a grade não mostra o dia, ou lê mais de um dia) */
+  var junta = null;   // { chave, dia, grade: as promessas das duas metades }
+  function previaJunta(leitura, args, corpo) {
+    var iso = corpo.p_data, ids, D = RosterWork.escalasDiaNaGrade;
+    if (leitura === 'ler_distribuicao_dia') ids = D && D.unidadesDoDia ? D.unidadesDoDia(iso) : [];
+    else if (leitura === 'ler_escala_mes' && args && args.p_inicio === iso && args.p_fim === iso) ids = (args.p_unidade_ids || []).map(Number);
+    else return null;
+    if (!ids.length) return null;
+    ids = ids.slice().sort(function (a, b) { return a - b; });
+    var chave = JSON.stringify([corpo.p_unidade_id, iso, corpo.p_dia, corpo.p_ciclo, corpo.p_extra || null, ids]);
+    if (!junta || junta.chave !== chave) {
+      var pedido = enfileirar('dia_e_grade', Object.assign({}, corpo, { p_leitura: 'dia_e_grade', p_args: { p_unidade_ids: ids } }));
+      junta = { chave: chave,
+        dia: pedido.then(function (r) { return r && r.dia ? r.dia : null; }),
+        grade: pedido.then(function (r) { return r && r.grade ? r.grade : null; }) };
+    }
+    var parte = leitura === 'ler_distribuicao_dia' ? junta.dia : junta.grade;
+    return parte.then(function (r) { return r || enfileirar(leitura + '|' + JSON.stringify(args || {}), corpo); });
+  }
+
+  /* a fila das prévias: uma no banco por vez; o pedido igual que ainda espera dá lugar ao mais novo */
+  function enfileirar(chave, corpo) {
     return new Promise(function (resolver) {
       var igual = previasEsperando.filter(function (x) { return x.chave === chave; })[0];
       if (igual) { igual.corpo = corpo; igual.avisar.push(resolver); }

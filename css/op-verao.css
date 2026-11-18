@@ -3,7 +3,8 @@
    A mesma Escala (escalas.html e os mesmos arquivos), com a marca
    .escala-pagina--op-verao na página (js/op-verao.js). Aqui o que ela
    esconde ou troca (os textos, a Minha escala, o Colunas, o Filtros,
-   a Legenda e o Imprimir, e as notas embaixo da barra) e as peças
+   a Legenda e o Imprimir, as notas embaixo da barra e a borda amarela
+   do dia que ainda pode mudar) e as peças
    dela: o título de cada posto, o Sem posto, o dia vazio, os Oficiais
    de Praia no título do dia (um embaixo do outro, com o horário), o
    nome em vermelho de quem está afastado ou de serviço no mesmo
@@ -33,6 +34,13 @@
 .escala-pagina--op-verao #escala-extra-servico-aviso,
 .escala-pagina--op-verao .escala-atualizando {
   display: none;
+}
+
+/* sem a borda amarela do dia da Escala que ainda pode mudar (escalas-atualizando.js): a Op. Verão é lida sempre na hora */
+.escala-pagina--op-verao .escala-mes-celula--atualizando::after,
+.escala-pagina--op-verao .escala-calendario-unidade:has(> .escala-mes-celula--atualizando)::after,
+.escala-pagina--op-verao .escala-mil-dia--atualizando::after {
+  content: none;
 }
 
 /* sem a Minha escala, a divisória que a separava das outras abas sai */

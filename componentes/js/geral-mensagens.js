@@ -323,8 +323,13 @@
     /* ajustes (a Distribuição e o ritmo, bloco 1 dela, ficam em mensagens.novaDistribuicao) */
     /* a página Op. Verão (op-verao*.js e escalas-*-op-verao*.js) */
     opVerao: {
-      /* a página (op-verao.js): sem Operação Verão nas unidades escolhidas, no mês da tela */
+      /* a página (op-verao.js), no mês sem nenhum dia da Operação Verão: o período de cada companhia, ou que ela não tem
+         (para quem a administra, onde ligar); sem companhia nas unidades escolhidas, a frase geral */
       paginaVazia: 'As unidades escolhidas não têm Operação Verão neste mês.',
+      periodo: function (companhia, inicio, fim) { return 'A Operação Verão da ' + companhia + ' vai de ' + inicio + ' a ' + fim + '.'; },
+      semOp: 'A companhia não tem Operação Verão.',
+      semOpVarias: 'As companhias escolhidas não têm Operação Verão.',
+      ligar: 'Para ligar, marque Sim nos Ajustes, na aba Op. Verão.',
       impressao: { titulo: 'Op. Verão', arquivo: 'Op-Verao' },
       /* a célula e o título do dia (op-verao-celula.js) */
       semPosto: function (n) { return 'Sem posto (' + n + ')'; },
@@ -349,10 +354,13 @@
       diaAntigo: function (data) { return 'Os dias antes de ' + data + ' não mudam mais.'; },
       /* o rodapé (op-verao-rascunho.js) */
       descartar: function (n) { return n === 1 ? 'Descartar a alteração não salva?' : 'Descartar as ' + n + ' alterações não salvas?'; },
-      /* a aba Guarda-vidas (op-verao-militares.js) */
+      /* a aba Guarda-vidas (op-verao-militares.js): os dois blocos de cada companhia */
+      blocoMilitares: 'Militares',
+      blocoCivis: 'Guarda-vidas civis',
+      semMilitarMes: 'Nenhum militar na Operação Verão neste mês.',
+      semCivil: 'Nenhum guarda-vidas civil cadastrado.',
       civilSub: 'Guarda-vidas civil',
       oficialDica: 'Oficial de Praia',
-      semNinguemMes: 'Ninguém na Operação Verão neste mês.',
       /* o cadastro do guarda-vidas civil (op-verao-civil.js) */
       civil: {
         pagina: 'Op. Verão',

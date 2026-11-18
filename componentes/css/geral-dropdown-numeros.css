@@ -1,11 +1,13 @@
 /* ============================================================
-   DROPDOWN DE NÚMEROS — gatilho-texto + menu de opções numéricas
-   Estilo ÚNICO compartilhado: o mesmo gatilho enxuto é usado no
-   painel de horas (escalas) e em qualquer outro número (efetivo
-   dos postos, etc.). Reusa o geral-dropdown (abre/fecha/posiciona);
-   o menu é o .dropdown-menu padrão.
+   DROPDOWN DE NÚMEROS — campo + menu de opções numéricas
+   Estilo ÚNICO compartilhado: o campo das horas (geral-horario),
+   que abre a lista no clique e filtra o que se escreve; o menu
+   também serve a outros números (efetivo dos postos, etc.).
+   Reusa o geral-dropdown (abre/fecha/posiciona); o menu é o
+   .dropdown-menu padrão.
    ============================================================ */
 
+/* campo: sem o anel de foco (o foco aparece pela borda, em quem dá a borda: geral-horario) */
 .dropdown-numeros-btn {
   padding: 0 2px;
   border: none;
@@ -14,6 +16,8 @@
   border-radius: var(--raio-pequeno);
   font-size: 11px;
   color: var(--texto-suave);
+  text-align: center;
+  outline: none;
 }
 
 .dropdown-numeros-btn:hover {

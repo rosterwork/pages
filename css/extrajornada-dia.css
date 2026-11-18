@@ -427,7 +427,7 @@
 }
 
 /* a caixa 2 do Mudar o horário: a barra com 8px dos lados (a bolinha de arrastar fica dentro da caixa nas 08h), os
-   campos e o cadeado; quem passou da cota, a nota e os outros dias dele embaixo (a peça do painel do dia) */
+   campos e o cadeado; quem passou da cota, a nota; embaixo, sempre, os outros dias dele (a peça do painel do dia) */
 .extrajornada-caixa-horario {
   display: flex;
   flex-direction: column;
@@ -448,8 +448,9 @@
 .extrajornada-caixa-horario--quer .regua-barra-hora--faixa:not(.regua-barra-hora--sai) { --regua-cor: var(--sucesso); }
 .extrajornada-caixa-horario--nao .regua-barra-hora--faixa:not(.regua-barra-hora--sai) { --regua-cor: var(--erro); }
 
-/* o militar em foco já de extra em outro pelotão no dia: a barra daqui apagada, com a nota que diz para tirar de lá antes */
-.extrajornada-caixa-horario--outro .regua-barra { opacity: 0.35; }
+/* o militar em foco já de extra em outro pelotão no dia: a barra daqui apagada, com a nota que diz para tirar de lá antes
+   (só a barra do dia; as dos outros dias dele, embaixo, ficam acesas) */
+.extrajornada-caixa-horario--outro > .extrajornada-painel-marcas .regua-barra { opacity: 0.35; }
 
 /* o campo de militar (o Adicionar neste dia e o Pôr outro no lugar dele): a lista mais larga que a caixa */
 .extrajornada-adicionar .combo-militar-menu { width: 280px; }

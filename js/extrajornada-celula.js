@@ -5,8 +5,8 @@
    Agenda da Distribuição e dos Ajustes da Extrajornada (aqui) e na
    grade da Escala (escalas-celula-extra.js, que registra a tela dela).
    O nome abre a caixa dele: Mudar o horário (na caixa 2, a barra, os
-   campos e o cadeado; quem passou da cota vê a nota e os outros dias
-   dele), Pôr outro no lugar dele (o escolhido fica com o horário),
+   campos e o cadeado, sempre com os outros dias dele embaixo; quem
+   passou da cota vê também a nota), Pôr outro no lugar dele (o escolhido fica com o horário),
    Remover deste dia (na hora, com o Desfazer), na Escala o Abrir na
    Extrajornada, e Abrir o painel do dia. Na Extrajornada, o pelotão
    abre Adicionar neste dia (o campo de militar com os grupos do
@@ -180,7 +180,8 @@
   }
 
   /* a barra da extra de um militar num dia, para uma caixa (a escolhida, com os campos e o cadeado), na cor do pedido; já
-     de extra em outro pelotão no dia, a barra apagada e a nota; passou da cota, a nota e os outros dias dele */
+     de extra em outro pelotão no dia, a barra apagada e a nota; passou da cota, a nota; embaixo, sempre, os outros dias
+     dele no mês */
   function montarHorario(cpf, uid, k) {
     var m = u().militar(cpf);
     if (!m) return null;
@@ -195,10 +196,8 @@
       var nota = RW.tpl('tpl-escala-nota');
       nota.querySelector('.nota-texto').textContent = msg().jaEmOutro((u().unidade(v.unidade) || {}).nome || '');
       el.appendChild(nota);
-    } else {
-      var passou = G().usadas(m.cpf) - (m.concedidas || 0);
-      if (passou > 0) RW.extrajornadaDiaOutros.listar(el, m, k, passou, true);
     }
+    RW.extrajornadaDiaOutros.listar(el, m, k, outro ? 0 : G().usadas(m.cpf) - (m.concedidas || 0), true);
     return el;
   }
 

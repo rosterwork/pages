@@ -10,8 +10,11 @@
    Também cuida da grade que fica na tela enquanto o mesmo período é
    lido de novo (o Salvar do Ciclo, a prévia da Extrajornada): cada
    modo pergunta mesmaGrade antes de ler e chama desenhou depois.
+   Quem entra pelo Adicionar neste dia da célula aparece na hora, no
+   grupo dos pontuais (porNova), até a leitura do dia chegar com ele.
    API: RosterWork.escalasDiaNaGrade.{ temCelulas, refazendo, parou,
-   previa, salvou, relerPeriodo, mesmaGrade, desenhou }
+   previa, salvou, relerPeriodo, mesmaGrade, desenhou, porNova, tirarNova,
+   semMudanca, unidadesDoDia }
    ============================================================ */
 (function () {
   'use strict';
@@ -21,6 +24,7 @@
   var AREAS = '.escala-mes, .geral-calendario-mes, .escala-colunas, .escala-mil';
   var LIMITE_MS = 5000;   // quem espera a tela ler segue depois disso; a tela termina sozinha
   var pedidos = {};       // por dia: só a leitura mais nova desenha (latest-wins)
+  var lendo = {};         // por dia: a prévia que ainda vem
 
   function corpoDaGrade() { return document.querySelector('.conteudo .pagina-corpo'); }
 
@@ -44,13 +48,17 @@
     return celulas.map(function (c) { return c.dataset.unidadeId; }).filter(function (id, i, lista) { return lista.indexOf(id) === i; });
   }
 
+  /* as unidades da grade à vista no dia (a prévia do painel do dia já traz a grade dele junto; escalas-dados.js) */
+  function unidadesDoDia(iso) { return unidadesDe(celulasDoDia(iso)).map(Number); }
+
   /* ---------- a célula que está sendo refeita ---------- */
 
+  /* também na célula refeita por uma leitura de antes da última mudança (a barra volta, e a próxima leitura tira) */
   function marcarCelula(celula) {
-    if (!celula || celula.classList.contains('escala-mes-celula--refazendo')) return;
+    if (!celula) return;
     celula.classList.remove('escala-mes-celula--pronta');
     celula.classList.add('escala-mes-celula--refazendo');
-    celula.appendChild(RosterWork.tpl('tpl-escala-mes-celula-viva'));
+    if (!celula.querySelector('.escala-mes-celula-viva')) celula.appendChild(RosterWork.tpl('tpl-escala-mes-celula-viva'));
   }
 
   function tirarMarca(celula) {
@@ -62,6 +70,8 @@
 
   function refazendo(unidadeId, iso) { marcarCelula(celulaDe(unidadeId, iso)); }
   function parou(unidadeId, iso) { tirarMarca(celulaDe(unidadeId, iso)); }
+  /* o rascunho voltou ao que a tela mostra antes de a prévia ser pedida: a espera sai, se nenhuma prévia do dia ainda vem */
+  function semMudanca(unidadeId, iso) { if (!lendo[iso]) parou(unidadeId, iso); }
 
   /* o dia que acabou de ficar pronto acende verde e volta sozinho à cor de sempre */
   function acender(celula) {
@@ -69,6 +79,49 @@
     void celula.offsetWidth;   // para a animação recomeçar, se o dia acendeu há pouco
     celula.classList.add('escala-mes-celula--pronta');
     celula.addEventListener('animationend', function () { celula.classList.remove('escala-mes-celula--pronta'); }, { once: true });
+  }
+
+  /* ---------- quem acabou de entrar (o Adicionar neste dia da célula) ---------- */
+
+  /* os grupos da célula que vêm depois do dos pontuais (a ordem do banco, escalas-celula-grupos.js) */
+  var DEPOIS_DO_PONTUAL = ['remanejado', 'extra', 'estagio', 'sobreaviso', 'fora'];
+  /* as linhas dele que ficam: as riscadas e a do Fora da escala (a caixa aberta nela segue a linha nova quando o dia chega) */
+  var FICAM = '.linha-escalado--folga, .linha-escalado--trocado, .linha-escalado--remanejado, .linha-escalado--mudou-dia, '
+    + '.linha-escalado--saiu, .linha-escalado--afastamento, .linha-escalado--fora, .linha-escalado--fora-vermelho, .linha-escalado--fora-aviso';
+
+  /* tira do bloco do dia a linha de serviço dele (e o grupo que fica vazio) */
+  function tirarNova(unidadeId, iso, cpf) {
+    var celula = celulaDe(unidadeId, iso);
+    if (!celula) return;
+    [].forEach.call(celula.querySelectorAll('.linha-escalado[data-cpf="' + cpf + '"]'), function (linha) {
+      if (linha.matches(FICAM)) return;
+      var grupo = linha.parentNode;
+      linha.remove();
+      if (grupo && grupo.classList.contains('escala-grupo') && !grupo.querySelector('.linha-escalado')) grupo.remove();
+    });
+  }
+
+  /* a linha de quem entrou, na hora, no grupo dos pontuais, antes de o dia chegar com ele (a leitura refaz a célula):
+     p = a pessoa como a leitura do mês manda ({ cpf, grad, nome, rg, periodos: [{ inicio, fim }] }) */
+  function porNova(unidadeId, iso, p) {
+    var celula = celulaDe(unidadeId, iso);
+    if (!celula || !RosterWork.escalasCelula || !RosterWork.escalasCelulaGrupos) return;
+    tirarNova(unidadeId, iso, p.cpf);
+    var Cal = RosterWork.escalasCalendario;
+    var curto = !!celula.closest('.geral-calendario-mes') && !!(Cal && Cal.opcoesCelula && Cal.opcoesCelula().postoCurto);
+    var linha = RosterWork.escalasCelula.montarPessoa(Object.assign({ grupo: 'pontual', origem: 'pontual' }, p), curto, null);
+    if (!linha) return;
+    linha.classList.add('linha-escalado--nova');
+    var grupo = celula.querySelector('.escala-grupo[data-grupo="pontual"]');
+    if (!grupo) {
+      grupo = RosterWork.escalasCelulaGrupos.caixa('pontual');
+      if (!grupo) return;
+      var depois = [].filter.call(celula.children, function (g) {
+        return g.classList.contains('escala-grupo') && DEPOIS_DO_PONTUAL.indexOf(g.getAttribute('data-grupo')) >= 0;
+      })[0];
+      celula.insertBefore(grupo, depois || null);
+    }
+    grupo.appendChild(linha);
   }
 
   /* ---------- a régua do gráfico ---------- */
@@ -132,10 +185,14 @@
     var celula = celulaDe(dias[0].unidadeId, iso);
     marcarCelula(celula);
     var dia = lerDia(iso, celulas);
+    lendo[iso] = true;
     dia.leitura.then(function (r) { if (reguaMudou(celulas, r, iso, false)) relerPeriodo(); }, function () {});
     unidadesDe(celulas).forEach(function (id) { RosterWork.escalaAtualizando.atualizarCelula(id, iso, dia.leitura); });
     function fim() {
-      if (!dia.vigente()) return;
+      if (!dia.vigente()) { marcarCelula(celulaDe(dias[0].unidadeId, iso)); return; }
+      delete lendo[iso];
+      /* a célula foi refeita: a de agora (a peça antiga saiu da tela) */
+      celula = celulaDe(dias[0].unidadeId, iso) || celula;
       tirarMarca(celula);
       RosterWork.escalasPainel.mostrarDia();
     }
@@ -185,6 +242,7 @@
 
   window.RosterWork.escalasDiaNaGrade = {
     temCelulas: temCelulas, refazendo: refazendo, parou: parou, previa: previa, salvou: salvou,
-    relerPeriodo: relerPeriodo, mesmaGrade: mesmaGrade, desenhou: desenhou
+    relerPeriodo: relerPeriodo, mesmaGrade: mesmaGrade, desenhou: desenhou, porNova: porNova, tirarNova: tirarNova,
+    semMudanca: semMudanca, unidadesDoDia: unidadesDoDia
   };
 })();

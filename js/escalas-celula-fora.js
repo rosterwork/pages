@@ -13,11 +13,10 @@
    grupo vem por último, embaixo do Sobreaviso, na caixa dos grupos
    (escalas-celula-grupos.js).
    Para quem administra o dia, o nome em vermelho ou em amarelo abre a caixa dele
-   (escalas-celula-editar.js): Adicionar neste dia (só nele, nas horas
-   livres, como o Adicionar do pelotão), Adicionar à guarnição do dia,
-   já com ele (escalas-celula-editar-acoes.js › naGuarnicao, o mesmo do
-   pelotão: vai para o rascunho e o Salvar do rodapé grava), e Abrir
-   o painel do dia.
+   (escalas-celula-editar.js): Adicionar neste dia e Adicionar à
+   guarnição do dia, os do pelotão já com ele (escalas-celula-editar-
+   acoes.js › nesteDia e naGuarnicao: vão para o rascunho e o Salvar do
+   rodapé grava), e Abrir o painel do dia.
    Não cria HTML nem escreve estilo.
    RosterWork.escalasCelulaFora.{ preencher, menu }
    ============================================================ */
@@ -63,33 +62,15 @@
     return el;
   }
 
-  /* Adicionar neste dia: ele já vem escolhido. Com as horas livres dele no dia (a leitura do Adicionar do pelotão), entra
-     como no Adicionar do pelotão e a caixa dele abre no horário; sem horas livres, o aviso. Os pontos só depois de 0,5 s */
-  function nesteDia(botao, c) {
-    var a = c.a;
-    a.acao = 'neste-dia';
-    a.botao = botao;
-    var pontos = setTimeout(function () { if (c.a === a && a.acao === 'neste-dia') a.caixa.espera(true); }, 500);
-    RW.escalasDados.disponiveis(a.unidadeId, a.iso, a.unidadeId, null, false).then(function (r) {
-      clearTimeout(pontos);
-      if (c.a !== a || a.acao !== 'neste-dia') return;
-      a.caixa.espera(false);
-      a.acao = null;
-      if (!r) { RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.escala.falhaCarregar }); return; }
-      var dele = RW.escalasPainelAdicionarListas.dia(r, a.unidadeId).filter(function (x) { return x.cpf === a.cpf; })[0];
-      if (!dele) { RW.avisar({ tipo: 'aviso', mensagem: RW.mensagens.escala.foraSemHoras }); return; }
-      RW.escalasCelulaAcoes.escolher(dele, c);
-    });
-  }
-
-  /* um item: o mesmo de novo não faz nada; outro termina o de antes */
+  /* um item: o mesmo de novo não faz nada; outro termina o de antes. O Adicionar neste dia e o Adicionar à guarnição são
+     os do pelotão, já com ele escolhido (escalas-celula-editar-acoes.js) */
   function fazer(acao, botao, c) {
     var a = c.a, A = RW.escalasCelulaAcoes;
     if (!a || !a.caixa || !api().livre()) return;
     if (a.botao === botao && a.acao) return;
     A.encerrar(c);
     if (acao === 'painel') { c.fecharTudo('guardar'); c.abrirPainel(null); }
-    else if (acao === 'neste-dia') nesteDia(botao, c);
+    else if (acao === 'neste-dia') A.nesteDia(botao, c, null, a.cpf);
     else if (acao === 'guarnicao') A.naGuarnicao(botao, c, a.cpf);
   }
 

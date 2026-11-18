@@ -52,6 +52,8 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#imprimir-escala">Imprimir a escala</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#sobreaviso">O sobreaviso</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#sobreaviso-mudar">Mudar o sobreaviso</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#op-verao">A Operação Verão</a></li>
+                <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#op-verao-lancar">Lançar a Operação Verão</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#guarnicoes">As guarnições (aba Guarnições)</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#distribuicao-dia">Ajustar o dia</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#estagiarios">Os estagiários</a></li>
@@ -112,6 +114,7 @@
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#feriados">Os feriados</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#estagios">Os estágios</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ajustes-sobreaviso">O sobreaviso</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ajustes-op-verao">A Operação Verão</a></li>
               </ul>
             </li>
             <li>
@@ -264,6 +267,10 @@
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-sobreaviso"/></svg></span>
                   <span class="manual-legenda-texto"><strong>Sobreaviso.</strong> Quem fica de sobreaviso em cada dia e a fila da companhia. Você <strong>consulta</strong>; o sistema monta a fila sozinho.</span>
+                </li>
+                <li>
+                  <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-boia"/></svg></span>
+                  <span class="manual-legenda-texto"><strong>Op. Verão.</strong> Os guarda-vidas da Operação Verão em cada dia, por posto, e os Oficiais de Praia. Você <strong>consulta</strong>; quem lança é o administrador da companhia.</span>
                 </li>
                 <li>
                   <span class="manual-legenda-marca"><svg class="icone" width="20" height="20" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg></span>
@@ -917,6 +924,56 @@
                   <li><strong>Abrir o painel do dia</strong>: o painel do dia, com o bloco <strong>Sobreaviso</strong> na aba Funções, que tem o mesmo menu no lápis de cada nome e o botão <strong>Adicionar ao sobreaviso</strong>.</li>
                 </ul>
                 <p>Na linha amarela do que falta, ou num dia vazio da página Sobreaviso, o clique abre a caixa com o <strong>Adicionar ao sobreaviso</strong>. A grade mostra a mudança na hora, e o <strong>Salvar</strong> do rodapé grava tudo de uma vez. Quem entrou, saiu ou teve o horário mudado recebe o aviso no sino. O que você põe ou tira, o sistema não desfaz depois. As regras da fila ficam nos <strong>Ajustes</strong>, na aba <strong>Sobreaviso</strong>.</p>
+              </div>
+
+              <h3 id="op-verao">A Operação Verão</h3>
+              <p>A <strong>Operação Verão</strong> é o reforço dos guarda-vidas na praia, numa temporada da companhia. Quem vai para ela sai da escala nesses dias, pelo afastamento <strong>Op. Verão</strong> ou <strong>Litoral</strong> (veja <strong>Afastamentos</strong>), e os dias da praia ficam numa página própria, a <strong>Op. Verão</strong> do menu (no celular, no <strong>Mais</strong>). É só um registro: não conta horas, folga, extra nem pontuação.</p>
+              <p><strong>A página.</strong> É a mesma Escala, só com a Operação Verão, com as abas <strong>Mês</strong> (Agenda e Calendário) e <strong>Guarda-vidas</strong>. Em cada dia, os guarda-vidas aparecem por posto, cada um com a <strong>boia</strong> e o horário; quem ainda não tem posto fica no <strong>Sem posto</strong>, em amarelo, por último. No título do dia ficam os <strong>Oficiais de Praia</strong>, com o horário de cada um; sem nenhum, aparece "Sem Oficial de Praia", em vermelho.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/op-verao-dia.png" width="340" height="299" alt="Um dia da página Op. Verão: os Oficiais de Praia com o horário no título do dia (1), o nome do posto (2) e um guarda-vidas com a boia e o horário (3)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Os Oficiais de Praia do dia, com o horário</li>
+                    <li>O posto</li>
+                    <li>O guarda-vidas, com a boia e o horário</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>O guarda-vidas civil aparece como <strong>GVC</strong> e o primeiro nome. O nome em vermelho quer dizer que o militar, naquele dia, está afastado ou de serviço na escala no mesmo horário; parando o mouse no nome, aparece o porquê.</p>
+              <p><strong>A aba Guarda-vidas.</strong> O mês de cada um numa linha, os militares num bloco e os guarda-vidas civis em outro, com a boia e o horário nos dias de trabalho e, embaixo de cada bloco, quantos trabalham em cada dia.</p>
+              <p class="manual-nota">No mês sem nenhum dia da Operação Verão, a página diz o período dela, como "A Operação Verão da 2ªCIBM vai de 19/12/2026 a 14/02/2027.".</p>
+
+              <div class="manual-admin manual-zona-admin">
+                <h3 id="op-verao-lancar">Lançar a Operação Verão <span class="manual-selo-admin">Apenas administradores</span></h3>
+                <p>Quem lança os dias é o administrador da companhia. O período, os postos e os turnos ficam nos <strong>Ajustes</strong>, na aba <strong>Op. Verão</strong>. Na página, clique no dia, e a caixa abre ao lado (no celular, embaixo):</p>
+                <figure class="manual-figura manual-figura--cheia">
+                  <img src="manual/imagens/op-verao-adicionar.png" width="730" height="243" alt="O dia clicado na página Op. Verão e as caixas ao lado: os turnos e o Horário personalizado (1), o campo de quem trabalha (2) e o Cadastrar guarda-vidas civil (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Os turnos e o Horário personalizado</li>
+                      <li>Quem trabalha</li>
+                      <li>Cadastrar guarda-vidas civil</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <ul class="manual-lista">
+                  <li><strong>Adicionar no dia</strong>: escolha o turno (Manhã, Tarde ou Dia todo) ou o <strong>Horário personalizado</strong> e, na caixa ao lado, quem trabalha. A lista vem em grupos: quem está em Op. Verão no dia, os guarda-vidas civis e os outros militares da companhia, com "de serviço" ao lado de quem está na escala naquele horário. Quem já está no dia num horário que cruza aparece apagado, e quem está afastado por outro motivo não aparece.</li>
+                  <li><strong>Cadastrar guarda-vidas civil</strong>: abre o cadastro no painel da direita, com o nome completo e o RG ou o CPF. Cadastrado, ele já entra no dia, no horário escolhido.</li>
+                </ul>
+                <p>Clique no nome de quem trabalha para mudar:</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/op-verao-nome.png" width="440" height="243" alt="O nome de um guarda-vidas clicado e a caixa ao lado com Pôr num posto (1), Mudar o horário (2) e Remover do dia (3)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>Pôr num posto</li>
+                      <li>Mudar o horário</li>
+                      <li>Remover do dia</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p>No título do dia, o "Sem Oficial de Praia" abre o <strong>Adicionar Oficial de Praia</strong> (o turno e os oficiais da companhia). No nome de um Oficial de Praia: <strong>Pôr outro no lugar dele</strong>, <strong>Mudar o horário</strong>, <strong>Adicionar outro Oficial de Praia</strong> e <strong>Remover do dia</strong>.</p>
+                <p>A grade mostra a mudança na hora, com a borda tracejada no dia, e o <strong>Salvar</strong> do rodapé grava tudo de uma vez e abre o resumo; o <strong>Desfazer</strong> e o <strong>Refazer</strong> voltam e refazem cada passo. A mesma pessoa não pode ter dois horários que se cruzam no mesmo dia. Os dias de mais de 7 dias atrás não mudam.</p>
+                <p><strong>Os guarda-vidas civis.</strong> Na aba <strong>Guarda-vidas</strong>, o botão <strong>Cadastrar guarda-vidas civil</strong> da barra cadastra um novo, e o clique no nome de um civil abre o cadastro dele, para mudar o nome ou o documento, ou para <strong>Remover do cadastro</strong>: os dias em que ele já trabalhou continuam, e ele sai da lista dos dias novos. O civil não tem acesso ao sistema.</p>
               </div>
 
               <div class="manual-admin manual-zona-admin">
@@ -2143,6 +2200,26 @@
                 <li><strong>Antigos e modernos no mesmo dia</strong>: <strong>Sim</strong>, em cada dia, um da metade mais antiga e um da metade mais moderna; <strong>Não</strong>, só a vez da fila.</li>
               </ul>
               <p>O <strong>Salvar</strong> do rodapé pergunta a partir de quando vale, já com o próximo dia de serviço, e refaz a fila a partir dessa data. Se você mudou só o <strong>Onde aparece</strong>, o Salvar grava sem perguntar a data e a fila não muda. Com uma pergunta sem resposta, o Salvar fica desligado. Para trocar um nome num dia, use a Escala (veja <strong>Mudar o sobreaviso</strong>).</p>
+              <h3 id="ajustes-op-verao">A Operação Verão</h3>
+              <p>A aba <strong>Op. Verão</strong>, que só o administrador da companhia vê, diz se a companhia tem Operação Verão e como ela é. Na barra fica a companhia, e as perguntas são quatro:</p>
+              <figure class="manual-figura manual-figura--cheia">
+                <img src="manual/imagens/ajustes-op-verao.png" width="670" height="786" alt="A aba Op. Verão dos Ajustes com as quatro perguntas: se a companhia tem Operação Verão (1), o período (2), os postos (3) e os turnos (4)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>A companhia tem Operação Verão</li>
+                    <li>O período</li>
+                    <li>Os postos</li>
+                    <li>Os turnos</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <ul class="manual-lista">
+                <li><strong>A companhia tem Operação Verão</strong>: Sim ou Não. Com o Não, a página Op. Verão fica vazia, mas o que foi lançado fica guardado e volta com o Sim; o sistema pergunta antes.</li>
+                <li><strong>O período</strong>: o primeiro e o último dia. O sistema não aceita um período que deixe de fora dias que já têm gente lançada; ele diz quais dias, para você tirar antes.</li>
+                <li><strong>Os postos</strong>: um por linha, com a lixeira, e o <strong>Adicionar posto</strong>. O posto removido sai da lista, e os dias que já tinham alguém nele continuam mostrando o nome.</li>
+                <li><strong>Os turnos</strong>: Manhã, Tarde e Dia todo, com o horário, em horas inteiras. Mudar um turno vale para os próximos lançamentos; quem já foi lançado continua no horário de antes.</li>
+              </ul>
+              <p>O <strong>Salvar</strong> do rodapé grava tudo e abre o resumo. Para lançar quem trabalha em cada dia, veja <strong>Lançar a Operação Verão</strong>, na Escala.</p>
             </section>
 
             <section class="manual-secao" id="usuarios">
@@ -2382,8 +2459,8 @@
             <section class="manual-secao" id="afastamentos">
               <h2>Afastamentos</h2>
               <h3 id="ver-afastamentos">Ver os afastamentos</h3>
-              <p>Os afastamentos têm uma página própria, <strong>Afastamentos</strong>, no menu logo depois de Folgas (no celular, no <strong>Mais</strong>). Um afastamento é o que tira o militar da escala por um período: férias, atestado, licença, dispensa, operação, curso e o que mais houver. Cada um tem um <strong>nome</strong>, que é o que aparece no dia, e um <strong>período</strong>, do primeiro ao último dia. O nome vem de uma lista (<strong>Férias</strong>, <strong>Atestado</strong>, <strong>Licença</strong>, <strong>Dispensa</strong>, <strong>Op. Verão</strong> e <strong>F. Tarefa</strong>) ou é escrito pelo administrador, com até 10 letras.</p>
-              <p>Nos dias do afastamento, o militar sai dos serviços. Conforme o afastamento, ele sai também das trocas, da extrajornada e do sobreaviso: as férias tiram de tudo, e a Op. Verão e a F. Tarefa, em geral, deixam trocar e tirar extra.</p>
+              <p>Os afastamentos têm uma página própria, <strong>Afastamentos</strong>, no menu logo depois de Folgas (no celular, no <strong>Mais</strong>). Um afastamento é o que tira o militar da escala por um período: férias, atestado, licença, dispensa, operação, curso e o que mais houver. Cada um tem um <strong>nome</strong>, que é o que aparece no dia, e um <strong>período</strong>, do primeiro ao último dia. O nome vem de uma lista (<strong>Férias</strong>, <strong>Atestado</strong>, <strong>Licença</strong>, <strong>Dispensa</strong>, <strong>Op. Verão</strong>, <strong>Litoral</strong> e <strong>F. Tarefa</strong>) ou é escrito pelo administrador, com até 10 letras.</p>
+              <p>Nos dias do afastamento, o militar sai dos serviços. Conforme o afastamento, ele sai também das trocas, da extrajornada e do sobreaviso: as férias tiram de tudo; a Op. Verão, a da unidade, deixa trocar, tirar extra e ficar de sobreaviso; o Litoral, a Op. Verão no litoral, tira de tudo; e a F. Tarefa, em geral, deixa trocar e tirar extra. Os dias da praia ficam na página Op. Verão (veja <strong>A Operação Verão</strong>, na Escala).</p>
               <p><strong>Ano.</strong> Embaixo do título ficam as abas <strong>Ano</strong>, <strong>Mês</strong> e <strong>Calendário</strong> (1). No Ano e no Mês, as unidades escolhidas no seletor aparecem na árvore de unidades, e cada uma traz o seu efetivo numa grade, um militar por linha. No Ano, cada mês é uma coluna, com o mês de hoje em destaque, e cada afastamento aparece num selo listrado no mês dele, com o nome e os dias daquele mês (3); o que passa de um mês para o outro aparece nos dois. Ao lado do nome do militar, o número diz quantos dias ele ficou afastado no ano (4). Um clique no nome do mês, no alto da grade, abre <strong>Ver o mês</strong> e <strong>Ver o calendário</strong>, que levam àquele mês.</p>
               <figure class="manual-figura manual-figura--cheia">
                 <img src="manual/imagens/afastamentos-ano.png" width="1168" height="470" alt="A aba Ano: as abas Ano, Mês e Calendário (1), o ano na barra (2), o atestado de março do 3ºSgt. Ventura (3) e os dias que ele ficou afastado no ano (4)." />
@@ -2457,7 +2534,7 @@
                   </figcaption>
                 </figure>
                 <p><strong>O que já passou fica como está.</strong> Dá para mudar até uma semana para trás, como em todo o sistema. O afastamento que terminou antes disso abre só com o aviso e o botão do painel. O que começou antes disso muda só o fim e o nome, e não pode ser removido.</p>
-                <p><strong>Ao salvar.</strong> O que você responde, na caixa e no painel, de um ou mais militares, fica guardado até o Salvar, e a grade já mostra como vai ficar. O rodapé aparece com a primeira alteração: <strong>Desfazer</strong> e <strong>Refazer</strong> (também pelo Ctrl+Z e pelo Ctrl+Y), <strong>Cancelar</strong>, que joga fora o que não foi salvo, e <strong>Salvar</strong>. O Salvar fica desligado enquanto algum afastamento tem problema (sem nome, sem as duas datas, com o fim antes do início ou cruzando com outro do mesmo nome); a nota embaixo das perguntas diz qual. Ao salvar, o sistema grava todos de uma vez e refaz a escala desde o primeiro dia que mudou. Antes, se nos dias novos o militar já tem uma troca, uma extrajornada ou uma folga, ou se ele vai sair da escala, o sistema mostra a lista, por militar, e pergunta se você continua. Depois, o resumo abre, e a mudança fica no Histórico e nas Alterações na ficha do militar.</p>
+                <p><strong>Ao salvar.</strong> O que você responde, na caixa e no painel, de um ou mais militares, fica guardado até o Salvar, e a grade já mostra como vai ficar. O rodapé aparece com a primeira alteração: <strong>Desfazer</strong> e <strong>Refazer</strong> (também pelo Ctrl+Z e pelo Ctrl+Y), <strong>Cancelar</strong>, que joga fora o que não foi salvo, e <strong>Salvar</strong>. O Salvar fica desligado enquanto algum afastamento tem problema (sem nome, sem as duas datas, com o fim antes do início ou cruzando com outro do mesmo nome); a nota embaixo das perguntas diz qual. Ao salvar, o sistema grava todos de uma vez e refaz a escala desde o primeiro dia que mudou. Enquanto isso, a caixa <strong>Salvando os afastamentos</strong> diz o que está fazendo; quando a mudança não mexe na escala (só o nome, por exemplo), o Salvar mostra os três pontinhos e a caixa só aparece se demorar. Antes, se nos dias novos o militar já tem uma troca, uma extrajornada ou uma folga, ou se ele vai sair da escala, o sistema mostra a lista, por militar, e pergunta se você continua. Depois, o resumo abre, e a mudança fica no Histórico e nas Alterações na ficha do militar.</p>
                 <p><strong>Quem sai da guarnição volta pela Escala.</strong> Com <strong>Sai da guarnição</strong>, o militar sai da escala a partir do primeiro dia do afastamento, e as trocas e folgas dele dali em diante são canceladas, como quando ele é tirado da guarnição na Escala; as extras dele continuam. No fim, ele não volta sozinho: você o põe de novo numa guarnição pela aba <strong>Guarnições</strong> do painel do dia, na Escala, e a Escala lembra a volta numa nota amarela. Por isso, encurtar ou apagar esse afastamento não devolve o militar à escala: antes de salvar, o sistema avisa que ele continua fora, e os outros administradores da área recebem o aviso <strong>Militar fora da escala</strong> no sino.</p>
               </div>
             </section>

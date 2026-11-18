@@ -44,7 +44,7 @@
   color: var(--texto-fraco);
 }
 
-/* os campos com borda e fundo branco (parecem o que são: botões que abrem a lista de horas);
+/* os campos com borda e fundo branco (abrem a lista de horas e aceitam a hora escrita);
    todos da mesma largura, então as setas de linhas diferentes ficam uma embaixo da outra */
 .horario .dropdown-numeros-btn,
 .horario-fixo {
@@ -62,7 +62,13 @@
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.horario .dropdown-numeros-btn:not(:disabled):hover {
+/* o campo de escrever tem a largura certa (sem ela, o navegador o faz largo) */
+.horario .dropdown-numeros-btn {
+  width: 48px;
+}
+
+.horario .dropdown-numeros-btn:not(:disabled):hover,
+.horario .dropdown-numeros-btn:focus {
   border-color: var(--texto-forte);
   background-color: var(--fundo-superficie);
 }
@@ -77,7 +83,8 @@
 
 /* horário com conflito (ex.: cruza o que o militar já tem no dia): os dois campos vermelhos */
 .horario--erro .dropdown-numeros-btn,
-.horario--erro .dropdown-numeros-btn:not(:disabled):hover {
+.horario--erro .dropdown-numeros-btn:not(:disabled):hover,
+.horario--erro .dropdown-numeros-btn:focus {
   border-color: var(--erro);
   color: var(--erro);
 }

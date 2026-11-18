@@ -200,8 +200,8 @@
       variante: lugar === 'painel' || lugar === 'caixa' ? null : 'compacta',
       aoArrastar: function (f) {
         if (campos.length < 2) return;
-        campos[0].textContent = RW.regua.textoHora(f.ini);
-        campos[1].textContent = RW.regua.textoHora(f.fim);
+        campos[0].value = RW.regua.textoHora(f.ini);
+        campos[1].value = RW.regua.textoHora(f.fim);
       } });
     if (!barra) return;
     /* as horas de serviço de parte do dia no fundo, em cinza (o que já existe no dia) */

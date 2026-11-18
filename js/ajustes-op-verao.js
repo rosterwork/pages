@@ -213,14 +213,14 @@
     enviar();
   }
 
-  /* grava as respostas (o cartão das etapas enquanto grava e a tela lê de novo); no fim, o resumo. Com o Não, só ele vai
-     (o período, os postos e os turnos ficam como estavam) */
+  /* grava as respostas (não refaz a escala: os pontinhos no Salvar e o cartão das etapas só se demorar) e a tela lê de
+     novo; no fim, o resumo. Com o Não, só ele vai (o período, os postos e os turnos ficam como estavam) */
   function enviar() {
     var corpo = cfg.ativa
       ? { ativa: true, inicio: cfg.inicio, fim: cfg.fim, turnos: cfg.turnos,
           postos: cfg.postos.map(function (p) { return { id: p.id, nome: p.nome.trim() }; }) }
       : { ativa: false };
-    var etapas = RW.etapas.acao('ajustesOpVerao', {}, { doServidor: 1 });
+    var etapas = RW.etapas.acao('ajustesOpVerao', {}, { doServidor: 1, atraso: true, semFila: true, botao: el.salvar });
     RW.rpc('ajustes_op_verao_salvar', { p_unidade: dados.companhia.id, p_config: corpo }).then(function (r) {
       if (!r || !r.success) {
         etapas.parar();

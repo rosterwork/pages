@@ -3,10 +3,11 @@
    A mesma grade do Militares (escalas-militares.js: as pessoas × os
    dias do mês), um bloco por companhia com Operação Verão no mês (o
    nome dela), com a leitura da Op. Verão (op_verao_mes) e dos
-   guarda-vidas civis (guarda_vidas_civis_listar): as linhas são os
-   militares que trabalham no mês, pelo posto ou graduação (do mesmo,
-   na ordem em que aparecem nos dias, a do banco) e depois os
-   guarda-vidas civis do cadastro, pelo nome;
+   guarda-vidas civis (guarda_vidas_civis_listar), em dois blocos por
+   companhia, cada um com o seu total do dia: Militares (quem trabalha
+   no mês, pelo posto ou graduação; do mesmo, na ordem em que aparecem
+   nos dias, a do banco) e Guarda-vidas civis (os do cadastro, pelo
+   nome);
    cada dia de trabalho traz a boia e o horário. A mudança ainda não
    salva (op-verao-rascunho.js) vale.
    Para o administrador da companhia, o nome do guarda-vidas civil abre
@@ -14,7 +15,7 @@
    o Cadastrar guarda-vidas civil (o css/op-verao.css o mostra só nesta
    aba). O dia não abre nada.
    Não cria HTML (clona os moldes) nem escreve estilo.
-   RosterWork.opVeraoMilitares.{ ler, chips, linha, coluna, vazia }
+   RosterWork.opVeraoMilitares.{ ler, chips, linha, blocos, vazia }
    ============================================================ */
 (function () {
   'use strict';
@@ -22,7 +23,6 @@
   var RW = window.RosterWork = window.RosterWork || {};
   var cias = {};         // a última leitura: companhia -> { nome, pode, civis: { id: o civil } }
   var porUnidade = {};   // a unidade do bloco -> a companhia
-  var comOp = false;     // alguma companhia da tela tem Operação Verão no mês
   var graus = null;      // a antiguidade de cada posto e graduação (lida uma vez): a ordem dos militares
 
   function msg() { return RW.mensagens.opVerao; }
@@ -65,7 +65,6 @@
     var saida = {};
     cias = {};
     porUnidade = {};
-    comOp = ordem.length > 0;
     ordem.forEach(function (cia, i) {
       var c = porCia[cia], lida = civis[i] && civis[i].ok ? civis[i] : { civis: [], pode_editar: false };
       var info = { nome: (lida.companhia && lida.companhia.nome) || '', pode: !!lida.pode_editar, civis: {} };
@@ -96,7 +95,7 @@
       var deles = lista.filter(function (p) { return p.civil; }).sort(function (a, b) {
         return String(a.nomeCompleto || a.nome).localeCompare(String(b.nomeCompleto || b.nome), 'pt-BR');
       });
-      saida[c.uid] = { militares: militares.concat(deles) };
+      saida[c.uid] = { militares: militares, civis: deles };
     });
     barra();
     return saida;
@@ -155,14 +154,20 @@
     b.addEventListener('click', function () { cadastro(b.getAttribute('data-companhia'), null); });
   }
 
-  /* o bloco da companhia: o nome dela (e a cidade) */
-  function coluna(c) {
+  /* os blocos da companhia da unidade (nenhum: ela não tem Operação Verão no mês): Militares e Guarda-vidas civis, cada um
+     com o nome da companhia ao lado e a frase própria quando vazio */
+  function blocos(c, d) {
+    if (!d) return [];
     var info = RW.paginas.escalas && RW.paginas.escalas.companhiaDe ? RW.paginas.escalas.companhiaDe(c.id) : null;
-    return info ? Object.assign({}, c, { nome: info.nome, nomeCompleto: info.nome, cidade: info.cidade }) : c;
+    var col = info ? Object.assign({}, c, { nome: info.nome, nomeCompleto: info.nome, cidade: info.cidade }) : c;
+    return [
+      { coluna: col, pessoas: d.militares || [], aba: { titulo: msg().blocoMilitares, vazio: msg().semMilitarMes } },
+      { coluna: col, pessoas: d.civis || [], aba: { titulo: msg().blocoCivis, vazio: msg().semCivil } }
+    ];
   }
 
-  /* a aba sem bloco: sem Operação Verão no mês, ou com ela e ninguém */
-  function vazia() { return comOp ? msg().semNinguemMes : msg().paginaVazia; }
+  /* a aba sem bloco (nenhuma companhia com Operação Verão no mês): a frase da página (op-verao.js) */
+  function vazia() { return RW.paginasFiltradas['op-verao'].vazia(); }
 
-  RW.opVeraoMilitares = { ler: ler, chips: chips, linha: linha, coluna: coluna, vazia: vazia };
+  RW.opVeraoMilitares = { ler: ler, chips: chips, linha: linha, blocos: blocos, vazia: vazia };
 })();

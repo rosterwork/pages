@@ -308,16 +308,33 @@
   display: none;
 }
 
-/* o dia sendo refeito (escalas-dia-na-grade.js): os nomes apagados, a barra se enchendo no lugar do gráfico, e o dia
-   salvo acende verde e volta sozinho à cor de sempre (a animação só diz o começo: o fim é a cor da própria célula, também
-   a da selecionada) */
+/* o dia sendo refeito (escalas-dia-na-grade.js): os nomes apagados, com a barra passando por cima, a barra se enchendo no
+   lugar do gráfico, e o dia salvo acende verde e volta sozinho à cor de sempre (a animação só diz o começo: o fim é a cor
+   da própria célula, também a da selecionada). A linha de quem acabou de entrar pelo Adicionar neste dia fica como está */
 .escala-mes-celula--refazendo {
   position: relative;
 }
 
-.escala-mes-celula--refazendo > .linha-escalado,
-.escala-mes-celula--refazendo > .escala-grupo > .linha-escalado {
+.escala-mes-celula--refazendo > .linha-escalado:not(.linha-escalado--nova),
+.escala-mes-celula--refazendo > .escala-grupo > .linha-escalado:not(.linha-escalado--nova) {
+  position: relative;
+  overflow: hidden;
   opacity: 0.45;
+}
+
+.escala-mes-celula--refazendo > .linha-escalado:not(.linha-escalado--nova)::after,
+.escala-mes-celula--refazendo > .escala-grupo > .linha-escalado:not(.linha-escalado--nova)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--fundo-medio), transparent);
+  transform: translateX(-100%);
+  animation: escala-mes-nome-refazendo 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes escala-mes-nome-refazendo {
+  to { transform: translateX(100%); }
 }
 
 .escala-mes-celula--refazendo > .escala-mes-grafico {
@@ -343,6 +360,11 @@
 @media (prefers-reduced-motion: reduce) {
   .escala-mes-celula--pronta {
     animation-timing-function: steps(1, end);
+  }
+
+  .escala-mes-celula--refazendo > .linha-escalado:not(.linha-escalado--nova)::after,
+  .escala-mes-celula--refazendo > .escala-grupo > .linha-escalado:not(.linha-escalado--nova)::after {
+    animation: none;
   }
 }
 

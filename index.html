@@ -922,11 +922,14 @@
     <div class="arvore-estado">Não foi possível carregar. Atualize a página e tente de novo.</div>
   </template>
 
-  <!-- MOLDES: dropdown de números (componente geral-dropdown-numeros — escalas e postos) -->
+  <!-- MOLDES: dropdown de números (componente geral-dropdown-numeros — escalas e postos).
+       O campo da hora: clica e escolhe na lista, ou escreve para filtrar; a linha de baixo aparece quando nada casa -->
   <template id="tpl-dropdown-numeros">
     <span class="dropdown dropdown-numeros">
-      <button type="button" class="dropdown-numeros-btn"></button>
-      <div class="dropdown-menu dropdown-numeros-menu"></div>
+      <input type="text" class="dropdown-numeros-btn" maxlength="5" inputmode="numeric" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-label="Hora" />
+      <div class="dropdown-menu dropdown-numeros-menu">
+        <div class="dropdown-item dropdown-item--inativo dropdown-numeros-vazio oculto">Nenhuma hora com esse número</div>
+      </div>
     </span>
   </template>
 
@@ -4798,7 +4801,7 @@
   </template>
 
   <!-- a caixa 2 do Mudar o horário (extrajornada-celula.js): a barra da extra com os campos e o cadeado
-       (extrajornada-barra.js) e, para quem passou da cota, a nota e os outros dias dele (extrajornada-dia-outros.js) -->
+       (extrajornada-barra.js), a nota de quem passou da cota e, sempre, os outros dias dele (extrajornada-dia-outros.js) -->
   <template id="tpl-extrajornada-caixa-horario">
     <div class="extrajornada-caixa-horario">
       <span class="extrajornada-painel-marcas"></span>

@@ -197,5 +197,7 @@
     if (corpo) corpo.textContent = '';
   }
 
-  window.RosterWork.escalasCalendario = { renderizar: renderizar, atualizarCelula: atualizarCelula, limpar: limpar };
+  window.RosterWork.escalasCalendario = { renderizar: renderizar, atualizarCelula: atualizarCelula, limpar: limpar,
+    /* as opções da célula do calendário na tela (a linha que entra na hora usa o mesmo posto curto; escalas-dia-na-grade.js) */
+    opcoesCelula: function () { return celulaAtual; } };
 })();

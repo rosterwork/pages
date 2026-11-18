@@ -135,6 +135,19 @@
 
 .escala-celula-adicionar .combo-militar-menu { width: 280px; }
 
+/* a caixa 2 do Adicionar neste dia: o campo de militar e, escolhido o nome, o horário (um campo por pedaço de horas
+   livres, um embaixo do outro) e a pergunta do banco de horas */
+.escala-celula-adicionar-caixa {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.escala-celula-adicionar-entrada .escala-celula-cartao-horario {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 /* a caixa 2 do Adicionar extra neste dia: o campo de militar e, escolhido o nome, a barra dele embaixo
    (.extrajornada-caixa-horario, extrajornada-dia.css) */
 .escala-celula-extra {

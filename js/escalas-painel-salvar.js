@@ -219,15 +219,19 @@
   }
 
   /* o rascunho mudou: o rodapé na hora, e as telas meio segundo depois do último clique (cada uma pede a prévia), só se
-     o que elas mostram mudou. Durante a gravação as telas esperam: elas leem no fim dela, e a recusa volta a passar aqui */
+     o que elas mostram mudou. O dia mexido já mostra a espera no clique (escalas-dia-na-grade.js), também quando a grade
+     relê o período todo; se o rascunho voltou ao que a tela mostra, a espera sai. Durante a gravação as telas esperam:
+     elas leem no fim dela, e a recusa volta a passar aqui */
   function mudou() {
     atualizar();
     if (espera) clearTimeout(espera);
+    var c = contexto(), D = RW.escalasDiaNaGrade;
+    if (!salvando && c && D && marcaDaPrevia() !== mostrado) D.refazendo(c.unidadeId, c.iso);
     espera = setTimeout(function () {
       espera = null;
       if (salvando) return;
       var marca = marcaDaPrevia();
-      if (marca === mostrado) return;
+      if (marca === mostrado) { if (c && D && !linhaNoRodape) D.semMudanca(c.unidadeId, c.iso); return; }
       var dias = diasDaPrevia(mostrado, marca);
       mostrado = marca;
       window.dispatchEvent(new CustomEvent('rosterwork_escala_previa', { detail: { dias: dias } }));
