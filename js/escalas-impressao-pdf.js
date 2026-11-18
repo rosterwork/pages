@@ -7,8 +7,8 @@
    escalas-impressao-legenda.js). O conteúdo é o do painel do dia,
    na mesma ordem (Funções especiais, as instalações, Extrajornada,
    Estagiários, Sobreaviso, as viaturas, sem função, observações),
-   no padrão de blocos (Guia visual › Impressão da escala): a unidade é um bloco cinza com o
-   título dentro e cada posto um bloquinho branco com contorno fino,
+   no padrão de blocos (Guia visual › Impressão da escala): a unidade é um bloco cinza com
+   contorno fino e o título dentro, e cada posto um bloquinho branco com contorno fino,
    a linha do título de uma borda à outra e a linha fina entre as
    funções (e entre os grupos das observações), antes da borda.
    O PDF é desenhado aqui, como o canvas do gráfico (exceção REGRAS
@@ -51,7 +51,7 @@
   var LOGO_LARGURA = 74;
   var LOGO_MARGEM = [40, 22, 0, 0];
   var RODAPE_MARGEM = [40, 16, 40, 0];
-  var COLUNAS = [110, '*', 90];           // função · militar · horário
+  var COLUNAS = [80, '*', 70];            // função · militar · horário (o mais largo, "00:00 → 00:00")
   var SETA_LARGURA = 8;
   var SETA_MARGEM = [0, 0.5, 0, 0];      // alinha a seta ao meio do texto do horário
   var ICONE = 7;                          // ícone de origem antes do nome (o Mostrar), no tamanho do PDF das grades
@@ -160,7 +160,8 @@
     var hora = pecas().formatarHora || function (h) { return h || ''; };
     return {
       stack: (periodos || []).map(function (p) {
-        return { columns: [{ text: hora(p.hi), width: 'auto' }, { svg: c.seta, width: SETA_LARGURA, margin: SETA_MARGEM }, { text: hora(p.hf), width: 'auto' }], columnGap: 4 };
+        /* encostado à direita: o vão em branco antes do horário */
+        return { columns: [{ text: '', width: '*' }, { text: hora(p.hi), width: 'auto' }, { svg: c.seta, width: SETA_LARGURA, margin: SETA_MARGEM }, { text: hora(p.hf), width: 'auto' }], columnGap: 4 };
       }),
       fontSize: FONTE.hora, color: c.texto, margin: CELULA.hora
     };
@@ -189,9 +190,32 @@
     return usados;
   }
 
-  /* graduação e nome; com os ícones ligados (c.comIcones), os ícones de origem antes */
+  /* sem acento e em minúsculas, letra por letra (o mesmo tamanho do original, para achar a posição) */
+  function semAcento(s) {
+    return Array.from(s).map(function (ch) { return ch.normalize('NFD').charAt(0).toLowerCase(); }).join('');
+  }
+
+  /* o nome completo (c.nomes, do banco) com o nome de guerra em negrito: a palavra inteira, sem olhar acento nem
+     maiúscula, com as letras do nome completo; sem o nome completo ou sem o nome de guerra dentro dele, só o nome de
+     guerra em negrito */
+  function partesDoNome(m, c) {
+    var guerra = m.nome || '', completo = (c.nomes && m.cpf && c.nomes[m.cpf]) || '';
+    var negrito = { bold: true, fontSize: FONTE.nome, color: c.forte };
+    var normal = { fontSize: FONTE.nome, color: c.forte };
+    var procura = semAcento(guerra).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var achou = guerra && completo ? new RegExp('(^|[^a-z0-9])(' + procura + ')(?=$|[^a-z0-9])').exec(semAcento(completo)) : null;
+    if (!achou) return [Object.assign({ text: guerra }, negrito)];
+    var letras = Array.from(completo), ini = achou.index + achou[1].length, fim = ini + achou[2].length;
+    return [
+      Object.assign({ text: letras.slice(0, ini).join('') }, normal),
+      Object.assign({ text: letras.slice(ini, fim).join('') }, negrito),
+      Object.assign({ text: letras.slice(fim).join('') }, normal)
+    ];
+  }
+
+  /* graduação e nome completo; com os ícones ligados (c.comIcones), os ícones de origem antes */
   function celulaMilitar(m, c) {
-    var texto = { text: [{ text: (m.grad || '') + ' ', fontSize: FONTE.grad, color: c.suave }, { text: m.nome || '', bold: true, fontSize: FONTE.nome, color: c.forte }], margin: CELULA.militar };
+    var texto = { text: [{ text: (m.grad || '') + ' ', fontSize: FONTE.grad, color: c.suave }].concat(partesDoNome(m, c)), margin: CELULA.militar };
     if (!c.comIcones) return texto;
     texto.width = '*';
     return { columns: iconesDoMilitar(m).map(function (n) {
@@ -291,7 +315,7 @@
     var s = item.sobreaviso;
     if (!s || !s.exibe) return [];
     return (s.militares || []).map(function (m) {
-      return { grad: m.grad, nome: m.nome, origem: 'sobreaviso', fixado: m.origem === 'administrador',
+      return { cpf: m.cpf, grad: m.grad, nome: m.nome, origem: 'sobreaviso', fixado: m.origem === 'administrador',
         periodos: [{ hi: m.horaInicio, hf: m.horaFim }] };
     });
   }
@@ -367,11 +391,14 @@
   }
 
   /* camada de fundo de uma folha: os blocos arredondados nas posições lidas do desenho de cantos retos
-     (cinza da unidade embaixo; bloquinhos brancos com contorno por cima) */
-  function blocosArredondados(caixas, c) {
+     (cinza da unidade embaixo; bloquinhos brancos com contorno por cima); com "contorno" (só o PDF do dia), o cinza
+     também ganha o contorno fino, por dentro dele: o limite da unidade no papel */
+  function blocosArredondados(caixas, c, contorno) {
     if (!caixas) return null;
     var formas = caixas.cinza.map(function (b) {
-      return { type: 'rect', x: b.x1, y: b.y1, w: b.x2 - b.x1, h: b.y2 - b.y1, r: RAIO.unidade, color: c.fundo };
+      if (!contorno) return { type: 'rect', x: b.x1, y: b.y1, w: b.x2 - b.x1, h: b.y2 - b.y1, r: RAIO.unidade, color: c.fundo };
+      var meia = LINHA_FINA / 2;
+      return { type: 'rect', x: b.x1 + meia, y: b.y1 + meia, w: b.x2 - b.x1 - LINHA_FINA, h: b.y2 - b.y1 - LINHA_FINA, r: RAIO.unidade, color: c.fundo, lineColor: c.borda, lineWidth: LINHA_FINA };
     }).concat(caixas.papel.map(function (b) {
       var meia = LINHA_FINA / 2;   // o contorno fica por dentro do bloquinho
       return { type: 'rect', x: b.x1 + meia, y: b.y1 + meia, w: b.x2 - b.x1 - LINHA_FINA, h: b.y2 - b.y1 - LINHA_FINA, r: RAIO.posto, color: c.papel, lineColor: c.borda, lineWidth: LINHA_FINA };
@@ -445,7 +472,7 @@
       },
       content: conteudo
     };
-    if (plano.caixas) doc.background = function (folha) { return blocosArredondados(plano.caixas[folha - 1], c); };
+    if (plano.caixas) doc.background = function (folha) { return blocosArredondados(plano.caixas[folha - 1], c, true); };
     return { doc: doc, marcadores: marcadores };
   }
 
@@ -649,13 +676,14 @@
     return txt().arquivo(periodo, dados.unidades.length === 1 ? dados.unidades[0].nome : '');
   }
 
-  /* dados: { unidades, dias, inicio, fim } (do banco, escala_impressao); opcoes: { icones } (o Mostrar: os ícones de
-     origem antes do nome e a legenda deles no pé da folha) → { arquivo, nome, folhas }, sem baixar (a prévia do painel
-     mostra o arquivo; o Gerar PDF baixa o mesmo) */
+  /* dados: { unidades, dias, nomes, inicio, fim } (do banco, escala_impressao; nomes = os nomes completos por CPF);
+     opcoes: { icones } (o Mostrar: os ícones de origem antes do nome e a legenda deles no pé da folha) → { arquivo,
+     nome, folhas }, sem baixar (a prévia do painel mostra o arquivo; o Gerar PDF baixa o mesmo) */
   function montar(dados, opcoes) {
     var comIcones = !!(opcoes && opcoes.icones && RW.escalasImpressaoLegenda);
     return carregarRecursos().then(function (icones) {
       var c = montarEstilo(icones);
+      c.nomes = dados.nomes || {};
       if (!comIcones) return c;
       var usados = iconesDoArquivo(dados);
       return RW.escalasImpressaoLegenda.carregarIcones(c, Object.keys(usados)).then(function () {

@@ -72,7 +72,9 @@
     return Promise.all(filas).then(function () {
       return {
         unidades: resultados[0].unidades || [],
-        dias: resultados.reduce(function (acc, r) { return acc.concat(r.dias); }, [])
+        dias: resultados.reduce(function (acc, r) { return acc.concat(r.dias); }, []),
+        /* os nomes completos por CPF (o PDF do dia), de todos os blocos */
+        nomes: resultados.reduce(function (acc, r) { return Object.assign(acc, r.nomes || {}); }, {})
       };
     });
   }

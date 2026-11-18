@@ -713,7 +713,7 @@
   function rotuloDe(f) { return soEstagiarios(f) ? RosterWork.mensagens.escala.rotuloEstagiario : nomeSemNumero(f.nome); }
   function antiguidadeDe(m) { return Number(m && m.antiguidade) || 0; }
 
-  /* as funções do posto como a lista mostra (o painel, o PDF do dia, o menu Funções do posto e o modo Dia). Na viatura,
+  /* as funções do posto como a lista mostra (o painel, o PDF do dia e o modo Dia). Na viatura,
      o papel especial (Chefe/Of. Área) e o Condutor numa entrada de dois rótulos só quando as duas funções têm as mesmas
      pessoas nos mesmos horários (quem é o Chefe dirige em todos eles); com o Chefe dirigindo só parte do dia, as duas
      ficam separadas. Depois, os lugares da mesma função num grupo só, com o nome sem número ("Efetivo", "Rádio Operador",

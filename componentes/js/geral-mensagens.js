@@ -743,7 +743,7 @@
         /* o posto na Op. Verão no campo Adicionar militar da célula, depois do pelotão e das cotas: faixas = [['08h', '13h']].
            Com espaços que não quebram: sem lugar, a frase desce inteira para a linha de baixo */
         opVeraoCurto: function (faixas) {
-          return ('Op. Verão ' + faixas.map(function (f) { return f[0] + ' às ' + f[1]; }).join(' e ')).replace(/ /g, ' ');
+          return ('Op. Verão ' + faixas.map(function (f) { return f[0] + ' às ' + f[1]; }).join(' e ')).replace(/ /g, '\u00a0');
         },
         /* a regra por militar não deixa nenhum posto do pelotão no dia (embaixo do nome no painel do dia) */
         regraSemPosto: 'Pela regra dele, não há posto para ele neste pelotão.',
@@ -1522,7 +1522,7 @@
                   + (o.tipo === 'devolucao' ? ', como devolução da troca de ' + (o.orig_data || '') : '')
                   + (o.parte_numero ? ', conforme a Parte nº ' + o.parte_numero + '/' + o.parte_ano : '') + '.';
         if (o.tipo === 'devolucao') return frase;
-        if (o.dev_pendente) return frase + ' As horas entram no saldo de horas entre os dois.';
+        if (o.dev_pendente) return frase;
         if (!o.dev_hi || !o.dev_hf) return frase + ' A devolução ocorrerá no serviço de ' + (o.dev_data || '') + '.';
         return frase + ' A devolução ocorrerá em ' + (o.dev_data || '') + ', das ' + hh(o.dev_hi) + ' às ' + hh(o.dev_hf) + '.';
       },

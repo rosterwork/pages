@@ -12,6 +12,7 @@
         .botaoDoDia(aoClicar) -> botão (null fora da Escala)
         .abrirNoDia(corpo, rodape, { unidadeId, iso, aoSair })
         .rotulo(el, { unidadeId, iso, posto, funcoes })  (el = o .escala-edicao-funcao)
+        .item(b, peca, info)  (o Como foi escolhido do menu do nome da função, para quem edita o dia)
    ============================================================ */
 (function () {
   'use strict';
@@ -169,7 +170,7 @@
   function abrirCaixa(b, info) {
     var conteudo = RW.tpl('tpl-escala-como-funcao');
     if (!conteudo) return;
-    /* funcoes = os nomes guardados (a busca); rotulos = os nomes da tela (o título; o estagiário, "Estagiário 1") */
+    /* funcoes = os nomes guardados (a busca); rotulos = os nomes da tela (o título: "Efetivo", "Estagiário", sem número) */
     var funcoes = info.funcoes || [];
     var titulo = (info.rotulos || funcoes).join(' e ') + ' (' + info.posto + ')';
     var tituloEl = conteudo.querySelector('.escala-como-funcao-titulo');

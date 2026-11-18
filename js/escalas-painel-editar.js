@@ -1030,8 +1030,8 @@
   }
 
   /* horário sem ninguém na função ou cadeira vazia do motor (o banco só manda o que falta para o mínimo e a função
-     obrigatória): o texto vermelho e, para o admin, o lápis (Pôr um militar aqui). A função aberta sem ninguém (Funções
-     do posto): "Vazio", em cinza; a que o Adicionar mais um lugar neste posto abriu já abre o cartão (ctx.lugarNovo, no
+     obrigatória): o texto vermelho e, para o admin, o lápis (Pôr um militar aqui). O lugar aberto sem ninguém (o Adicionar
+     mais um lugar neste posto): "Vazio", em cinza, e já abre o cartão (ctx.lugarNovo, no
      fim da lista) */
   function linhaVazia(posto, nomeFuncao, per, ancora, aberta) {
     var p = pecas();
@@ -1183,8 +1183,8 @@
     });
   }
 
-  /* Adicionar mais um lugar neste posto (o menu da linha): abre o próximo lugar livre do posto, o mesmo do menu Funções
-     do posto, e, quando a lista volta com ele, o cartão do lugar novo abre para escolher quem entra */
+  /* Adicionar mais um lugar neste posto (o menu da linha e o do nome da função): abre o próximo lugar livre do posto e,
+     quando a lista volta com ele, o cartão do lugar novo abre para escolher quem entra */
   function abrirLugar(posto) {
     var livre = posto && (posto.livres || [])[0];
     if (!ctx || ctx.salvando || !livre) return;
@@ -1195,7 +1195,7 @@
   function caixaPosto(posto) {
     var p = pecas();
     /* posto sem nenhuma função no dia (a reserva sem ninguém, o que fica fora da escala): só quem edita o dia vê, numa
-       linha só, com o ícone Funções do posto; o Adicionar militar também chega nele pelo Onde */
+       linha só, com o "Vazio, fora da escala" (montarTituloPosto); o Adicionar militar também chega nele pelo Onde */
     if (!(posto.funcoes || []).length && !editavel()) return null;
     var caixa = RosterWork.painel.criarCaixa(posto.nome);
     if (!caixa) return null;
