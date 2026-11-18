@@ -5904,17 +5904,14 @@
     <span class="escala-posto-no-lugar"></span>
   </template>
 
-  <!-- a linha do título do posto, para quem edita o dia (escalas-painel-funcoes.js): o nome (o .rotulo-secao da caixa,
-       posto aqui pelo JS), o texto do posto sem ninguém e, na ponta direita, o ícone Funções do posto, com o menu das
-       caixas de marcar (o título e as caixas vêm do JS) -->
-  <!-- o nome da função na lista do painel do dia, para quem edita o dia (escalas-painel-funcoes.js › noNome): o clique abre
-       o menu Funções do posto embaixo do nome, com o Como foi escolhido no fim -->
+  <!-- o nome da função na lista do painel do dia (e o "Vazio, fora da escala" do posto sem função), para quem edita o dia
+       (escalas-painel-editar.js › menuNoNome): o clique abre embaixo o Adicionar mais um lugar neste posto (o mesmo do
+       menu da linha) e o Como foi escolhido -->
   <template id="tpl-escala-funcao-menu">
     <div class="dropdown escala-funcao-menu">
-      <button type="button" class="botao-discreto escala-funcao-menu-botao" data-dica="Funções"></button>
-      <div class="dropdown-menu escala-posto-funcoes-menu">
-        <div class="dropdown-titulo"></div>
-        <div class="escala-marcar-lista escala-posto-funcoes-lista"></div>
+      <button type="button" class="botao-discreto escala-funcao-menu-botao"></button>
+      <div class="dropdown-menu">
+        <button type="button" class="dropdown-item escala-funcao-menu-mais"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lista"/></svg><span>Adicionar mais um lugar neste posto</span></button>
         <div class="dropdown-divisor escala-funcao-menu-traco"></div>
         <button type="button" class="dropdown-item escala-como-item" data-dica="">
           <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-distribuicao"/></svg><span>Como foi escolhido</span>
@@ -5923,18 +5920,11 @@
     </div>
   </template>
 
+  <!-- a linha do título do posto sem nenhuma função, para quem edita o dia: o nome (o .rotulo-secao da caixa, posto aqui
+       pelo JS) e o texto do posto sem ninguém -->
   <template id="tpl-escala-posto-titulo">
     <div class="escala-posto-titulo">
-      <span class="escala-posto-vazio oculto">Vazio, fora da escala</span>
-      <div class="dropdown escala-posto-funcoes">
-        <button type="button" class="botao-discreto escala-posto-funcoes-botao" aria-label="Funções do posto" data-dica="Funções">
-          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lista"/></svg>
-        </button>
-        <div class="dropdown-menu escala-posto-funcoes-menu">
-          <div class="dropdown-titulo"></div>
-          <div class="escala-marcar-lista escala-posto-funcoes-lista"></div>
-        </div>
-      </div>
+      <span class="escala-posto-vazio">Vazio, fora da escala</span>
     </div>
   </template>
 

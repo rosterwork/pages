@@ -1084,21 +1084,15 @@
     var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
     var grupo = novoGrupo(rotulos, temErro ? 'erro' : p.nivelFuncao(f));
     if (!grupo) return;
-    /* o nome da função: para quem edita o dia, o clique abre o menu Funções do posto embaixo do nome, com o Como foi
-       escolhido no fim; para quem só vê, o Como foi escolhido (a escala gravada; na comparação, não; a busca pelos nomes
-       guardados dos lugares, o título com o nome da tela) */
+    /* o nome da função: para quem edita o dia, o clique abre o menu do nome (o Adicionar mais um lugar neste posto e o
+       Como foi escolhido); para quem só vê, o Como foi escolhido (a escala gravada; na comparação, não; a busca pelos
+       nomes guardados dos lugares, o título com o nome da tela) */
     var elFuncao = grupo.el.querySelector('.escala-edicao-funcao');
     var como = (RosterWork.escalasPainelComo && !ctx.comparar && !ctx.consulta)
       ? { unidadeId: ctx.unidadeId, iso: ctx.iso, posto: posto.nome, rotulos: rotulos,
           funcoes: f.partes ? partes.map(function (pt) { return pt.nome; }) : rotulos } : null;
-    if (editavel() && RosterWork.escalasPainelFuncoes) {
-      /* depois da mudança do menu (a prévia), ele volta aberto no mesmo nome */
-      var chaveMenu = posto.tipo + ':' + posto.id + '|' + rotulos.join(' e ');
-      var menuNome = RosterWork.escalasPainelFuncoes.noNome(elFuncao, posto, function (po, mudanca) { mudarFuncao(po, mudanca, chaveMenu); }, como);
-      if (menuNome && ctx.funcoesMenu === chaveMenu) ctx.reabrirMenu = menuNome;
-    } else if (como) {
-      RosterWork.escalasPainelComo.rotulo(elFuncao, como);
-    }
+    if (editavel()) menuNoNome(elFuncao, posto, como);
+    else if (como) RosterWork.escalasPainelComo.rotulo(elFuncao, como);
     function ancora() { return grupo.el; }
     function por(linha) { if (linha) grupo.linhas.appendChild(linha); }
     var sobrepostos = {};
@@ -1138,30 +1132,47 @@
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
-  /* o título do posto: para quem edita o dia, a linha com o ícone Funções do posto (escalas-painel-funcoes.js); na troca
-     de viatura com data, embaixo vem "No lugar da ... até ..." */
+  /* o título do posto: o posto sem nenhuma função, para quem edita o dia, mostra o "Vazio, fora da escala", e o clique
+     nele abre o menu do nome (o Adicionar mais um lugar neste posto); na troca de viatura com data, embaixo vem "No
+     lugar da ... até ..." */
   function montarTituloPosto(caixa, posto) {
     var ancora = caixa.querySelector('.rotulo-secao');
-    var F = editavel() && RosterWork.escalasPainelFuncoes;
-    if (F) {
-      var menu = F.titulo(caixa, posto, mudarFuncao);
-      if (menu) {
-        ancora = caixa.querySelector('.escala-posto-titulo');
-        /* depois da mudança do menu (a prévia), ele volta aberto no mesmo posto */
-        if (ctx.funcoesMenu === posto.tipo + ':' + posto.id) ctx.reabrirMenu = menu;
+    if (editavel() && ancora && !(posto.funcoes || []).length) {
+      var linha = RosterWork.tpl('tpl-escala-posto-titulo');
+      if (linha) {
+        caixa.insertBefore(linha, ancora);
+        linha.insertBefore(ancora, linha.firstChild);
+        menuNoNome(linha.querySelector('.escala-posto-vazio'), posto, null);
+        ancora = linha;
       }
     }
     var noLugar = pecas().noLugar ? pecas().noLugar(posto) : null;
     if (noLugar && ancora) ancora.insertAdjacentElement('afterend', noLugar);
   }
 
-  /* o clique numa caixa do menu Funções do posto (o do título ou o do nome da função, chaveMenu): abre a função sem
-     ninguém ou fecha a aberta, no rascunho (com o Desfazer); salva vazia, a função some */
-  function mudarFuncao(posto, mudanca, chaveMenu) {
-    if (!ctx || ctx.salvando) return;
-    ctx.funcoesMenu = chaveMenu || (posto.tipo + ':' + posto.id);
-    abrirOuFechar(posto, mudanca);
+  /* o nome da função (ou o "Vazio, fora da escala" do posto sem função), para quem edita o dia: o clique abre embaixo o
+     Adicionar mais um lugar neste posto (o mesmo do menu da linha: abre o próximo lugar e o cartão de quem entra; some
+     com o posto cheio) e o Como foi escolhido (como = a informação do escalas-painel-como.js; sem ela, o item não
+     aparece). Sem nenhum dos dois, o nome fica como está */
+  function menuNoNome(el, posto, como) {
+    var temLugar = ((posto && posto.livres) || []).length > 0;
+    var temComo = !!(como && RosterWork.escalasPainelComo);
+    if (!el || (!temLugar && !temComo)) return null;
+    var dd = RosterWork.tpl('tpl-escala-funcao-menu');
+    if (!dd) return null;
+    var botao = dd.querySelector('.escala-funcao-menu-botao');
+    while (el.firstChild) botao.appendChild(el.firstChild);
+    el.appendChild(dd);
+    var mais = dd.querySelector('.escala-funcao-menu-mais'), item = dd.querySelector('.escala-como-item');
+    if (temLugar) mais.addEventListener('click', function () { abrirLugar(posto); });
+    else mais.remove();
+    if (temComo) RosterWork.escalasPainelComo.item(item, botao, como);
+    else item.remove();
+    if (!temLugar || !temComo) dd.querySelector('.escala-funcao-menu-traco').remove();
+    return dd;
   }
+
+  /* a função sem ninguém aberta (ou fechada) no rascunho, com o Desfazer; salva vazia, a função some */
   function abrirOuFechar(posto, mudanca) {
     mudar(function () {
       var alvo = { viatura_id: vidPosto(posto), instalacao_id: iidPosto(posto), nome_funcao: mudanca.abrir || mudanca.fechar };
@@ -1444,8 +1455,6 @@
     if (editavel()) notaMudou(corpo);
     /* as abas Militares e Estagiários: o mesmo dia, por pessoa (escalas-painel-militares.js) */
     if ((ctx.visao === 'militares' || ctx.visao === 'estagiarios') && RosterWork.escalasPainelMilitares) {
-      ctx.reabrirMenu = null;
-      ctx.funcoesMenu = null;
       ctx.lugarNovo = null;
       /* a aba Estagiários: o Editar o dia depende dos estágios do dia, que chegam com a leitura */
       if (ctx.visao === 'estagiarios' && !ctx.emSub) montarSubcabecalho();
@@ -1465,7 +1474,6 @@
       if (caixa && !(posto.funcoes || []).length) corpo.appendChild(caixa);
       else por(caixa);
     }
-    ctx.reabrirMenu = null;
     /* a ordem: Funções especiais, as instalações (Central, Rancho, Almoxarifado e as outras), Extrajornada,
        Estagiários, Sobreaviso, as viaturas, Sem função e De folga */
     var blocos = p.blocosDoDia(dados.postos, ctx.admin);
@@ -1491,10 +1499,6 @@
       RosterWork.escalasSysbm.montar(corpo, ctx.unidadeId, ctx.iso, { desligado: diaComMudanca() });
     }
     mostrarHistorico();
-    /* o menu Funções do posto que fez a mudança volta aberto */
-    ctx.funcoesMenu = null;
-    if (ctx.reabrirMenu && RosterWork.abrirDropdown) RosterWork.abrirDropdown(ctx.reabrirMenu);
-    ctx.reabrirMenu = null;
     /* o lugar que o Adicionar mais um lugar neste posto abriu: o cartão para escolher quem entra */
     var novo = ctx.lugarNovo;
     ctx.lugarNovo = null;

@@ -200,7 +200,7 @@
     });
   }
 
-  /* o item Como foi escolhido do menu do nome da função (escalas-painel-funcoes.js › noNome): fecha o menu e abre a mesma
+  /* o item Como foi escolhido do menu do nome da função (escalas-painel-editar.js › menuNoNome): fecha o menu e abre a mesma
      caixa, presa ao nome (peca); desliga com alteração não salva */
   function item(b, peca, info) {
     if (!b || !peca) return;

@@ -740,9 +740,10 @@
           if (praia.length) partes.push((partes.length ? 'na' : 'Na') + ' Op. Verão ' + das(praia));
           return partes.join(' e ') + '. A extra só nas outras horas.';
         },
-        /* o posto na Op. Verão no campo Adicionar militar da célula, depois do pelotão e das cotas: faixas = [['08h', '13h']] */
+        /* o posto na Op. Verão no campo Adicionar militar da célula, depois do pelotão e das cotas: faixas = [['08h', '13h']].
+           Com espaços que não quebram: sem lugar, a frase desce inteira para a linha de baixo */
         opVeraoCurto: function (faixas) {
-          return 'Op. Verão ' + faixas.map(function (f) { return f[0] + ' às ' + f[1]; }).join(' e ');
+          return ('Op. Verão ' + faixas.map(function (f) { return f[0] + ' às ' + f[1]; }).join(' e ')).replace(/ /g, ' ');
         },
         /* a regra por militar não deixa nenhum posto do pelotão no dia (embaixo do nome no painel do dia) */
         regraSemPosto: 'Pela regra dele, não há posto para ele neste pelotão.',
@@ -1038,16 +1039,8 @@
       estagiariosSemNome: 'Estagiários',
       /* o Cabo de Dia sem ninguém na Central (só para quem administra) */
       semCaboDia: 'Sem cabo ou soldado de serviço',
-      /* Funções do posto (o ícone no título do posto, para quem edita o dia): o título do menu, o que vai ao lado da
-         função travada e o motivo da caixa desligada */
-      funcoesTitulo: function (posto) { return (/^Central/.test(posto || '') ? 'Funções da ' : 'Funções do ') + (posto || ''); },
-      funcoesMinimo: 'Mínimo',
-      funcoesDicaMinimo: 'É do mínimo do posto e fica sempre na escala.',
       /* a dica do selo Fixado (a pessoa fixada ou a função vazia de propósito): quem fixou */
       fixadoPor: function (nome) { return 'Adm: ' + nome; },
-      funcoesDicaOcupada: 'Para tirar quem está aqui, use o lápis da linha e escolha Remover desta função.',
-      funcoesDicaSeguinte: 'Desmarque antes a função seguinte.',
-      funcoesDicaLapis: 'Use o lápis da linha para pôr alguém nela.',
       /* a lista Quem da vaga: quem é o mais antigo (assume o papel sozinho) e o motivo de quem não pode */
       seletorAssume: { chefe_socorro: 'Vai assumir o Chefe de Socorro', oficial_area: 'Vai assumir o Oficial de Área' },
       /* a edição da linha (o lápis e o menu dela), o campo de militar, o Adicionar militar e o Remover do dia, a nota O

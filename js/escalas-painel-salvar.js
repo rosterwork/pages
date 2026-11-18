@@ -338,18 +338,26 @@
   }
 
   /* os registros das partes num resumo só: as mudanças de todas, com o autor e a hora do primeiro. Com vários dias, cada
-     bloco leva o título do registro dele na frente ("Escala de 20/11 · ABTR-14462"), e o resumo fica sem o título geral */
+     bloco leva o título do registro dele na frente ("Escala de 20/11 · ABTR-14462"), e o resumo fica sem o título geral.
+     A linha "Escala do 1ºPEL refeita a partir de" vem de todos os registros, uma por unidade, com a data mais cedo */
   function juntarLogs(logs, variosDias) {
     if (!logs.length) return null;
     if (logs.length === 1) return logs[0];
     var log = JSON.parse(JSON.stringify(logs[0]));
     log.resumo = { titulo: variosDias ? '' : logs[0].resumo && logs[0].resumo.titulo, alvos: [] };
+    var refeitas = {}, ordem = [];
     logs.forEach(function (l) {
       var titulo = (l.resumo && l.resumo.titulo) || '';
       ((l.resumo && l.resumo.alvos) || []).forEach(function (alvo) {
         log.resumo.alvos.push(variosDias && titulo ? Object.assign({}, alvo, { onde: titulo + ' · ' + (alvo.onde || '') }) : alvo);
       });
+      ((l.resumo && l.resumo.escalas_refeitas) || []).forEach(function (r) {
+        var chave = String(r.unidade_id);
+        if (!refeitas[chave]) { refeitas[chave] = Object.assign({}, r); ordem.push(chave); }
+        else if (r.desde < refeitas[chave].desde) refeitas[chave].desde = r.desde;
+      });
     });
+    if (ordem.length) log.resumo.escalas_refeitas = ordem.map(function (chave) { return refeitas[chave]; });
     return log;
   }
 

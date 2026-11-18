@@ -270,8 +270,9 @@
   color: var(--alerta);
 }
 
-/* ---------- Funções do posto (escalas-painel-funcoes.js) ---------- */
-/* a linha do título do posto: o nome, o texto do posto sem ninguém e o ícone na ponta direita, na coluna dos lápis */
+/* ---------- o posto sem nenhuma função (para quem edita o dia) ---------- */
+/* a linha do título: o nome e o texto do posto sem ninguém, que abre o menu do nome (escalas-painel-editar.js ›
+   menuNoNome) */
 .escala-posto-titulo {
   display: flex;
   align-items: center;
@@ -281,15 +282,6 @@
 .escala-posto-vazio {
   font-size: 11px;
   color: var(--texto-suave);
-}
-
-.escala-posto-funcoes {
-  margin-left: auto;
-}
-
-/* o menu: o título e as caixas de marcar, uma embaixo da outra (a lista é a .escala-marcar-lista) */
-.escala-posto-funcoes-lista {
-  padding: 0 4px 4px;
 }
 
 /* ---------- o fim do corpo do Dia: as alterações manuais do dia, na largura toda (o painel não tem rodapé próprio; o
@@ -580,12 +572,6 @@
 
   html[data-celular] .escala-edicao-opcoes .escala-edicao-lapis {
     min-width: var(--toque-altura-celular);
-    min-height: var(--toque-altura-celular);
-  }
-
-  /* Funções do posto: as caixas do menu na altura do toque, como as linhas dos outros menus (o ícone fica do tamanho
-     dos lápis, para o título do posto não crescer) */
-  html[data-celular] .escala-posto-funcoes-lista .geral-opcao {
     min-height: var(--toque-altura-celular);
   }
 
