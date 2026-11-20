@@ -44,7 +44,7 @@
     'escala_dias_atualizando', 'escala_dia_da_folga_dias', 'escala_dia_disponiveis', 'escala_guarnicoes_listar', 'escala_impressao',
     'escala_impressao_erros', 'escala_minha_calendario', 'escala_motivos', 'escala_mudar_dia_dias', 'escala_sysbm',
     'escala_volta_sugestao', 'escala_voltas_pendentes',
-    'estagios_listar', 'expediente_horario', 'guarda_vidas_civis_listar', 'op_verao_candidatos', 'op_verao_mes', 'op_verao_periodos', 'expediente_mes', 'extrajornada_regras_ler', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',
+    'estagios_listar', 'expediente_horario', 'guarda_vidas_civis_listar', 'op_verao_candidatos', 'op_verao_mes', 'op_verao_periodos', 'expediente_mes', 'extrajornada_regras_ler', 'pontuacao_escala_ler', 'ficha_alteracoes', 'fn_sou_programador', 'fn_trocas_impressao',
     'fn_trocas_registro', 'fn_trocas_varias_dias', 'fn_trocas_varias_montar', 'fn_trocas_varias_plano', 'fn_unidades_padrao',
     'ler_distribuicao_dia', 'ler_escala_mes', 'ler_escala_militares', 'ler_militar_dia',
     'manutencao_telas_listar', 'nova_distribuicao_calcular', 'nova_distribuicao_ler', 'extrajornada_minha', 'pendencias_meus_pedidos',

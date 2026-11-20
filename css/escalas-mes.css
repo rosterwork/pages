@@ -172,6 +172,26 @@
   color: var(--erro);
 }
 
+/* o horário de cada Oficial quando não é o dia todo, e o de cada pedaço do dia sem ninguém (em vermelho), como o do
+   Oficial de Praia (op-verao.css) */
+.escala-oficial-hora {
+  display: inline-flex;
+  margin-left: 8px;
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.escala-oficial--sem .escala-oficial-hora {
+  color: var(--erro);
+}
+
+/* sem espaço para o nome e o horário na mesma linha (o dia estreito do calendário), o horário desce para baixo do nome:
+   nada fica cortado */
+.escala-oficial:has(.escala-oficial-hora:not(.oculto)) {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
 /* o Oficial do título para quem mexe no dia da companhia (escalas-celula-oficial.js): a mão e, no mouse, a borda um pouco
    afastada do nome (2px) e com os cantos redondos; a forte com a caixa aberta nele; a tracejada com mudança da companhia
    ainda não salva, quando a célula dela não está na tela */
@@ -219,6 +239,29 @@
   min-height: 24px;
 }
 
+/* o título com horário (dois ou mais Oficiais, ou um e a linha vermelha), nas três grades: uma linha embaixo da outra,
+   todas da largura da mais larga (a caixa do título abre depois dela); no calendário, o meio do título usa a largura do
+   dia, como o dos Oficiais de Praia (op-verao.css) */
+.escala-mes-oficial:has(.escala-oficial-hora:not(.oculto)),
+.escala-colunas-oficial:has(.escala-oficial-hora:not(.oculto)),
+.geral-calendario-mes-dia-centro:has(.escala-oficial-hora:not(.oculto)) {
+  display: grid;
+  justify-content: center;
+  row-gap: 2px;
+}
+
+.geral-calendario-mes-dia-centro:has(.escala-oficial-hora:not(.oculto)) {
+  position: static;
+  transform: none;
+  max-width: none;
+  flex: 1 1 auto;
+}
+
+.geral-calendario-mes-dia-topo:has(.escala-oficial-hora:not(.oculto)) {
+  display: flex;
+  align-items: flex-start;
+}
+
 /* ---------- célula (unidade × dia): bloquinho branco com a lista corrida de nomes ---------- */
 .escala-mes-celula {
   display: flex;
@@ -237,8 +280,8 @@
    borda por dentro, sem mudar o fundo nem o tamanho (Guia visual › Grade da escala): com o mouse, a cor de foco;
    escolhida, a forte (o padrão dos campos). Com o mouse num nome de quem edita o dia, a borda fica só no nome (na
    Extrajornada, a vaga e a bolinha do militar em foco). A borda é o ::before, por cima dos nomes e das linhas
-   tracejadas (como a do dia não salvo): as linhas com fundo (o riscado, o afastado, o horário em parte do dia) e as
-   linhas com dica ficam por cima de uma borda comum */
+   tracejadas (como a do dia não salvo): as linhas com fundo (o afastado) e as linhas com dica ficam por cima de uma
+   borda comum */
 .escala-mes-celula:hover::before,
 .escala-mes-celula--selecionada::before,
 .escala-mes-celula.caixa-flutuante-escolhida::before,
@@ -480,7 +523,6 @@
   min-height: 16px;
   min-width: 0;
   padding: 1px 4px;
-  background: var(--turno-fundo, transparent);
 }
 
 .linha-escalado-icones {

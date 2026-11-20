@@ -5,12 +5,11 @@
    cor do estado), e uma linha por militar com os ícones de origem, a
    graduação (no calendário, o posto curto), o nome (riscado na folga,
    na troca, no remanejado e na mudança de dia; sem caber, cortado com
-   "…", como na tela), o horário e a faixa
-   do horário (cinza fora do turno). O "Mostrar" do painel liga e
-   desliga o gráfico, os ícones e a faixa. As origens, a situação, a
-   hora e os trechos do turno vêm do escalas-celula.js (a mesma fonte
-   da tela). Também diz quem aparece no dia (pelos filtros da tela) e
-   que ícones saem no arquivo (para a legenda do pé da folha).
+   "…", como na tela) e o horário. O "Mostrar" do painel liga e
+   desliga o gráfico e os ícones. As origens, a situação e a hora vêm
+   do escalas-celula.js (a mesma fonte da tela). Também diz quem
+   aparece no dia (pelos filtros da tela) e que ícones saem no arquivo
+   (para a legenda do pé da folha).
    Desenhado com a biblioteca do PDF (exceção REGRAS §3/§4):
    medidas em pontos nas constantes abaixo, cores --impressao-* do tema.
    ============================================================ */
@@ -21,7 +20,6 @@
 
   /* medidas em pontos */
   var FONTE = { unidade: 6, grad: 6, nome: 7, hora: 6 };
-  var ALTURA_LINHA = 1.22;                 // altura de uma linha de texto da Montserrat, em vezes o tamanho da fonte
   var ESPACAMENTO_CAIXA_ALTA = 0.4;        // entre letras do nome da unidade (caixa alta)
   var BLOQUINHO = { lado: 2.5, topo: 2.5, linha: 0.6, base: 3 };
   var ICONE = 7;                           // ícone de origem
@@ -32,7 +30,6 @@
   var FOLGA_CORTE = 1;                     // sobra na conta do corte do nome (a medida do canvas × a da biblioteca)
   var MARGEM = { icone: [0, 0.8, 0, 0], hora: [0, 0.9, 0, 0], seta: [0, 0.6, 0, 0] };   // alinham ao nome
   var GRAFICO = { altura: 10, vao: 0.6, linha: 1, minima: 1.2, corpo: 0.3, corpoProblema: 0.4, raio: 1 };
-  var FAIXA_RAIO = 1;
 
   var FONTE_MEDIDA = 'Montserrat PDF';     // a fonte do PDF, para medir o nome
   var medidor = null;                      // o canvas fora da tela que mede o texto (sem ele, o nome não é cortado)
@@ -83,7 +80,6 @@
     c.sucesso = pdf.cor('--impressao-sucesso');
     c.alerta = pdf.cor('--impressao-alerta');
     c.erro = pdf.cor('--impressao-erro');
-    c.faixa = pdf.cor('--impressao-faixa');
     var nomes = (escalasCelula().iconesDasOrigens ? escalasCelula().iconesDasOrigens() : []).concat(['icone-cadeado']);
     return Promise.all([Promise.all(nomes.map(pdf.buscarIcone)), carregarFontesMedida()]).then(function (r) {
       c.icones = {};
@@ -113,33 +109,6 @@
       formas.push({ type: 'rect', x: x, y: y, w: w, h: Math.min(GRAFICO.linha, altura), color: corBarra });
     }
     return { canvas: formas, margin: [0, 0, 0, 2] };
-  }
-
-  /* altura aproximada (pt) de uma linha: o nome ou os horários empilhados, o que for maior */
-  function alturaLinha(p) {
-    return Math.max(FONTE.nome * ALTURA_LINHA, Math.max(1, (p.periodos || []).length) * FONTE.hora * ALTURA_LINHA);
-  }
-
-  /* a faixa do horário atrás da linha: cinza fora do turno (na folga e na troca, dentro do trecho) */
-  function faixa(p, riscada, largura, c) {
-    var trechos = escalasCelula().trechosTurno ? escalasCelula().trechosTurno(p.periodos) : [];
-    if (!trechos.length) return null;
-    var cinzas = [];
-    if (riscada) {
-      cinzas = trechos;
-    } else {
-      var desde = 0;
-      trechos.forEach(function (t) { if (t[0] > desde) cinzas.push([desde, t[0]]); desde = Math.max(desde, t[1]); });
-      if (desde < 100) cinzas.push([desde, 100]);
-    }
-    if (!cinzas.length) return null;
-    var altura = alturaLinha(p) + 2 * BLOQUINHO.linha;
-    return {
-      canvas: cinzas.map(function (t) {
-        return { type: 'rect', x: largura * t[0] / 100, y: -BLOQUINHO.linha, w: largura * (t[1] - t[0]) / 100, h: altura, r: FAIXA_RAIO, color: c.faixa };
-      }),
-      relativePosition: { x: 0, y: 0 }   // não ocupa lugar: o texto da linha vem por cima
-    };
   }
 
   function soHora(h) { return escalasCelula().soHora ? escalasCelula().soHora(h) : (h || ''); }
@@ -228,7 +197,7 @@
     return usados;
   }
 
-  /* uma linha de militar: ícones · graduação e nome · horário (a faixa por trás). curto: o posto curto (calendário);
+  /* uma linha de militar: ícones · graduação e nome · horário. curto: o posto curto (calendário);
      o nome que não cabe no meio sai cortado com "…", numa linha só */
   function linha(p, largura, mostrar, c, curto) {
     var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida' || p.origem === 'mudanca_saida' || p.origem === 'saida_guarnicao'
@@ -248,18 +217,25 @@
         color: riscada ? c.suave : (p.vermelho ? c.erro : p.aviso ? c.alerta : c.forte), decoration: riscada ? 'lineThrough' : undefined }
     ], width: '*' });
     colunas.push(horarios(p, c));
-    var conteudo = { columns: colunas, columnGap: ENTRE_COLUNAS };
-    var fundo = mostrar.faixa ? faixa(p, riscada, largura, c) : null;
-    return fundo ? { stack: [fundo, conteudo] } : conteudo;
+    return { columns: colunas, columnGap: ENTRE_COLUNAS };
   }
 
-  /* o Oficial de Área do dia no título (o mesmo da tela): o posto e o nome; o dia com escala e ninguém na função, "Sem
-     Oficial de Área" em vermelho; sem a chave (o dia sem escala), null */
+  /* o Oficial de Área do dia no título (as linhas da tela, escalas-celula.js › linhasDoOficial): uma linha por Oficial, o
+     posto e o nome e, quando não é o dia todo, o horário; o dia com escala e ninguém na função, e cada pedaço do dia sem
+     ninguém, "Sem Oficial de Área" em vermelho; sem a chave (o dia sem escala), null */
   function oficial(oficiais, dia, c, tamanho) {
     if (!oficiais || !Object.prototype.hasOwnProperty.call(oficiais, dia)) return null;
-    var oa = oficiais[dia];
-    if (!oa) return [{ text: RW.mensagens.escala.semOficial, bold: true, color: c.erro, fontSize: tamanho }];
-    return [{ text: (oa.grad || '') + ' ', color: c.suave, fontSize: tamanho }, { text: oa.nome || '', bold: true, color: c.forte, fontSize: tamanho }];
+    var linhas = RW.escalasCelula ? RW.escalasCelula.linhasDoOficial(oficiais[dia]) : [{ pessoa: oficiais[dia], hora: '' }];
+    var partes = [];
+    linhas.forEach(function (l, i) {
+      if (i) partes.push({ text: '\n', fontSize: tamanho });
+      if (l.pessoa) {
+        partes.push({ text: (l.pessoa.grad || '') + ' ', color: c.suave, fontSize: tamanho },
+          { text: l.pessoa.nome || '', bold: true, color: c.forte, fontSize: tamanho });
+      } else partes.push({ text: RW.mensagens.escala.semOficial, bold: true, color: c.erro, fontSize: tamanho });
+      if (l.hora) partes.push({ text: '  ' + l.hora, color: l.pessoa ? c.suave : c.erro, fontSize: tamanho });
+    });
+    return partes;
   }
 
   /* o bloquinho branco: tabela de uma coluna sem linhas; o branco quadrado só quando "preencher"

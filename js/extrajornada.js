@@ -186,8 +186,8 @@
   }
 
   /* na barra, o que é só de alguns passos (data-passo-barra) aparece só neles e, no menu Ações, só os itens do passo
-     aberto (data-passo-acao); fora do Organizar o mês, nenhum. O filtro da Distribuição e dos Ajustes (com a linha
-     "Filtros:") mostra e esconde pelo extrajornada-filtros.js. O seletor Agenda | Calendário e o Imprimir ficam nas Extras
+     aberto (data-passo-acao); fora do Organizar o mês, nenhum. O Exibir da Distribuição e dos Ajustes (a Escala
+     completa) mostra e esconde pelo extrajornada-filtros.js. O seletor Agenda | Calendário e o Imprimir ficam nas Extras
      do mês, na Distribuição e nos Ajustes; fora deles, o seletor de unidade do celular some */
   function barraDoPasso(n) {
     var comModos = aba === 'calendario' || n === 3 || n === 4;

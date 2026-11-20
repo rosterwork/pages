@@ -9,7 +9,9 @@
    tem a sua própria) e a Minha escala.
    Filtro e busca se aplicam juntos nas linhas de militar já
    desenhadas: cada linha traz a situação (escalas-celula.js).
-   Os afastados vêm escondidos e só aparecem com Afastamentos marcado.
+   Os afastados vêm escondidos e só aparecem com Incluir afastados marcado.
+   A escolha fica guardada na sessão (geral-filtros, chave 'escala'),
+   menos nas páginas filtradas (Sobreaviso, Estágios e Op. Verão).
    A linha de quem está logado ganha o realce claro (--voce) nas
    grades e na escala do dia da Minha escala.
    ============================================================ */
@@ -28,7 +30,7 @@
     { rotulo: 'Folgas', valor: 'folga' },
     { rotulo: 'Sobreaviso', valor: 'sobreaviso' },
     { rotulo: 'Fora da escala', valor: 'fora' },
-    { rotulo: 'Afastamentos', valor: 'afastamento', separado: true }
+    { rotulo: 'Incluir afastados', valor: 'afastamento', separado: true }
   ];
 
   /* modos em que os filtros valem (as grades de célula e o Militares) */
@@ -45,8 +47,8 @@
   function filtrosValem() { return !!MODOS_COM_FILTRO[obterModo()]; }
 
   /* a linha passa nos filtros? Situação: "Todos" (padrão) = todos menos os afastados;
-     Afastamentos é acréscimo ("Todos" + Afastamentos = todos e os afastados; desmarcar
-     o "Todos" deixa só os afastados) — a regra mora no geral-filtro-arvore */
+     Incluir afastados é acréscimo ("Todos" + Incluir afastados = todos e os afastados) —
+     a regra mora no geral-filtro-arvore */
   function passaFiltros(linha) {
     return passa(linha.getAttribute('data-situacao'));
   }
@@ -134,15 +136,18 @@
     if (filtros) filtros.mostrar(!!MODOS_COM_FILTRO[modo]);
   }
 
-  /* a navegação chama isto a cada visita (o fragmento é novo: filtros e busca voltam vazios).
-     modoAtual: função que diz o modo da tela */
+  /* a navegação chama isto a cada visita (o fragmento é novo: a busca volta vazia e os filtros voltam com a escolha
+     guardada na sessão; a página filtrada não guarda). modoAtual: função que diz o modo da tela */
   function iniciar(fragmento, modoAtual) {
     conteudo = fragmento;
     obterModo = modoAtual;
     buscaTermo = '';
     buscaModo = 'marcar';
     var caixaFiltros = conteudo.querySelector('#escala-filtros');
-    filtros = (caixaFiltros && window.RosterWork.filtros) ? RosterWork.filtros.criar(caixaFiltros, { aoMudar: aplicar }) : null;
+    var filtrada = window.RosterWork.paginaFiltrada && RosterWork.paginaFiltrada();
+    filtros = (caixaFiltros && window.RosterWork.filtros)
+      ? RosterWork.filtros.criar(caixaFiltros, { aoMudar: aplicar, guardar: filtrada ? null : 'escala' })
+      : null;
     if (filtros) filtros.definir('situacao', SITUACOES);
     var caixaBusca = conteudo.querySelector('#escala-busca-geral');
     if (caixaBusca && window.RosterWork.busca) {

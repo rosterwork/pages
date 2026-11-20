@@ -152,8 +152,17 @@
 
     document.addEventListener('scroll', aoMexer, true);
     window.addEventListener('resize', aoMexer);
+    /* reposiciona no quadro seguinte: mexer na posição dentro do aviso do ResizeObserver faz o navegador acusar
+       laço ("ResizeObserver loop"), e o aviso iria para os erros da tela */
+    var quadro = 0;
     var observador = window.ResizeObserver
-      ? new ResizeObserver(function () { if (gatilho.isConnected) posicionar(gatilho, painel, limitarAltura, opcoes); })
+      ? new ResizeObserver(function () {
+          if (quadro) return;
+          quadro = requestAnimationFrame(function () {
+            quadro = 0;
+            if (gatilho.isConnected) posicionar(gatilho, painel, limitarAltura, opcoes);
+          });
+        })
       : null;
     /* o painel e o gatilho: o conteúdo que muda e a grade que se acomoda (o gatilho muda de tamanho) */
     if (observador) { observador.observe(painel); observador.observe(gatilho); }
@@ -162,6 +171,7 @@
       document.removeEventListener('scroll', aoMexer, true);
       window.removeEventListener('resize', aoMexer);
       if (observador) observador.disconnect();
+      if (quadro) { cancelAnimationFrame(quadro); quadro = 0; }
       painel.classList.remove('flutuante', 'flutuante--acima', 'flutuante--esquerda');
     };
   }

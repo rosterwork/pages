@@ -115,18 +115,6 @@
   color: var(--alerta);
 }
 
-/* amostra da faixa do horário na linha do militar: cinza fora do turno, claro no turno */
-.escala-legenda-faixa {
-  display: inline-block;
-  flex-shrink: 0;
-  min-width: 24px;
-  min-height: 12px;
-  border: 1px solid var(--borda);
-  border-radius: var(--raio-pequeno);
-  background-image: linear-gradient(to right,
-    var(--fundo-medio) 0 30%, transparent 30% 70%, var(--fundo-medio) 70% 100%);
-}
-
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    Na Agenda com mais de uma unidade, o seletor de unidade (componente

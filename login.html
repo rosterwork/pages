@@ -19,11 +19,6 @@
   <!-- a cor da faixa do Android no app: o geral-tema.js preenche com o --fundo-pagina do tema em uso -->
   <meta name="theme-color" content="" />
   <title>Login — Roster Work</title>
-  <script src="componentes/js/geral-tema.js"></script>
-  <script src="componentes/js/geral-aplicativo.js"></script>
-  <script src="componentes/js/geral-conectado.js"></script>
-  <script src="componentes/js/geral-entrada.js"></script>
-  <script src="js/login-sessao.js"></script>
   <link rel="stylesheet" href="css/geral-tema.css" />
   <link rel="stylesheet" href="css/geral-base.css" />
   <link rel="stylesheet" href="componentes/css/geral-botao.css" />
@@ -31,6 +26,12 @@
   <link rel="stylesheet" href="componentes/css/geral-carregando.css" />
   <link rel="stylesheet" href="componentes/css/geral-arvore.css" />
   <link rel="stylesheet" href="css/login-pagina.css" />
+  <!-- os scripts vêm depois dos estilos: o navegador só lê o corpo com eles prontos, e a página nunca aparece sem estilo (REGRAS §3, item 13) -->
+  <script src="componentes/js/geral-tema.js"></script>
+  <script src="componentes/js/geral-aplicativo.js"></script>
+  <script src="componentes/js/geral-conectado.js"></script>
+  <script src="componentes/js/geral-entrada.js"></script>
+  <script src="js/login-sessao.js"></script>
 </head>
 <body>
 

@@ -77,7 +77,10 @@
         cobertura[uid][iso] = c.cobertura || [];
         erro[uid][iso] = c.erro || [];
         if (c.atualizando) atualizando.push(uid + '|' + iso);
-        if (Object.prototype.hasOwnProperty.call(c, 'oficial') && !Object.prototype.hasOwnProperty.call(oficial, iso)) oficial[iso] = c.oficial;
+        /* o Oficial de Área do dia (o da faixa das 08h) e, quando a leitura traz, todos os do dia com o horário (todos) */
+        if (Object.prototype.hasOwnProperty.call(c, 'oficial') && !Object.prototype.hasOwnProperty.call(oficial, iso)) {
+          oficial[iso] = c.oficial && c.oficiais ? Object.assign({}, c.oficial, { todos: c.oficiais }) : c.oficial;
+        }
       });
     });
     return { militares: militares, fora: fora, cobertura: cobertura, erro: erro, atualizando: atualizando, oficial: oficial };

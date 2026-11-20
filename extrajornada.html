@@ -50,11 +50,7 @@
       <button type="button" class="aba" data-modo="calendario">Calendário</button>
     </div>
     <span class="espacador-flex"></span>
-    <!-- na Distribuição e nos Ajustes: o filtro (só o ícone; Exibir: Escala completa; quem mostra e esconde é o
-         extrajornada-filtros.js) e a pesquisa de militar (marcar ou filtrar), como na Escala -->
-    <div class="filtros filtros--icone oculto" id="p3-filtros">
-      <div data-filtro="exibir" data-filtro-nome="Exibir" data-filtro-titulo="Exibir"></div>
-    </div>
+    <!-- na Distribuição e nos Ajustes: a pesquisa de militar (marcar ou filtrar), como na Escala -->
     <div class="busca oculto" id="p3-busca" data-passo-barra="3 4">
       <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
         <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
@@ -92,6 +88,19 @@
       </div>
     </div>
     <span class="pagina-subcabecalho-divisor oculto" id="extrajornada-legenda-divisor" aria-hidden="true"></span>
+    <!-- o Exibir (o olho), na Distribuição e nos Ajustes: a Escala completa, quem está de serviço no dia em cima das
+         extras; um clique marca ou desmarca e o menu fica aberto (quem mostra e esconde é o extrajornada-filtros.js) -->
+    <div class="dropdown oculto" id="extrajornada-exibir">
+      <button type="button" class="botao botao--quadrado" aria-label="Exibir" data-dica="Exibir">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-exibir"/></svg>
+      </button>
+      <div class="dropdown-menu">
+        <button type="button" class="exibir-opcao" data-exibir="escala" aria-pressed="false">
+          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
+          <span>Escala completa</span>
+        </button>
+      </div>
+    </div>
     <!-- as unidades no Calendário (Extras do mês, Distribuição e Ajustes; só no computador): lado a lado ou uma embaixo da
          outra, a mesma escolha da Escala; o ícone e a dica mostram o que o clique faz (geral-visao-grade.js) -->
     <button type="button" class="botao botao--quadrado oculto" id="extrajornada-disposicao">
@@ -818,7 +827,7 @@
 <template id="tpl-extrajornada-legenda-dist">
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Quem pôs a extra</span>
-    <div class="escala-legenda-grade">
+    <div class="escala-legenda-grade escala-legenda-grade--uma">
       <span class="escala-legenda-item">
         <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-sistema"/></svg>
         <span>O sistema: o Preencher pela sugestão refaz</span>
@@ -842,7 +851,7 @@
       <li>No dia em que o expediente termina antes das 14h (a quarta), a extra do administrativo pode começar no fim dele: arraste a bolinha do começo até lá.</li>
       <li>A companhia só recebe extra posta manualmente.</li>
       <li>O Preencher pela sugestão só funciona com tudo salvo. Ele refaz as extras que o sistema pôs e mantém as que o administrador pôs ou mudou.</li>
-      <li>O Preencher pela sugestão calcula a melhor combinação. Se o cálculo não terminar em 1 minuto, ele usa o cálculo simples.</li>
+      <li>O Preencher pela sugestão calcula a melhor combinação. Se o cálculo não terminar em 6 minutos, ele usa o cálculo simples.</li>
       <li>Só lança na escala com todas as cotas colocadas.</li>
       <li>Depois de lançada, a distribuição só muda pelos Ajustes.</li>
     </ul>
@@ -852,7 +861,8 @@
     <ol class="extrajornada-legenda-lista">
       <li>Cada regra vale mais que todas as de baixo juntas. A ordem e as escolhas da companhia ficam nos Ajustes, na aba Extrajornada.</li>
       <li>Corrige primeiro o vermelho, um pelotão por vez na ordem dos Ajustes, e depois o amarelo, na mesma ordem.</li>
-      <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem, e vai quem os Ajustes dizem: o mais moderno ou, em rodízio, quem foi menos vezes nos últimos 12 meses.</li>
+      <li>Todas as cotas são colocadas: a que sobra vai para o pelotão da cidade da companhia.</li>
+      <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem ou para levar a cota que sobra, e vai quem os Ajustes dizem: o mais moderno ou, em rodízio, quem foi menos vezes nos últimos 12 meses.</li>
       <li>As bombeiras, só nos pelotões marcados nos Ajustes.</li>
       <li>Passar do necessário, com duas extras que se cruzam, só em último caso.</li>
       <li>Nunca 1 cota sozinha: para usar a última, a extra pode passar do necessário.</li>
@@ -870,7 +880,7 @@
 <template id="tpl-extrajornada-legenda-ajustes">
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Quem pôs a extra</span>
-    <div class="escala-legenda-grade">
+    <div class="escala-legenda-grade escala-legenda-grade--uma">
       <span class="escala-legenda-item">
         <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-extra-sistema"/></svg>
         <span>O sistema: o Preencher pela sugestão refaz</span>

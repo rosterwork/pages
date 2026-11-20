@@ -533,6 +533,9 @@
       function (p) { return { posto: p.posto || '', cnh: p.cnh || '' }; });
     porOcorrencia('posto_sem_solucao', cat.postoSemSolucao, function (p) { return p.posto_id; },
       function (p) { return { posto: p.posto || '' }; });
+    /* a função vazia pela regra por graduação ("Se só houver [graduação], deixa vazio"), uma linha por função */
+    porOcorrencia('regra_vazia', cat.regraGraduacaoVazia, function (p) { return p.posto_id + '|' + p.funcao; },
+      function (p) { return { funcao: (p.posto ? p.posto + ' · ' : '') + nomeSemNumero(p.funcao) }; });
     if (tem('resolva_escala')) linha(cat.resolvaEscala);
     if (tem('sem_condutor')) linha(cat.semCondutor);
     /* a companhia sem Oficial de Área: uma linha, com os horários quando não é o dia todo */

@@ -8,8 +8,8 @@
    Dia: escalas-dia.js), só de leitura, com você realçado
    (escalas-filtros.js), e, no cabeçalho dela, o Solicitar troca (o
    painel do pedido da página Trocas, trocas-solicitar.js, com o
-   calendário no mês do dia). Abre no próximo serviço; "hoje" é o dia
-   de serviço (vira às 08h). O mês sem serviço diz por quê e leva
+   calendário no mês do dia). Abre em hoje; "hoje" é o dia do
+   relógio (vira à meia-noite). O mês sem serviço diz por quê e leva
    à aba Mês. O período, as setas e o deslize do mês no celular são
    os da página (escalas.js); daqui vem a leitura antecipada do mês
    vizinho. Só clona moldes.
@@ -38,7 +38,7 @@
 
   function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function dataDeIso(s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
-  function hojeIso() { return iso(RW.data.diaDeServico()); }
+  function hojeIso() { return iso(new Date()); }
   function chaveMes(mes) { return 'escala_minha_calendario|' + iso(mes); }
 
   /* com mudança do painel do dia esperando o Salvar, a leitura pede a prévia (o que vai ficar; escalas-dados.js) */
@@ -115,15 +115,11 @@
     return Object.keys(dias).filter(function (k) { return k.slice(0, 7) === mes; }).sort();
   }
 
-  /* o dia que abre com o mês: o próximo serviço de hoje em diante; sem ele, hoje; fora do mês de hoje, o primeiro
-     dia com algo marcado (só os dias do mês) */
+  /* o dia que abre com o mês: hoje; fora do mês de hoje, o primeiro dia com algo marcado (só os dias do mês) */
   function diaPadrao() {
     var dias = estado.dados.dias;
-    var hoje = hojeIso();
     var chaves = chavesDoMes(dias);
-    var proximo = chaves.filter(function (k) { return k >= hoje && temServico(dias[k]); })[0];
-    if (proximo) return proximo;
-    if (chaves.indexOf(hoje) >= 0) return hoje;
+    if (chaves.indexOf(hojeIso()) >= 0) return hojeIso();
     return chaves.filter(function (k) { return (dias[k].linhas || []).length; })[0] || chaves[0] || null;
   }
 

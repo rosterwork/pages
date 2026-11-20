@@ -13,8 +13,8 @@
    formato (Folhas A4 ou Página contínua) e o arquivo, desenhado no
    escalas-impressao-grade-pdf.js. O Colunas fica com a folha dele, com
    as unidades uma embaixo da outra no Colunas › Dias. As unidades
-   começam marcadas com as da tela; o Mostrar (gráfico, ícones,
-   faixa), a prévia e o Gerar PDF são do painel comum.
+   começam marcadas com as da tela; o Mostrar (gráfico e ícones), a
+   prévia e o Gerar PDF são do painel comum.
    Quem imprime outra grade (a Extrajornada) passa a leitura dela no
    lugar da escala (dados, no mesmo formato), o título do arquivo e
    a conferência (null: sem o aviso do erro grave da escala).
@@ -234,7 +234,7 @@
       resumo: resumo(escolhas.unidades),
       inicio: iso(dentro[0].data),
       fim: iso(dentro[dentro.length - 1].data),
-      chave: [escolhas.ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, mostrar.faixa, p.dias.length,
+      chave: [escolhas.ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, p.dias.length,
         iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto].join('|'),
       montar: function () {
         return carregarDados(escolhas.ids, iso(p.busca.inicio), iso(p.busca.fim)).then(function (dados) {
@@ -280,7 +280,7 @@
       marcas: marcas(),
       conferir: 'conferir' in opcoes ? opcoes.conferir : (RW.escalasImpressao ? RW.escalasImpressao.conferirErros : null),
       ids: (opcoes.unidades || []).map(function (u) { return u.unidade_id; }),
-      mostrar: opcoes.mostrar || { grafico: true, icones: true, faixa: true },
+      mostrar: opcoes.mostrar || { grafico: true, icones: true },
       aoSair: function () { RW.painel.fechar(); },
       ligar: function (peca) {
         form.raiz = RW.painel.corpo();

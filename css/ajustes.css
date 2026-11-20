@@ -144,6 +144,29 @@
   min-width: 160px;
 }
 
+/* ---------- aba Pontuação: a prévia dos 14 dias, um bloco por unidade (o nome e as mudanças) ---------- */
+.ajustes-pontuacao-muda {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ajustes-pontuacao-muda:empty {
+  display: none;
+}
+
+.ajustes-pontuacao-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ajustes-pontuacao-unidade {
+  font-size: var(--fonte-padrao);
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
 /* ---------- aba Op. Verão: os postos, um por linha (o nome e a lixeira na ponta) ---------- */
 .ajustes-op-verao-postos {
   display: flex;

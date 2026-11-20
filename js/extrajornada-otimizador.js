@@ -4,9 +4,9 @@
    regras da companhia dos Ajustes › Extrajornada), monta as extras
    possíveis e as regras fixas como um problema de programação inteira
    e o placar em níveis de verdade: a falta vermelha e a amarela (na
-   ordem dos pelotões), cada um no próprio pelotão, quem vai para outro
-   pelotão (o mais moderno ou em rodízio), colocar todas as cotas, não
-   passar do necessário fora da cidade da companhia, quem fica com o
+   ordem dos pelotões), colocar todas as cotas (a sobra vai para a
+   cidade da companhia), cada um no próprio pelotão, quem vai para outro
+   pelotão (o mais moderno ou em rodízio), não passar do necessário fora da cidade da companhia, quem fica com o
    lugar (a fila das Cotas ou a antiguidade) e a balança (Pouco, Normal
    ou Muito). Cada nível é uma conta do HiGHS, com os de cima fixados
    no melhor deles (extrajornada-otimizador-niveis.js), num trabalhador
@@ -39,8 +39,8 @@
   var GRUPOS = ['sargento', 'cabo', 'soldado'];
   var ADMINISTRATIVO = 'Administrativo';   // o Setor da ficha
   /* os níveis, do que vale mais ao que vale menos (a ordem fixa dos Ajustes), e a etapa da janela de cada um */
-  var NIVEIS = ['verm', 'amar', 'fora', 'quem', 'cotas', 'passa', 'prio', 'balanca'];
-  var ETAPA = { verm: 1, amar: 2, fora: 3, quem: 4, cotas: 5, passa: 6, prio: 7, balanca: 8 };
+  var NIVEIS = ['verm', 'amar', 'cotas', 'fora', 'quem', 'passa', 'prio', 'balanca'];
+  var ETAPA = { verm: 1, amar: 2, cotas: 3, fora: 4, quem: 5, passa: 6, prio: 7, balanca: 8 };
   var CONFERINDO = 9;
   /* a balança (Normal = os pesos de antes do placar novo): três dias seguidos, cada extra (menos extras = blocos maiores),
      colado ao serviço, o administrativo que sai à meia-noite (vai com o colado), o dia que ele quer (por horário), a sobra

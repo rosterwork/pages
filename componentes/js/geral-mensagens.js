@@ -458,6 +458,27 @@
         pesos: { pouco: 'Pouco', normal: 'Normal', muito: 'Muito' },
         subir: function (nome) { return 'Subir ' + nome; },
         descer: function (nome) { return 'Descer ' + nome; }
+      },
+      /* aba Pontuação (ajustes-pontuacao.js): o Salvar (o modal de data) e a prévia dos 14 dias */
+      pontuacao: {
+        pagina: 'Ajustes',
+        salvarTitulo: 'Salvar a pontuação',
+        salvarAntes: 'A escala de todas as unidades muda a partir de ',
+        salvarDepois: ' (próximo serviço). Para mudar desde o plantão de hoje, escolha outra data.',
+        botaoSalvar: 'Salvar',
+        unidade: function (nome, dias) { return nome + ', ' + dias + (dias === 1 ? ' dia' : ' dias'); },
+        semMudanca: function (nomes) { return nomes.length > 1 ? nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1] : nomes[0]; },
+        nadaMuda: 'Nada muda.',
+        /* "21/11, 3ºSgt. Meireles: Efetivo 4 no ABTR-14462, das 20h às 08h. Antes: Efetivo 3 na AA-0020, das 20h às 08h." */
+        mudanca: function (data, quem, depois, antes) {
+          return data + ', ' + quem + ': ' + (depois || 'fora da escala') + '. Antes: ' + (antes || 'fora da escala') + '.';
+        },
+        lugar: function (funcao, posto, horas) { return funcao + (posto ? ' (' + posto + ')' : '') + (horas ? ', ' + horas : ''); },
+        /* a hora como na escala: 20h, 20h30 */
+        horas: function (ini, fim) {
+          function h(t) { var p = String(t || '').split(':'); return (p[0] || '') + 'h' + (p[1] && p[1] !== '00' ? p[1] : ''); }
+          return ini === fim ? 'o dia todo' : 'das ' + h(ini) + ' às ' + h(fim);
+        }
       }
     },
 
@@ -817,8 +838,10 @@
       },
       /* a caixa da célula no dia de mais de 7 dias atrás, para quem administra (escalas-celula-editar.js) */
       diaAntigo: 'Este dia é de mais de 7 dias atrás e não pode mais mudar.',
-      /* o título do dia nas grades: o dia com escala e ninguém na função de Oficial de Área (escalas-celula.js) */
+      /* o título do dia nas grades: o dia com escala e ninguém na função de Oficial de Área (escalas-celula.js); o horário de
+         cada Oficial (e de cada pedaço sem ninguém) quando não é o dia todo, como o do Oficial de Praia ("08h às 20h") */
       semOficial: 'Sem Oficial de Área',
+      oficialHoras: function (inicio, fim) { return inicio + ' às ' + fim; },
       /* Minha escala: o mês sem serviço (o botão leva à aba Mês) */
       minhaSemServico: function (mes) { return 'Você não tem serviço em ' + mes + '. A escala de todos fica na aba Mês.'; },
       /* Minha escala: a guarnição dele hoje, em cima do mês (afastado, a data da volta: "Volta na guarnição B em 03/12") */
@@ -866,6 +889,8 @@
         afastadoTroca:       { texto: 'Militar afastado, não vai assumir o serviço', icone: 'icone-alerta', nivel: 'alerta' },
         /* a regra por graduação da Distribuição não deixa, mas não havia outro militar que pudesse */
         regraGraduacao:      { texto: 'Função fora da regra por falta de gente', icone: 'icone-alerta', nivel: 'alerta' },
+        /* a regra por graduação com "Se só houver [graduação], deixa vazio": a função ficou vazia; {funcao} = "Rancho · Rancheiro" */
+        regraGraduacaoVazia: { texto: 'Função vazia pela regra por graduação: {funcao}', icone: 'icone-alerta', nivel: 'erro' },
         /* a Central sem Cabo de Dia (só para quem administra; a Distribuição escolhe se dá o erro amarelo) */
         semCaboDia:          { texto: 'Central sem Cabo de Dia: nenhum cabo ou soldado de serviço{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' },
         semCondutor:         { texto: 'Viatura sem condutor', icone: 'icone-alerta', nivel: 'erro' },
@@ -1905,8 +1930,21 @@
       graduacaoIncompleta: 'Escolha a graduação, a regra, o posto e a função.',
       semGraduacao: 'Escolha a graduação',
       graduacaoTitulo: { apenas: 'Apenas {grau}', mais_antigo: 'Igual ou mais antigo que {grau}', mais_moderno: 'Igual ou mais moderno que {grau}', entre: 'De {grau} a {ate}' },
+      /* no Não pode: o que fazer se só houver a graduação da regra; {graduacao} = "Cb. ou mais antigo"; sem função ({funcao}
+         vazio), a regra vale para qualquer função do posto */
+      graduacaoFrase: { apenas: '{grau}', mais_antigo: '{grau} ou mais antigo', mais_moderno: '{grau} ou mais moderno', entre: 'de {grau} a {ate}' },
+      seSoHouver: 'Se só houver {graduacao}',
+      seSoHouverOpcoes: {
+        poe: 'Põe um deles no {funcao}, com aviso amarelo', vazio: 'Deixa o {funcao} vazio, com erro vermelho',
+        poePosto: 'Põe um deles, com aviso amarelo', vazioPosto: 'Deixa vazio, com erro vermelho'
+      },
+      seSoHouverFechado: {
+        poe: 'Se só houver {graduacao}, põe um deles, com aviso amarelo', vazio: 'Se só houver {graduacao}, deixa o {funcao} vazio, com erro vermelho',
+        vazioPosto: 'Se só houver {graduacao}, deixa vazio, com erro vermelho'
+      },
       /* bloco 10: conferir */
       estados: { tem_gente: 'Com gente', acumula: 'Acumulada', coberta: 'Coberta', companhia: 'Da companhia', vazia: 'Vazia', fora: 'Fora da escala' },
+      vaziaRegra: 'Vazia pela regra por graduação.',
       porQuem: '{estado} por {quem}',
       sobraUm: '1 militar fica sem função.',
       sobraVarios: '{n} militares ficam sem função.',
@@ -2684,6 +2722,7 @@
         extra_disponibilidade: 'Pedido de extra',
         extra_prazos: 'Pedidos da extrajornada',
         extra_regras: 'Regras da extrajornada',
+        pontuacao: 'Pontuação da escala',
         atestado: 'Atestado',
         ferias: 'Férias',
         licenca: 'Licença',
@@ -2824,6 +2863,11 @@
       },
       ajustesOpVerao: { titulo: 'Salvando a Operação Verão', passos: ['Gravando as respostas', 'Atualizando a tela'] },
       ajustesExtrajornada: { titulo: 'Salvando as regras da extrajornada', passos: ['Gravando as regras', 'Atualizando a tela'] },
+      ajustesPontuacao: { titulo: 'Salvando a pontuação', passos: ['Gravando os pesos', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' },
+      /* a prévia da Pontuação: as duas contas de cada unidade (com os pesos que valem e com os da tela) */
+      pontuacaoPrevia: function (v) {
+        return { passos: v.unidades.map(function (u) { return 'Refazendo os próximos 14 dias ' + (/ª/.test(u) ? 'da ' : 'do ') + u; }) };
+      },
       opVeraoSalvar: { titulo: 'Salvando a Operação Verão', passos: ['Gravando os dias', 'Atualizando a grade'] },
       opVeraoCivil: function (v) {
         return { titulo: v.remover ? 'Removendo do cadastro' : 'Salvando o guarda-vidas civil', passos: ['Gravando o cadastro'] };
@@ -2895,8 +2939,8 @@
       pdfGerar: { titulo: 'Preparando o PDF', passos: ['Montando as páginas'] },
       /* o Preencher pela sugestão: a leitura, um nível do placar por etapa (extrajornada-otimizador.js) e a conferência */
       sugestao: { titulo: 'Calculando a melhor distribuição',
-        passos: ['Lendo os voluntários, as cotas e os dias', 'Cobrindo a falta vermelha', 'Cobrindo a falta amarela', 'Deixando cada um no próprio pelotão',
-                 'Escolhendo quem vai para outro pelotão', 'Colocando todas as cotas', 'Evitando passar do necessário', 'Escolhendo quem fica com cada lugar',
+        passos: ['Lendo os voluntários, as cotas e os dias', 'Cobrindo a falta vermelha', 'Cobrindo a falta amarela', 'Colocando todas as cotas',
+                 'Deixando cada um no próprio pelotão', 'Escolhendo quem vai para outro pelotão', 'Evitando passar do necessário', 'Escolhendo quem fica com cada lugar',
                  'Pesando a balança', 'Conferindo as regras de cada extra'],
         pe: 'Isso pode levar alguns minutos. Não feche esta página.', demora: 'Está demorando mais que o normal. Não feche esta página.' },
       imprimir: function (v) {
@@ -2928,8 +2972,8 @@
       efetivoMaximo: 'Efetivo máximo: {n}',
       /* afastamento com data-limite (selo da Usuários, linha da Escala): "Férias até 31/10" */
       afastadoAte: function (situacao, data) { return situacao + ' até ' + data; },
-      /* filtro com só as opções à parte marcadas (ex.: "só Afastamentos", "só Inativos"): a etiqueta da linha "Filtros:" */
-      filtroSo: function (rotulo) { return 'só ' + rotulo; }
+      /* o x da etiqueta da linha "Filtros:", para o leitor de tela: "Tirar o filtro Situação: Férias" */
+      tirarFiltro: function (tipo, valor) { return 'Tirar o filtro ' + tipo + ': ' + valor; }
     },
 
     /* rótulos de botão de avisos e confirmações */

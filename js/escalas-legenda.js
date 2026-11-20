@@ -2,7 +2,7 @@
    ESCALAS — legenda da grade (botão "Legenda" no sub-cabeçalho)
    O que cada cor, ícone e selo quer dizer, conforme o modo:
      · Mês/Semana/Colunas/Calendário: cobertura (cores do gráfico:
-       completa, com ressalva, erro grave) e a faixa do horário + os
+       completa, com ressalva, erro grave) e os
        grupos dos ícones (origem, nome riscado, função, militar,
        observações). O painel do dia abre de qualquer modo e não tem
        legenda própria, então os ícones dele também ficam aqui

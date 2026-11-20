@@ -171,7 +171,7 @@
     var aqui = G().vagas().filter(function (a) { return +a.unidade === un.id && a.data === k; })
       .sort(function (x, y) { return Math.min.apply(null, G().blocos(x)) - Math.min.apply(null, G().blocos(y)) || u().nome(x.cpf).localeCompare(u().nome(y.cpf)); });
     var comExtra = aqui.some(function (a) { return a.blocos.length; });
-    /* o gráfico (com as extras) e, com o filtro Escala completa, quem está de serviço no dia, em cima das extras */
+    /* o gráfico (com as extras) e, com a Escala completa marcada no Exibir, quem está de serviço no dia, em cima das extras */
     var antes = G().antesDe(un.id, k), F = RW.extrajornadaFiltros;
     if (antes) {
       var dep = comExtra ? G().depoisDe(un.id, k, alocs, falta) : null;

@@ -106,7 +106,7 @@
     var dados = api.dados();
     if (!dados) return;
     var uid = api.unidadeId(), deIso = api.iso(), data = diaMes(deIso);
-    var hoje = iso(RosterWork.data.diaDeServico());
+    var hoje = iso(new Date());   // a marca de hoje: o dia do relógio, como nas outras abas da Escala
     /* item: quem (o item da lista, com .mil e .janelas = as do ciclo); janela: a do ciclo que muda; mes: o do calendário;
        para: o dia novo; horario: o valor do Serviço inteiro / Parte do serviço; limite e fim: o primeiro e o último dia
        que o banco aceita */

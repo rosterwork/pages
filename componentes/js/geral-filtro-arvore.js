@@ -13,28 +13,33 @@
     return acc;
   }
 
+  /* com mais opções que isto, os grupos começam fechados e aparece o campo Procurar */
+  var OPCOES_PARA_PROCURAR = 10;
+
   /* Cria um filtro em árvore de checkbox. Grupos marcam/desmarcam o grupo (com parcial);
      folhas marcam 1 valor. O interruptor mestre "Todos" (fora da árvore, acima de uma
      divisória) vale para as opções NORMAIS: marcado = todas elas (nada escolhido).
-     Opção com `separado: true` (ex.: Inativos, Afastamentos) fica depois de uma divisória,
-     fora do "Todos", e é um ACRÉSCIMO: "Todos" + ela = tudo e mais ela. Desmarcar o "Todos"
-     com uma separada marcada = só as separadas. A seleção nunca fica vazia: sem nada,
-     volta ao "Todos".
-     Só com opções separadas (ex.: Escala completa, da Extrajornada), o "Todos" e as divisórias somem e fica só a caixa
-     de cada uma.
+     Opção com `separado: true` (ex.: Incluir afastados, Incluir inativos) fica depois de uma
+     divisória, fora do "Todos", e é um ACRÉSCIMO: "Todos" + ela = tudo e mais ela. O "Todos"
+     marcado não se desmarca: a seleção nunca fica vazia.
+     Só com opções separadas, o "Todos" e as divisórias somem e fica só a caixa de cada uma.
+     Com mais de OPCOES_PARA_PROCURAR opções, os grupos começam fechados e o campo Procurar
+     (procurarEl) aparece no alto.
      Usado pelo botão Filtros (geral-filtros), uma coluna por filtro.
-     config: { arvoreEl, mestreEl, colapsarTudo, onChange }
-     Devolve { definir(arvore), passa(valor), temFiltro(), desmarcar(valores), limpar(), resumo() }. */
+     config: { arvoreEl, mestreEl, procurarEl, colapsarTudo, onChange }
+     Devolve { definir(arvore), passa(valor), temFiltro(), desmarcar(valores), limpar(), resumo(),
+     selecao(), restaurar(valores) }. */
   function criar(config) {
     var arvoreEl = config.arvoreEl;
     var mestreEl = config.mestreEl || null;
+    var procurarEl = config.procurarEl || null;
     var onChange = config.onChange || function () {};
 
     var selecionados = new Set();   /* as normais escolhidas (vazio = "Todos") e as separadas marcadas */
-    var semNormais = false;         /* "Todos" desmarcado com só separadas: nenhuma normal passa */
+    var gruposAbertos = true;       /* os grupos nascem abertos, menos com muitas opções */
     var pintores = [];     /* repintam as caixas da árvore conforme a seleção */
     var totalFolhas = 0;   /* folhas normais (as que contam para "Todos") */
-    var separadas = new Set();   /* valores fora do "Todos" (ex.: Inativos) — divisória acima */
+    var separadas = new Set();   /* valores fora do "Todos" (ex.: Incluir inativos) — divisória acima */
     var colapsarTudo = !!config.colapsarTudo;   /* marcar todas as normais = "Todos" (elas se desmarcam) */
     var assinatura = '';   /* evita reconstruir o DOM quando a árvore não muda */
     var arvoreAtual = [];  /* a última árvore definida (o resumo agrupa por ela) */
@@ -57,16 +62,13 @@
 
     /* "Todos" (as normais todas): nada escolhido entre as normais (ou todas, fora do modo colapsar) */
     function todosNormais() {
-      if (semNormais) return false;
       var n = normaisMarcadas();
       return n === 0 || (!colapsarTudo && n === totalFolhas);
     }
 
-    /* depois de cada mudança: todas as normais marcadas viram "Todos" (modo colapsar); escolher uma
-       normal desfaz o "só separadas"; e sem separada marcada não há "só separadas" (nunca vazio) */
+    /* depois de cada mudança: todas as normais marcadas viram "Todos" (modo colapsar) */
     function arrumar() {
       if (colapsarTudo && totalFolhas > 0 && normaisMarcadas() === totalFolhas) tirarNormais();
-      if (semNormais && (normaisMarcadas() > 0 || separadasMarcadas() === 0)) semNormais = false;
     }
 
     function molde() {
@@ -82,14 +84,12 @@
     /* um valor passa no filtro? (separada: só marcada; normal: "Todos" ou escolhida) */
     function passa(valor) {
       if (separadas.has(valor)) return selecionados.has(valor);
-      if (semNormais) return false;
       if (todosNormais()) return true;
       return selecionados.has(valor);
     }
 
     /* o que está marcado, para as etiquetas da linha "Filtros:": um grupo inteiro marcado vira um
-       item só (ex.: "Praças"); as separadas vêm por último ("só Afastamentos" quando só elas valem).
-       [{ rotulo, valores }] na ordem da árvore */
+       item só (ex.: "Praças"); as separadas vêm por último. [{ rotulo, valores }] na ordem da árvore */
     function resumo() {
       var lista = [];
       function visitar(no) {
@@ -107,7 +107,7 @@
       if (!todosNormais()) arvoreAtual.forEach(function (no) { if (!no.separado) visitar(no); });
       arvoreAtual.forEach(function (no) {
         if (!no.separado || !selecionados.has(no.valor)) return;
-        lista.push({ rotulo: semNormais ? RosterWork.mensagens.geral.filtroSo(no.rotulo) : no.rotulo, valores: [no.valor] });
+        lista.push({ rotulo: no.rotulo, valores: [no.valor] });
       });
       return lista;
     }
@@ -140,17 +140,10 @@
       mudou();
     }
 
-    /* clique no "Todos": desmarcado → volta a todas as normais (as separadas ficam);
-       marcado → com separada marcada, passa a "só as separadas"; sem separada, não muda (nunca vazio) */
+    /* clique no "Todos": desmarcado → volta a todas as normais (as separadas ficam); marcado → não muda (nunca vazio) */
     function alternarTodos() {
-      if (todosNormais()) {
-        if (separadasMarcadas() === 0) return;
-        tirarNormais();
-        semNormais = true;
-      } else {
-        tirarNormais();
-        semNormais = false;
-      }
+      if (todosNormais()) return;
+      tirarNormais();
       mudou();
     }
 
@@ -158,9 +151,47 @@
     function limpar() {
       if (!temFiltro()) return;
       selecionados.clear();
-      semNormais = false;
       pintar();
       onChange();
+    }
+
+    /* o que está escolhido, para guardar na sessão (geral-filtros) */
+    function selecao() {
+      return Array.from(selecionados);
+    }
+
+    /* põe de volta a escolha guardada, antes ou depois de as opções chegarem (o que não existir mais sai no
+       próximo definir com opções) */
+    function restaurar(valores) {
+      selecionados = new Set(valores || []);
+      pintar();
+    }
+
+    /* abre ou fecha um grupo; a seta diz ao leitor de tela se ele está aberto */
+    function abrirGrupo(el, aberto) {
+      el.classList.toggle('arvore-grupo--aberto', aberto);
+      var seta = el.querySelector('.arvore-seta');
+      if (seta) seta.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    }
+
+    /* o Procurar: fica a opção cujo nome casa com o texto (sem acento e sem maiúscula, a regra da busca da barra);
+       o grupo que casa mostra os filhos, e o que tem filho que casa abre */
+    function procurar() {
+      if (!procurarEl) return;
+      var termo = procurarEl.value.trim();
+      var busca = window.RosterWork.busca;
+      function casa(nome) { return !termo || !busca || busca.casaTexto(termo, busca.normalizar(nome)); }
+      function visitar(el, paiCasa) {
+        var proprio = paiCasa || casa(el.querySelector('.arvore-nome').textContent);
+        var algum = false;
+        Array.prototype.forEach.call(el.querySelectorAll(':scope > .arvore-filhos > .arvore-grupo'), function (filho) {
+          if (visitar(filho, proprio)) algum = true;
+        });
+        el.classList.toggle('oculto', !(proprio || algum));
+        if (termo && algum) abrirGrupo(el, true);
+        return proprio || algum;
+      }
+      Array.prototype.forEach.call(arvoreEl.querySelectorAll(':scope > .arvore-grupo'), function (el) { visitar(el, false); });
     }
 
     /* desmarca os valores (o "x" da etiqueta na linha "Filtros:") */
@@ -176,13 +207,15 @@
       if (!el) return null;
       var linha = el.querySelector('.arvore-linha');
       var caixa = el.querySelector('.caixa-selecao');
+      var seta = el.querySelector('.arvore-seta');
       el.querySelector('.arvore-nome').textContent = no.rotulo;
+      caixa.setAttribute('aria-label', no.rotulo);   // o nome da opção para o leitor de tela
       if (no.valor != null) el.setAttribute('data-filtro-valor', no.valor);   // por onde o treino acha a opção
 
       if (no.filhos && no.filhos.length) {
-        el.classList.add('arvore-grupo--aberto');
+        abrirGrupo(el, gruposAbertos);
         var folhas = folhasDe(no, []);
-        linha.addEventListener('click', function () { el.classList.toggle('arvore-grupo--aberto'); });
+        linha.addEventListener('click', function () { abrirGrupo(el, !el.classList.contains('arvore-grupo--aberto')); });
         caixa.addEventListener('click', function (evento) { evento.stopPropagation(); alternarValores(folhas); });
         pintores.push(function () {
           var marc = folhas.filter(function (v) { return selecionados.has(v); }).length;
@@ -197,7 +230,8 @@
           if (fe) filhosEl.appendChild(fe);
         });
       } else {
-        el.querySelector('.arvore-seta').classList.add('arvore-seta--oculta');
+        seta.classList.add('arvore-seta--oculta');
+        seta.removeAttribute('aria-expanded');
         linha.addEventListener('click', function () { alternarValores([no.valor]); });
         pintores.push(function () {
           var sel = selecionados.has(no.valor);
@@ -221,11 +255,16 @@
         totalFolhas = folhas.filter(function (v) { return !separadas.has(v); }).length;
         var validos = {};
         folhas.forEach(function (v) { validos[v] = true; });
+        /* sai da escolha o que não está entre as opções; a árvore vazia (sem dados ainda) não tira nada, para a
+           escolha guardada esperar as opções chegarem */
         var podou = false;
-        Array.from(selecionados).forEach(function (v) {
-          if (!validos[v]) { selecionados.delete(v); podou = true; }
-        });
+        if (folhas.length) {
+          Array.from(selecionados).forEach(function (v) {
+            if (!validos[v]) { selecionados.delete(v); podou = true; }
+          });
+        }
         if (podou) arrumar();
+        gruposAbertos = folhas.length <= OPCOES_PARA_PROCURAR;
         pintores = [];
         arvoreEl.textContent = '';
         /* só com opções separadas: sem o "Todos", sem a divisória dele e sem a das separadas */
@@ -237,7 +276,7 @@
         }
         var divisorPosto = soSeparadas;
         arvore.forEach(function (no) {
-          /* uma divisória antes das opções separadas (ex.: Inativos) */
+          /* uma divisória antes das opções separadas (ex.: Incluir inativos) */
           if (no.separado && !divisorPosto) {
             var tplD = document.getElementById('tpl-filtro-divisor');
             if (tplD) arvoreEl.appendChild(tplD.content.cloneNode(true));
@@ -246,6 +285,12 @@
           var fe = montarFilho(no);
           if (fe) arvoreEl.appendChild(fe);
         });
+        /* o Procurar só com muitas opções; o texto que já estava continua valendo na árvore nova */
+        if (procurarEl) {
+          procurarEl.classList.toggle('oculto', gruposAbertos);
+          if (gruposAbertos) procurarEl.value = '';
+          procurar();
+        }
         pintar();
         if (podou) onChange();   /* a seleção mudou: a página re-renderiza com o filtro já podado */
         return;
@@ -253,8 +298,9 @@
       pintar();
     }
 
-    /* liga uma vez o mestre "Todos" */
+    /* liga uma vez o mestre "Todos" e o Procurar */
     if (mestreEl) mestreEl.addEventListener('click', alternarTodos);
+    if (procurarEl) procurarEl.addEventListener('input', procurar);
 
     return {
       definir: definir,
@@ -262,7 +308,9 @@
       temFiltro: temFiltro,
       desmarcar: desmarcar,
       limpar: limpar,
-      resumo: resumo
+      resumo: resumo,
+      selecao: selecao,
+      restaurar: restaurar
     };
   }
 

@@ -259,7 +259,8 @@
 
   /* ---------- a peça refeita (a página refez a linha ou o bloco) ---------- */
 
-  /* a marca passa para a peça nova (e para o que vai junto); a caixa vai atrás dela */
+  /* a marca passa para a peça nova (e para o que vai junto); a caixa vai atrás dela, e a caixa 2 atrás da caixa 1 (a peça
+     nova pode ter outro tamanho, como o título que ganha o horário, e a caixa 1 anda sem mudar de tamanho) */
   function trocarPeca(c, nova, junto) {
     if (atual !== c || !nova) return;
     marcar(c, false);
@@ -271,6 +272,7 @@
     if (!outra) { reposicionar(c); return; }
     if (c.desligar1) { c.desligar1(); c.desligar1 = null; }
     ancorarPeca(c);
+    if (c.c2 && c.lado2) RW.flutuante.posicionar(c.c1, c.c2, true, c.lado2);
   }
 
   /* ---------- fechar ---------- */

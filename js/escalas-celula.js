@@ -85,57 +85,6 @@
 
   function postoCurto(grad) { return POSTO_CURTO[grad] || grad || ''; }
 
-  /* minutos desde as 08:00 (início do dia de serviço); a janela da grade vai de 0 a 1440 */
-  function minDesde8(hhmm) {
-    var p = hhmm.split(':');
-    var t = parseInt(p[0], 10) * 60 + parseInt(p[1] || '0', 10);
-    return t >= 480 ? t - 480 : t + 960;
-  }
-
-  /* os trechos do turno na janela 08h→08h, em % ([início, fim], em ordem); a faixa do horário
-     da tela e a do PDF (escalas-impressao-grade-celula.js) saem daqui */
-  function trechosTurno(periodos) {
-    var trechos = [];
-    (periodos || []).forEach(function (p) {
-      if (!p.inicio) return;
-      var ini = minDesde8(p.inicio);
-      var fim = p.fim ? minDesde8(p.fim) : ini;
-      if (fim <= ini) fim += 1440;
-      if (fim > 1440) fim = 1440;
-      trechos.push([ini / 1440 * 100, fim / 1440 * 100]);
-    });
-    return trechos.sort(function (a, b) { return a[0] - b[0]; });
-  }
-
-  /* gradient no fundo da linha: cinza nas horas FORA do turno e branco no turno,
-     na janela 08h→08h. O JS calcula só as POSIÇÕES (%); a cor vem do tema. Exceção (REGRAS §4) */
-  function fundoTurno(periodos, inverter) {
-    var trechos = trechosTurno(periodos);
-    if (!trechos.length) return '';
-    /* invertido: cinza no fundo, "buracos" transparentes (brancos) nos trechos do turno */
-    /* posGrad() mapeia o tempo [0–100%] para o inset de 4px do canvas (.escala-mes-grafico
-       tem padding: 2px 4px 0). Sem âncoras fixas nos gutters: cada lado só ganha um stop
-       'fora' quando há período fora naquela borda (t0>0 / t1<100). O CSS estende o 1º/último
-       stop real até a borda — fica cinza se fora de serviço às 08h, transparente se de serviço */
-    var fora = 'var(--celula-fundo-fora, var(--fundo-suave))';
-    /* riscado (folga/troca): inverte — o cinza vai DENTRO do trecho (a folga/troca é o tempo
-       fora de serviço), para alinhar com a linha trabalhada e o cinza cobrir só onde o militar
-       não trabalha, cobrindo as duas linhas juntas em vez de meio a meio */
-    var borda = inverter ? 'transparent' : fora;   /* fora dos trechos */
-    var dentro = inverter ? fora : 'transparent';   /* dentro dos trechos */
-    var posGrad = function (pct) {
-      return 'calc(4px + (100% - 8px) * ' + (pct / 100).toFixed(6) + ')';
-    };
-    var paradas = [];
-    trechos.forEach(function (t) {
-      if (t[0] > 0) paradas.push(borda + ' ' + posGrad(t[0]));
-      paradas.push(dentro + ' ' + posGrad(t[0]));
-      paradas.push(dentro + ' ' + posGrad(t[1]));
-      if (t[1] < 100) paradas.push(borda + ' ' + posGrad(t[1]));
-    });
-    return 'linear-gradient(to right, ' + paradas.join(', ') + ')';
-  }
-
   /* o canvas não herda as cores do CSS: lê direto das variáveis do :root as cores cheias de
      estado (--sucesso/--alerta/--erro) — a cor continua vindo do tema, só por outro caminho
      (ver REGRAS §3); o corpo claro da barra é a mesma cor com transparência */
@@ -380,12 +329,6 @@
       else { if (fimEl) fimEl.classList.add('oculto'); if (setaEl) setaEl.classList.add('oculto'); }
       horaWrap.appendChild(par);
     });
-
-    /* fundo preenchido no trecho do horário (exceção: custom property data-driven).
-       Nas linhas riscadas (folga/troca/remanejamento/mudança de dia), inverte: o cinza vai no trecho que ele deixou */
-    var fundo = fundoTurno(p.periodos, p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida'
-      || p.origem === 'mudanca_saida' || p.origem === 'saida_guarnicao');
-    if (fundo) linha.style.setProperty('--turno-fundo', fundo);
     return linha;
   }
 
@@ -494,36 +437,72 @@
   /* a origem do ícone da linha: o estagiário tem o dele */
   function origemDoIcone(p) { return p.estagio ? 'estagio' : p.origem; }
 
+  var oficialLido = {};   // o Oficial de cada dia como a última leitura trouxe (o título na hora parte dele e volta a ele)
+
   /* o Oficial de Área do dia (oficial[iso], da leitura do mês) no lugar dele: o meio do título do dia do calendário ou o
      alto da faixa do dia da Agenda e do Colunas › Unidades. O dia sem a chave (sem escala) fica sem nada; null é o dia com
-     escala e ninguém na função: "Sem Oficial de Área", em vermelho. Devolve se o lugar ficou à vista */
-  function preencherOficial(lugar, oficial, iso) {
+     escala e ninguém na função: "Sem Oficial de Área", em vermelho. Uma linha por Oficial (linhasDoOficial). naHora: o
+     título como vai ficar, até a leitura chegar (escalas-dia-na-grade.js › porOficial). Devolve se o lugar ficou à vista */
+  function preencherOficial(lugar, oficial, iso, naHora) {
     /* a página Op. Verão: os Oficiais de Praia no lugar dele (op-verao-celula.js) */
     if (RosterWork.opVeraoCelula && RosterWork.opVeraoCelula.ativa()) return RosterWork.opVeraoCelula.preencherTitulo(lugar, iso);
     if (!lugar) return false;
     lugar.textContent = '';
     var tem = !!oficial && Object.prototype.hasOwnProperty.call(oficial, iso);
-    var no = tem ? RosterWork.tpl('tpl-escala-oficial') : null;
-    if (no) {
-      var oa = oficial[iso];
-      var grad = no.querySelector('.escala-oficial-grad');
-      grad.textContent = oa ? (oa.grad || '') : '';
-      grad.classList.toggle('oculto', !grad.textContent);
-      no.querySelector('.escala-oficial-nome').textContent = oa ? (oa.nome || '') : RosterWork.mensagens.escala.semOficial;
-      no.classList.toggle('escala-oficial--sem', !oa);
-      lugar.appendChild(no);
-      if (RosterWork.escalasCelulaOficial) RosterWork.escalasCelulaOficial.decorar(no, iso, oa);   // a caixa do título
+    if (tem && !naHora) oficialLido[iso] = oficial[iso];
+    if (tem) {
+      linhasDoOficial(oficial[iso]).forEach(function (l) {
+        var no = RosterWork.tpl('tpl-escala-oficial');
+        if (!no) return;
+        var grad = no.querySelector('.escala-oficial-grad');
+        grad.textContent = l.pessoa ? (l.pessoa.grad || '') : '';
+        grad.classList.toggle('oculto', !grad.textContent);
+        no.querySelector('.escala-oficial-nome').textContent = l.pessoa ? (l.pessoa.nome || '') : RosterWork.mensagens.escala.semOficial;
+        var hora = no.querySelector('.escala-oficial-hora');
+        hora.textContent = l.hora;
+        hora.classList.toggle('oculto', !l.hora);
+        no.classList.toggle('escala-oficial--sem', !l.pessoa);
+        lugar.appendChild(no);
+        if (RosterWork.escalasCelulaOficial) RosterWork.escalasCelulaOficial.decorar(no, iso, l);   // a caixa do título
+      });
     }
-    lugar.classList.toggle('oculto', !no);
-    return !!no;
+    var vista = !!lugar.firstChild;
+    lugar.classList.toggle('oculto', !vista);
+    return vista;
+  }
+
+  /* as linhas do título de um dia: [{ pessoa (null = ninguém), hora (vazia = o dia todo), de, ate (minutos desde as 08h) }].
+     Ninguém: "Sem Oficial de Área"; a leitura sem os horários (sem todos) ou um só o dia todo: o nome, como sempre; senão
+     cada Oficial com o horário e cada pedaço do dia sem ninguém, em ordem */
+  function linhasDoOficial(oa) {
+    var H = RosterWork.horario, texto = RosterWork.mensagens.escala.oficialHoras;
+    if (!oa) return [{ pessoa: null, hora: '', de: 0, ate: 1440 }];
+    if (!oa.todos || !oa.todos.length) return [{ pessoa: oa, hora: '', de: 0, ate: 1440 }];
+    var linhas = oa.todos.map(function (p) {
+      var de = H.emMin(p.inicio), ate = H.emMin(p.fim) || 1440;
+      return { pessoa: p, de: de, ate: ate > de ? ate : 1440 };
+    });
+    var cursor = 0;
+    linhas.slice().sort(function (a, b) { return a.de - b.de; }).forEach(function (l) {
+      if (l.de > cursor) linhas.push({ pessoa: null, de: cursor, ate: l.de });
+      cursor = Math.max(cursor, l.ate);
+    });
+    if (cursor < 1440) linhas.push({ pessoa: null, de: cursor, ate: 1440 });
+    linhas.sort(function (a, b) { return a.de - b.de; });
+    var diaTodo = linhas.length === 1 && linhas[0].de === 0 && linhas[0].ate === 1440;
+    linhas.forEach(function (l) { l.hora = diaTodo ? '' : texto(H.curta(H.hhmm(l.de)), H.curta(H.hhmm(l.ate))); });
+    return linhas;
   }
 
   window.RosterWork.escalasCelula = {
     preencherCelula: preencherCelula,
     /* a linha de um militar (o sobreaviso, escalas-celula-sobreaviso.js, desenha as dele com ela) */
     montarPessoa: montarPessoa,
-    /* o Oficial de Área no título do dia das grades */
+    /* o Oficial de Área no título do dia das grades: as linhas dele (também no PDF) e o da última leitura de cada dia
+       (undefined: o dia não foi lido) */
     preencherOficial: preencherOficial,
+    linhasDoOficial: linhasDoOficial,
+    oficialLido: function (iso) { return oficialLido[iso]; },
     montarGrafico: montarGrafico,
     /* os estagiários de cada hora, da leitura do mês (a dica da faixa) */
     guardarEstagiarios: guardarEstagiarios,
@@ -534,13 +513,12 @@
     /* a dica "Nh · X militares" (e os estagiários) nos gráficos de um elemento fora da grade (a cobertura dos painéis do dia) */
     ligarDica: ligarHover,
     limparObservadores: limparObservadores,
-    /* peças para o PDF das grades: a mesma origem, situação, hora e faixa da tela */
+    /* peças para o PDF das grades: a mesma origem, situação e hora da tela */
     iconeDaOrigem: iconeDaOrigem, origemDoIcone: origemDoIcone,
     iconesDasOrigens: iconesDasOrigens,
     situacao: situacao,
     soHora: soHora,
     /* o posto curto das células pequenas (tela e PDF dos calendários) */
-    postoCurto: postoCurto,
-    trechosTurno: trechosTurno
+    postoCurto: postoCurto
   };
 })();

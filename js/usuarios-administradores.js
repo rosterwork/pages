@@ -256,7 +256,8 @@
     token++;
     var caixa = el('#administradores-filtros');
     filtros = (caixa && RW.filtros) ? RW.filtros.criar(caixa, {
-      aoMudar: function () { if (ativa) { fechar(false); ctx.atualizar(); } }
+      aoMudar: function () { if (ativa) { fechar(false); ctx.atualizar(); } },
+      guardar: 'usuarios-administradores'
     }) : null;
     if (filtros) {
       filtros.definir('papel', [{ rotulo: 'Administradores', valor: 'com' }, { rotulo: 'Sem administração', valor: 'sem' }]);

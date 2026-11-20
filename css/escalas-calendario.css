@@ -83,7 +83,7 @@
 }
 
 /* a célula do Mês, dentro do bloquinho: transparente (o fundo e os estados são do bloquinho);
-   o clique, o foco do teclado e as cores do "fora do turno" seguem da célula */
+   o clique e o foco do teclado seguem da célula */
 .escala-calendario-unidade .escala-mes-celula,
 .escala-calendario-unidade .escala-mes-celula:hover,
 .escala-calendario-unidade .escala-mes-celula--selecionada,

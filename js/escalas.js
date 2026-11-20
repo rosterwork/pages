@@ -496,7 +496,7 @@
         diasPorLinha: quantidadeColunas(),
         filtros: RosterWork.escalasFiltros ? RosterWork.escalasFiltros.resumo() : []
       }, pf ? { titulo: M.titulo, prefixo: M.arquivo, semOficial: true, conferir: null,
-        mostrar: { grafico: false, icones: true, faixa: true } } : {}, aviso));
+        mostrar: { grafico: false, icones: true } } : {}, aviso));
       return;
     }
     if (RosterWork.escalasImpressao) RosterWork.escalasImpressao.abrir(Object.assign({ data: dataPadraoImpressao() }, aviso));

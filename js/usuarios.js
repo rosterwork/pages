@@ -24,12 +24,10 @@
   var contagemVisivel = 0;
   var elContagem = null;
 
-  /* a situação do militar passa no filtro ("Todos" = as normais; Inativos e Correção pendente são
-     acréscimos). Todo afastamento é "Afastado". "Correção pendente" não é situação do militar (ele
-     continua Ativo ou Afastado), então soma às demais em vez de excluir */
+  /* a situação do militar passa no filtro ("Todos" = Ativos e Afastados; Incluir inativos é acréscimo, ver
+     mostrarInativos). Todo afastamento é "Afastado" */
   function pessoaPassaSituacao(pessoa) {
     if (!filtros) return true;
-    if (pessoa.correcao_pendente && filtros.passa('situacao', 'Correção pendente')) return true;
     var afastado = ['Férias', 'Licença', 'Dispensa', 'Missão'].indexOf(pessoa.situacao) >= 0;
     return filtros.passa('situacao', afastado ? 'Afastado' : pessoa.situacao);
   }
@@ -37,6 +35,11 @@
   /* nada marcado = todos os graus */
   function pessoaPassaHierarquia(pessoa) {
     return !filtros || filtros.passa('graus', pessoa.grau_nome);
+  }
+
+  /* o cadastro: com correção de dados pendente ou em dia (o filtro é só do administrador; nada marcado = todos) */
+  function pessoaPassaCadastro(pessoa) {
+    return !filtros || filtros.passa('cadastro', pessoa.correcao_pendente ? 'pendente' : 'em_dia');
   }
 
   /* a pessoa casa com a busca? nome de guerra, nome completo, CPF ou RG (a regra é a mesma dos Afastamentos,
@@ -146,7 +149,7 @@
       .catch(function () { inativosPorUnidade = {}; });
   }
 
-  /* o filtro de situação inclui "Inativos"? (opção só do administrador) */
+  /* o Incluir inativos está marcado? (opção só do administrador) */
   function mostrarInativos() {
     return !!(filtros && RosterWork.sessao.temPapel('pelotao') && filtros.passa('situacao', 'Inativo'));
   }
@@ -198,9 +201,9 @@
     cpfAberto = null;
   }
 
-  /* monta um card de pessoa (aplica hierarquia e busca); devolve true se entrou */
+  /* monta um card de pessoa (aplica hierarquia, cadastro e busca); devolve true se entrou */
   function montarCard(container, tpl, pessoa) {
-    if (!pessoaPassaHierarquia(pessoa)) return false;
+    if (!pessoaPassaHierarquia(pessoa) || !pessoaPassaCadastro(pessoa)) return false;
     var casa = termoBusca ? pessoaCasaBusca(pessoa) : false;
     if (termoBusca && modoBusca === 'filtrar' && !casa) return false;
     var item = tpl.content.cloneNode(true).firstElementChild;
@@ -247,7 +250,7 @@
       if (!pessoaPassaSituacao(pessoa)) return;
       if (montarCard(bloquinho, tpl, pessoa)) adicionou++;
     });
-    /* inativos da unidade: só quando o filtro de situação inclui "Inativos" */
+    /* inativos da unidade: só com o Incluir inativos marcado */
     if (mostrarInativos()) {
       var inativos = inativosPorUnidade[unidade.unidade_id] || [];
       total += inativos.length;
@@ -370,21 +373,23 @@
     termoBusca = '';
     modoBusca = 'marcar';
 
-    /* o botão Filtros (Graus e Situação): cada mudança re-renderiza a árvore */
+    /* o botão Filtros (Graus, Situação e Cadastro): cada mudança re-renderiza a árvore; a escolha fica na sessão */
     filtros = window.RosterWork.filtros.criar(conteudo.querySelector('#usuarios-filtros'), {
-      aoMudar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); }
+      aoMudar: function () { if (window.RosterWork.arvoreUnidades) window.RosterWork.arvoreUnidades.atualizar(); },
+      guardar: 'usuarios'
     });
-    /* Situação: Ativos e Afastados para todos; Correção pendente e Inativos só para administradores, à
-       parte (acréscimos; os inativos vêm de fonte separada) */
+    /* Situação: Ativos e Afastados para todos; Incluir inativos só para administradores, à parte (acréscimo; os
+       inativos vêm de fonte separada). Cadastro só para administradores (sem opção, a coluna não aparece) */
+    var admin = RosterWork.sessao.temPapel('pelotao');
     var opcoesSituacao = [
       { rotulo: 'Ativos', valor: 'Ativo' },
       { rotulo: 'Afastados', valor: 'Afastado' }
     ];
-    if (RosterWork.sessao.temPapel('pelotao')) {
-      opcoesSituacao.push({ rotulo: 'Correção pendente', valor: 'Correção pendente', separado: true });
-      opcoesSituacao.push({ rotulo: 'Inativos', valor: 'Inativo', separado: true });
+    if (admin) opcoesSituacao.push({ rotulo: 'Incluir inativos', valor: 'Inativo', separado: true });
+    if (filtros) {
+      filtros.definir('situacao', opcoesSituacao);
+      filtros.definir('cadastro', admin ? [{ rotulo: 'Em dia', valor: 'em_dia' }, { rotulo: 'Correção pendente', valor: 'pendente' }] : []);
     }
-    if (filtros) filtros.definir('situacao', opcoesSituacao);
 
     /* carrega os inativos em segundo plano; quando chegam, re-renderiza (só aparecem se filtrados) */
     carregarInativos().then(function () {

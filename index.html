@@ -18,11 +18,6 @@
   <!-- a cor da faixa do Android no app: o geral-tema.js preenche com o --fundo-pagina do tema em uso -->
   <meta name="theme-color" content="" />
   <title>Roster Work</title>
-  <script src="componentes/js/geral-tema.js"></script>
-  <script src="componentes/js/geral-aplicativo.js"></script>
-  <script src="componentes/js/geral-conectado.js"></script>
-  <script src="componentes/js/geral-entrada.js"></script>
-  <script src="js/index-sessao.js"></script>
   <link rel="stylesheet" href="css/geral-tema.css" />
   <link rel="stylesheet" href="css/geral-base.css" />
   <link rel="stylesheet" href="componentes/css/geral-botao.css" />
@@ -53,6 +48,7 @@
   <link rel="stylesheet" href="componentes/css/geral-busca.css" />
   <link rel="stylesheet" href="componentes/css/geral-combo-militar.css" />
   <link rel="stylesheet" href="componentes/css/geral-filtros.css" />
+  <link rel="stylesheet" href="componentes/css/geral-exibir.css" />
   <link rel="stylesheet" href="componentes/css/geral-pagina-cabecalho.css" />
   <link rel="stylesheet" href="componentes/css/geral-abas.css" />
   <link rel="stylesheet" href="componentes/css/geral-opcao.css" />
@@ -82,6 +78,12 @@
   <link rel="stylesheet" href="css/index-comunicado.css" />
   <link rel="stylesheet" href="css/index-sidebar.css" />
   <link rel="stylesheet" href="css/index-sessao-vigia.css" />
+  <!-- os scripts vêm depois dos estilos: o navegador só lê o corpo com eles prontos, e a página nunca aparece sem estilo (REGRAS §3, item 13) -->
+  <script src="componentes/js/geral-tema.js"></script>
+  <script src="componentes/js/geral-aplicativo.js"></script>
+  <script src="componentes/js/geral-conectado.js"></script>
+  <script src="componentes/js/geral-entrada.js"></script>
+  <script src="js/index-sessao.js"></script>
 </head>
 <body>
 
@@ -1190,9 +1192,11 @@
   <template id="tpl-filtro">
     <div class="filtro">
       <div class="dropdown-titulo"></div>
+      <!-- o Procurar: só no filtro com mais de 10 opções (geral-filtro-arvore) -->
+      <input type="text" class="campo-entrada filtro-procurar oculto" name="filtro-procurar" maxlength="50" autocomplete="off" placeholder="Procurar" aria-label="Procurar" />
       <div class="arvore-linha filtro-todos">
         <span class="arvore-seta arvore-seta--oculta" aria-hidden="true"><svg class="icone" width="12" height="12"><use href="icones/todos.svg#icone-seta-direita"/></svg></span>
-        <button type="button" class="caixa-selecao" role="checkbox" aria-checked="true">
+        <button type="button" class="caixa-selecao" role="checkbox" aria-checked="true" aria-label="Todos">
           <svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
         </button>
         <span class="arvore-nome">Todos</span>
@@ -3512,10 +3516,11 @@
     </span>
   </template>
 
-  <!-- o Oficial de Área do dia, no título do dia das grades da Escala (escalas-celula.js › preencherOficial): o posto e o
-       nome; o dia com escala e ninguém na função, "Sem Oficial de Área" em vermelho -->
+  <!-- o Oficial de Área do dia, no título do dia das grades da Escala (escalas-celula.js › preencherOficial): o posto, o
+       nome e, quando não é o dia todo, o horário; o dia com escala e ninguém na função, e cada pedaço do dia sem ninguém,
+       "Sem Oficial de Área" em vermelho (um molde por linha) -->
   <template id="tpl-escala-oficial">
-    <span class="escala-oficial"><span class="escala-oficial-grad"></span><span class="escala-oficial-nome"></span></span>
+    <span class="escala-oficial"><span class="escala-oficial-grad"></span><span class="escala-oficial-nome"></span><span class="escala-oficial-hora oculto"></span></span>
   </template>
 
   <template id="tpl-escala-mes-grafico">
@@ -5034,8 +5039,8 @@
       </div>
       <span class="campo-ajuda">Folhas A4 para imprimir. Página contínua para ver na tela: uma página só, sem quebras.</span>
     </div>
-    <!-- o que mostrar: nas grades, o gráfico, os ícones e a faixa de cada célula; no dia, os ícones. Com os ícones, o
-         pé da folha leva a legenda deles -->
+    <!-- o que mostrar: nas grades, o gráfico e os ícones de cada célula; no dia, os ícones. Com os ícones, o pé da
+         folha leva a legenda deles -->
     <div class="grupo-caixa">
       <span class="rotulo-secao"><span data-impressao-num></span>. Mostrar</span>
       <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="grafico">
@@ -5045,10 +5050,6 @@
       <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-mostrar="icones">
         <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
         <span class="arvore-nome">Ícones de origem</span>
-      </button>
-      <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="faixa">
-        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-        <span class="arvore-nome">Faixa do horário</span>
       </button>
       <span class="campo-ajuda">Igual à tela. Desmarque o que não quiser no papel.</span>
     </div>

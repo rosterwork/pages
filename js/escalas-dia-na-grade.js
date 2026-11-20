@@ -11,10 +11,12 @@
    lido de novo (o Salvar do Ciclo, a prévia da Extrajornada): cada
    modo pergunta mesmaGrade antes de ler e chama desenhou depois.
    Quem entra pelo Adicionar neste dia da célula aparece na hora, no
-   grupo dos pontuais (porNova), até a leitura do dia chegar com ele.
+   grupo dos pontuais (porNova), até a leitura do dia chegar com ele; o
+   Oficial de Área que muda pela caixa do título aparece na hora no
+   título (porOficial) e, saindo do pelotão, riscado lá (riscar).
    API: RosterWork.escalasDiaNaGrade.{ temCelulas, refazendo, parou,
    previa, salvou, relerPeriodo, mesmaGrade, desenhou, porNova, tirarNova,
-   semMudanca, unidadesDoDia }
+   semMudanca, unidadesDoDia, porOficial, riscar }
    ============================================================ */
 (function () {
   'use strict';
@@ -70,8 +72,14 @@
 
   function refazendo(unidadeId, iso) { marcarCelula(celulaDe(unidadeId, iso)); }
   function parou(unidadeId, iso) { tirarMarca(celulaDe(unidadeId, iso)); }
-  /* o rascunho voltou ao que a tela mostra antes de a prévia ser pedida: a espera sai, se nenhuma prévia do dia ainda vem */
-  function semMudanca(unidadeId, iso) { if (!lendo[iso]) parou(unidadeId, iso); }
+  /* o rascunho voltou ao que a tela mostra antes de a prévia ser pedida: a espera sai das células do dia (também a da
+     unidade de onde veio o Oficial) e o título volta ao da leitura, se nenhuma prévia do dia ainda vem */
+  function semMudanca(unidadeId, iso) {
+    if (lendo[iso]) return;
+    parou(unidadeId, iso);
+    celulasDoDia(iso).forEach(tirarMarca);
+    voltarOficial(iso);
+  }
 
   /* o dia que acabou de ficar pronto acende verde e volta sozinho à cor de sempre */
   function acender(celula) {
@@ -122,6 +130,43 @@
       celula.insertBefore(grupo, depois || null);
     }
     grupo.appendChild(linha);
+  }
+
+  /* ---------- o Oficial do título (a caixa do título e o Pôr como Oficial de Área, escalas-celula-oficial.js) ---------- */
+
+  /* os lugares do título do dia (o meio do título do calendário, o alto da faixa da Agenda e do Colunas) */
+  function lugaresDoTitulo(iso) {
+    var corpo = corpoDaGrade(), lugares = [];
+    if (corpo) {
+      corpo.querySelectorAll('.escala-oficial[data-iso="' + iso + '"]').forEach(function (o) {
+        if (o.parentNode && lugares.indexOf(o.parentNode) < 0) lugares.push(o.parentNode);
+      });
+    }
+    return lugares;
+  }
+
+  /* o título como vai ficar, na hora, até a leitura do dia chegar (ela refaz o título): oa = o Oficial do dia, com todos */
+  function porOficial(iso, oa) {
+    if (!RosterWork.escalasCelula) return;
+    var mapa = {};
+    mapa[iso] = oa || null;
+    lugaresDoTitulo(iso).forEach(function (l) { RosterWork.escalasCelula.preencherOficial(l, mapa, iso, true); });
+  }
+
+  /* o título volta ao da última leitura */
+  function voltarOficial(iso) {
+    var E = RosterWork.escalasCelula, lido = E ? E.oficialLido(iso) : undefined;
+    if (lido === undefined) return;
+    var mapa = {};
+    mapa[iso] = lido;
+    lugaresDoTitulo(iso).forEach(function (l) { E.preencherOficial(l, mapa, iso); });
+  }
+
+  /* quem sai do pelotão para ser o Oficial: riscado na hora, até a leitura do dia chegar */
+  function riscar(unidadeId, iso, cpf) {
+    var celula = celulaDe(unidadeId, iso);
+    if (!celula) return;
+    celula.querySelectorAll('.linha-escalado[data-cpf="' + cpf + '"]').forEach(function (l) { l.classList.add('linha-escalado--remanejado'); });
   }
 
   /* ---------- a régua do gráfico ---------- */
@@ -191,9 +236,11 @@
     function fim() {
       if (!dia.vigente()) { marcarCelula(celulaDe(dias[0].unidadeId, iso)); return; }
       delete lendo[iso];
-      /* a célula foi refeita: a de agora (a peça antiga saiu da tela) */
+      /* a célula foi refeita: a de agora (a peça antiga saiu da tela); a espera sai também das outras colunas do dia (a da
+         unidade de onde veio o Oficial do título, escalas-celula-oficial.js) */
       celula = celulaDe(dias[0].unidadeId, iso) || celula;
       tirarMarca(celula);
+      celulasDoDia(iso).forEach(tirarMarca);
       RosterWork.escalasPainel.mostrarDia();
     }
     dia.leitura.then(fim, fim);
@@ -243,6 +290,6 @@
   window.RosterWork.escalasDiaNaGrade = {
     temCelulas: temCelulas, refazendo: refazendo, parou: parou, previa: previa, salvou: salvou,
     relerPeriodo: relerPeriodo, mesmaGrade: mesmaGrade, desenhou: desenhou, porNova: porNova, tirarNova: tirarNova,
-    semMudanca: semMudanca, unidadesDoDia: unidadesDoDia
+    semMudanca: semMudanca, unidadesDoDia: unidadesDoDia, porOficial: porOficial, riscar: riscar
   };
 })();

@@ -5,8 +5,8 @@
    esconde ou troca (os textos, a Minha escala, o Colunas, o Filtros,
    a Legenda e o Imprimir, as notas embaixo da barra e a borda amarela
    do dia que ainda pode mudar) e as peças
-   dela: as linhas sem o cinza do horário (o título de cada posto e o
-   Sem posto são o .escala-mes-posto do escalas-mes.css), o dia vazio, os Oficiais
+   dela (o título de cada posto e o Sem posto são o
+   .escala-mes-posto do escalas-mes.css): o dia vazio, os Oficiais
    de Praia no título do dia (um embaixo do outro, com o horário), o
    nome em vermelho de quem está afastado ou de serviço no mesmo
    horário, a caixa 2 de quem trabalha, o Cadastrar guarda-vidas civil
@@ -63,11 +63,6 @@
 
 .op-verao-civil--edita {
   cursor: pointer;
-}
-
-/* as linhas dos guarda-vidas sem o cinza das horas fora do turno (os turnos curtos listravam a célula) */
-.escala-pagina--op-verao .linha-escalado {
-  background: transparent;
 }
 
 /* o dia do período sem ninguém */

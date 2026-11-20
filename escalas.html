@@ -425,8 +425,8 @@
 </template>
 
 <!-- legenda da grade (Mês/Semana/Colunas/Calendário): as cores do gráfico de cobertura (vermelho = a escala
-     não funciona; amarelo = funciona com erro aceitável; o texto do erro fica no painel do dia) e a faixa do
-     horário; os demais grupos vêm do molde da legenda do painel (#tpl-escala-legenda) -->
+     não funciona; amarelo = funciona com erro aceitável; o texto do erro fica no painel do dia), o afastado e a
+     borda amarela; os demais grupos vêm do molde da legenda do painel (#tpl-escala-legenda) -->
 <template id="tpl-escala-legenda-grade">
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Cobertura</span>
@@ -448,10 +448,6 @@
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Na célula</span>
     <div class="escala-legenda-grade escala-legenda-grade--uma">
-      <span class="escala-legenda-item">
-        <span class="escala-legenda-faixa"></span>
-        <span>Horário: o trecho claro é o turno</span>
-      </span>
       <span class="escala-legenda-item">
         <span class="linha-escalado linha-escalado--afastamento"><span class="linha-escalado-grad">Sd.</span><span class="linha-escalado-nome">Nome</span></span>
         <span>Afastado: aparece com o filtro Afastamentos</span>
@@ -731,11 +727,13 @@
   </div>
 </template>
 
-<!-- a caixa 1 do Oficial de Área no título do dia (escalas-celula-oficial.js): com o Oficial pontual, Pôr outro no lugar
-     dele e Remover deste dia; com o que veio de um pelotão, Pôr outro no lugar dele e o Devolver (o texto vem do JS); sem
-     Oficial, Adicionar o Oficial de Área; e sempre o Abrir o painel do dia da companhia -->
+<!-- a caixa 1 do Oficial de Área no título do dia (escalas-celula-oficial.js): o Mudar o horário do serviço (o mesmo da
+     célula, de quem tem um horário só no dia); com o Oficial pontual, Pôr outro no lugar dele e Remover deste dia; com o que
+     veio de um pelotão, Pôr outro no lugar dele e o Devolver (o texto vem do JS); sem Oficial (o dia todo ou a linha
+     vermelha de um pedaço do dia), Adicionar o Oficial de Área; e sempre o Abrir o painel do dia da companhia -->
 <template id="tpl-escala-celula-oficial">
   <div class="escala-celula-oficial">
+    <button type="button" class="dropdown-item oculto" data-acao="horario-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Mudar o horário do serviço</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="outro"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg><span>Pôr outro no lugar dele</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item dropdown-item--perigo oculto" data-acao="remover-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-sair"/></svg><span>Remover deste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="devolver"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span class="escala-celula-oficial-devolver"></span></button>

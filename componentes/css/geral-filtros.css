@@ -21,6 +21,13 @@
   padding: 8px;
 }
 
+/* o Procurar no alto da coluna com mais de 10 opções (geral-filtro-arvore), alinhado às linhas da árvore */
+.filtro-procurar {
+  display: block;
+  width: calc(100% - 16px);
+  margin: 4px 8px 8px;
+}
+
 /* variante só com o ícone (.filtros--icone, também no computador): o nome segue para o leitor de tela e vira a dica,
    sem a seta; o número de filtros ligados no canto, como no celular */
 .filtros--icone .filtros-botao > .botao {

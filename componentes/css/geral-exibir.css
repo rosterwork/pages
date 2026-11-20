@@ -1,7 +1,9 @@
 /* ============================================================
-   USUÁRIOS — menu "Exibir" da barra de controles (usuarios-exibir.js):
-   as opções que mantêm o menu aberto. Os filtros da barra são o
-   componente geral (geral-filtros).
+   EXIBIR — o menu "Exibir" (o olho) das barras de controles: as
+   opções que mantêm o menu aberto, com a marca na escolhida.
+   Usado pela Usuários (usuarios-exibir.js) e pela Extrajornada
+   (extrajornada-filtros.js, a Escala completa). Os filtros da barra
+   são o componente geral (geral-filtros).
    ============================================================ */
 
 /* ---------- menu "Exibir" (cabeçalho): opções que mantêm o menu aberto ---------- */

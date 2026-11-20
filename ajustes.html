@@ -12,8 +12,9 @@
     </div>
     <!-- abas (só administrador): a Distribuição (o ritmo é o bloco 1 dela), o Horário de expediente (um só para a
          companhia e os pelotões), os Feriados (o calendário de cada unidade), os Estágios (as regras de cada estágio da
-         unidade), o Sobreaviso e a Op. Verão (as regras da companhia; só o administrador da companhia vê as duas abas) e a
-         Extrajornada (as regras da companhia para as extras; todo administrador vê, o da companhia muda); quem não
+         unidade), o Sobreaviso e a Op. Verão (as regras da companhia; só o administrador da companhia vê as duas abas), a
+         Extrajornada (as regras da companhia para as extras; todo administrador vê, o da companhia muda) e a Pontuação (o
+         placar da distribuição da Escala, para todas as unidades; todo administrador vê, o geral muda); quem não
          administra fica sem a linha de abas -->
     <div class="abas" id="ajustes-abas">
       <button type="button" class="aba aba--ativa" data-aba="distribuicao">Distribuição</button>
@@ -23,6 +24,7 @@
       <button type="button" class="aba" data-aba="sobreaviso">Sobreaviso</button>
       <button type="button" class="aba" data-aba="op-verao">Op. Verão</button>
       <button type="button" class="aba" data-aba="extrajornada">Extrajornada</button>
+      <button type="button" class="aba" data-aba="pontuacao">Pontuação</button>
     </div>
   </div>
 
@@ -558,8 +560,8 @@
             </div>
             <ol class="ajustes-regras ajustes-regras--numeradas">
               <li class="ajustes-regras-item">Cobrir a falta dos pelotões, na ordem escolhida abaixo.</li>
+              <li class="ajustes-regras-item">Colocar todas as cotas. A que sobra vai para a cidade da companhia.</li>
               <li class="ajustes-regras-item">Cada um no próprio pelotão.</li>
-              <li class="ajustes-regras-item">Colocar todas as cotas.</li>
               <li class="ajustes-regras-item">Fora da cidade da companhia, não passar do necessário.</li>
               <li class="ajustes-regras-item">Quando dois querem o mesmo lugar, fica quem vem primeiro, como escolhido abaixo.</li>
               <li class="ajustes-regras-item">A balança, no fim.</li>
@@ -689,6 +691,151 @@
         <div class="rodape-acoes">
           <button type="button" class="botao" id="regras-extra-cancelar">Cancelar</button>
           <button type="button" class="botao botao--primario" id="regras-extra-salvar">Salvar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pontuação: o placar da distribuição da Escala, para todas as unidades (ajustes-pontuacao.js); o que nunca quebra e a
+         ordem ficam fixos; a balança se ajusta (só o administrador geral) e a prévia dos 14 dias aparece com a mudança -->
+    <section class="geral-corpo-lateral oculto" data-aba-painel="pontuacao">
+      <div class="geral-corpo-lateral-rolagem">
+        <div class="nova-distribuicao-carregando esqueleto-painel esqueleto-conjunto" id="pontuacao-carregando" role="status" aria-label="Carregando">
+          <div class="esqueleto-caixa">
+            <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+          </div>
+        </div>
+        <div class="nova-distribuicao-conteudo oculto" id="pontuacao-conteudo">
+          <p class="nova-distribuicao-ajuda">Como o sistema escolhe quem fica em cada função, em todas as unidades. As regras estão na ordem do que vale mais: a de cima sempre ganha de todas as de baixo juntas. Só a balança, no fim, se ajusta.</p>
+          <div class="grupo-caixa">
+            <span class="rotulo-secao">Nunca quebram</span>
+            <ul class="ajustes-regras">
+              <li class="ajustes-regras-item">O Chefe de Socorro é o mais antigo de serviço.</li>
+              <li class="ajustes-regras-item">O condutor tem a CNH da viatura.</li>
+              <li class="ajustes-regras-item">As regras por militar, Só pode e Não pode.</li>
+            </ul>
+          </div>
+          <div class="grupo-caixa">
+            <div class="ajustes-regras-titulo">
+              <span class="rotulo-secao">A ordem das regras</span>
+              <span class="nova-distribuicao-trava">
+                <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+                <span>Fixa</span>
+              </span>
+            </div>
+            <ol class="ajustes-regras ajustes-regras--numeradas">
+              <li class="ajustes-regras-item">Nenhum erro vermelho: posto abaixo do mínimo, viatura sem condutor, função acumulada sem ninguém, quem só pode uma função fora dela e o que o administrador fixou fora do lugar.</li>
+              <li class="ajustes-regras-item">O que já começou fica como está.</li>
+              <li class="ajustes-regras-item">Cada um na função da sua graduação. Sargento no lugar de soldado pesa mais que no lugar de cabo, e o Chefe de Socorro só dirige quando não há outro habilitado.</li>
+              <li class="ajustes-regras-item">Ninguém faz o Rádio ou o Rancho pela 3ª vez seguida.</li>
+              <li class="ajustes-regras-item">Quem dirige não troca no meio do plantão: quem fica o plantão todo dirige.</li>
+              <li class="ajustes-regras-item">O Rádio Operador não troca no meio do plantão.</li>
+              <li class="ajustes-regras-item">Os avisos amarelos: repetir a função do último serviço, o grau diferente do pedido pela função e o posto abaixo do ideal.</li>
+              <li class="ajustes-regras-item">Quem veio de fora da guarnição, por troca, extra ou pontual, só repete a função quando não há outro jeito.</li>
+              <li class="ajustes-regras-item">A fila: cada um na função que fez há mais tempo.</li>
+              <li class="ajustes-regras-item">A balança, logo abaixo.</li>
+              <li class="ajustes-regras-item">No empate, quem está há mais tempo sem a função.</li>
+            </ol>
+          </div>
+          <div class="grupo-caixa">
+            <span class="rotulo-secao">A balança</span>
+            <span class="subtela-ajuda">Pesa mexer em alguém no meio do plantão contra deixar um mais antigo numa função pior. Normal é o peso de hoje; Pouco é a metade, e Muito, o dobro.</span>
+            <div class="ajustes-balanca" id="pontuacao-balanca">
+              <div class="ajustes-balanca-item" data-chave="viatura">
+                <span class="ajustes-balanca-nome">Trocar de viatura no meio do plantão</span>
+                <span class="dropdown nova-distribuicao-selecao">
+                  <button type="button" class="campo-entrada campo-selecao" aria-label="Trocar de viatura no meio do plantão">
+                    <span class="campo-selecao-texto"></span>
+                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                  </button>
+                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
+                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
+                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
+                  </div>
+                </span>
+                <span class="subtela-ajuda oculto" data-peso="pouco">Com Pouco, só troca quando evita que um mais antigo passe 12 horas numa função pior que a de um mais moderno.</span>
+                <span class="subtela-ajuda oculto" data-peso="normal">Com Normal, só troca quando evita que um mais antigo passe 24 horas numa função pior que a de um mais moderno.</span>
+                <span class="subtela-ajuda oculto" data-peso="muito">Com Muito, só troca quando evita que um mais antigo passe 48 horas numa função pior que a de um mais moderno.</span>
+              </div>
+              <div class="ajustes-balanca-item" data-chave="funcao">
+                <span class="ajustes-balanca-nome">Trocar de função no meio do plantão</span>
+                <span class="dropdown nova-distribuicao-selecao">
+                  <button type="button" class="campo-entrada campo-selecao" aria-label="Trocar de função no meio do plantão">
+                    <span class="campo-selecao-texto"></span>
+                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                  </button>
+                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
+                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
+                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
+                  </div>
+                </span>
+                <span class="subtela-ajuda oculto" data-peso="pouco">Com Pouco, só troca quando evita que um mais antigo passe 6 horas numa função pior.</span>
+                <span class="subtela-ajuda oculto" data-peso="normal">Com Normal, só troca quando evita que um mais antigo passe 12 horas numa função pior.</span>
+                <span class="subtela-ajuda oculto" data-peso="muito">Com Muito, só troca quando evita que um mais antigo passe 24 horas numa função pior.</span>
+              </div>
+              <div class="ajustes-balanca-item" data-chave="plantao">
+                <span class="ajustes-balanca-nome">Mudar o resto do plantão em curso</span>
+                <span class="dropdown nova-distribuicao-selecao">
+                  <button type="button" class="campo-entrada campo-selecao" aria-label="Mudar o resto do plantão em curso">
+                    <span class="campo-selecao-texto"></span>
+                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                  </button>
+                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
+                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
+                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
+                  </div>
+                </span>
+                <span class="subtela-ajuda oculto" data-peso="pouco">Depois de uma troca ou folga no meio do plantão, mudar quem não tinha nada com ela. Com Pouco, cada pessoa mudada pesa 12 horas.</span>
+                <span class="subtela-ajuda oculto" data-peso="normal">Depois de uma troca ou folga no meio do plantão, mudar quem não tinha nada com ela. Com Normal, cada pessoa mudada pesa 24 horas.</span>
+                <span class="subtela-ajuda oculto" data-peso="muito">Depois de uma troca ou folga no meio do plantão, mudar quem não tinha nada com ela. Com Muito, cada pessoa mudada pesa 48 horas.</span>
+              </div>
+              <div class="ajustes-balanca-item" data-chave="mesma">
+                <span class="ajustes-balanca-nome">A antiguidade dentro da mesma graduação</span>
+                <span class="dropdown nova-distribuicao-selecao">
+                  <button type="button" class="campo-entrada campo-selecao" aria-label="A antiguidade dentro da mesma graduação">
+                    <span class="campo-selecao-texto"></span>
+                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                  </button>
+                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
+                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
+                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
+                  </div>
+                </span>
+                <span class="subtela-ajuda oculto" data-peso="pouco">Com Pouco, entre dois militares da mesma graduação, a antiguidade vale um vigésimo da que vale entre graduações diferentes.</span>
+                <span class="subtela-ajuda oculto" data-peso="normal">Com Normal, entre dois militares da mesma graduação, a antiguidade vale um décimo da que vale entre graduações diferentes.</span>
+                <span class="subtela-ajuda oculto" data-peso="muito">Com Muito, entre dois militares da mesma graduação, a antiguidade vale um quinto da que vale entre graduações diferentes.</span>
+              </div>
+            </div>
+          </div>
+          <!-- a prévia: aparece com a mudança; uma unidade por vez (os moldes tpl-pontuacao-*) -->
+          <div class="grupo-caixa oculto" id="pontuacao-como">
+            <span class="rotulo-secao">Como fica nos próximos 14 dias</span>
+            <span class="subtela-ajuda">O que muda na escala a partir do próximo dia de serviço, se você salvar.</span>
+            <div class="ajustes-pontuacao-muda" id="pontuacao-como-lista"></div>
+            <span class="subtela-ajuda oculto" id="pontuacao-como-nada">Nada muda nos próximos 14 dias.</span>
+            <span class="subtela-ajuda oculto" id="pontuacao-como-falha">Não deu para mostrar a prévia agora. O Salvar continua valendo.</span>
+            <div id="pontuacao-como-carregando"></div>
+          </div>
+          <!-- quem não é o administrador geral só lê -->
+          <span class="nova-distribuicao-trava oculto" id="pontuacao-trava">
+            <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+            <span>Só o administrador geral muda a pontuação.</span>
+          </span>
+        </div>
+      </div>
+      <!-- o rodapé de salvar, na largura toda: aparece só com alteração -->
+      <div class="rodape rodape-linha rodape--largo oculto" id="pontuacao-rodape">
+        <span class="rodape-texto">Alterações não salvas.</span>
+        <span class="espacador-flex"></span>
+        <div class="rodape-acoes">
+          <button type="button" class="botao" id="pontuacao-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario" id="pontuacao-salvar">Salvar</button>
         </div>
       </div>
     </section>
@@ -951,7 +1098,7 @@
   <p class="nova-distribuicao-ajuda">O que um militar não pode fazer ou só pode fazer.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-graduacao">
-  <p class="nova-distribuicao-ajuda">O que uma graduação não pode fazer ou só pode fazer. A regra por militar vale mais que esta. Sem ninguém que possa, a função fica com quem estiver, com aviso amarelo.</p>
+  <p class="nova-distribuicao-ajuda">O que uma graduação não pode fazer ou só pode fazer. A regra por militar vale mais que esta.</p>
 </template>
 <template id="tpl-nova-distribuicao-nota-ordem-postos">
   <p class="nova-distribuicao-ajuda">A ordem da lista é a ordem exibida na escala.</p>
@@ -1598,6 +1745,14 @@
       <span class="nova-distribuicao-regra-rotulo">Função</span>
       <span class="nova-distribuicao-espaco" data-espaco="funcao"></span>
     </div>
+    <!-- só no Não pode: o que fazer se só houver a graduação da regra (a pergunta e as opções levam a graduação e a função) -->
+    <div class="nova-distribuicao-regra-linha nova-distribuicao-regra-linha--opcoes nova-distribuicao-se-so-houver oculto">
+      <span class="nova-distribuicao-regra-rotulo nova-distribuicao-se-so-houver-titulo"></span>
+      <div class="nova-distribuicao-opcoes" role="radiogroup" aria-label="Se só houver">
+        <label class="geral-opcao"><input type="radio" data-valor="poe" /><span class="nova-distribuicao-se-so-houver-poe"></span></label>
+        <label class="geral-opcao"><input type="radio" data-valor="vazio" /><span class="nova-distribuicao-se-so-houver-vazio"></span></label>
+      </div>
+    </div>
     <div class="nova-distribuicao-cartao-botoes">
       <button type="button" class="botao nova-distribuicao-remover-regra">Remover regra</button>
     </div>
@@ -1971,4 +2126,16 @@
     <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
     <span class="nova-distribuicao-marca-texto"></span>
   </button>
+</template>
+
+<!-- aba Pontuação: na prévia, o bloco de uma unidade (o nome e as mudanças; nas unidades em que nada muda, os nomes juntos)
+     e uma mudança -->
+<template id="tpl-pontuacao-unidade">
+  <div class="ajustes-pontuacao-grupo">
+    <span class="ajustes-pontuacao-unidade"></span>
+    <ul class="ajustes-regras"></ul>
+  </div>
+</template>
+<template id="tpl-pontuacao-mudanca">
+  <li class="ajustes-regras-item"></li>
 </template>

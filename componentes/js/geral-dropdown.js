@@ -71,13 +71,17 @@
     if (!estaAberto) abrir(dropdown);
   });
 
-  /* Esc fecha o dropdown aberto e impede o fechamento do modal/calendário juntos */
+  /* Esc fecha o dropdown aberto e impede o fechamento do modal/calendário juntos. O foco que estava dentro do menu
+     volta ao botão que o abriu (senão ele se perde quando o menu some) */
   document.addEventListener('keydown', function (evento) {
     if (evento.key !== 'Escape') return;
-    if (document.querySelector('.dropdown--aberto')) {
-      fecharTodos(null);
-      evento.stopImmediatePropagation();
-    }
+    var abertos = document.querySelectorAll('.dropdown--aberto');
+    if (!abertos.length) return;
+    var comFoco = Array.prototype.filter.call(abertos, function (d) { return d.contains(document.activeElement); })[0];
+    var gatilho = comFoco ? gatilhoDe(comFoco) : null;
+    fecharTodos(null);
+    if (gatilho && gatilho.focus) gatilho.focus();
+    evento.stopImmediatePropagation();
   }, true);
 
   window.RosterWork = window.RosterWork || {};

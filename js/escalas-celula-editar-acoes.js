@@ -198,8 +198,8 @@
     if (a.acao !== 'remover') return;
     a.escolha = valor;
     api().aoVivo(function () { a.remocao.aplicar(valor, a.motivo); }, false);
-    /* o pontual respondido sai do dia: não sobra nada para a caixa */
-    if (a.remocao.tipo === 'pontual') { c.fecharTudo(); return; }
+    /* o pontual respondido sai do dia: não sobra nada para a caixa (o Oficial do título sai dele na hora) */
+    if (a.remocao.tipo === 'pontual') { c.fecharTudo(); if (a.aoTirarDoDia) a.aoTirarDoDia(); return; }
     desenhar(c);
   }
 
@@ -227,7 +227,7 @@
     var r = mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: cpf, periodos: mil.janelas.map(copiar) }) : null;
     if (!r) return;
     if (r.tipo === 'subtela') { c.fecharTudo('guardar'); c.abrirPainel(cpf, { fazerAcao: 'remover-dia' }); return; }
-    if (r.tipo === 'sai') { api().mudar(r.aplicar); c.fecharTudo(); return; }
+    if (r.tipo === 'sai') { api().mudar(r.aplicar); c.fecharTudo(); if (a.aoTirarDoDia) a.aoTirarDoDia(); return; }
     vivo(a);
     a.acao = 'remover';
     a.remocao = r;

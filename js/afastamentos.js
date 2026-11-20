@@ -356,7 +356,7 @@
     if (Cx()) Cx().iniciar({ abrirPainel: function (pessoa) { abrirPainel(pecaDoMilitar(pessoa), pessoa); } });
 
     var caixa = conteudo.querySelector('#afastamentos-filtros');
-    filtros = RW.filtros.criar(caixa, { aoMudar: atualizar });
+    filtros = RW.filtros.criar(caixa, { aoMudar: atualizar, guardar: 'afastamentos' });   // a escolha fica na sessão
     barra.situacao = caixa ? caixa.querySelector('[data-filtro="situacao"]') : null;
 
     /* o período, no começo da barra */

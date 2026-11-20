@@ -53,6 +53,7 @@
     if (e.por) frase = P().texto(M().porQuem, { estado: frase, quem: P().completo(ctx, e.por) });
     if (e.estado === 'fora') frase = P().texto(M().foraMotivo, { min: minimoDe(ctx, linha.posto) });
     if (e.causa) frase = P().texto(M().consequencia, { posto: e.causa });
+    if (e.regra_vazia) frase = M().vaziaRegra;
     if (dirige(e, linha, r)) frase = P().texto(M().dirige, { papel: nomePapel(ctx), posto: linha.posto });
     return frase;
   }
@@ -120,7 +121,7 @@
     if (e.estado === 'tem_gente') selo.classList.add('selo--sucesso');
     if (n === 2) selo.classList.add('selo--erro');
     else if (e.estado === 'coberta' || n === 1) selo.classList.add('selo--alerta');
-    if (e.causa || dirige(e, linha, r)) selo.setAttribute('data-dica', dica(ctx, e, linha, r));
+    if (e.causa || e.regra_vazia || dirige(e, linha, r)) selo.setAttribute('data-dica', dica(ctx, e, linha, r));
   }
 
   /* os avisos dos postos na equipe: os erros (abaixo do mínimo, sem condutor) e depois os amarelos (abaixo do

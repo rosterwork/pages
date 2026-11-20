@@ -1,6 +1,6 @@
 /* ============================================================
    TEMA — Automático (segue o aparelho), Claro ou Escuro.
-   Roda SÍNCRONO no <head>, antes do CSS e do corpo, na casca e
+   Roda SÍNCRONO no <head>, depois do CSS e antes do corpo, na casca e
    nas telas de antes do login: sem isso a tela pinta clara e
    "salta" para escura. Escuro = data-tema="escuro" no <html>.
    A escolha vem de rosterwork_preferencias.tema (o login traz
@@ -35,7 +35,7 @@
 
   /* app no celular: a faixa do Android (relógio, bateria) com o fundo do tema em uso, pela etiqueta
      theme-color do <head>. A cor vem do papel --fundo-pagina (o manifesto só tem a do tema claro);
-     antes de o CSS carregar ela ainda não existe, e a faixa é pintada no DOMContentLoaded */
+     a faixa é pintada no DOMContentLoaded */
   function pintarFaixa() {
     var etiqueta = document.querySelector('meta[name="theme-color"]');
     if (!etiqueta) return;

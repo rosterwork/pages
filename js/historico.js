@@ -72,6 +72,7 @@
     extra_disponibilidade: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_prazos: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_regras: { aba: 'Ajustes', icone: 'icone-ajustes' },
+    pontuacao: { aba: 'Ajustes', icone: 'icone-ajustes' },
     atestado: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
     ferias: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
     licenca: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
@@ -131,7 +132,9 @@
       return String(b.criado_em || '').localeCompare(String(a.criado_em || ''));
     });
     if (lista.length === 0) {
-      var vazio = RosterWork.tpl('tpl-historico-vazio');
+      /* havia eventos e os filtros esconderam todos: a frase diz que é dos filtros */
+      var peloFiltro = (itens || []).length > 0 && !!filtros && filtros.temFiltro();
+      var vazio = RosterWork.tpl(peloFiltro ? 'tpl-historico-vazio-filtro' : 'tpl-historico-vazio');
       if (vazio) container.appendChild(vazio);
       return;
     }
@@ -155,10 +158,23 @@
     return lista;
   }
 
+  /* os tipos nos grupos dos cartões (ABAS: Postos, Extrajornada, Afastamentos...), em ordem alfabética; grupo com um
+     tipo só fica só com o tipo */
+  function tiposEmGrupos(eventos) {
+    var grupos = {};
+    distintos(eventos, 'entidade', function (e) { return rotuloTipo(e.entidade); }).forEach(function (opcao) {
+      var grupo = (ABAS[opcao.valor] || {}).aba || opcao.rotulo;
+      (grupos[grupo] = grupos[grupo] || []).push(opcao);
+    });
+    return Object.keys(grupos).sort(function (a, b) { return a.localeCompare(b); }).map(function (grupo) {
+      return grupos[grupo].length === 1 ? grupos[grupo][0] : { rotulo: grupo, filhos: grupos[grupo] };
+    });
+  }
+
   /* a árvore avisa quais eventos estão nas unidades marcadas → alimenta as colunas Tipo e Autor */
   function aoRenderizar(eventos) {
     if (!filtros) return;
-    filtros.definir('tipo', distintos(eventos, 'entidade', function (e) { return rotuloTipo(e.entidade); }));
+    filtros.definir('tipo', tiposEmGrupos(eventos));
     filtros.definir('autor', distintos(eventos, 'autor_cpf', function (e) { return e.autor || e.autor_cpf; }));
   }
 
@@ -188,11 +204,12 @@
 
   /* a navegação chama iniciar() toda vez que a página é exibida */
   function iniciar(conteudo) {
-    /* Tipo e Autor vêm dos eventos carregados: o botão Filtros é novo a cada visita (volta a "Todos";
-       o Período persiste de propósito) */
+    /* Tipo e Autor vêm dos eventos carregados: o botão Filtros é novo a cada visita e volta com a escolha guardada na
+       sessão (o Período também persiste; trocar o período limpa Tipo e Autor) */
     var caixa = conteudo.querySelector('#historico-filtros');
     filtros = (caixa && RosterWork.filtros) ? RosterWork.filtros.criar(caixa, {
-      aoMudar: function () { if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.atualizar(); }
+      aoMudar: function () { if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.atualizar(); },
+      guardar: 'historico'
     }) : null;
     ligarPeriodo(conteudo);
     sincronizarLabelPeriodo(conteudo);

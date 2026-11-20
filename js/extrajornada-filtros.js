@@ -1,13 +1,14 @@
 /* ============================================================
-   EXTRAJORNADA — passo 3: o filtro e a pesquisa da barra
-   Os componentes da Escala (geral-filtros e geral-busca). O filtro
-   Exibir, só com o ícone, tem só a Escala completa: quem está de
-   serviço no dia, em cima das extras, como na Distribuição antiga.
-   A pesquisa de militar marca (realça a vaga, a linha da
+   EXTRAJORNADA — passo 3: o Exibir e a pesquisa da barra
+   O Exibir (o olho; menu do geral-dropdown com o estilo do
+   geral-exibir) tem só a Escala completa: quem está de serviço no
+   dia, em cima das extras, como na Distribuição antiga. Um clique
+   marca ou desmarca, o menu fica aberto e a escolha fica na sessão
+   (rosterwork_preferencias.extrajornada_exibir; começa desmarcada).
+   A pesquisa de militar (geral-busca) marca (realça a vaga, a linha da
    escala e o bloco) ou filtra (esconde as outras) no calendário e,
    com texto, deixa na lista dos voluntários só quem casa.
-   Não cria HTML (os componentes clonam os moldes) nem escreve estilo
-   (só classList).
+   Não cria HTML nem escreve estilo (só classList).
    RosterWork.extrajornadaFiltros.
    ============================================================ */
 (function () {
@@ -15,24 +16,51 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  /* a opção do Exibir: a Escala completa, um acréscimo (começa desmarcada; sem opção comum, o filtro não tem "Todos") */
-  var EXIBIR = [{ rotulo: 'Escala completa', valor: 'escala', separado: true }];
-
   var pagina = null;
-  var filtros = null;
-  var visivel = false;     // o filtro à vista (só na Distribuição)
+  var exibir = null;       // o menu Exibir (o olho)
+  var completa = false;    // a Escala completa marcada
+  var visivel = false;     // o Exibir à vista (só na Distribuição e nos Ajustes)
   var termo = '';
   var modo = 'marcar';     // 'marcar' (realça) | 'filtrar' (esconde quem não casa)
 
-  /* liga o filtro e a pesquisa (uma vez por página): mudar o filtro refaz o calendário; a pesquisa só troca classes */
+  function lerPrefs() {
+    try { return JSON.parse(sessionStorage.getItem('rosterwork_preferencias')) || {}; } catch (e) { return {}; }
+  }
+
+  function guardarCompleta() {
+    var p = lerPrefs();
+    p.extrajornada_exibir = { escala: completa };
+    try { sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(p)); } catch (e) {}
+  }
+
+  /* a marca da opção acompanha a escolha */
+  function marcarExibir() {
+    var opcao = exibir && exibir.querySelector('.exibir-opcao[data-exibir="escala"]');
+    if (!opcao) return;
+    opcao.classList.toggle('exibir-opcao--ativo', completa);
+    opcao.setAttribute('aria-pressed', completa ? 'true' : 'false');
+  }
+
+  /* liga o Exibir e a pesquisa (uma vez por página): a Escala completa refaz o calendário; a pesquisa só troca classes */
   function ligar(el) {
     pagina = el;
     termo = '';
     modo = 'marcar';
-    filtros = RW.filtros ? RW.filtros.criar(el.querySelector('#p3-filtros'), { aoMudar: function () { RW.extrajornadaMontar.redesenhar(); } }) : null;
-    if (filtros) {
-      filtros.definir('exibir', EXIBIR);
-      filtros.mostrar(visivel);
+    completa = !!(lerPrefs().extrajornada_exibir || {}).escala;
+    exibir = el.querySelector('#extrajornada-exibir');
+    if (exibir) {
+      exibir.classList.toggle('oculto', !visivel);
+      marcarExibir();
+      var opcao = exibir.querySelector('.exibir-opcao[data-exibir="escala"]');
+      if (opcao && !opcao.dataset.ligado) {
+        opcao.dataset.ligado = '1';
+        opcao.addEventListener('click', function () {
+          completa = !completa;
+          guardarCompleta();
+          marcarExibir();
+          RW.extrajornadaMontar.redesenhar();
+        });
+      }
     }
     if (RW.busca) RW.busca.criar({ caixa: el.querySelector('#p3-busca'), aoBuscar: function (t, m) { termo = t; modo = m; aplicar(); } });
   }
@@ -58,8 +86,8 @@
   RW.extrajornadaFiltros = {
     ligar: ligar,
     aplicar: aplicar,
-    /* o filtro e a linha "Filtros:" só na Distribuição (a escolha fica guardada) */
-    mostrar: function (sim) { visivel = !!sim; if (filtros) filtros.mostrar(visivel); },
-    escalaCompleta: function () { return !!filtros && filtros.passa('exibir', 'escala'); }
+    /* o Exibir só na Distribuição e nos Ajustes (a escolha fica guardada) */
+    mostrar: function (sim) { visivel = !!sim; if (exibir) exibir.classList.toggle('oculto', !visivel); },
+    escalaCompleta: function () { return completa; }
   };
 })();
