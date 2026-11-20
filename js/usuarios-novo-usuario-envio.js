@@ -43,6 +43,7 @@
     else if (!nasc) erro(nascEl, textos.dataInvalida);
     else if (idadeEm(nasc) < 18) erro(nascEl, textos.idadeMinima);
 
+    if (!selecao('nu-sexo')) erro(campo('nu-sexo'), textos.sexoVazio);
     if (!selecao('nu-cnh')) erro(campo('nu-cnh'), textos.cnhVazia);
 
     /* celular e e-mail são OPCIONAIS no cadastro do admin: são dados da própria
@@ -117,6 +118,7 @@
       p_nome_completo: val('nu-nome-completo'),
       p_rg: soDigitos(val('nu-rg')),
       p_data_nascimento: paraISO(val('nu-nascimento')),
+      p_sexo: selecao('nu-sexo'),
       p_cnh: selecao('nu-cnh'),
       p_celular: soDigitos(val('nu-celular')),
       p_email: val('nu-email'),

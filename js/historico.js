@@ -71,6 +71,7 @@
     extra_alocacao: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_disponibilidade: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
     extra_prazos: { aba: 'Extrajornada', icone: 'icone-extrajornada' },
+    extra_regras: { aba: 'Ajustes', icone: 'icone-ajustes' },
     atestado: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
     ferias: { aba: 'Afastamentos', icone: 'icone-afastamentos' },
     licenca: { aba: 'Afastamentos', icone: 'icone-afastamentos' },

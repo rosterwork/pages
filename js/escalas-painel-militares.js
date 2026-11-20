@@ -43,7 +43,8 @@
     return { caixa: caixa, linhas: grupo.linhas };
   }
 
-  /* embaixo do nome: as funções dele no dia e o horário sem função (em vermelho) */
+  /* embaixo do nome: as funções dele no dia e o horário sem função (em vermelho); o Chefe de Socorro ou o Oficial de
+     Área que saiu da cadeira dele (semFuncao.papel) tem o papel no lugar do "Sem função" */
   function funcoesEmbaixo(linha, cpf, semFuncao) {
     var api = ed(), el = RosterWork.tpl('tpl-escala-militares-funcoes');
     if (!el) return;
@@ -52,8 +53,9 @@
       var t = api.funcaoNoPosto(f.funcao, f.posto);
       if (lugares.indexOf(t) < 0) lugares.push(t);
     });
+    if (semFuncao && semFuncao.papel && lugares.indexOf(semFuncao.papel) < 0) lugares.push(semFuncao.papel);
     el.querySelector('.escala-militares-funcoes-texto').textContent = msg().militaresFuncoes(lugares);
-    if (semFuncao) {
+    if (semFuncao && !semFuncao.papel) {
       var horas = lugares.length ? api.horas.textoPeriodos(semFuncao.periodos || []) : '';
       el.querySelector('.escala-militares-sem-funcao').textContent = msg().militaresSemFuncao(horas, lugares.length > 0);
     }

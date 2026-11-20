@@ -105,28 +105,38 @@
   }
 
   /* ---------- 7. Quem escolher ---------- */
-  function resumoCriterio(k, nome, falta) {
+  /* por função e posto (Efetivo · ABTR-14462): a regra de todos os lugares e as exceções de um lugar (o 1º, o 2º...). O
+     Quem escolher vem do rascunho (quem_escolher) ou, sem ele, da conta do banco; mexer copia o da conta para o rascunho,
+     e a tela manda só o quem_escolher (nova-distribuicao-dados.js tira o critério de cada lugar, que é o jeito de antes) */
+
+  /* uma linha do cartão fechado por informação: o critério, o aviso, a CNH (Condutor) e o rodízio */
+  function resumoCriterio(k, base) {
     var linhas = [];
     if (k && k.tipo != null) {
-      /* uma informação por linha: o critério, o aviso, a CNH (Condutor) e o rodízio */
       linhas.push(P().texto(M().criterios[k.tipo], {
         perfil: k.perfil || '', grau: k.grau || '', sentido: k.sentido == null ? '' : M().sentidos[k.sentido]
       }));
       if (k.tipo >= 2 && k.aviso != null) linhas.push(M().avisoLinha[k.aviso]);
-      if (P().partes(nome).funcao === 'Condutor') linhas.push(M().comCarteira);
+      if (base === 'Condutor') linhas.push(M().comCarteira);
       if (k.rodizio) linhas.push(M().comRodizio);
     }
-    if (falta) linhas.push({ texto: M().faltaResponder, falta: true });
     return linhas;
   }
 
-  function opcoesCriterio(lugar, ctx, api, nome, k) {
+  function minuscula(t) { return t ? t.charAt(0).toLowerCase() + t.slice(1) : ''; }
+
+  /* a exceção numa linha só: "Exceção: o 1º Rádio Operador é um Sd.1ªCl. ou o mais próximo mais antigo, com aviso
+     amarelo, com rodízio" */
+  function linhaExcecao(e, rotulo, base) {
+    return P().texto(M().quemExcecao, { lugar: rotulo, escolha: resumoCriterio(e, base).map(minuscula).join(', ') });
+  }
+
+  /* as escolhas de um critério (a regra de todos ou uma exceção); mudar(fn) muda o critério no rascunho; nome = o grupo
+     das bolinhas (um por critério, porque o cartão pode ter vários) */
+  function opcoesCriterio(lugar, ctx, k, mudar, falta, nome) {
     var graus = (ctx.calc && ctx.calc.graus) || {};
     var listaGraus = ctx.ehCia ? (graus['praça'] || []).concat(graus.oficial || []) : (graus['praça'] || []);
-    var falta = P().pendente(ctx, 'criterio:' + nome);
-    function mudar(fn) { api.mudar(ctx.lado, function (x) { x.criterios[nome] = x.criterios[nome] || {}; fn(x.criterios[nome]); }); }
-
-    var opcoes = P().bolinhas(P().tpl('criterio'), 'nova-distribuicao-criterio', function (v) { return Number(v) === k.tipo; }, function (v) {
+    var opcoes = P().bolinhas(P().tpl('criterio'), nome, function (v) { return Number(v) === k.tipo; }, function (v) {
       mudar(function (c) {
         c.tipo = Number(v);
         if (c.tipo <= 1 && !c.perfil && !ctx.ehCia) c.perfil = 'praça';
@@ -155,6 +165,97 @@
     lugar.appendChild(opcoes);
   }
 
+  /* as funções com pessoa própria, por função e posto, na sequência da Ordem de importância:
+     [{ grupo: 'Efetivo · ABTR-14462', base, posto, lugares: [{ nome, k, rotulo }] }]; k = o 1º, o 2º... na ordem do lugar
+     (o mesmo dos nomes da tela e do banco) */
+  function grupos(ctx) {
+    var porNome = {};
+    var contas = {};
+    ((ctx.calc && ctx.calc.funcoes) || []).forEach(function (f) {
+      if (f.papel) return;
+      var base = f.funcao.replace(/ \d+$/, '');
+      var chave = f.posto + '|' + base;
+      contas[chave] = (contas[chave] || 0) + 1;   // as funções vêm na ordem do lugar dentro do posto
+      porNome[f.nome] = { base: base, posto: f.posto, k: contas[chave], rotulo: f.tela || f.funcao };
+    });
+    var lista = [];
+    var vistos = {};
+    ((ctx.calc && ctx.calc.respostas && ctx.calc.respostas.ordem) || ctx.resp.ordem || []).forEach(function (nome) {
+      var f = porNome[nome];
+      if (!f) return;
+      var grupo = f.base + ' · ' + f.posto;
+      if (!vistos[grupo]) {
+        vistos[grupo] = { grupo: grupo, base: f.base, posto: f.posto, lugares: [] };
+        lista.push(vistos[grupo]);
+      }
+      vistos[grupo].lugares.push({ nome: nome, k: f.k, rotulo: f.rotulo });
+    });
+    lista.forEach(function (g) { g.lugares.sort(function (a, b) { return a.k - b.k; }); });
+    return lista;
+  }
+
+  function quemDaConta(ctx) { return (ctx.calc && ctx.calc.respostas && ctx.calc.respostas.quem_escolher) || {}; }
+
+  /* o Quem escolher de um grupo: o do rascunho ou, sem ele, o da conta */
+  function quemDe(ctx, grupo) {
+    var q = (ctx.resp.quem_escolher || quemDaConta(ctx))[grupo] || {};
+    return { regra: q.regra || {}, excecoes: q.excecoes || [] };
+  }
+
+  /* muda o Quem escolher de um grupo no rascunho; na primeira vez, copia o da conta (o jeito novo) */
+  function mudarQuem(ctx, api, grupo, fn) {
+    api.mudar(ctx.lado, function (x) {
+      if (!x.quem_escolher) x.quem_escolher = JSON.parse(JSON.stringify(quemDaConta(ctx)));
+      var q = x.quem_escolher[grupo] = x.quem_escolher[grupo] || {};
+      q.regra = q.regra || {};
+      q.excecoes = q.excecoes || [];
+      fn(q);
+    });
+  }
+
+  /* o cartão aberto: a função de um lugar só tem só as escolhas; com dois ou mais lugares, "Todos os Efetivos" e as
+     exceções (cada uma com o lugar, a lixeira e as escolhas dela) */
+  function montarQuem(lugar, ctx, api, g, q, faltaRegra) {
+    var nome = 'nova-distribuicao-criterio-' + g.grupo;
+    var mudarRegra = function (fn) { mudarQuem(ctx, api, g.grupo, function (x) { fn(x.regra); }); };
+    if (g.lugares.length < 2) {
+      opcoesCriterio(lugar, ctx, q.regra, mudarRegra, faltaRegra, nome);
+      return;
+    }
+    var titulo = P().tpl('quem-todos');
+    titulo.textContent = P().texto(M().quemTodos, { plural: M().plurais[g.base] || g.base });
+    lugar.appendChild(titulo);
+    opcoesCriterio(lugar, ctx, q.regra, mudarRegra, faltaRegra, nome);
+    var bloco = P().tpl('quem-excecoes');
+    bloco.querySelector('.nova-distribuicao-quem-ajuda').textContent = P().texto(M().quemAjuda, { funcao: g.base });
+    var lista = bloco.querySelector('.nova-distribuicao-quem-lista');
+    var usados = q.excecoes.map(function (e) { return e.lugar; });
+    q.excecoes.forEach(function (e, i) {
+      var caixa = P().tpl('quem-excecao');
+      var livres = g.lugares.filter(function (l) { return l.k === e.lugar || usados.indexOf(l.k) < 0; });
+      caixa.querySelector('[data-espaco="lugar"]').appendChild(P().selecao(livres.map(function (l) { return { valor: l.k, texto: l.rotulo }; }),
+        e.lugar, function (v) { mudarQuem(ctx, api, g.grupo, function (x) { x.excecoes[i].lugar = v; }); },
+        { rotulo: M().rotuloLugar, travado: ctx.soLeitura }));
+      var remover = caixa.querySelector('.nova-distribuicao-remover');
+      if (ctx.soLeitura) remover.classList.add('oculto');
+      else remover.addEventListener('click', function () { mudarQuem(ctx, api, g.grupo, function (x) { x.excecoes.splice(i, 1); }); });
+      opcoesCriterio(caixa.querySelector('.nova-distribuicao-quem-escolha'), ctx, e, function (fn) {
+        mudarQuem(ctx, api, g.grupo, function (x) { fn(x.excecoes[i]); });
+      }, P().pendente(ctx, 'criterio:' + g.grupo + ':' + e.lugar), nome + '-' + i);
+      lista.appendChild(caixa);
+    });
+    P().erros(ctx, 'criterio:' + g.grupo).forEach(function (frase) { P().erroCampo(lista, frase); });
+    bloco.querySelector('.nova-distribuicao-quem-nenhuma').classList.toggle('oculto', q.excecoes.length > 0);
+    var adicionar = bloco.querySelector('.nova-distribuicao-quem-adicionar');
+    var livre = g.lugares.filter(function (l) { return usados.indexOf(l.k) < 0; })[0];
+    if (ctx.soLeitura || !livre) adicionar.classList.add('oculto');
+    else adicionar.addEventListener('click', function () {
+      /* a exceção nova: o primeiro lugar livre, com uma cópia da regra de todos */
+      mudarQuem(ctx, api, g.grupo, function (x) { x.excecoes.push(Object.assign(JSON.parse(JSON.stringify(x.regra)), { lugar: livre.k })); });
+    });
+    lugar.appendChild(bloco);
+  }
+
   function escolher(corpo, ctx, api) {
     corpo.appendChild(P().tpl('nota-escolher'));
     var u = P().unidade(corpo, ctx);
@@ -164,12 +265,22 @@
         P().trava(lugar, P().texto(M().papelFixo, { perfil: ctx.ehCia ? 'oficial' : 'praça' }));
       });
     }
-    /* na mesma sequência da Ordem de importância */
-    (ctx.resp.ordem || []).forEach(function (nome) {
-      var k = (ctx.resp.criterios || {})[nome] || {};
-      var falta = P().pendente(ctx, 'criterio:' + nome);
-      P().cartao(u, api, ctx, 'criterio-' + nome, P().texto(M().quemSenta, { funcao: P().completo(ctx, nome) }),
-        resumoCriterio(k, nome, falta), function (lugar) { opcoesCriterio(lugar, ctx, api, nome, k); }, falta, { muda: 'criterio:' + nome });
+    grupos(ctx).forEach(function (g) {
+      var q = quemDe(ctx, g.grupo);
+      var chave = 'criterio:' + g.grupo;
+      var faltaRegra = P().pendente(ctx, chave);
+      var comErro = faltaRegra || P().erros(ctx, chave).length > 0
+        || ((ctx.calc && ctx.calc.pendencias) || []).some(function (p) { return p.indexOf(chave + ':') === 0; });
+      var linhas = resumoCriterio(q.regra, g.base);
+      if (g.lugares.length > 1) {
+        q.excecoes.forEach(function (e) {
+          var l = g.lugares.filter(function (x) { return x.k === e.lugar; })[0];
+          if (l) linhas.push(linhaExcecao(e, l.rotulo, g.base));
+        });
+      }
+      if (comErro) linhas.push({ texto: M().faltaResponder, falta: true });
+      P().cartao(u, api, ctx, 'criterio-' + g.grupo, P().texto(M().quemSenta, { funcao: P().postoCurto(g.posto) + ' · ' + g.base }),
+        linhas, function (lugar) { montarQuem(lugar, ctx, api, g, q, faltaRegra); }, comErro, { muda: 'quem:' + g.grupo });
     });
   }
 

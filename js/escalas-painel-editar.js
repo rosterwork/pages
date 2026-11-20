@@ -800,7 +800,10 @@
     ctx.sugestao = null;
     ctx.ultima = null;
     if (antes && antes !== dados) {
-      var mudou = diferenca(antes, dados);
+      /* com o Mudar de unidade que acabou de entrar no rascunho, a outra unidade também (a conta do Como fica) */
+      var o = outraNaPrevia();
+      if (o) o.usada = true;
+      var mudou = o && o.depois ? diferenca([antes, o.antes], [dados, o.depois]) : diferenca(antes, dados);
       if (mudou.length || sugestao) ctx.ultima = { mudou: mudou, sugestao: sugestao, mudancas: mapaMudancas() };
     }
     ctx.dadosAntes = antes || dados;   // o aviso de quem assume o Chefe de Socorro compara com o dia antes desta mudança
@@ -811,29 +814,56 @@
     avisarCelula(dados);   // a caixa da célula aberta no mesmo dia, sobre a lista do painel (sub.ouvir)
   }
 
-  /* as funções e os horários de cada militar desta unidade numa leitura do dia (quem está sem função entra sem nada) */
-  function lugaresPorMilitar(dados) {
+  /* as funções e os horários de cada militar numa leitura do dia, ou em várias juntas (as duas unidades do Mudar de
+     unidade: quem sai de uma e entra na outra fica numa entrada só); quem está sem função entra sem nada */
+  function lugaresPorMilitar(leituras) {
     var r = {};
-    ((dados && dados.postos) || []).forEach(function (po) {
-      (po.funcoes || []).forEach(function (f) {
-        (f.militares || []).forEach(function (m) {
-          var x = r[m.cpf] = r[m.cpf] || { nome: nomeDe(m), lista: [] };
-          (m.periodos || []).forEach(function (pr) { x.lista.push({ funcao: f.nome, posto: po.nome, hi: pr.hi, hf: pr.hf }); });
+    [].concat(leituras || []).forEach(function (dados) {
+      ((dados && dados.postos) || []).forEach(function (po) {
+        (po.funcoes || []).forEach(function (f) {
+          (f.militares || []).forEach(function (m) {
+            var x = r[m.cpf] = r[m.cpf] || { nome: nomeDe(m), lista: [] };
+            (m.periodos || []).forEach(function (pr) { x.lista.push({ funcao: f.nome, posto: po.nome, posto_id: po.id, hi: pr.hi, hf: pr.hf }); });
+          });
         });
       });
+      ((dados && dados.sem_funcao) || []).forEach(function (m) { r[m.cpf] = r[m.cpf] || { nome: nomeDe(m), lista: [] }; });
     });
-    ((dados && dados.sem_funcao) || []).forEach(function (m) { r[m.cpf] = r[m.cpf] || { nome: nomeDe(m), lista: [] }; });
     return r;
   }
-  /* quem mudou de função ou de horário entre duas leituras: [{ cpf, nome, antes:[{funcao, posto, hi, hf}], depois }] */
+  /* quem mudou de função ou de horário entre duas leituras (ou dois grupos de leituras, os mesmos dias de unidades
+     diferentes): [{ cpf, nome, antes:[{funcao, posto, posto_id, hi, hf}], depois, sem_funcao (sem função depois) }] */
   function diferenca(antes, depois) {
-    var a = lugaresPorMilitar(antes), d = lugaresPorMilitar(depois), cpfs = {};
+    var a = lugaresPorMilitar(antes), d = lugaresPorMilitar(depois), cpfs = {}, sem = {};
     Object.keys(a).concat(Object.keys(d)).forEach(function (k) { cpfs[k] = true; });
-    function marca(l) { return l.map(function (x) { return [x.funcao, x.posto, x.hi, x.hf].join('|'); }).sort().join(';'); }
+    [].concat(depois || []).forEach(function (dd) { ((dd && dd.sem_funcao) || []).forEach(function (m) { sem[m.cpf] = true; }); });
+    function marca(l) { return l.map(function (x) { return [x.funcao, x.posto_id || x.posto, x.hi, x.hf].join('|'); }).sort().join(';'); }
     return Object.keys(cpfs).map(function (cpf) {
       var x = a[cpf] || { lista: [] }, y = d[cpf] || { lista: [] };
-      return { cpf: cpf, nome: y.nome || x.nome || '', antes: x.lista, depois: y.lista };
+      return { cpf: cpf, nome: y.nome || x.nome || '', antes: x.lista, depois: y.lista, sem_funcao: !!sem[cpf] };
     }).filter(function (m) { return marca(m.antes) !== marca(m.depois); });
+  }
+
+  /* a conta da outra unidade do Mudar de unidade (o Como fica, escalas-painel-remanejar-como.js): { iso, unidadeId (a do
+     painel), antes, depois (as leituras do dia dela, a gravada e a prévia), marca (o rascunho da conta), usada (a nota O que
+     mudou da lista já a mostrou) }. A nota da lista e a do Salvar acham nela os postos dela */
+  var outra = null;
+  function outraUnidade(antes, depois, marca) {
+    if (!ctx) return;
+    outra = { iso: ctx.iso, unidadeId: ctx.unidadeId, antes: antes, depois: depois, marca: marca, usada: false };
+  }
+  /* o rascunho do Dia como a prévia o vê (o que diz se a conta da outra unidade ainda vale) */
+  function marcaDaPrevia() { return rasc && base ? JSON.stringify(previaDia()) : ''; }
+  /* a conta da outra unidade que vale para a prévia de agora: a do mesmo dia e do mesmo rascunho, uma vez só */
+  function outraNaPrevia() {
+    if (!outra || outra.usada || !ctx || outra.iso !== ctx.iso || String(outra.unidadeId) !== String(ctx.unidadeId)) return null;
+    return outra.marca && outra.marca === marcaDaPrevia() ? outra : null;
+  }
+  /* as leituras do dia onde achar os postos das frases: a desta unidade e, com o Mudar de unidade, as da outra */
+  function leiturasDoDia() {
+    var l = [ctx && ctx.dados];
+    if (outra && ctx && outra.iso === ctx.iso && String(outra.unidadeId) === String(ctx.unidadeId)) l.push(outra.depois, outra.antes);
+    return l.filter(Boolean);
   }
 
   function podeDesfazer() { return !!ctx && ctx.admin && !ctx.emSub && !!base && pilhaDesfazer.length > 0; }
@@ -1075,8 +1105,9 @@
      (na comparação, também quem saiu, riscado). O grupo sem número ("Efetivo", "Rádio Operador", "Estagiário") junta os
      lugares da mesma função (f.partes, do mesclarFuncoes): as pessoas na ordem de antiguidade, cada linha com o lápis do
      lugar dela, e os lugares vazios no fim. No Chefe de Socorro com o Condutor (o mesmo militar), o menu é o do
-     Condutor; o Chefe de Socorro e o Oficial de Área sozinhos têm só a parte do dia (a função é sempre do mais antigo do
-     dia) */
+     Condutor; o Chefe de Socorro e o Oficial de Área sozinhos têm o Mudar para outra função e a parte do dia (o papel
+     é sempre do mais antigo do dia e vai junto com ele); o papel que já foi junto com ele para outra função do posto,
+     só a parte do dia (o lugar dele muda pela linha dessa função) */
   function linhasFuncao(caixa, posto, f) {
     var partes = f.partes || [f];
     var p = pecas();
@@ -1106,6 +1137,9 @@
         cfg = { tipo: 'funcao', grupo: ancora, posto: posto, funcao: condutor, rotulo: rotulos.join(' e '), militar: mc, periodos: mc.periodos || [] };
       } else if (BLOQUEADAS.test(f.nome)) {
         cfg.tipo = 'papel';
+        cfg.levado = (posto.funcoes || []).some(function (o) {
+          return !BLOQUEADAS.test(o.nome) && (o.militares || []).some(function (x) { return x.cpf === m.cpf; });
+        });
       } else if (f.partes) {
         /* o grupo sem número: o cartão mostra o nome da tela; o estagiário, o menu dele (escalas-painel-linha-menu.js) */
         cfg.rotulo = rotulos[0];
@@ -1229,10 +1263,10 @@
   }
 
   /* uma função de um bloco só para ver (o Oficial de Área, o Chefe de Socorro, o Cabo de Dia, a Extrajornada, o
-     estagiário): a pessoa está no posto dela, então o lápis traz só a parte do dia do menu, e só de quem serve nesta
-     unidade no dia; o Oficial de Área da companhia, para quem administra a companhia, traz o Ver o dia na companhia (o
-     dia dele mora lá; a aba Militares de lá abre com o menu dele); o Cabo de Dia sem ninguém, só para quem administra,
-     em amarelo */
+     estagiário): a pessoa está no posto dela, então o Chefe de Socorro e o Oficial de Área de quem serve nesta unidade
+     no dia têm o lápis só com a parte do dia do menu (os outros, sem lápis); o Oficial de Área da companhia, para quem
+     administra a companhia, traz o Ver o dia na companhia (o dia dele mora lá; a aba Militares de lá abre com o menu
+     dele); o Cabo de Dia sem ninguém, só para quem administra, em amarelo */
   function linhasExibida(caixa, f) {
     var grupo = novoGrupo([f.nome], f.semNinguem.length ? 'alerta' : null);
     if (!grupo) return;
@@ -1240,10 +1274,11 @@
     var E = RosterWork.paginas && RosterWork.paginas.escalas;
     var cia = /^(oficial de área|of\. área)$/i.test(f.nome || '') && RosterWork.sessao.temPapel('companhia') && E && E.companhiaDe
       ? E.companhiaDe(ctx.unidadeId) : null;
+    var papel = /^(chefe de socorro|chef\. soc\.|oficial de área|of\. área)$/i.test(f.nome || '');
     f.militares.forEach(function (m) {
       var linha = linhaMilitar(m, {});
       if (linha && (funcoesDoMilitar(m.cpf).length || semFuncao.indexOf(m.cpf) >= 0)) {
-        menuNaLinha(linha, { tipo: 'papel', militar: m, periodos: m.periodos || [] });
+        menuNaLinha(linha, { tipo: papel ? 'papel' : 'exibida', exibida: true, militar: m, periodos: m.periodos || [] });
       } else if (linha && cia && String(cia.id) !== String(ctx.unidadeId)) {
         menuNaLinha(linha, { tipo: 'companhia', militar: m, periodos: m.periodos || [], companhia: cia });
       }
@@ -1267,13 +1302,15 @@
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);
   }
 
-  /* Sem função: quem está de serviço sem função em algum horário (título vermelho, depois dos postos). Para o admin,
-     o lápis de cada um abre o menu (Pôr numa função e a parte do dia, escalas-painel-linha-menu.js) */
+  /* Sem função: quem está de serviço sem função em algum horário (título vermelho, depois dos postos; só com o Chefe de
+     Socorro ou o Oficial de Área que saiu da cadeira dele, m.papel, sem o vermelho: não é erro). Para o admin, o lápis
+     de cada um abre o menu (Pôr numa função e a parte do dia, escalas-painel-linha-menu.js) */
   function caixaSemFuncao(sem) {
     if (!sem.length) return null;
     var caixa = RosterWork.painel.criarCaixa(msg().semFuncaoRotulo);
     if (!caixa) return null;
-    caixa.classList.add('grupo-caixa--posto-erro', 'escala-edicao-sem-funcao');   // a classe nomeia a caixa para o passo a passo
+    caixa.classList.add('escala-edicao-sem-funcao');   // a classe nomeia a caixa para o passo a passo
+    if (sem.some(function (m) { return !m.papel; })) caixa.classList.add('grupo-caixa--posto-erro');
     var grupo = novoGrupo([], null);
     if (!grupo) return caixa;
     function ancora() { return grupo.el; }
@@ -1356,10 +1393,51 @@
     });
   }
 
-  /* "Condutor da ABT-01" (o posto pelo nome, na leitura do dia) */
-  function lugarTexto(x) {
-    var po = ((ctx.dados && ctx.dados.postos) || []).filter(function (o) { return o.nome === x.posto; })[0];
+  /* "Condutor da ABT-01" (o posto pelo id ou pelo nome, nas leituras do dia: a desta unidade e, com o Mudar de unidade,
+     as da outra) */
+  function lugarTexto(x, leituras) {
+    var po = null;
+    (leituras || leiturasDoDia()).some(function (d) {
+      po = ((d && d.postos) || []).filter(function (o) { return x.posto_id ? o.id === x.posto_id : o.nome === x.posto; })[0] || null;
+      return !!po;
+    });
     return po ? funcaoNoPosto(x.funcao, po) : [pecas().nomeSemNumero(x.funcao), x.posto].filter(Boolean).join(' ');
+  }
+
+  /* a frase de um militar no O que mudou (a nota da lista e o Como fica do Mudar de unidade): x = { cpf, nome, antes,
+     depois, sem_funcao } (diferenca ou o banco); leituras = onde achar os postos; semFuncao = { cpf: true } de quem ficou
+     sem função. Só o que mudou: as funções que ele deixou e as que ganhou (as que continuam ficam de fora); null quando,
+     juntando as horas, nada mudou para ele */
+  function fraseMudou(x, leituras, semFuncao) {
+    var L = msg().linha;
+    /* cada lugar com as horas juntas (o dia cortado em trechos repete a mesma função), pelo posto e pelo texto */
+    function porLugar(lista) {
+      var r = {};
+      lista.forEach(function (l) {
+        var texto = lugarTexto(l, leituras), k = (l.posto_id || l.posto) + '|' + texto;
+        r[k] = r[k] || { texto: texto, faixas: [] };
+        r[k].faixas.push(faixa(l));
+      });
+      Object.keys(r).forEach(function (k) { r[k].faixas = uniao(r[k].faixas); });
+      return r;
+    }
+    function textos(r, chaves) {
+      var t = chaves.map(function (k) { return r[k].texto; });
+      return t.filter(function (n, i) { return t.indexOf(n) === i; });
+    }
+    var a = porLugar(x.antes || []), d = porLugar(x.depois || []);
+    var antes = Object.keys(a), depois = Object.keys(d);
+    var mesmos = antes.length === depois.length && antes.every(function (k) { return d[k]; });
+    if (mesmos && antes.every(function (k) { return JSON.stringify(a[k].faixas) === JSON.stringify(d[k].faixas); })) return null;
+    var horas = uniao([].concat.apply([], depois.map(function (k) { return d[k].faixas; }))).map(periodo);
+    var deixou = antes.filter(function (k) { return !d[k]; }), ganhou = depois.filter(function (k) { return !a[k]; });
+    var sem = x.sem_funcao || !!(semFuncao && semFuncao[x.cpf]);
+    return !antes.length ? L.mudouEntrou(x.nome, textos(d, depois))
+      : !depois.length ? (sem ? L.mudouSemFuncao(x.nome, textos(a, antes)) : L.mudouSaiu(x.nome, textos(a, antes)))
+      : mesmos ? L.mudouHorario(x.nome, textoPeriodos(horas))
+      : !ganhou.length ? L.mudouDeixou(x.nome, textos(a, deixou))
+      : !deixou.length ? L.mudouGanhou(x.nome, textos(d, ganhou))
+      : L.mudouPassou(x.nome, textos(a, deixou), textos(d, ganhou));
   }
 
   /* O que mudou na última gravação: uma frase por militar que mudou de lugar e, quando a troca deixou alguém sem
@@ -1370,15 +1448,8 @@
     var nota = RosterWork.tpl('tpl-escala-edicao-mudou');
     if (!nota) return;
     var L = msg().linha, lista = nota.querySelector('.escala-edicao-mudou-lista');
-    var semFuncao = {};
+    var semFuncao = {}, leituras = leiturasDoDia();
     ((ctx.dados && ctx.dados.sem_funcao) || []).forEach(function (m) { semFuncao[m.cpf] = true; });
-    /* cada lugar com as horas juntas (o dia cortado em trechos repete a mesma função): { "Condutor da ABT-01": [[ini, fim]] } */
-    function porLugar(lista) {
-      var r = {};
-      lista.forEach(function (x) { var k = lugarTexto(x); r[k] = (r[k] || []).concat([faixa(x)]); });
-      Object.keys(r).forEach(function (k) { r[k] = uniao(r[k]); });
-      return r;
-    }
     u.mudou.forEach(function (x) {
       /* quem passou o serviço para outro dia: a frase da mudança de dia */
       var md = u.mudancas && u.mudancas[x.cpf];
@@ -1387,19 +1458,8 @@
         if (it) { it.textContent = L.mudouDia(x.nome, md.para, md.horas); lista.appendChild(it); }
         return;
       }
-      var a = porLugar(x.antes || []), d = porLugar(x.depois || []);
-      var antes = Object.keys(a), depois = Object.keys(d);
-      var mesmos = antes.length === depois.length && antes.every(function (k) { return d[k]; });
-      if (mesmos && antes.every(function (k) { return JSON.stringify(a[k]) === JSON.stringify(d[k]); })) return;
-      var horas = uniao([].concat.apply([], depois.map(function (k) { return d[k]; }))).map(periodo);
-      /* só o que mudou: as funções que ele deixou e as que ganhou (as que continuam ficam de fora) */
-      var deixou = antes.filter(function (k) { return !d[k]; }), ganhou = depois.filter(function (k) { return !a[k]; });
-      var frase = !antes.length ? L.mudouEntrou(x.nome, depois)
-        : !depois.length ? (semFuncao[x.cpf] ? L.mudouSemFuncao(x.nome, antes) : L.mudouSaiu(x.nome, antes))
-        : mesmos ? L.mudouHorario(x.nome, textoPeriodos(horas))
-        : !ganhou.length ? L.mudouDeixou(x.nome, deixou)
-        : !deixou.length ? L.mudouGanhou(x.nome, ganhou)
-        : L.mudouPassou(x.nome, deixou, ganhou);
+      var frase = fraseMudou(x, leituras, semFuncao);
+      if (!frase) return;
       var item = RosterWork.tpl('tpl-escala-edicao-mudou-item');
       if (item) { item.textContent = frase; lista.appendChild(item); }
     });
@@ -1915,6 +1975,12 @@
       acharPosto: acharPosto,
       papeis: papeis,
       funcaoNoPosto: funcaoNoPosto,
+      /* o O que mudou: quem mudou entre duas leituras (ou dois grupos delas) e a frase de cada um; o Como fica do Mudar
+         de unidade usa os dois e entrega a conta da outra unidade (outraUnidade(antes, depois, marcaDaPrevia())) */
+      diferenca: diferenca,
+      fraseMudou: fraseMudou,
+      outraUnidade: outraUnidade,
+      marcaDaPrevia: marcaDaPrevia,
       noLocal: noLocal,
       verMilitar: verMilitar,
       /* as peças da lista, para a aba Militares (escalas-painel-militares.js) */

@@ -150,6 +150,34 @@ html:not([data-menu-recolhido]) .cabecalho-logo {
   color: var(--texto-fraco);
 }
 
+/* Pular para o conteúdo: o primeiro do Tab; fora da vista até o foco do teclado, então aparece no canto, por cima de
+   tudo (a camada das dicas), e leva ao main (index-navegacao.js) */
+.pular-conteudo {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 40;
+  padding: 8px 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-superficie);
+  box-shadow: var(--sombra-flutuante);
+  color: var(--texto-forte);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pular-conteudo:not(:focus-visible) {
+  clip-path: inset(50%);
+}
+
+/* o main e o título da tela recebem o foco pelo código (o Pular e a troca de tela): sem o anel, que é dos controles */
+.conteudo:focus,
+.conteudo h1[tabindex="-1"]:focus {
+  outline: none;
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    ============================================================ */
@@ -185,9 +213,27 @@ html:not([data-menu-recolhido]) .cabecalho-logo {
     min-width: 0;
   }
 
+  /* o caminho encolhe pelo começo: a unidade escolhida (o trecho forte) fica inteira, e os trechos de antes recebem
+     as reticências */
   html[data-celular] .cabecalho-unidades .seletor-texto {
+    display: flex;
+    overflow: hidden;
+  }
+
+  html[data-celular] .cabecalho-unidades .seletor-trecho {
+    flex: 0 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  html[data-celular] .cabecalho-unidades .seletor-trecho--forte {
+    flex-shrink: 0;
+  }
+
+  /* o " / " entre os trechos guarda o espaço antes da barra, que o trecho em flex tiraria */
+  html[data-celular] .cabecalho-unidades .seletor-trecho::before {
+    white-space: pre;
   }
 
   /* o tema fica no Meu perfil e a tela cheia é só do computador; o espaçador sai porque o seletor já ocupa o

@@ -59,7 +59,9 @@
       /* o operacional da unidade sem guarnição (o grupo Fora da escala); quem voltou de um afastamento há até 5 dias, o dia */
       case 'fora': frases.push(p.aviso && p.voltou_em ? d.foraVoltou(diaMes(p.voltou_em)) : d.fora); break;
     }
-    if (p.remanejado) frases.push(d.veio(m.de));
+    /* o remanejado: na unidade para onde foi (o grupo Remanejados da grade), de onde veio; na dele, quem fica nas duas,
+       onde mais ele está */
+    if (p.remanejado) frases.push(p.grupo && p.grupo !== 'remanejado' ? d.tambem(m.para) : d.veio(m.de));
     if (p.extra_servico && p.extra_servico.length) frases.push(t.extraServicoDica);
     return frases.join('\n');
   }

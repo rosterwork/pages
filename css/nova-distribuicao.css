@@ -145,6 +145,25 @@
 .nova-distribuicao-criterio-aviso,
 .nova-distribuicao-fora-aviso { padding: 0 8px 0 32px; }
 
+/* o Quem escolher da função com dois ou mais lugares: depois da regra de todos, o traço e as exceções (cada uma numa
+   caixa com o lugar, a lixeira e as escolhas dela) */
+.nova-distribuicao-quem-excecoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+}
+
+.nova-distribuicao-quem-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nova-distribuicao-quem-lista:empty { display: none; }
+
 /* o que vem com a opção do condutor: a caixa do erro amarelo e o aviso do "Não, nunca", recuados até o texto dela */
 .nova-distribuicao-condutor-aviso { padding-left: 32px; }
 

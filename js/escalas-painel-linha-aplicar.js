@@ -163,20 +163,31 @@
     });
   }
 
-  /* Liberar para o sistema: o fixado nos horários da linha (ou o tirar que deixou a função vazia) sai; o sistema refaz
-     o dia mexendo o mínimo */
+  /* o Chefe de Socorro (ou o Oficial de Área) que saiu da cadeira dele: o tirar com o cpf dele na função especial */
+  var PAPEL = /^(chefe de socorro|oficial de área)$/i;
+  function papelTirado(a, cpf, periodos) {
+    return a.acao === 'tirar' && a.cpf === cpf && PAPEL.test(a.nome_funcao || '') && cruzaAlgum(a, periodos);
+  }
+
+  /* Voltar ao automático: o fixado nos horários da linha (ou o tirar que deixou a função vazia) sai; o sistema refaz
+     o dia mexendo o mínimo. Em Sem função, o Chefe de Socorro que saiu da cadeira dele volta para ela */
   function liberar(cfg) {
     var api = ed(), r = api.rascunho(), m = cfg.militar;
     r.ajustes = r.ajustes.filter(function (a) {
+      if (cfg.tipo === 'sem') return !papelTirado(a, m.cpf, cfg.periodos);
       if (!api.noLocal(a, cfg.posto, cfg.funcao)) return true;
       if (cfg.tipo === 'funcao') return !(a.acao === 'colocar' && a.cpf === m.cpf && cruzaAlgum(a, cfg.periodos));
       return !(a.acao === 'tirar' && cruzaAlgum(a, cfg.periodos));
     });
   }
-  /* o Liberar vale para o fixado da linha, ou para o vazio que veio de um tirar */
+  /* o Voltar ao automático vale para o fixado da linha, para o vazio que veio de um tirar e, em Sem função, para o Chefe
+     de Socorro que saiu da cadeira dele */
   function podeLiberar(cfg) {
     var api = ed();
     if (cfg.tipo === 'funcao') return !!cfg.militar.fixado;
+    if (cfg.tipo === 'sem') {
+      return !!cfg.militar && api.rascunho().ajustes.some(function (a) { return papelTirado(a, cfg.militar.cpf, cfg.periodos); });
+    }
     if (cfg.tipo !== 'vaga') return false;
     return api.rascunho().ajustes.some(function (a) { return a.acao === 'tirar' && api.noLocal(a, cfg.posto, cfg.funcao) && cruzaAlgum(a, cfg.periodos); });
   }

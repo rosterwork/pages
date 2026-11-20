@@ -186,8 +186,10 @@
         var e = (l.estados || [])[0] || { estado: 'vazia' };
         var tr = P().tpl('simulacao-linha');
         postoCelula(tr.querySelector('.nova-distribuicao-col-posto'), l.posto);
-        /* a função própria aparece pela cadeira da pessoa no posto ("Efetivo 2"; "Efetivo 1 · Chefe de Socorro e Condutor") */
-        tr.querySelector('.nova-distribuicao-col-funcao').textContent = e.estado === 'tem_gente' && e.cadeira ? e.cadeira : P().rotulo(ctx, l.nome);
+        /* a função própria aparece pela cadeira da pessoa no posto, com o nome da tela ("1º Efetivo"; "Chefe de Socorro e
+           Condutor"; sem ele, o nome de antes, "Efetivo 2") */
+        tr.querySelector('.nova-distribuicao-col-funcao').textContent = e.estado === 'tem_gente' && (e.cadeira_tela || e.cadeira)
+          ? (e.cadeira_tela || e.cadeira) : P().rotulo(ctx, l.nome);
         tr.querySelector('.nova-distribuicao-col-quem').textContent = e.pessoa || '';
         situacao(ctx, tr.querySelector('.nova-distribuicao-situacao'), e, l, r);
         var outro = tr.querySelector('.nova-distribuicao-outro-grau');

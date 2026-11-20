@@ -309,7 +309,13 @@
   gap: 0;
 }
 
-/* início → fim no molde do horário, com os dois campos de data e os dias ao lado */
+/* início → fim no molde do horário, com os dois campos de data e os dias ao lado; sem lugar ao lado (a caixa 2 da
+   grade), os dias descem para a linha de baixo e a data nunca corta */
+.ficha-periodo-datas {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
 .ficha-periodo-datas .horario-par {
   min-width: 0;
 }
@@ -317,7 +323,7 @@
 .ficha-periodo-datas .campo-entrada {
   flex: 0 1 112px;
   width: 112px;
-  min-width: 0;
+  min-width: 104px;   /* cabe o dd/mm/aaaa inteiro */
   text-align: center;
 }
 

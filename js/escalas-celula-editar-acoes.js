@@ -50,13 +50,14 @@
 
   function vivo(a) { if (!a.vivo) { a.vivo = true; api().comecarVivo(); } }
 
-  /* a resposta está pela metade? (o horário fora de onde ele pode ficar, ou a pergunta do pontual sem resposta) */
+  /* a resposta está pela metade? (o horário fora de onde ele pode ficar, a pergunta do pontual sem resposta, ou a do
+     Oficial de Área que vem de um pelotão, se sai de lá ou fica nas duas, escalas-celula-oficial.js) */
   function pelaMetade(a) {
     if (a.acao === 'horario') {
       var c = a.sessao.calcular();
       return !c.ok || (c.pergunta && !a.sessao.est.banco);
     }
-    return !!a.remocao && a.remocao.tipo === 'pontual' && !a.escolha;
+    return (!!a.remocao && a.remocao.tipo === 'pontual' && !a.escolha) || !!a.origemFalta;
   }
 
   /* o item termina: o que está concluído fica no rascunho (um passo do desfazer) e o dia é lido de novo com ele; o que
@@ -64,7 +65,8 @@
   function terminar(a, modo) {
     var acao = a.acao, tinha = a.vivo;
     if (acao === 'remover-guarnicao') RW.escalasPainelCiclo.fecharPergunta(modo === 'largar' ? 'largar' : 'guardar');
-    var metade = tinha && (acao === 'horario' || !!a.remocao) && pelaMetade(a);
+    var metade = tinha && (acao === 'horario' || !!a.remocao || !!a.origemFalta) && pelaMetade(a);
+    a.origemFalta = false;
     a.vivo = false;
     a.acao = null;
     if (!tinha || !api().diaAberto()) return;   // o dia da célula, ou o do painel aberto nele
@@ -310,7 +312,16 @@
     'mudar-dia': painelNo('mudar-dia'),
     'mudar-unidade': painelNo('mudar-unidade'),
     'registrar-troca': painelNo('registrar-troca'),
-    'oficial-area': function (botao, c) { var cpf = c.a.cpf; c.fecharTudo(); RW.escalasCelulaOficial.porComoOficial(cpf); },
+    /* a caixa 2 com a pergunta se ele sai daqui ou fica nas duas (o cartão da célula, sem o horário); a resposta faz */
+    'oficial-area': function (botao, c) {
+      var a = c.a, el = RW.tpl('tpl-escala-celula-cartao');
+      if (!el) return;
+      a.acao = 'oficial-area';
+      a.botao = botao;
+      el.querySelector('.escala-celula-cartao-horario').classList.add('oculto');
+      RW.escalasCelulaOficial.perguntarComo(el.querySelector('.escala-celula-pergunta'), a.cpf, function () { c.fecharTudo(); });
+      a.caixa.segunda(botao, el, textoDo(botao));
+    },
     devolver: painelNo('devolver'),
     'mudar-extra': function (botao, c) { c.fecharTudo('guardar'); c.abrirPainel(null, { secao: 'extra' }); },
     'abrir-painel': function (botao, c) { var cpf = c.a.cpf; c.fecharTudo('guardar'); c.abrirPainel(cpf); }
@@ -663,7 +674,7 @@
     var escolhido = null;
     var g = {
       uid: a.unidadeId, iso: a.iso, letra: letra,
-      mudar: q('.escala-celula-guarnicao-mudar'), info: q('.escala-celula-guarnicao-info'),
+      mudar: q('.escala-celula-guarnicao-mudar'), info: q('.escala-celula-guarnicao-info'), quando: q('.escala-celula-guarnicao-quando'),
       efeito: RW.escalasPainelCiclo.efeito(q('.escala-celula-guarnicao-efeito')),
       analise: { chave: '', aviso: null, pedido: 0 },
       vale: function () { return el.isConnected; },

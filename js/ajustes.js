@@ -5,13 +5,15 @@
    Horário de expediente (um só para a companhia e os pelotões),
    Feriados (o calendário de cada unidade), Estágios (as regras de
    cada estágio da unidade), Sobreaviso e Op. Verão (as regras da
-   companhia; as duas abas só para o administrador da companhia).
+   companhia; as duas abas só para o administrador da companhia) e
+   Extrajornada (as regras das extras da companhia; todo administrador
+   vê, o da companhia muda).
    Sair de uma aba com
    edição não salva pergunta antes. Quem não administra fica sem as
    abas e vê na Distribuição "Página só do administrador.". Cada aba
    mora no seu arquivo: nova-distribuicao*.js, ajustes-horario.js,
-   ajustes-feriados.js, ajustes-estagios*.js, ajustes-sobreaviso.js e
-   ajustes-op-verao.js.
+   ajustes-feriados.js, ajustes-estagios*.js, ajustes-sobreaviso.js,
+   ajustes-op-verao.js e ajustes-extrajornada.js.
    As preferências pessoais (tema) moram no Meu perfil (cabeçalho).
    ============================================================ */
 (function () {
@@ -20,14 +22,14 @@
   window.RosterWork = window.RosterWork || {};
   window.RosterWork.paginas = window.RosterWork.paginas || {};
 
-  /* ---------- abas (Distribuição · Horário de expediente · Feriados · Estágios · Sobreaviso · Op. Verão) ---------- */
+  /* ---------- abas (Distribuição · Horário de expediente · Feriados · Estágios · Sobreaviso · Op. Verão · Extrajornada) ---------- */
   var abaAtual = null;   // a aba à mostra
 
   /* o arquivo de cada aba: a Distribuição inicia com a página; as outras, ao abrir a aba (ativar) */
   function modulo(nome) {
     return { distribuicao: RosterWork.novaDistribuicao, horario: RosterWork.ajustesHorario, feriados: RosterWork.ajustesFeriados,
              estagios: RosterWork.ajustesEstagios, sobreaviso: RosterWork.ajustesSobreaviso,
-             'op-verao': RosterWork.ajustesOpVerao }[nome] || null;
+             'op-verao': RosterWork.ajustesOpVerao, extrajornada: RosterWork.ajustesExtrajornada }[nome] || null;
   }
 
   function mostrarAba(conteudo, nome) {
@@ -74,6 +76,8 @@
       abas.querySelector('[data-aba="op-verao"]').classList.toggle('oculto', !companhia);
       if (companhia && RosterWork.ajustesSobreaviso) RosterWork.ajustesSobreaviso.montar(conteudo);
       if (companhia && RosterWork.ajustesOpVerao) RosterWork.ajustesOpVerao.montar(conteudo);
+      /* a Extrajornada: todo administrador vê; quem não administra a companhia só lê */
+      if (RosterWork.ajustesExtrajornada) RosterWork.ajustesExtrajornada.montar(conteudo);
       if (RosterWork.abas) RosterWork.abas.ligar(abas, function (aba) { trocarAba(conteudo, aba); });
     }
     abaAtual = 'distribuicao';

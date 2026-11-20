@@ -150,7 +150,8 @@
     cnh_incompativel: 'cnhIncompativel',
     regra_proibida:   'regraProibida',
     exclusivo_fora:   'exclusivoFora',
-    grau_diferente:   'grauDiferente'
+    grau_diferente:   'grauDiferente',
+    chefe_dirige_regra: 'chefeDirigeRegra'
   };
 
   function defsProblemas(m) {
@@ -576,6 +577,9 @@
       function (p) { return { militar: militar(p), funcao: nomeSemNumero(p.funcao) }; });
     porOcorrencia('grau_diferente', cat.grauDiferente, function (p) { return p.cpf + '|' + p.funcao; },
       function (p) { return { militar: militar(p), funcao: nomeSemNumero(p.funcao) }; });
+    /* o Chefe de Socorro posto de Condutor pelo administrador contra a regra da Distribuição (uma linha por viatura) */
+    porOcorrencia('chefe_dirige_regra', cat.chefeDirigeRegra, function (p) { return p.cpf + '|' + p.posto_id; },
+      function () { return {}; });
     var det = detalharAvisosMotor(postos, presentes, lista);   // quem + vaga + motivo, para o detalhe expansível
     [['grau_por_falta', 'grauRebaixado'], ['rodizio_quebrado', 'rodizioRepetido'],
      ['afastado', 'afastadoTroca'], ['regra_graduacao', 'regraGraduacao']].forEach(function (par) {

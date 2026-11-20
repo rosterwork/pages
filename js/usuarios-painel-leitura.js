@@ -112,6 +112,7 @@
     linha(b, 'CPF', formatarCpf(p.cpf));
     linha(b, 'RG', p.rg ? RosterWork.campos.mascararRg(soDigitos(p.rg)) : '');
     linha(b, 'Nascimento', formatarData(p.data_de_nascimento), p.idade != null ? p.idade + ' anos' : '');
+    linha(b, 'Sexo', p.sexo);
     linha(b, 'CNH', p.cnh);
     linha(b, 'Celular', formatarCelular(p.celular));
     linha(b, 'E-mail', p.email);

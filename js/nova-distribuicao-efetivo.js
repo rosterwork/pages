@@ -20,7 +20,7 @@
 
   function linhaFuncao(lista, f) {
     var p = P().tpl('funcao');
-    p.querySelector('.nova-distribuicao-funcao-nome').textContent = f.curto || f.rotulo || (f.papel ? f.funcao + ' · ' + f.papel : f.funcao);
+    p.querySelector('.nova-distribuicao-funcao-nome').textContent = f.tela || f.curto || f.rotulo || (f.papel ? f.funcao + ' · ' + f.papel : f.funcao);
     if (f.papel) P().trava(p, f.externa ? M().travaCompanhia : M().travaPapel);
     lista.appendChild(p);
   }

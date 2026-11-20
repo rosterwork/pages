@@ -614,9 +614,7 @@
 .extrajornada-voluntarios-numero-valor.extrajornada-cor--erro,
 .extrajornada-bloco-num b.extrajornada-cor--erro { color: var(--erro); }
 
-/* Repartir por (o campo de seleção) e as cotas da companhia em texto, quando são a soma das unidades */
-.extrajornada-reparticao .campo-selecao { min-width: 160px; }
-
+/* o jeito de repartir e as cotas da companhia em texto, quando são a soma das unidades */
 .extrajornada-banda-texto {
   font-weight: 600;
   color: var(--texto-forte);

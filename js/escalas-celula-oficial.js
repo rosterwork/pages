@@ -13,11 +13,14 @@
    painel do dia da companhia, que fica em todos. Quem está de folga
    entra nas horas livres, com o banco em Contabilizar; quem está de
    serviço num pelotão vem pelo remanejamento, só neste dia (o motivo
-   já dito), com a frase de que sai de lá. O sistema faz dele o
-   Oficial (o mais antigo de serviço na companhia, de Sub.Ten. para
-   cima). O menu do dia de quem é Sub.Ten. ou mais antigo, num pelotão,
-   tem o Pôr como Oficial de Área, com o mesmo remanejamento (podeSer,
-   porComoOficial). O dia de mais de 7
+   já dito), e responde antes se sai de lá (o próximo mais antigo vira
+   o Chefe de Socorro) ou fica nas duas unidades (Na unidade de
+   origem, as frases do painel). O sistema faz dele o Oficial (o mais
+   antigo de serviço na companhia, de Sub.Ten. para cima). O menu do
+   dia de quem é Sub.Ten. ou mais antigo, num pelotão, tem o Pôr como
+   Oficial de Área, com a mesma pergunta e o mesmo remanejamento
+   (podeSer, perguntarComo na caixa 2 da célula, perguntarNaLinha
+   embaixo da linha do painel). O dia de mais de 7
    dias atrás abre o aviso (o painel só por ele); o painel aberto, o
    dia na fila do recálculo e o Calendário do celular abrem o painel.
    O título ganha a borda no mouse (quem mexe) e a tracejada com
@@ -33,6 +36,8 @@
   var OFICIAL = /^oficial de área$/i;
   var marcando = false;   // a marca dos títulos já vai ser posta no próximo quadro
   var graus = null;       // a antiguidade de cada posto, lida uma vez (o Pôr como Oficial de Área)
+  var pergunta = null;    // a pergunta do Pôr como Oficial de Área aberta embaixo de uma linha do painel (uma por vez)
+  var conta = 0;          // nome único para as bolinhas de cada pergunta
 
   function api() { return RW.escalasPainelEditar.sub; }
   function A() { return RW.escalasCelulaAcoes; }
@@ -176,51 +181,70 @@
   }
 
   /* escolhido o nome: ele entra e, no Pôr outro, o de antes sai, ao vivo (um passo do desfazer). Quem vem de um pelotão
-     deixa a frase embaixo do nome, e a caixa fica; quem sai com as horas no banco responde antes se elas saem dele (até a
-     resposta, o Salvar fica desligado, e a caixa fechada sem ela desfaz tudo); sem nada a dizer, a caixa fecha */
+     responde antes se sai de lá ou fica nas duas (até a resposta, nada muda e o Salvar fica desligado); quem sai com as
+     horas no banco responde se elas saem dele (até a resposta, o Salvar fica desligado). A caixa fechada com pergunta sem
+     resposta desfaz tudo; tudo respondido, ou sem nada a perguntar, a caixa fecha */
   function escolheu(item, c, el, sai) {
-    var a = c.a, s = item.m.servico_em, nota = el.querySelector('.escala-celula-oficial-nota');
+    var a = c.a, s = item.m.servico_em, cia = c.dia.unidadeId;
     a.escolhido = item;
     a.remocao = sai && sai.r ? sai.r : null;
+    a.fica = false;
+    a.origemFalta = !!s;
     A().vivo(a);
-    aplicar(a, c.dia.unidadeId, sai);
-    nota.classList.toggle('oculto', !s);
-    if (s) nota.querySelector('.nota-texto').textContent = L().saiDoPelotao(nomeDe(item), s.unidade || '');
-    var r = a.remocao, caixa = el.querySelector('.escala-celula-pergunta');
-    if (r && r.tipo === 'pontual') {
-      if (!caixa.classList.contains('oculto')) return;
+    aplicar(a, cia, sai);
+    var r = a.remocao, banco = !!r && r.tipo === 'pontual';
+    function fim() { if (!a.origemFalta && (!banco || a.escolha)) c.fecharTudo(); }
+    var origem = el.querySelector('.escala-celula-oficial-origem');
+    origem.classList.toggle('oculto', !s);
+    if (s) {
+      perguntarOrigem(origem, nomeDe(item), s.unidade || '', c.dia.unidadeNome, function (fica) {
+        a.fica = fica;
+        a.origemFalta = false;
+        aplicar(a, cia, sai);
+        fim();
+      });
+    }
+    var caixa = el.querySelector('.escala-celula-oficial-banco');
+    if (banco && caixa.classList.contains('oculto')) {
       A().pergunta(caixa, { texto: r.texto, sim: r.sim, nao: r.nao, naoPrimeiro: false, escolha: a.escolha }, function (v) {
         a.escolha = v;
-        aplicar(a, c.dia.unidadeId, sai);
-        c.fecharTudo();
+        aplicar(a, cia, sai);
+        fim();
       });
-      return;
     }
-    if (!s) c.fecharTudo();
+    if (!s && !banco) c.fecharTudo();
+  }
+
+  /* Na unidade de origem (as frases do painel): ele sai do pelotão neste dia (lá, o próximo mais antigo vira o Chefe de
+     Socorro) ou fica nas duas unidades; nenhuma marcada. aoResponder(fica) */
+  function perguntarOrigem(caixa, nome, de, para, aoResponder) {
+    A().pergunta(caixa, { texto: L().remanejarSai(nome, de), sim: L().remanejarSoNa(para), nao: L().remanejarNasDuas(de, para),
+      naoPrimeiro: false, escolha: null }, function (v) { aoResponder(v === 'nao'); });
   }
 
   /* o rascunho do Dia volta à foto e recebe a saída do Oficial de antes (o Devolver; o pontual, com a resposta ou sem
-     pergunta) e a entrada do escolhido; pela metade, o Salvar fica desligado */
+     pergunta) e a entrada do escolhido; pela metade, o Salvar fica desligado (sem a resposta da origem, nada entra) */
   function aplicar(a, cia, sai) {
-    var r = a.remocao, falta = !!r && r.tipo === 'pontual' && !a.escolha;
+    var r = a.remocao, faltaBanco = !!r && r.tipo === 'pontual' && !a.escolha;
+    if (a.origemFalta) { api().aoVivo(function () {}, true); return; }
     api().aoVivo(function () {
       if (sai && sai.tipo === 'pelotao') api().devolverRemanejado(sai.cpf);
-      else if (r && !falta) r.aplicar(a.escolha);
-      entrar(a.escolhido, cia);
-    }, falta);
+      else if (r && !faltaBanco) r.aplicar(a.escolha);
+      entrar(a.escolhido, cia, a.fica);
+    }, faltaBanco);
   }
 
   /* quem entra: de folga, como pontual, nas horas livres, com o banco em Contabilizar; de serviço num pelotão, o
-     remanejamento para a companhia, só neste dia */
-  function entrar(item, cia) {
+     remanejamento para a companhia, só neste dia (fica = continua também no pelotão) */
+  function entrar(item, cia, fica) {
     var s = item.m.servico_em;
-    if (s) api().remanejar([remanejamento(item.cpf, s.unidade_id, cia)]);
+    if (s) api().remanejar([remanejamento(item.cpf, s.unidade_id, cia, fica)]);
     else api().aplicarColocacao(A().entrada(item));
   }
 
-  /* o serviço do dia dele de um pelotão para a companhia, inteiro (não fica nas duas), com o motivo já dito */
-  function remanejamento(cpf, origem, cia) {
-    return { cpf: cpf, origem: Number(origem), destino: Number(cia), fica: false, motivo: L().motivoOficial };
+  /* o serviço do dia dele de um pelotão para a companhia (inteiro, ou ficando também no pelotão), com o motivo já dito */
+  function remanejamento(cpf, origem, cia, fica) {
+    return { cpf: cpf, origem: Number(origem), destino: Number(cia), fica: !!fica, motivo: L().motivoOficial };
   }
 
   /* ---------- o Pôr como Oficial de Área do nome ---------- */
@@ -256,14 +280,57 @@
   }
 
   /* o serviço dele vai daqui para a companhia, só neste dia, na hora, com o Desfazer (o mesmo remanejamento da caixa do
-     título; as colocações à mão dele aqui saem); lá, o sistema faz dele o Oficial */
-  function porComoOficial(cpf) {
+     título; saindo daqui, as colocações à mão dele aqui saem; ficando nas duas, continuam); lá, o sistema faz dele o Oficial */
+  function porComoOficial(cpf, fica) {
     var E = RW.paginas.escalas, uid = api().unidadeId(), cia = E.companhiaDe(uid);
     if (!cia) return;
     api().mudar(function () {
-      RW.escalasPainelRemanejarListas.cortarNaOrigem(api().rascunho(), cpf, api().dados());
-      api().remanejar([remanejamento(cpf, uid, cia.id)]);
+      if (!fica) RW.escalasPainelRemanejarListas.cortarNaOrigem(api().rascunho(), cpf, api().dados());
+      api().remanejar([remanejamento(cpf, uid, cia.id, fica)]);
     });
+  }
+
+  /* os nomes da pergunta do Pôr como Oficial de Área: ele, o pelotão do dia aberto e a companhia */
+  function textosDe(cpf) {
+    var E = RW.paginas.escalas, uid = api().unidadeId(), cia = E.companhiaDe(uid), mil = api().militarDoDia(cpf);
+    var aqui = ((api().dados().picker || []).filter(function (u) { return u.editando; })[0] || {}).unidade_nome || '';
+    return cia && mil ? { nome: nomeDe(mil), de: aqui, para: cia.nome || '' } : null;
+  }
+
+  /* na caixa 2 da célula (escalas-celula-editar-acoes.js): a pergunta na caixa dada; a resposta chama aoFim (a caixa
+     fecha) e faz na hora, com o Desfazer */
+  function perguntarComo(caixa, cpf, aoFim) {
+    var t = textosDe(cpf);
+    if (!t) return;
+    perguntarOrigem(caixa, t.nome, t.de, t.para, function (fica) { aoFim(); porComoOficial(cpf, fica); });
+  }
+
+  /* no lápis do painel (escalas-painel-linha-menu.js): a pergunta única embaixo da linha, sem nada marcado (Guia visual ›
+     Pergunta única embaixo da linha); a resposta fecha a pergunta e faz na hora, com o Desfazer; o Cancelar fecha sem
+     mudar nada. Uma aberta por vez (a do Remover do dia também fecha) */
+  function perguntarNaLinha(cpf, linha) {
+    fecharPergunta();
+    if (RW.escalasPainelRemover) RW.escalasPainelRemover.fecharPergunta('guardar');
+    var el = RW.tpl('tpl-escala-oficial-origem'), t = textosDe(cpf);
+    if (!el || !t || !linha) return;
+    var q = function (s) { return el.querySelector(s); };
+    q('.escala-oficial-origem-texto').textContent = L().remanejarSai(t.nome, t.de);
+    q('.escala-oficial-origem-sim').textContent = L().remanejarSoNa(t.para);
+    q('.escala-oficial-origem-nao').textContent = L().remanejarNasDuas(t.de, t.para);
+    var nome = 'escala-oficial-origem-' + (++conta);
+    [].forEach.call(el.querySelectorAll('input[type="radio"]'), function (r) {
+      r.name = nome;
+      r.addEventListener('change', function () { if (r.checked) { fecharPergunta(); porComoOficial(cpf, r.value === 'nao'); } });
+    });
+    q('.escala-oficial-origem-cancelar').addEventListener('click', fecharPergunta);
+    linha.insertAdjacentElement('afterend', el);
+    pergunta = el;
+  }
+
+  function fecharPergunta() {
+    var p = pergunta;
+    pergunta = null;
+    if (p && p.parentNode) p.remove();
   }
 
   /* ---------- o título refeito ---------- */
@@ -299,5 +366,6 @@
     C().acharDeNovo();
   }
 
-  RW.escalasCelulaOficial = { clique: clique, menu: menu, peca: peca, decorar: decorar, podeSer: podeSer, porComoOficial: porComoOficial };
+  RW.escalasCelulaOficial = { clique: clique, menu: menu, peca: peca, decorar: decorar, podeSer: podeSer, perguntarComo: perguntarComo,
+    perguntarNaLinha: perguntarNaLinha, fecharPergunta: fecharPergunta };
 })();

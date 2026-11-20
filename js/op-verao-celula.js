@@ -127,10 +127,8 @@
 
   /* o título de um posto (sem: o Sem posto, em amarelo) e as linhas dele, na ordem do horário */
   function bloco(celula, titulo, linhas, curto, sem) {
-    var t = RW.tpl('tpl-op-verao-posto');
+    var t = RW.escalasCelulaGrupos.tituloPosto(titulo, sem);
     if (!t) return;
-    t.textContent = titulo;
-    if (sem) t.classList.add('op-verao-posto--sem');
     celula.appendChild(t);
     linhas.slice().sort(function (a, b) { return a.inicio < b.inicio ? -1 : a.inicio > b.inicio ? 1 : 0; })
       .forEach(function (l) { var el = linha(l, curto); if (el) celula.appendChild(el); });
@@ -160,7 +158,7 @@
       if (deles.length) bloco(celula, p.nome, deles, curto, false);
     });
     var sem = todas.filter(function (l) { return !l.posto_id; });
-    if (sem.length) bloco(celula, msg().semPosto(sem.length), sem, curto, true);
+    if (sem.length) bloco(celula, RW.mensagens.escala.semPosto(sem.length), sem, curto, true);
   }
 
   /* ---------- o título do dia ---------- */

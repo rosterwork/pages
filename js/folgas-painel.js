@@ -64,7 +64,9 @@
     if (l.origem === 'pontual') return msg().origemPontual;
     if (l.origem === 'ajuste') return l.motivo || '';
     if (l.situacao === 'pendente') return msg().pendenteNaoConta;
-    return l.motivo || '';
+    if (l.motivo) return l.motivo;
+    if (l.origem === 'folga') return l.contabilizada === false ? msg().folgaSemDescontar : msg().folgaDoServico;
+    return '';
   }
   function linhaExtrato(l, donoCpf) {
     var linha = RosterWork.tpl('tpl-folga-extrato-linha');

@@ -13,6 +13,17 @@
     return RosterWork.rpc(nome, corpo);
   }
 
+  /* o Quem escolher por função e posto e os Acúmulos por função: com o quem_escolher, vai sem o critério de cada lugar, e
+     com os acumulos, sem as linhas por lugar (sempre e cobre), que são o jeito de antes; o banco monta as de cada lugar a
+     partir deles */
+  function jeitoNovo(respostas) {
+    if (!respostas) return respostas;
+    var r = Object.assign({}, respostas);
+    if (r.quem_escolher) delete r.criterios;
+    if (r.acumulos) { delete r.sempre; delete r.cobre; }
+    return r;
+  }
+
   window.RosterWork.novaDistribuicaoDados = {
     /* a companhia e os pelotões, a distribuição em vigor, a mudança agendada e as substituições
        (sem unidade: a lotação do programador; com versaoId = a da mudança agendada, ela) */
@@ -24,7 +35,7 @@
        e, com comparar (as respostas da outra versão), as diferenças campo a campo */
     calcular: function (unidadeId, respostas, efetivos, simulacao, comparar) {
       return rpc('nova_distribuicao_calcular', {
-        p_unidade_id: unidadeId, p_respostas: respostas, p_efetivos: efetivos || null,
+        p_unidade_id: unidadeId, p_respostas: jeitoNovo(respostas), p_efetivos: efetivos || null,
         p_simulacao: simulacao || null, p_comparar: comparar || null
       });
     },
@@ -48,7 +59,8 @@
        gravado junto, tudo ou nada */
     salvar: function (itens, aPartirDe, levar, previa, substituicoes, ritmo) {
       var corpo = {
-        p_itens: itens, p_a_partir_de: aPartirDe || null, p_levar: levar && levar.length ? levar : null, p_previa: !!previa,
+        p_itens: (itens || []).map(function (it) { return it && it.respostas ? Object.assign({}, it, { respostas: jeitoNovo(it.respostas) }) : it; }),
+        p_a_partir_de: aPartirDe || null, p_levar: levar && levar.length ? levar : null, p_previa: !!previa,
         p_substituicoes: substituicoes && substituicoes.length ? substituicoes : null
       };
       if (ritmo) corpo.p_ritmo = ritmo;   // só com ritmo: sem ele, a chamada é a mesma de antes

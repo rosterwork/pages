@@ -469,21 +469,25 @@
   display: contents;
 }
 
-/* o Como fica: o título e a lista com as bolinhas, um item por linha; embaixo, os pontos enquanto o banco confere */
-.escala-mudar-dia-como-corpo {
+/* o Como fica (o Mudar o dia do serviço e o Mudar de unidade neste dia): o título e a lista com as bolinhas, um item
+   por linha; embaixo, os pontos enquanto o banco confere */
+.escala-mudar-dia-como-corpo,
+.escala-remanejar-como-corpo {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
 
-.escala-mudar-dia-como-lista {
+.escala-mudar-dia-como-lista,
+.escala-remanejar-como-lista {
   margin: 0;
   padding: 0 0 0 16px;
   list-style: disc;
 }
 
-.escala-mudar-dia-como-item + .escala-mudar-dia-como-item {
+.escala-mudar-dia-como-item + .escala-mudar-dia-como-item,
+.escala-remanejar-como-item + .escala-remanejar-como-item {
   margin-top: 4px;
 }
 

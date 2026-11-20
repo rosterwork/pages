@@ -706,6 +706,34 @@
   display: block;
 }
 
+/* o título de um posto na célula (tpl-escala-mes-posto): na Op. Verão, os guarda-vidas por posto e o Sem posto, em
+   amarelo, com quantos; nos Estágios, os estagiários por viatura ou instalação. Do segundo título em diante, a linha
+   tracejada dos grupos em cima, com 4px de cada lado */
+.escala-mes-posto {
+  padding: 2px 0 2px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.44px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--texto-suave);
+}
+
+.escala-mes-posto ~ .escala-mes-posto {
+  padding-top: 0;
+}
+
+.escala-mes-posto ~ .escala-mes-posto::before {
+  content: '';
+  display: block;
+  margin: 4px 0;
+  border-top: 1px dashed var(--borda);
+}
+
+.escala-mes-posto--sem {
+  color: var(--alerta);
+}
+
 /* quem está fora da escala (escalas-celula-fora.js), com o ícone de quem está fora: em vermelho, quem devia estar na escala;
    em amarelo, quem voltou de um afastamento há até 5 dias (o administrador decide para onde ele vai) */
 .linha-escalado--fora-vermelho .linha-escalado-grad,

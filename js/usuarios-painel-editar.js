@@ -24,6 +24,7 @@
     { k: 'nome_completo', rotulo: 'Nome completo', tipo: 'nome', max: 100, ph: 'Ex.: João Carlos Andrade' },
     { k: 'rg', rotulo: 'RG', tipo: 'rg', max: 14, num: true, ph: '00.000.000-0' },
     { k: 'data_de_nascimento', rotulo: 'Nascimento', tipo: 'data', max: 10, num: true, ph: 'dd/mm/aaaa', cal: true },
+    { k: 'sexo', rotulo: 'Sexo', tipo: 'selecao', opcoes: ['Masculino', 'Feminino'] },
     { k: 'cnh', rotulo: 'CNH', tipo: 'selecao', opcoes: ['Nenhuma', 'A', 'B', 'C', 'D', 'E', 'AB', 'AC', 'AD', 'AE'] },
     { k: 'celular', rotulo: 'Celular (opcional)', tipo: 'celular', max: 15, num: true, ph: '(00) 00000-0000' },
     /* quem tem conta é identificado pelo e-mail: só é opcional para quem ainda não tem */
@@ -141,6 +142,7 @@
       else if (!nasc) erro(nascEl, T.dataInvalida);
       else if (V.idadeEm(nasc) < 18) erro(nascEl, T.idadeMinima);
 
+      if (!valorSelecao(raiz, 'sexo')) erro(campoEl(raiz, 'sexo'), T.sexoVazio);
       if (!valorSelecao(raiz, 'cnh')) erro(campoEl(raiz, 'cnh'), T.cnhVazia);
 
       /* celular é opcional; o e-mail também, para quem ainda não tem conta */
@@ -187,6 +189,7 @@
         p_nome_completo: txt('nome_completo'),
         p_rg: V.soDigitos(txt('rg')),
         p_data_nascimento: V.paraISO(txt('data_de_nascimento')),
+        p_sexo: valorSelecao(raiz, 'sexo'),
         p_cnh: valorSelecao(raiz, 'cnh'),
         p_celular: V.soDigitos(txt('celular')),
         p_email: txt('email'),

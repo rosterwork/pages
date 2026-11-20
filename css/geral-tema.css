@@ -36,8 +36,8 @@
   --cinza-400: rgb(178, 178, 178);
   --cinza-450: rgb(172, 172, 172);
   --cinza-500: rgb(170, 170, 170);
-  --cinza-550: rgb(126, 126, 126);
-  --cinza-600: rgb(122, 122, 122);
+  --cinza-550: rgb(151, 151, 151);   /* o texto fraco do escuro: 4,5 para 1 também sobre o --fundo-medio */
+  --cinza-600: rgb(106, 106, 106);   /* o texto fraco do claro: 4,5 para 1 também sobre o --fundo-medio */
   --cinza-650: rgb(96,  96,  96);
   --cinza-700: rgb(92,  92,  92);
   --cinza-750: rgb(72,  72,  72);

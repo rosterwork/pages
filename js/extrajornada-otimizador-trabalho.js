@@ -1,34 +1,41 @@
 /* ============================================================
    EXTRAJORNADA — o trabalhador do otimizador (em segundo plano)
    Roda o HiGHS (bibliotecas/highs.js e highs.wasm) fora da tela, para
-   ela não travar durante a conta. Recebe { lp, opcoes } e devolve
-   { ok, status, marcadas } (os nomes das variáveis escolhidas) ou
-   { ok: false, erro }. Quem cria e encerra é o extrajornada-otimizador.js.
+   ela não travar durante a conta, nível por nível
+   (extrajornada-otimizador-niveis.js). Recebe { modelo, opcoes };
+   avisa cada etapa que começa ({ tipo: 'etapa', nomes }) e, no fim,
+   devolve { tipo: 'fim', ok, marcadas, valores } ou
+   { tipo: 'fim', ok: false, erro }. Quem cria e encerra é o
+   extrajornada-otimizador.js.
    ============================================================ */
 (function () {
   'use strict';
 
-  var pronto = null;
+  var carregado = false;
 
-  /* a biblioteca carrega uma vez só; o .wasm vem da mesma pasta */
+  /* a biblioteca e os níveis carregam uma vez só; o .wasm vem da mesma pasta */
   function carregar() {
-    if (!pronto) {
-      self.importScripts('../bibliotecas/highs.js');
-      pronto = self.Module({ locateFile: function (arquivo) { return new URL('../bibliotecas/' + arquivo, self.location.href).href; } });
+    if (!carregado) {
+      self.importScripts('../bibliotecas/highs.js', 'extrajornada-otimizador-niveis.js');
+      carregado = true;
     }
-    return pronto;
+  }
+  /* uma instância nova do HiGHS por conta */
+  function novoHighs() {
+    return self.Module({ locateFile: function (arquivo) { return new URL('../bibliotecas/' + arquivo, self.location.href).href; } });
   }
 
   self.onmessage = function (evento) {
     var pedido = evento.data || {};
-    Promise.resolve().then(carregar).then(function (highs) {
-      var r = highs.solve(pedido.lp, pedido.opcoes || {});
-      var marcadas = Object.keys(r.Columns || {}).filter(function (nome) {
-        return nome.charAt(0) === 'x' && r.Columns[nome].Primal > 0.5;
+    Promise.resolve().then(function () {
+      carregar();
+      return self.RosterWork.extrajornadaNiveis.resolver(novoHighs, pedido.modelo, pedido.opcoes || {}, function (nomes) {
+        self.postMessage({ tipo: 'etapa', nomes: nomes });
       });
-      self.postMessage({ ok: true, status: r.Status, marcadas: marcadas });
+    }).then(function (r) {
+      self.postMessage({ tipo: 'fim', ok: true, marcadas: r.marcadas, valores: r.valores });
     }).catch(function (e) {
-      self.postMessage({ ok: false, erro: String((e && e.message) || e) });
+      self.postMessage({ tipo: 'fim', ok: false, erro: String((e && (e.detalhe || e.message)) || e) });
     });
   };
 })();

@@ -26,6 +26,7 @@
   var inicioAviso = 0;           /* performance.now() na abertura do aviso */
   var avisoAberto = false;
   var semInatividade = false;    /* Manter-me conectado: o aparelho fica conectado pelo prazo, sem o aviso de 2h */
+  var ultimaAcao = Date.now();   /* a hora da última ação: o relógio do setTimeout para com o computador dormindo */
 
   var veu, canvas, tempoEl, btnContinuar, btnSair;
 
@@ -43,8 +44,18 @@
 
   function reiniciarInatividade() {
     if (avisoAberto || semInatividade) return;   /* durante o aviso, só "Continuar" reinicia */
+    ultimaAcao = Date.now();
     clearTimeout(timerInatividade);
     timerInatividade = setTimeout(mostrarAviso, INATIVIDADE_MS - AVISO_MS);
+  }
+
+  /* a tela voltou (o computador acordou, a aba voltou à frente): conta pelo relógio o tempo parado, que o setTimeout
+     pode não ter contado; passou das 2h, encerra na hora; nos últimos 60s, abre o aviso */
+  function conferirTempoParado() {
+    if (semInatividade || avisoAberto || document.visibilityState === 'hidden') return;
+    var parado = Date.now() - ultimaAcao;
+    if (parado >= INATIVIDADE_MS) expirarPorInatividade();
+    else if (parado >= INATIVIDADE_MS - AVISO_MS) mostrarAviso();
   }
 
   /* ---------- renovação proativa do token ---------- */
@@ -149,6 +160,9 @@
   function expirarPorInatividade() {
     fecharAviso();
     pararTudo();
+    /* a sessão sai também do servidor (a chave de renovação deixa de valer), como no Sair */
+    var treino = RW.treino && RW.treino.ligado && RW.treino.ligado();
+    if (!treino && RW.obterToken && RW.obterToken() && RW.apiFetch) RW.apiFetch('/auth/v1/logout?scope=local', { metodo: 'POST' }).catch(function () {});
     if (RW.expirarSessao) RW.expirarSessao(RW.mensagens.sessao.expiradaInatividade);
   }
 
@@ -171,6 +185,9 @@
     /* só ação real do usuário reinicia o relógio (mouse à toa não conta) */
     document.addEventListener('click', reiniciarInatividade, true);
     document.addEventListener('keydown', reiniciarInatividade, true);
+    document.addEventListener('visibilitychange', conferirTempoParado);
+    window.addEventListener('focus', conferirTempoParado);
+    window.addEventListener('pageshow', conferirTempoParado);
     reiniciarInatividade();
     intervaloRenovar = setInterval(talvezRenovar, 60 * 1000);
   }

@@ -14,11 +14,11 @@
      marca o que casa com .busca-achado.
      ============================================================ */
 
-  /* tira acentos e caixa para comparar sem diferença de acentuação */
+  /* tira acentos e caixa para comparar sem diferença de acentuação; o º e o ª viram o e a ("2o sgt", "1a cl", como se
+     escreve no celular) */
   function normalizar(texto) {
-    return String(texto || '').toLowerCase()
-      .replace(/[áàâãä]/g, 'a').replace(/[éèêë]/g, 'e').replace(/[íìîï]/g, 'i')
-      .replace(/[óòôõö]/g, 'o').replace(/[úùûü]/g, 'u').replace(/ç/g, 'c');
+    return String(texto || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/º/g, 'o').replace(/ª/g, 'a').toLowerCase();
   }
 
   /* o militar casa com o termo? nome de guerra / nome completo (texto) ou CPF / RG (dígitos).

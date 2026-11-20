@@ -334,7 +334,7 @@
 }
 
 /* rodapé do documento */
-.manual-rodape { border-top: 1px solid var(--borda); padding-top: 16px; margin-top: 32px; font-size: 12px; color: var(--texto-debil); }
+.manual-rodape { border-top: 1px solid var(--borda); padding-top: 16px; margin-top: 32px; font-size: 12px; color: var(--texto-fraco); }
 
 /* ------------------------------------------------------------
    Dois modelos: comum × administrador.

@@ -88,11 +88,13 @@
   var registro = null;
   var trocando = false;
   var podeTrocarSozinho = null;   /* a condição da tela para a versão nova entrar sozinha */
+  var versaoTrocou = false;       /* outra aba (ou o app) já ativou a versão nova: esta ainda tem o código velho */
 
   /* há versão nova baixada, esperando a próxima troca de página? Vale também na página aberta
-     pelo Ctrl+Shift+R, que o armazém não controla: a próxima página ainda viria da versão velha */
+     pelo Ctrl+Shift+R, que o armazém não controla: a próxima página ainda viria da versão velha; e
+     na aba em que outra aba já ativou a versão nova (os arquivos da tela já viriam da nova) */
   function temVersaoNova() {
-    return !!(registro && registro.waiting);
+    return !!(registro && registro.waiting) || versaoTrocou;
   }
 
   /* com versão nova esperando, recarrega a página já nela; no máximo uma vez por minuto na aba, para
@@ -142,6 +144,12 @@
       return;
     }
     navigator.serviceWorker.register('aplicativo-armazem.js').then(function (r) { registro = r; acompanhar(r); }).catch(function () {});
+    /* a versão nova entrou por outra aba: a próxima troca de tela recarrega a página inteira, sem misturar as duas
+       (na primeira instalação não havia versão antes, e nada mistura) */
+    var controlador = navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (controlador && !trocando) { versaoTrocou = true; versaoChegou(); }
+    });
     /* o app voltou do fundo: confere se saiu versão nova */
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible') conferirVersao();
@@ -157,7 +165,8 @@
      abre já toda na versão nova) */
   function irPara(destino) {
     if (trocando) return;
-    if (!temVersaoNova()) { window.location.href = destino; return; }
+    /* sem versão esperando (ou a nova já ativa, por outra aba): só abre, e a página vem inteira da versão de agora */
+    if (!(registro && registro.waiting)) { window.location.href = destino; return; }
     trocando = true;
     function seguir() { window.location.href = destino; }
     navigator.serviceWorker.addEventListener('controllerchange', seguir);

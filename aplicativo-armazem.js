@@ -154,18 +154,27 @@
     }));
   });
 
-  /* tocar na notificação: abre o sistema com o aviso (index.html?aviso=…), que faz o mesmo que o
-     clique no sino (marca como lido e abre a tela do assunto); usa a tela do app já aberta, se houver */
+  /* tocar na notificação: faz o mesmo que o clique no sino (marca como lido e abre a tela do assunto). Com o sistema
+     já aberto (a janela em foco primeiro), o aviso vai para ela por mensagem (js/index-avisos.js), sem recarregar: o
+     que está sendo preenchido não se perde, e o guarda de saída pergunta antes. Sem o sistema aberto (ou na tela de
+     entrada), abre index.html?aviso=…, que faz o mesmo depois da entrada */
   self.addEventListener('notificationclick', function (evento) {
     evento.notification.close();
     var aviso = evento.notification.data || {};
     var destino = endereco('index.html') + (aviso.id ? '?aviso=' + encodeURIComponent(JSON.stringify(aviso)) : '');
+    function abrirNova() { return self.clients.openWindow(destino); }
     evento.waitUntil(self.clients.matchAll({ type: 'window' }).then(function (telas) {
-      var tela = telas[0];
-      if (tela && tela.navigate) {
-        return tela.navigate(destino).then(function (aberta) { return (aberta || tela).focus(); });
+      var sistema = telas.filter(function (t) { return /\/index\.html(\?|$)|\/(\?|$)/.test(t.url.replace(/#.*$/, '')); });
+      var tela = sistema.filter(function (t) { return t.focused; })[0] || sistema[0];
+      if (tela) {
+        if (aviso.id) tela.postMessage({ tipo: 'aviso', aviso: aviso });
+        return tela.focus().catch(function () {});
       }
-      return self.clients.openWindow(destino);
+      var outra = telas[0];
+      if (outra && outra.navigate) {
+        return outra.navigate(destino).then(function (aberta) { return (aberta || outra).focus(); }).catch(abrirNova);
+      }
+      return abrirNova();
     }));
   });
 })();

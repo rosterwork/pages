@@ -41,15 +41,25 @@
 
   function postoCurto(posto) { return CURTOS[posto] || posto; }
 
+  /* a função de vários lugares no posto, nos Acúmulos: todos os lugares ("Efetivo:todos · ABT-41") e quem cobre pela
+     antiguidade ("Efetivo:antigo · ABT-41", "Efetivo:moderno · ABT-41") → { base, qual, posto }; um lugar, null */
+  function grupoDe(nome) {
+    var m = /^([^·:]+):(todos|antigo|moderno) · (.+)$/.exec(nome || '');
+    return m ? { base: m[1], qual: m[2], posto: m[3] } : null;
+  }
+
   function funcaoDe(ctx, nome) {
     return ((ctx.calc && ctx.calc.funcoes) || []).filter(function (f) { return f.nome === nome; })[0] || null;
   }
 
-  /* a função como aparece: o banco diz pelo lugar na viatura. Inteiro ("Efetivo 1 · Chefe de Socorro",
-     "Efetivo 2 · Condutor") só na Ordem de importância; nos demais, o curto ("Chefe de Socorro",
-     "Condutor"). O nome guardado não muda */
+  /* a função como aparece: o nome da tela que o banco manda, sem número e igual em todos os blocos ("Chefe de Socorro",
+     "Condutor", "1º Efetivo", "2º Rádio Operador"; o ordinal só no posto com dois ou mais desses lugares). Sem ele, o
+     rótulo pelo lugar (inteiro na Ordem de importância). O nome guardado ("Efetivo 3 · ABT-14935") não muda */
   function rotulo(ctx, nome, inteiro) {
+    var g = grupoDe(nome);
+    if (g) return texto(M().grupoNomes[g.qual], { funcao: g.base });
     var f = funcaoDe(ctx, nome);
+    if (f && f.tela) return f.tela;
     if (f && f.rotulo) return inteiro ? f.rotulo : (f.curto || f.rotulo);
     var p = partes(nome);
     return f && f.papel ? p.funcao + ' · ' + f.papel : p.funcao;
@@ -286,8 +296,17 @@
     var gatilho = prepararGatilho(caixa, atual && nomes.indexOf(atual) >= 0 ? completo(ctx, atual) : '', op.vazio, op.rotulo, op.travado, op.erro);
     var cheio = partes(atual).posto;
     if (atual && CURTOS[cheio]) gatilho.setAttribute('data-dica', cheio);
-    var ordem = ((ctx.calc && ctx.calc.funcoes) || []).map(function (f) { return f.nome; });
-    var lugar = function (nome) { var k = ordem.indexOf(nome); return k < 0 ? ordem.length : k; };
+    var funcoes = (ctx.calc && ctx.calc.funcoes) || [];
+    var ordem = funcoes.map(function (f) { return f.nome; });
+    /* o grupo ("Efetivo, todos", "o mais antigo", "o mais moderno") logo depois do último lugar da função no posto */
+    var depois = { todos: 0.1, antigo: 0.2, moderno: 0.3 };
+    var lugar = function (nome) {
+      var g = grupoDe(nome);
+      if (!g) { var k = ordem.indexOf(nome); return k < 0 ? ordem.length : k; }
+      var ultimo = ordem.length;
+      funcoes.forEach(function (f, i) { if (!f.papel && f.posto === g.posto && f.funcao.replace(/ \d+$/, '') === g.base) ultimo = i; });
+      return ultimo + depois[g.qual];
+    };
     var postoAnterior = null;
     nomes.slice().sort(function (a, b) { return lugar(a) - lugar(b); }).forEach(function (nome) {
       var posto = partes(nome).posto;
@@ -342,7 +361,7 @@
   window.RosterWork.novaDistribuicaoPecas = {
     FORMATO_PREFIXO: FORMATO_PREFIXO,
     tpl: tpl, texto: texto, mover: mover,
-    partes: partes, postoCurto: postoCurto, funcaoDe: funcaoDe, rotulo: rotulo, completo: completo,
+    partes: partes, postoCurto: postoCurto, grupoDe: grupoDe, funcaoDe: funcaoDe, rotulo: rotulo, completo: completo,
     papel: papel, proprias: proprias,
     erros: erros, pendente: pendente, erroCampo: erroCampo, resumoErros: resumoErros, mostrarNoCorpo: mostrarNoCorpo,
     diferenca: diferenca, marcarMuda: marcarMuda, marcaMuda: marcaMuda,

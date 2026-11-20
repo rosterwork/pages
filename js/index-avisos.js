@@ -151,5 +151,15 @@
   }
   (RW.sistemaPronto || Promise.resolve()).then(abrirAvisoDaNotificacao);
 
+  /* o toque na notificação com o sistema já aberto (aplicativo-armazem.js): o aviso chega por mensagem e abre como o
+     clique no sino, sem recarregar a janela */
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function (e) {
+      var d = e.data || {};
+      if (d.tipo !== 'aviso' || !d.aviso || !d.aviso.id || !RW.notificacao) return;
+      (RW.sistemaPronto || Promise.resolve()).then(function () { RW.notificacao.abrir(d.aviso); });
+    });
+  }
+
   carregar();
 })();

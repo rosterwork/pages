@@ -12,8 +12,9 @@
     </div>
     <!-- abas (só administrador): a Distribuição (o ritmo é o bloco 1 dela), o Horário de expediente (um só para a
          companhia e os pelotões), os Feriados (o calendário de cada unidade), os Estágios (as regras de cada estágio da
-         unidade), o Sobreaviso e a Op. Verão (as regras da companhia; só o administrador da companhia vê as duas abas);
-         quem não administra fica sem a linha de abas -->
+         unidade), o Sobreaviso e a Op. Verão (as regras da companhia; só o administrador da companhia vê as duas abas) e a
+         Extrajornada (as regras da companhia para as extras; todo administrador vê, o da companhia muda); quem não
+         administra fica sem a linha de abas -->
     <div class="abas" id="ajustes-abas">
       <button type="button" class="aba aba--ativa" data-aba="distribuicao">Distribuição</button>
       <button type="button" class="aba" data-aba="horario" data-manual="horario-expediente">Horário de expediente</button>
@@ -21,6 +22,7 @@
       <button type="button" class="aba" data-aba="estagios">Estágios</button>
       <button type="button" class="aba" data-aba="sobreaviso">Sobreaviso</button>
       <button type="button" class="aba" data-aba="op-verao">Op. Verão</button>
+      <button type="button" class="aba" data-aba="extrajornada">Extrajornada</button>
     </div>
   </div>
 
@@ -68,6 +70,13 @@
   <div class="pagina-subcabecalho" id="op-verao-barra">
     <div class="abas abas--seletor" role="tablist" aria-label="Companhia">
       <button type="button" class="aba aba--ativa" id="op-verao-companhia"></button>
+    </div>
+  </div>
+
+  <!-- barra de controles da Extrajornada: a companhia (só na aba Extrajornada) -->
+  <div class="pagina-subcabecalho" id="regras-extra-barra">
+    <div class="abas abas--seletor" role="tablist" aria-label="Companhia">
+      <button type="button" class="aba aba--ativa" id="regras-extra-companhia"></button>
     </div>
   </div>
 
@@ -504,6 +513,182 @@
         <div class="rodape-acoes">
           <button type="button" class="botao" id="op-verao-cancelar">Cancelar</button>
           <button type="button" class="botao botao--primario" id="op-verao-salvar">Salvar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Extrajornada: as regras da companhia para repartir as cotas e para o Preencher pela sugestão
+         (ajustes-extrajornada.js); o que nunca quebra e a ordem ficam fixos; o rodapé grava as perguntas -->
+    <section class="geral-corpo-lateral oculto" data-aba-painel="extrajornada">
+      <div class="geral-corpo-lateral-rolagem">
+        <div class="nova-distribuicao-carregando esqueleto-painel esqueleto-conjunto" id="regras-extra-carregando" role="status" aria-label="Carregando">
+          <div class="esqueleto-caixa">
+            <span class="esqueleto-caixa-topo"><span class="esqueleto esqueleto-caixa-titulo"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+            <span class="esqueleto-fila"><span class="esqueleto esqueleto-funcao"></span><span class="esqueleto esqueleto-militar"></span><span class="esqueleto esqueleto-horas"></span></span>
+          </div>
+        </div>
+        <div class="nova-distribuicao-conteudo subtela oculto" id="regras-extra-conteudo">
+          <p class="nova-distribuicao-ajuda">Como o sistema reparte as cotas e escolhe quem tira cada extra no Preencher pela sugestão. Cada companhia tem as suas regras, e qualquer administrador dela muda. As extras postas pelo administrador ficam como estão, e a mudança vale a partir do próximo Preencher pela sugestão.</p>
+          <div class="grupo-caixa">
+            <div class="ajustes-regras-titulo">
+              <span class="rotulo-secao">Nunca quebram</span>
+              <span class="nova-distribuicao-trava">
+                <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+                <span>Para todas as companhias</span>
+              </span>
+            </div>
+            <ul class="ajustes-regras">
+              <li class="ajustes-regras-item">Só praça voluntária, com o termo assinado.</li>
+              <li class="ajustes-regras-item">Só no dia em que ela marcou Quero ou não marcou nada, e está livre. O dia marcado Não quero só o administrador põe.</li>
+              <li class="ajustes-regras-item">O administrativo, só fora do expediente.</li>
+              <li class="ajustes-regras-item">Uma extra por dia, em horários seguidos, dentro da cota e sem deixar 1 cota sozinha.</li>
+              <li class="ajustes-regras-item">O condutor com a CNH da viatura, e o máximo de cada posto.</li>
+              <li class="ajustes-regras-item">Nunca 4 dias seguidos no quartel.</li>
+            </ul>
+          </div>
+          <div class="grupo-caixa">
+            <div class="ajustes-regras-titulo">
+              <span class="rotulo-secao">A ordem das regras</span>
+              <span class="nova-distribuicao-trava">
+                <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+                <span>Fixa</span>
+              </span>
+            </div>
+            <ol class="ajustes-regras ajustes-regras--numeradas">
+              <li class="ajustes-regras-item">Cobrir a falta dos pelotões, na ordem escolhida abaixo.</li>
+              <li class="ajustes-regras-item">Cada um no próprio pelotão.</li>
+              <li class="ajustes-regras-item">Colocar todas as cotas.</li>
+              <li class="ajustes-regras-item">Fora da cidade da companhia, não passar do necessário.</li>
+              <li class="ajustes-regras-item">Quando dois querem o mesmo lugar, fica quem vem primeiro, como escolhido abaixo.</li>
+              <li class="ajustes-regras-item">A balança, no fim.</li>
+            </ol>
+          </div>
+          <div class="grupo-caixa subtela-pergunta" id="regras-extra-repartir">
+            <span class="rotulo-secao">Como repartir as cotas</span>
+            <label class="geral-opcao"><input type="radio" name="regras-extra-repartir" data-valor="grupo" /><span>Entre todos: uma fila só, da companhia</span></label>
+            <label class="geral-opcao"><input type="radio" name="regras-extra-repartir" data-valor="por_unidade" /><span>Por unidade: cada unidade com o seu total e a sua fila</span></label>
+            <span class="subtela-ajuda">O total recebido em cada mês continua no passo Cotas da Extrajornada.</span>
+          </div>
+          <!-- os pelotões na ordem da falta (molde tpl-regras-extra-pelotao) -->
+          <div class="grupo-caixa subtela-pergunta">
+            <span class="rotulo-secao">A falta que vem primeiro</span>
+            <span class="subtela-ajuda">O sistema cobre primeiro o vermelho, um pelotão por vez nesta ordem, e depois o amarelo, na mesma ordem.</span>
+            <div class="ajustes-extra-pelotoes" id="regras-extra-ordem"></div>
+          </div>
+          <div class="grupo-caixa subtela-pergunta" id="regras-extra-primeiro">
+            <span class="rotulo-secao">Quando dois querem o mesmo lugar</span>
+            <span class="subtela-ajuda">Quem fica com o dia que os dois querem e, quando não cabe todo mundo, quem fica de fora.</span>
+            <label class="geral-opcao"><input type="radio" name="regras-extra-primeiro" data-valor="fila" /><span>Quem foi menos atendido nos últimos 12 meses, pela fila das Cotas</span></label>
+            <label class="geral-opcao"><input type="radio" name="regras-extra-primeiro" data-valor="antiguidade" /><span>O mais antigo</span></label>
+          </div>
+          <!-- uma linha por pelotão (molde tpl-regras-extra-sai) -->
+          <div class="grupo-caixa subtela-pergunta">
+            <span class="rotulo-secao">Quem vai para outro pelotão</span>
+            <span class="subtela-ajuda">Quando falta gente num pelotão e os de lá não bastam, ou quando sobra gente para mandar à cidade da companhia. Em rodízio, vai quem foi menos vezes nos últimos 12 meses, sem olhar a antiguidade.</span>
+            <div class="ajustes-extra-linhas" id="regras-extra-sai"></div>
+          </div>
+          <!-- uma caixa de marcar por pelotão (molde tpl-regras-extra-bombeira) -->
+          <div class="grupo-caixa subtela-pergunta" id="regras-extra-bombeiras">
+            <span class="rotulo-secao">Onde as bombeiras tiram extra</span>
+            <span class="subtela-ajuda">Pelo sexo da ficha do militar.</span>
+          </div>
+          <div class="grupo-caixa subtela-pergunta">
+            <span class="rotulo-secao">A balança</span>
+            <span class="subtela-ajuda">Escolhe entre as extras que sobram depois das regras de cima. Normal é o peso de hoje; Pouco é a metade, e Muito, o dobro.</span>
+            <div class="ajustes-balanca" id="regras-extra-balanca">
+              <div class="ajustes-balanca-item" data-chave="seguidos">
+                <span class="ajustes-balanca-nome">Evitar 3 dias seguidos no quartel</span>
+                <span class="dropdown nova-distribuicao-selecao">
+                  <button type="button" class="campo-entrada campo-selecao" aria-label="Evitar 3 dias seguidos no quartel">
+                    <span class="campo-selecao-texto"></span>
+                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                  </button>
+                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
+                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
+                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
+                  </div>
+                </span>
+                <span class="subtela-ajuda">Contando o serviço, a troca e a extra.</span>
+              </div>
+              <div class="ajustes-balanca-item" data-chave="bloco">
+                <span class="ajustes-balanca-nome">Blocos de 24 horas</span>
+                <span class="dropdown nova-distribuicao-selecao">
+                  <button type="button" class="campo-entrada campo-selecao" aria-label="Blocos de 24 horas">
+                    <span class="campo-selecao-texto"></span>
+                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                  </button>
+                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
+                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
+                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
+                  </div>
+                </span>
+                <span class="subtela-ajuda">Uma extra de 24 horas no lugar de duas de 12.</span>
+              </div>
+              <div class="ajustes-balanca-item" data-chave="colado">
+                <span class="ajustes-balanca-nome">Colado ao serviço</span>
+                <span class="dropdown nova-distribuicao-selecao">
+                  <button type="button" class="campo-entrada campo-selecao" aria-label="Colado ao serviço">
+                    <span class="campo-selecao-texto"></span>
+                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                  </button>
+                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
+                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
+                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
+                  </div>
+                </span>
+                <span class="subtela-ajuda">A extra que começa quando o serviço termina, ou termina quando ele começa. O administrativo, colado ao expediente.</span>
+              </div>
+              <div class="ajustes-balanca-item" data-chave="quer">
+                <span class="ajustes-balanca-nome">O dia que ele quer</span>
+                <span class="dropdown nova-distribuicao-selecao">
+                  <button type="button" class="campo-entrada campo-selecao" aria-label="O dia que ele quer">
+                    <span class="campo-selecao-texto"></span>
+                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                  </button>
+                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
+                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
+                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
+                  </div>
+                </span>
+                <span class="subtela-ajuda">O dia marcado com Quero no pedido.</span>
+              </div>
+              <div class="ajustes-balanca-item" data-chave="igual">
+                <span class="ajustes-balanca-nome">A sobra igual entre os dias</span>
+                <span class="dropdown nova-distribuicao-selecao">
+                  <button type="button" class="campo-entrada campo-selecao" aria-label="A sobra igual entre os dias">
+                    <span class="campo-selecao-texto"></span>
+                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+                  </button>
+                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
+                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
+                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
+                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
+                  </div>
+                </span>
+                <span class="subtela-ajuda">Sem falta para cobrir, a extra vai para o dia com menos gente, com as graduações equilibradas.</span>
+              </div>
+            </div>
+          </div>
+          <!-- quem não administra a companhia só lê -->
+          <span class="nova-distribuicao-trava oculto" id="regras-extra-trava">
+            <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-cadeado"/></svg>
+            <span>Só o administrador da companhia muda as regras da extrajornada.</span>
+          </span>
+        </div>
+      </div>
+      <!-- o rodapé de salvar, na largura toda: aparece só com alteração -->
+      <div class="rodape rodape-linha rodape--largo oculto" id="regras-extra-rodape">
+        <span class="rodape-texto">Alterações não salvas.</span>
+        <span class="espacador-flex"></span>
+        <div class="rodape-acoes">
+          <button type="button" class="botao" id="regras-extra-cancelar">Cancelar</button>
+          <button type="button" class="botao botao--primario" id="regras-extra-salvar">Salvar</button>
         </div>
       </div>
     </section>
@@ -1229,8 +1414,36 @@
     <p class="nova-distribuicao-frase nova-distribuicao-criterio-aviso oculto"><span>Quando não houver o grau:</span><span class="nova-distribuicao-espaco" data-espaco="aviso"></span></p>
     <button type="button" class="geral-opcao nova-distribuicao-marca nova-distribuicao-rodizio" role="checkbox" aria-checked="false">
       <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-      <span>Rodízio: evitar que repita a função do último serviço</span>
+      <span>Rodízio</span>
     </button>
+  </div>
+</template>
+<!-- quem escolher da função com dois ou mais lugares no posto: o título da regra de todos ("Todos os Efetivos"), as
+     exceções e cada exceção (o lugar, a lixeira e as escolhas dela) -->
+<template id="tpl-nova-distribuicao-quem-todos">
+  <p class="rotulo-secao"></p>
+</template>
+<template id="tpl-nova-distribuicao-quem-excecoes">
+  <div class="nova-distribuicao-quem-excecoes">
+    <p class="rotulo-secao">Exceções</p>
+    <p class="nova-distribuicao-frase nova-distribuicao-quem-ajuda"></p>
+    <div class="nova-distribuicao-quem-lista"></div>
+    <p class="nova-distribuicao-frase nova-distribuicao-quem-nenhuma oculto">Nenhuma exceção.</p>
+    <button type="button" class="botao nova-distribuicao-adicionar nova-distribuicao-quem-adicionar">Adicionar exceção</button>
+  </div>
+</template>
+<template id="tpl-nova-distribuicao-quem-excecao">
+  <div class="nova-distribuicao-cartao bloco-campo nova-distribuicao-quem-excecao">
+    <div class="nova-distribuicao-cartao-conteudo">
+      <div class="nova-distribuicao-regra-linha">
+        <span class="nova-distribuicao-regra-rotulo">Lugar</span>
+        <span class="nova-distribuicao-espaco" data-espaco="lugar"></span>
+        <button type="button" class="botao botao--icone nova-distribuicao-remover" aria-label="Remover exceção" data-dica="Remover exceção">
+          <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
+        </button>
+      </div>
+      <div class="nova-distribuicao-quem-escolha"></div>
+    </div>
   </div>
 </template>
 <template id="tpl-nova-distribuicao-perfil">
@@ -1717,4 +1930,45 @@
       <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg>
     </button>
   </div>
+</template>
+
+<!-- aba Extrajornada: um pelotão na ordem da falta (o número, o nome e as setas) -->
+<template id="tpl-regras-extra-pelotao">
+  <div class="ajustes-extra-pelotao">
+    <span class="ajustes-extra-pelotao-n"></span>
+    <span class="ajustes-extra-pelotao-nome"></span>
+    <span class="nova-distribuicao-opcao-setas">
+      <button type="button" class="botao botao--icone nova-distribuicao-subir" aria-label="Subir">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-cima"/></svg>
+      </button>
+      <button type="button" class="botao botao--icone nova-distribuicao-descer" aria-label="Descer">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-baixo"/></svg>
+      </button>
+    </span>
+  </div>
+</template>
+
+<!-- aba Extrajornada: quem vai para outro pelotão, de um pelotão (o nome e o campo de escolher) -->
+<template id="tpl-regras-extra-sai">
+  <div class="ajustes-extra-linha">
+    <span class="ajustes-extra-linha-nome"></span>
+    <span class="dropdown nova-distribuicao-selecao">
+      <button type="button" class="campo-entrada campo-selecao">
+        <span class="campo-selecao-texto"></span>
+        <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+      </button>
+      <div class="dropdown-menu nova-distribuicao-selecao-menu">
+        <button type="button" class="dropdown-item" data-valor="moderno">O mais moderno</button>
+        <button type="button" class="dropdown-item" data-valor="rodizio">Em rodízio</button>
+      </div>
+    </span>
+  </div>
+</template>
+
+<!-- aba Extrajornada: a caixa de marcar de um pelotão em que as bombeiras tiram extra -->
+<template id="tpl-regras-extra-bombeira">
+  <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false">
+    <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+    <span class="nova-distribuicao-marca-texto"></span>
+  </button>
 </template>

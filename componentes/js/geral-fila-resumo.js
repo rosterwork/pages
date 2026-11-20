@@ -249,10 +249,16 @@
     }
   }
 
-  /* o selo Pendente que abre a lista dos aceites (a troca aprovada com aceite faltando, na lista de Trocas) */
+  /* o selo "Falta 1 aceite" que abre a lista dos aceites (a troca aprovada com aceite faltando, na lista de Trocas) */
   function seloAceites(todos) {
     var el = RosterWork.tpl('tpl-aceites-pendente');
     if (!el) return null;
+    var faltam = (todos || []).filter(function (a) { return !a.aceito_em; }).length;
+    if (faltam) {
+      var texto = M().trocas.faltamAceites(faltam);
+      el.querySelector('.aceites-pendente-texto').textContent = texto;
+      el.querySelector('.aceites-pendente-botao').setAttribute('aria-label', texto + ', ver os aceites');
+    }
     aceites(el.querySelector('.aceites-pendente-lista'), todos || []);
     return el;
   }

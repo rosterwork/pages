@@ -244,6 +244,7 @@
     var inclusao = raiz.querySelector('#nu-inclusao');
     if (inclusao) inclusao.addEventListener('input', function () { atualizarPostos(raiz); });
 
+    ligarSelecao(raiz.querySelector('#nu-sexo'));
     ligarSelecao(raiz.querySelector('#nu-cnh'));
     ligarSelecao(raiz.querySelector('#nu-setor'));
     ligarSelecao(raiz.querySelector('#nu-tipo'), function (valor) { aoEscolherTipo(valor, raiz); });

@@ -217,6 +217,7 @@
       nascimentoVazio: 'Preencha a data de nascimento',
       dataInvalida: 'Data inválida (dd/mm/aaaa)',
       idadeMinima: 'Idade mínima de 18 anos',
+      sexoVazio: 'Escolha o sexo',
       cnhVazia: 'Selecione a CNH',
       celularVazio: 'Preencha o celular',
       celularInvalido: 'Celular inválido',
@@ -331,8 +332,7 @@
       semOpVarias: 'As companhias escolhidas não têm Operação Verão.',
       ligar: 'Para ligar, marque Sim nos Ajustes, na aba Op. Verão.',
       impressao: { titulo: 'Op. Verão', arquivo: 'Op-Verao' },
-      /* a célula e o título do dia (op-verao-celula.js) */
-      semPosto: function (n) { return 'Sem posto (' + n + ')'; },
+      /* a célula e o título do dia (op-verao-celula.js; o Sem posto é o RosterWork.mensagens.escala.semPosto) */
       horas: function (inicio, fim) { return inicio + ' às ' + fim; },
       conflito: {
         afastado: function (nome, ate) { return 'Afastado no dia: ' + nome + ' até ' + ate + '.'; },
@@ -449,6 +449,15 @@
         pagina: 'Ajustes',
         desligar: 'Com o Não, a página Op. Verão fica vazia. Os lançamentos ficam guardados e voltam se marcar Sim de novo.',
         botaoDesligar: 'Marcar Não'
+      },
+      /* aba Extrajornada (ajustes-extrajornada.js): o pelotão nas listas e os pesos da balança */
+      extrajornada: {
+        pagina: 'Ajustes',
+        pelotao: function (nome, cidade) { return cidade ? nome + ', ' + cidade : nome; },
+        sai: function (nome, cidade) { return 'Do ' + (cidade ? nome + ', ' + cidade : nome); },
+        pesos: { pouco: 'Pouco', normal: 'Normal', muito: 'Muito' },
+        subir: function (nome) { return 'Subir ' + nome; },
+        descer: function (nome) { return 'Descer ' + nome; }
       }
     },
 
@@ -879,6 +888,8 @@
         regraProibida:       { texto: 'Função proibida pela regra: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'alerta' },
         exclusivoFora:       { texto: 'Militar exclusivo fora da sua função: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'alerta' },
         grauDiferente:       { texto: 'Grau diferente do ideal: {militar} em {funcao}', icone: 'icone-alerta', nivel: 'alerta' },
+        /* o Chefe de Socorro posto de Condutor pelo administrador contra a regra "O Chefe de Socorro dirige" da Distribuição */
+        chefeDirigeRegra:    { texto: 'Chefe de Socorro dirigindo contra a regra da Distribuição', icone: 'icone-alerta', nivel: 'alerta' },
         /* o mesmo militar em funções de duas unidades no mesmo horário; {unidades} = "2ºPEL e 1ºPEL" (a dele primeiro);
            {faixas} = ", das 08:00 às 20:00" quando é só parte do dia */
         duasUnidades:        { texto: '{militar} está em duas unidades diferentes ao mesmo tempo ({unidades}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' }
@@ -1051,7 +1062,6 @@
         editarVaga: 'Editar esta vaga',
         /* o título de cada parte do menu (o lugar é o "Condutor da ABT-14935" de sempre) e o Ver, que troca de aba */
         noDia: function (militar, data) { return militar + ' no dia ' + data; },
-        verDiaDe: function (militar) { return 'Ver o dia do ' + militar; },
         verFuncoesDe: function (militar) { return 'Ver as funções do ' + militar; },
         /* o Oficial de Área da companhia, no lápis da Central do pelotão */
         verDiaNa: function (unidade) { return 'Ver o dia na ' + unidade; },
@@ -1143,6 +1153,11 @@
         guarnicaoMudar: function (militar, letra, data) {
           return 'O ' + militar + ' muda para a guarnição ' + (letra || 'deste dia') + ' a partir de ' + data + '.';
         },
+        /* a mesma mudança com o descanso menor que o de sempre (de = a guarnição do último serviço, ultimo em DD/MM) */
+        guarnicaoMudarDescansoMenor: function (militar, letra, data, de, ultimo) {
+          return 'O ' + militar + ' muda para a guarnição ' + (letra || 'deste dia') + ' a partir de ' + data
+            + ', com o descanso menor que o de sempre: o último serviço dele na ' + de + ' é em ' + ultimo + '.';
+        },
         guarnicaoEntrar: function (letra, data) {
           return 'Ele entra na guarnição ' + (letra || 'deste dia') + ' a partir de ' + data + ' e segue nos serviços dela.';
         },
@@ -1184,9 +1199,9 @@
         },
         remanejadoPara: function (destino) { return 'Remanejado para ' + artigo(destino) + ' ' + destino; },
         devolverA: function (origem) { return 'Devolver ' + (artigo(origem) === 'a' ? 'à ' : 'ao ') + origem; },
-        /* o Oficial de Área que vem de um pelotão (escalas-celula-oficial.js): o motivo do remanejamento e a frase da caixa */
+        /* o Oficial de Área que vem de um pelotão (escalas-celula-oficial.js): o motivo do remanejamento (a pergunta se ele
+           sai de lá ou fica nas duas usa as frases remanejarSai, remanejarSoNa e remanejarNasDuas) */
         motivoOficial: 'Oficial de Área',
-        saiDoPelotao: function (militar, unidade) { return 'O ' + militar + ' sai d' + artigo(unidade) + ' ' + unidade + ' neste dia.'; },
         /* Remover do dia › quem veio de outro dia (mudança de dia): volta para o dia de antes ou sai deste dia, e o de
            antes vira folga (a pergunta do banco de horas vem depois) */
         devolverPara: function (de) { return 'Devolver para ' + de; },
@@ -1456,6 +1471,8 @@
         extra: 'Extrajornada',
         veio: function (de) { return de ? 'Veio d' + artigo(de) + ' ' + de + ' nesse dia' : 'Veio de outra unidade nesse dia'; },
         foi: function (para) { return para ? 'Foi para ' + artigo(para) + ' ' + para + ' nesse dia' : 'Foi para outra unidade nesse dia'; },
+        /* quem fica nas duas unidades, na dele (antes de salvar, a outra ainda não tem nome) */
+        tambem: function (para) { return para ? 'Também n' + artigo(para) + ' ' + para + ' nesse dia' : 'Também em outra unidade nesse dia'; },
         /* o militar do grupo Fora da escala (o operacional da unidade sem guarnição); quem voltou de um afastamento há até 5
            dias (o aviso amarelo) */
         fora: 'Fora da escala, sem guarnição',
@@ -1464,6 +1481,8 @@
       /* os grupos da célula da Escala (escalas-celula-grupos.js): a dica da linha tracejada diz o grupo de baixo */
       grupoCelula: { guarnicao: 'Guarnição', troca: 'Trocas', pontual: 'Pontual', remanejado: 'Remanejados', extra: 'Extrajornada',
         estagio: 'Estágio', sobreaviso: 'Sobreaviso', fora: 'Fora da escala' },
+      /* o título de quem não está em nenhum posto, com quantos (Op. Verão e Estágios, o .escala-mes-posto--sem) */
+      semPosto: function (n) { return 'Sem posto (' + n + ')'; },
       /* no lugar do horário de quem está fora da escala: a entrada na guarnição já marcada; a volta de um afastamento (o
          aviso amarelo, até 5 dias depois dela) */
       entraEm: function (data) { return 'Entra em ' + data; },
@@ -1846,6 +1865,17 @@
       opcoesIncompletas: 'Escolha a função e quem.',
       opcoesVazias: 'Escolha quem.',
       automaticaSempre: 'Sempre, o {funcao} é o mesmo que {quem}.',
+      /* a função de vários lugares no posto: todos os lugares (só no Sempre, o 1º com o 1º...) e quem cobre pela antiguidade */
+      grupoNomes: { todos: '{funcao}, todos', antigo: '{funcao}, o mais antigo', moderno: '{funcao}, o mais moderno' },
+      fraseTodos: 'Sempre, os {plural} {de} {posto} são os mesmos {de2} {quem}: {pares}',
+      fraseReservaTodos: 'Se eles faltarem, os {de} {quem}',
+      paresTodos: function (n) {
+        var pares = [];
+        for (var k = 1; k <= n; k++) pares.push('o ' + k + 'º com o ' + k + 'º');
+        return juntarComE(pares);
+      },
+      daPosto: function (posto) { return /^(Rancho|Almoxarifado)( \d+)?$/.test(posto) ? 'do' : 'da'; },
+      seFaltarUmLugar: 'Se faltar vale para um lugar só.',
       /* bloco 7: quem escolher */
       quemSenta: 'Quem senta em {funcao}?',
       ordemMovida: 'Movida para a {n}ª posição.',
@@ -1861,6 +1891,12 @@
       avisoLinha: ['Sem aviso', 'Com aviso amarelo', 'Com erro vermelho'],
       comCarteira: 'Com a CNH',
       comRodizio: 'Com rodízio',
+      /* a função com dois ou mais lugares no posto: a regra de todos e as exceções */
+      quemTodos: 'Todos os {plural}',
+      quemAjuda: 'Um lugar com escolha própria. O 1º é o primeiro {funcao} a encher na Ordem de importância.',
+      quemExcecao: 'Exceção: o {lugar} é {escolha}',
+      rotuloLugar: 'Lugar',
+      plurais: { 'Efetivo': 'Efetivos', 'Rádio Operador': 'Rádio Operadores', 'Rancheiro': 'Rancheiros', 'Almoxarife': 'Almoxarifes', 'Condutor': 'Condutores' },
       /* bloco 8: regras por militar */
       regraIncompleta: 'Escolha o militar, a regra, o posto e a função.',
       semMilitar: 'Escolha o militar',
@@ -2100,7 +2136,7 @@
       /* o selo da volta de férias ou de afastamento (abre a sugestão de guarnição na Escala) */
       sugestaoPronta: 'Sugestão pronta',
       /* listas sem nada (página Pendências) */
-      vazioFazer: 'Nada esperando você.',
+      vazioFazer: 'Nenhum pedido esperando a sua resposta.',
       vazioCorrigir: 'Nada para corrigir.',
       /* listas sem nada (as abas Pendências da Trocas, da Folgas e da Usuários) */
       vazioTrocas: 'Nenhum pedido de troca esperando você.',
@@ -2198,6 +2234,8 @@
       aceiteAguardandoAprovacao: 'Aguardando aprovação',
       seloAceitou: 'Aceitou',
       seloAceitePendente: 'Pendente',
+      /* o selo da linha da troca nas listas, que abre os aceites: quantos faltam */
+      faltamAceites: function (n) { return n === 1 ? 'Falta 1 aceite' : 'Faltam ' + n + ' aceites'; },
       /* o militar sem conta no sistema: o aceite dele fica pendente (não tem como aceitar) */
       seloSemConta: 'Sem conta',
       seloAprovou: 'Aprovou',
@@ -2490,6 +2528,9 @@
       origemAjuste: 'Ajuste do admin',
       origemPontual: 'Serviço a mais na escala',
       naoContabilizada: 'Não contabilizada',
+      /* a 2ª linha da folga no extrato, quando ela não tem motivo */
+      folgaSemDescontar: 'Folga dada sem descontar do seu saldo',
+      folgaDoServico: 'Folga do serviço',
       /* modal do banco de horas ao conceder folga (Contabilizar · Não contabilizar · Cancelar) */
       contabilizarFolga: function (militar, data, periodo, horas, passado) {
         return 'Dar folga ao ' + militar + ' em ' + data + ', ' + periodo + '.'
@@ -2642,6 +2683,7 @@
         extra_alocacao: 'Extra (escala do mês)',
         extra_disponibilidade: 'Pedido de extra',
         extra_prazos: 'Pedidos da extrajornada',
+        extra_regras: 'Regras da extrajornada',
         atestado: 'Atestado',
         ferias: 'Férias',
         licenca: 'Licença',
@@ -2781,6 +2823,7 @@
           : ['Gravando as regras', 'Refazendo a fila dos dias seguintes', 'Atualizando a tela'] };
       },
       ajustesOpVerao: { titulo: 'Salvando a Operação Verão', passos: ['Gravando as respostas', 'Atualizando a tela'] },
+      ajustesExtrajornada: { titulo: 'Salvando as regras da extrajornada', passos: ['Gravando as regras', 'Atualizando a tela'] },
       opVeraoSalvar: { titulo: 'Salvando a Operação Verão', passos: ['Gravando os dias', 'Atualizando a grade'] },
       opVeraoCivil: function (v) {
         return { titulo: v.remover ? 'Removendo do cadastro' : 'Salvando o guarda-vidas civil', passos: ['Gravando o cadastro'] };
@@ -2850,8 +2893,12 @@
       recadoSalvar: { titulo: 'Salvando a mensagem', passos: ['Gravando a mensagem'] },
       lembreteCriar: { titulo: 'Criando o lembrete', passos: ['Gravando o lembrete'] },
       pdfGerar: { titulo: 'Preparando o PDF', passos: ['Montando as páginas'] },
-      sugestao: { titulo: 'Calculando a melhor distribuição', passos: ['Lendo os voluntários, as cotas e os dias', 'Procurando a melhor combinação', 'Conferindo as regras de cada extra'],
-        pe: 'Isso pode levar até 1 minuto. Não feche esta página.', demora: 'Está demorando mais que o normal. Não feche esta página.' },
+      /* o Preencher pela sugestão: a leitura, um nível do placar por etapa (extrajornada-otimizador.js) e a conferência */
+      sugestao: { titulo: 'Calculando a melhor distribuição',
+        passos: ['Lendo os voluntários, as cotas e os dias', 'Cobrindo a falta vermelha', 'Cobrindo a falta amarela', 'Deixando cada um no próprio pelotão',
+                 'Escolhendo quem vai para outro pelotão', 'Colocando todas as cotas', 'Evitando passar do necessário', 'Escolhendo quem fica com cada lugar',
+                 'Pesando a balança', 'Conferindo as regras de cada extra'],
+        pe: 'Isso pode levar alguns minutos. Não feche esta página.', demora: 'Está demorando mais que o normal. Não feche esta página.' },
       imprimir: function (v) {
         return { titulo: 'Preparando o PDF', passos: ['Buscando a escala do período: ' + v.feitos + ' de ' + v.total + ' dias', 'Desenhando as páginas'] };
       }

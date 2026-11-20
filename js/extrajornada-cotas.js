@@ -1,7 +1,7 @@
 /* ============================================================
    EXTRAJORNADA — passo 2: Cotas
-   A faixa: Repartir por (Entre todos ou Unidades); as cotas da
-   companhia (campo no "Entre todos"; no "Unidades", o texto com a
+   A faixa: o jeito de repartir (Entre todos ou Por unidade, o dos
+   Ajustes › Extrajornada, só para ler); as cotas da companhia (campo no "Entre todos"; no "Unidades", o texto com a
    soma das unidades); Entregues (amarelo: ainda há cota e voluntário
    que pediu mais; vermelho: passou do recebido), Sobram e Na escala;
    e o Preencher pela sugestão. Embaixo, a grade, com um bloco por
@@ -41,7 +41,7 @@
   /* os voluntários com termo, na fila da companhia (a menor porcentagem atendida nos 12 meses e, no empate, o mais antigo) */
   function comTermo() { return vols().filter(function (m) { return m.termo; }).sort(function (a, b) { return a.ordem - b.ordem; }); }
   function conc(m) { return m.cpf in p2.conc ? p2.conc[m.cpf] : (m.concedidas || 0); }
-  /* algum Recebe difere do salvo (o total e o Repartir por não contam: são o que a sugestão usa na conta) */
+  /* algum Recebe difere do salvo (o total não conta: é o que a sugestão usa na conta) */
   function recebeMudado() { return !!p2 && comTermo().some(function (m) { return conc(m) !== (m.concedidas || 0); }); }
   function sugestao(m) { return p2.sug[m.cpf] || 0; }
   /* a companhia (a unidade que não é pelotão) */
@@ -128,9 +128,9 @@
   function desenhar() {
     if (!p2) iniciarRascunho();
     var porUnidade = p2.modo === 'por_unidade';
-    /* a faixa: Repartir por, as cotas da companhia (campo ou a soma das unidades) e os números */
-    q('#p2-modo-texto').textContent = q('#p2-modo [data-modo="' + p2.modo + '"]').textContent;
-    todos('#p2-modo [data-modo]', function (b) { b.classList.toggle('dropdown-item--ativo', b.getAttribute('data-modo') === p2.modo); });
+    /* a faixa: o jeito de repartir (o dos Ajustes, só para ler), as cotas da companhia (campo ou a soma das unidades) e os
+       números */
+    todos('#p2-modo [data-modo]', function (b) { b.classList.toggle('oculto', b.getAttribute('data-modo') !== p2.modo); });
     todos('.extrajornada-cia', function (e) { e.textContent = cia().nome || ''; });
     var campo = q('#p2-recebidas');
     campo.classList.toggle('oculto', porUnidade);
@@ -199,7 +199,7 @@
     /* com os pedidos abertos, o aviso no alto e os campos travados (o banco também recusa) */
     var aberto = d.mes.estado !== 'encerrado';
     q('#p2-topo').classList.toggle('oculto', !aberto);
-    todos('[data-aba-painel="cotas"] input, #p2-modo > button, .extrajornada-voluntarios-conc-gatilho', function (e) { e.disabled = aberto; });
+    todos('[data-aba-painel="cotas"] input, .extrajornada-voluntarios-conc-gatilho', function (e) { e.disabled = aberto; });
   }
 
   /* um voluntário: a fila, o militar, o pedido, o atendido em 12 meses, a sugestão, o Recebe e o que já está na escala */
@@ -252,21 +252,6 @@
     q('#p2-recebidas').addEventListener('input', function () {
       var v = q('#p2-recebidas').value.trim();
       p2.recebidas = v === '' ? null : (parseInt(v, 10) || 0); p2.sujo = true; desenhar(); pedirSugestao();
-    });
-    /* trocar o jeito: cada unidade já vem com o que ela tem repartido (onde ainda não há total); entre todos volta com a
-       soma das unidades */
-    todos('#p2-modo [data-modo]', function (b) {
-      b.addEventListener('click', function () {
-        var modo = b.getAttribute('data-modo');
-        if (p2.modo === modo) return;
-        if (modo === 'por_unidade') {
-          d.unidades.forEach(function (un) {
-            var rep = repartidoEm(un.id);
-            if ((p2.unidades[un.id] == null || p2.unidades[un.id] === '') && rep > 0) p2.unidades[un.id] = rep;
-          });
-        } else if (somaUnidades() > 0) p2.recebidas = somaUnidades();
-        p2.modo = modo; p2.sujo = true; desenhar(); pedirSugestao();
-      });
     });
     /* Preencher pela sugestão: a Sugestão no Recebe de todos, na hora; o Desfazer volta ao de antes. Com algum Recebe
        mudado e não salvo, não preenche (o menu Ações mostra o motivo) */

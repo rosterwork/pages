@@ -13,13 +13,16 @@
    › Ações e perguntas): O que fazer, Quem (com o ícone de origem e
    o serviço dele), Em troca, Na unidade de origem (só no Enviar,
    sem troca e sem extra), Motivo (opcional) e um Onde fica para cada militar
-   que entra numa unidade (escalas-painel-onde.js), com a nota da
-   distribuição. O dia da outra unidade vem da mesma leitura do
-   painel (ler_distribuicao_dia). As listas ficam em
+   que entra numa unidade (escalas-painel-onde.js, sem a nota do que
+   acontece com quem está em volta: o dia é refeito ao salvar); embaixo,
+   o Como fica e a recusa (escalas-painel-remanejar-como.js: o banco
+   confere numa prévia das duas unidades). O dia da outra unidade vem
+   da mesma leitura do painel (ler_distribuicao_dia). As listas ficam em
    escalas-painel-remanejar-listas.js. Sem botão próprio: com tudo
    respondido, o remanejamento entra no rascunho do Dia ao vivo
    (escalas-painel-editar.js › aoVivo; o motivo, quando escrito, vai
-   junto) e as telas mostram como fica. Depois de salvo, desfaz-se pelo Devolver (o lápis de
+   junto; com a recusa, o Salvar fica desligado) e as telas mostram
+   como fica. Depois de salvo, desfaz-se pelo Devolver (o lápis de
    quem foi para outra unidade, na aba Militares) ou pelo Remover do
    dia.
    API: RosterWork.escalasPainelRemanejar.abrir(opcoes) (opcoes = { cpf }:
@@ -97,7 +100,7 @@
        outra unidade; item: quem vem ou vai; troca: 'sim' | 'nao'; itemTroca: quem faz o caminho contrário; sai: 'sai' |
        'fica' */
     var est = { fazer: null, destino: null, origem: null, outraDados: null, item: null, troca: null, itemTroca: null, sai: null };
-    var el = {}, combo = null, comboTroca = null, ondes = {}, pedido = 0, aquiNome = '', outras = [];
+    var el = {}, combo = null, comboTroca = null, ondes = {}, pedido = 0, aquiNome = '', outras = [], como = null;
 
     function outra() { return est.fazer === 'enviar' ? est.destino : est.fazer === 'trazer' ? est.origem : null; }
     /* a lista de Quem e a de Em troca: no Trazer, quem vem é da outra unidade; no Enviar, daqui */
@@ -176,9 +179,17 @@
         trocaCampo: q('.escala-remanejar-troca-campo'), trocaCombo: q('.escala-remanejar-troca-combo'),
         sai: q('.escala-remanejar-sai'), saiPergunta: q('.escala-remanejar-sai-pergunta'),
         saiSim: q('.escala-remanejar-sai-sim'), saiNao: q('.escala-remanejar-sai-nao'),
-        motivo: q('.escala-remanejar-motivo'), ondes: q('.escala-remanejar-ondes'), nota: q('.escala-remanejar-nota')
+        motivo: q('.escala-remanejar-motivo'), ondes: q('.escala-remanejar-ondes'), como: q('.escala-remanejar-como'),
+        comoLista: q('.escala-remanejar-como-lista'), conferindo: q('.escala-remanejar-conferindo'), erro: q('.escala-remanejar-erro')
       };
       el.campoMotivo = el.motivo.querySelector('textarea');
+      /* o Como fica e o banco confere (escalas-painel-remanejar-como.js) */
+      como = RosterWork.escalasPainelRemanejarComo.criar({
+        el: el, dados: dados, iso: iso, outra: outra,
+        outraDados: function () { return est.outraDados; },
+        vivo: function () { return el.como.isConnected; },
+        aoConferir: function () { atualizar(true); }
+      });
       el.radiosFazer = el.fazer.querySelectorAll('input[type="radio"]');
       /* o que fazer: trocar limpa o que dependia dele (o Enviar guarda a unidade escolhida ao lado) */
       el.marcarFazer = ligarRadios(el.fazer, function (v) { est.fazer = v; est.origem = null; textoUnidade(el.origem, null); lerOutra(); });
@@ -266,6 +277,7 @@
             dados: function () { return o.e.dados; },
             periodos: function () { return o.e.item.janelas.map(function (j) { return { hi: j.hi, hf: j.hf }; }); },
             cpf: function () { return o.e.item.cpf; },
+            refaz: true,   // o dia é refeito ao salvar: o que acontece com quem está em volta fica no Como fica
             aoMudar: atualizar
           });
         }
@@ -277,9 +289,10 @@
       });
     }
 
-    function atualizar() {
-      if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-      ['quem', 'servico', 'troca', 'trocaCampo', 'sai', 'motivo', 'nota'].forEach(function (k) { mostra(el[k], false); });
+    /* redesenha com as respostas de agora; manter: a conta do banco chegou (as listas abertas ficam abertas) */
+    function atualizar(manter) {
+      if (manter !== true && RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
+      ['quem', 'servico', 'troca', 'trocaCampo', 'sai', 'motivo', 'como', 'erro'].forEach(function (k) { mostra(el[k], false); });
       var semOutras = R().unidadesLidas() && !outras.length;
       mostra(el.vazio, semOutras);
       [].forEach.call(el.radiosFazer, function (r) { r.disabled = semOutras; });
@@ -316,18 +329,25 @@
         }
         mostra(el.motivo, true);
         lista = entradas();
-        if (lista.length) {
-          mostra(el.nota, true);
-          el.nota.querySelector('.nota-texto').textContent = L().remanejarNota(aquiNome, outra().nome);
-        }
         return false;
       })();
       desenharOndes(lista);
       /* o Onde fica de cada um (a caixa nova já entra com a falta dela) */
       if (!falta) lista.forEach(function (e) { falta = falta || (ondes[e.chave] ? ondes[e.chave].comp.falta() : false); });
-      /* tudo respondido: o remanejamento entra no rascunho (o motivo é opcional e não muda a prévia) */
       if (falta) { api.aoVivo(null, !!est.fazer); return; }
-      api.aoVivo(function () { noRascunho(lista); }, false);
+      /* tudo respondido: o remanejamento entra no rascunho (o motivo é opcional e não muda a prévia), e o Como fica mostra
+         a conta do banco desta resposta (a recusa desliga o Salvar); sem ela, a conta vem meio segundo depois */
+      var chave = chaveDaResposta(lista), c = como.resultado(chave);
+      api.aoVivo(function () { noRascunho(lista); }, !!c && !!c.erro);
+      como.mostrar(c);
+      if (!c) como.agendar(chave);
+    }
+
+    /* a resposta de agora, sem o motivo (que não muda a escala): a conta do Como fica vale enquanto ela não muda */
+    function chaveDaResposta(lista) {
+      var u = outra();
+      return JSON.stringify([est.fazer, u && u.unidade_id, est.item && est.item.cpf, est.troca, est.itemTroca && est.itemTroca.cpf, est.sai,
+        lista.map(function (e) { var comp = ondes[e.chave].comp; return [e.chave, comp.paraBanco(), comp.estado().marcadas]; })]);
     }
 
     /* ---------- no rascunho ---------- */

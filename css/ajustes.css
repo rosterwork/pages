@@ -14,8 +14,134 @@
 .pagina:has([data-aba-painel="distribuicao"].oculto) #nova-distribuicao-barra,
 .pagina:has([data-aba-painel="feriados"].oculto) #feriados-barra,
 .pagina:has([data-aba-painel="sobreaviso"].oculto) #sobreaviso-barra,
-.pagina:has([data-aba-painel="op-verao"].oculto) #op-verao-barra {
+.pagina:has([data-aba-painel="op-verao"].oculto) #op-verao-barra,
+.pagina:has([data-aba-painel="extrajornada"].oculto) #regras-extra-barra {
   display: none;
+}
+
+/* ---------- as regras fixas (aba Extrajornada): o título com o cadeado na ponta e as frases, com ponto ou número ---------- */
+.ajustes-regras-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ajustes-regras-titulo > .nova-distribuicao-trava {
+  margin-left: auto;
+}
+
+.ajustes-regras {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: ajustes-regra;
+}
+
+.ajustes-regras-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--fonte-padrao);
+  line-height: 1.4;
+  color: var(--texto-suave);
+  counter-increment: ajustes-regra;
+}
+
+/* sem número: o ponto, na altura da primeira linha */
+.ajustes-regras-item::before {
+  content: "";
+  flex-shrink: 0;
+  width: 4px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 50%;
+  background-color: var(--texto-fraco);
+}
+
+.ajustes-regras--numeradas > .ajustes-regras-item::before {
+  content: counter(ajustes-regra) ".";
+  width: auto;
+  min-width: 16px;
+  height: auto;
+  margin-top: 0;
+  border-radius: 0;
+  background-color: transparent;
+  color: var(--texto-fraco);
+}
+
+/* ---------- aba Extrajornada: os pelotões na ordem (o número, o nome e as setas) ---------- */
+.ajustes-extra-pelotoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ajustes-extra-pelotao {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 8px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+.ajustes-extra-pelotao-n {
+  color: var(--texto-fraco);
+}
+
+/* quem vai para outro pelotão: o nome e o campo de escolher, uma linha por pelotão */
+.ajustes-extra-linhas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ajustes-extra-linha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 40px;
+  font-size: var(--fonte-padrao);
+  color: var(--texto);
+}
+
+/* ---------- a balança: o nome, o campo (Pouco, Normal, Muito) e a frase embaixo ---------- */
+.ajustes-balanca {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ajustes-balanca-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 4px;
+}
+
+.ajustes-balanca-item > .subtela-ajuda {
+  grid-column: 1 / -1;
+}
+
+.ajustes-balanca-nome {
+  font-size: var(--fonte-padrao);
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.ajustes-balanca-item .campo-selecao,
+.ajustes-extra-linha .campo-selecao {
+  min-width: 160px;
 }
 
 /* ---------- aba Op. Verão: os postos, um por linha (o nome e a lixeira na ponta) ---------- */

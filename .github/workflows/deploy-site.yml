@@ -2,6 +2,7 @@ name: Deploy Site
 
 on:
   push:
+    branches: [main]
     paths:
       - '**'
   workflow_dispatch:
@@ -10,6 +11,11 @@ permissions:
   contents: read
   pages: write
   id-token: write
+
+# uma publicação por vez: a seguinte espera na fila, sem cancelar a que está no meio
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   deploy_site:

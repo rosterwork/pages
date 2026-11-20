@@ -17,8 +17,10 @@
      fora da escala entra nela a partir do dia; quem é de outra
      guarnição muda para ela a partir do dia, com o que acontece com as
      trocas, folgas e extras dele (a mesma lista da aba Guarnições, na
-     própria sub-tela); quem já é da guarnição do dia não muda. Vai
-     para o rascunho das guarnições (escalas-painel-ciclo.js).
+     própria sub-tela); quem já é da guarnição do dia não muda. Quem
+     muda com o descanso menor que o de sempre responde o Quando entra:
+     o descanso de sempre (a sugestão) ou o dia aberto (avisa, não
+     trava). Vai para o rascunho das guarnições (escalas-painel-ciclo.js).
    Sem botão próprio: a resposta completa entra no rascunho ao vivo
    (escalas-painel-editar.js › aoVivo) e as telas mostram como fica;
    horário em conflito deixa o Salvar desligado. Nada grava até o
@@ -67,34 +69,77 @@
   }
 
   /* m escolhido para a guarnição do dia: quem está fora da escala entra; quem é de outra guarnição muda para ela e vê o
-     que acontece com as trocas, folgas e extras dele a partir do dia; quem já é dela não muda. Vai para o rascunho das
-     guarnições, ao vivo. g = { uid, iso, letra, mudar e info (as notas), efeito (escalas-painel-ciclo.js › efeito),
-     analise ({ chave, aviso, pedido }: lida uma vez por militar), vale() (a tela ainda está aberta), aoLer(m) (a análise
-     chegou) } */
+     que acontece com as trocas, folgas e extras dele a partir da mudança; quem já é dela não muda. Vai para o rascunho
+     das guarnições, ao vivo. g = { uid, iso, letra, mudar e info (as notas), quando (a caixa Quando entra), efeito
+     (escalas-painel-ciclo.js › efeito), analise ({ chave, aviso, pedido }: lida uma vez por militar e data), vale() (a
+     tela ainda está aberta), aoLer(m) (a análise chegou, ou o Quando entra mudou: desenha de novo) } */
   function desenharGuarnicao(m, g) {
     var api = ed(), C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     var mudar = m.estado !== 'fora' && !m.serve_hoje;
-    nota(g.mudar, m.serve_hoje ? L().guarnicaoServeHoje(nomeDe(m), g.letra, diaMes(g.iso)) : mudar ? L().guarnicaoMudar(nomeDe(m), g.letra, D.diaMesExtenso(g.iso)) : '');
+    var quando = quandoEntra(m, g);
+    nota(g.mudar, m.serve_hoje ? L().guarnicaoServeHoje(nomeDe(m), g.letra, diaMes(g.iso))
+      : !mudar ? ''
+      : quando.menor ? L().guarnicaoMudarDescansoMenor(nomeDe(m), g.letra, D.diaMesExtenso(quando.entra), m.descanso.de, diaMes(m.descanso.ultimo))
+      : L().guarnicaoMudar(nomeDe(m), g.letra, D.diaMesExtenso(quando.entra)));
     nota(g.info, m.estado === 'fora' && !m.serve_hoje ? L().guarnicaoEntrar(g.letra, D.diaMesExtenso(g.iso)) : '');
     if (m.serve_hoje) { api.aoVivo(null, true); return; }
     if (m.estado === 'fora') { api.aoVivo(function () { C.entrar(g.uid, g.iso, m, g.letra); }); return; }
-    mudarGuarnicao(m, g);
+    mudarGuarnicao(m, g, quando);
   }
 
-  /* quem muda de guarnição: a lista do que acontece (lida uma vez) e, com ela, a marca no rascunho das guarnições;
-     enquanto lê, o Salvar espera */
-  function mudarGuarnicao(m, g) {
-    var api = ed(), C = RosterWork.escalasPainelCiclo, analise = g.analise;
-    if (analise.chave === m.cpf) {
-      if (analise.aviso) { g.efeito.mostrar(analise.aviso); api.aoVivo(function () { C.marcarMudar(g.uid, g.iso, m, analise.aviso.itens, g.letra); }); }
-      else api.aoVivo(null, true);
+  /* o Quando entra de quem muda de guarnição com o descanso menor que o de sempre (m.descanso, do banco: o último serviço
+     na antiga foi a menos de um intervalo do ritmo antes do dia): o descanso de sempre (a sugestão, já marcada) ou o dia
+     aberto, com o descanso menor (a nota avisa, nada trava). A escolha fica nos rádios da caixa, por militar. Devolve
+     { data (a da mudança), entra (o primeiro dia na guarnição nova), menor } */
+  var quandoDe = new WeakMap();   // a caixa: o militar e a peça do último desenho (o rádio desenha de novo com eles)
+
+  function quandoEntra(m, g) {
+    var caixa = g.quando, d = m.descanso, noDia = { data: g.iso, entra: g.iso, menor: false };
+    var mostrar = !!caixa && !!d && m.estado !== 'fora' && !m.serve_hoje;
+    if (caixa) caixa.classList.toggle('oculto', !mostrar);
+    if (!mostrar) return noDia;
+    var radios = caixa.querySelectorAll('input[type="radio"]');
+    if (!caixa.hasAttribute('data-ligado')) {
+      caixa.setAttribute('data-ligado', '');
+      var nome = 'escala-guarnicao-quando-' + (++conta);
+      [].forEach.call(radios, function (r) {
+        r.name = nome;
+        r.addEventListener('change', function () {
+          var ultimo = quandoDe.get(caixa);
+          if (r.checked && ultimo) ultimo.g.aoLer(ultimo.m);
+        });
+      });
+    }
+    quandoDe.set(caixa, { m: m, g: g });
+    /* outro militar: volta à sugestão */
+    if (caixa.getAttribute('data-cpf') !== m.cpf) {
+      caixa.setAttribute('data-cpf', m.cpf);
+      [].forEach.call(radios, function (r) { r.checked = r.value === 'sempre'; });
+    }
+    caixa.querySelector('.escala-guarnicao-quando-de').textContent = d.de;
+    caixa.querySelector('.escala-guarnicao-quando-ultimo').textContent = diaMes(d.ultimo);
+    caixa.querySelector('.escala-guarnicao-quando-sempre').textContent = diaMes(d.a_partir);
+    caixa.querySelector('.escala-guarnicao-quando-menor').textContent = diaMes(g.iso);
+    if (caixa.querySelector('input[value="menor"]').checked) return { data: g.iso, entra: g.iso, menor: true };
+    return { data: d.data, entra: d.a_partir, menor: false };
+  }
+
+  /* quem muda de guarnição: a lista do que acontece a partir da data da mudança (lida uma vez por data) e, com ela, a
+     marca no rascunho das guarnições; enquanto lê, o Salvar espera */
+  function mudarGuarnicao(m, g, quando) {
+    var api = ed(), C = RosterWork.escalasPainelCiclo, analise = g.analise, chave = m.cpf + '|' + quando.data;
+    if (analise.chave === chave) {
+      if (analise.aviso) {
+        g.efeito.mostrar(analise.aviso);
+        api.aoVivo(function () { C.marcarMudar(g.uid, g.iso, m, analise.aviso.itens, g.letra, quando.data); });
+      } else api.aoVivo(null, true);
       return;
     }
-    analise.chave = m.cpf;
+    analise.chave = chave;
     analise.aviso = null;
     var meu = ++analise.pedido;
     api.aoVivo(null, true);
-    C.analisarMudar(g.uid, g.iso, m, g.letra).then(function (aviso) {
+    C.analisarMudar(g.uid, quando.data, m, g.letra, quando.entra).then(function (aviso) {
       if (meu !== analise.pedido || !g.vale()) return;
       if (aviso.erro) { analise.chave = ''; RosterWork.avisar({ tipo: 'erro', mensagem: aviso.erro }); return; }
       analise.aviso = aviso;
@@ -253,7 +298,7 @@
         militarRotulo: q('.escala-adicionar-militar-rotulo'),
         horario: q('.escala-adicionar-horario'), periodos: q('.escala-adicionar-periodos'),
         banco: q('.escala-adicionar-banco'), contabilizar: q('.escala-adicionar-contabilizar'),
-        mudar: q('.escala-adicionar-mudar'), info: q('.escala-adicionar-ciclo-info')
+        mudar: q('.escala-adicionar-mudar'), info: q('.escala-adicionar-ciclo-info'), quando: q('.escala-adicionar-quando')
       };
       el.unidadeVazio = el.unidade.querySelector('.campo-selecao-texto').textContent;
       /* o Onde fica: a caixa comum, no lugar marcado do molde */
@@ -307,12 +352,12 @@
       /* a Unidade e o rótulo do Militar só no dia (na guarnição e no estagiário, o campo fica como sempre) */
       mostra(el.unidadeCampo, como === 'dia' && !estagiario);
       mostra(el.militarRotulo, como === 'dia' && !estagiario);
-      ['horario', 'ondeBloco', 'acumula', 'banco', 'mudar', 'info'].forEach(function (k) { mostra(el[k], false); });
+      ['horario', 'ondeBloco', 'acumula', 'banco', 'mudar', 'info', 'quando'].forEach(function (k) { mostra(el[k], false); });
       efeito.esconder();
       nota(el.assume, m && m.assume ? (m.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(m), '') : '');
       if (!m) { api.aoVivo(null, false); return; }
       if (como === 'ciclo') {
-        desenharGuarnicao(m, { uid: uid, iso: iso, letra: letra, mudar: el.mudar, info: el.info, efeito: efeito, analise: analise,
+        desenharGuarnicao(m, { uid: uid, iso: iso, letra: letra, mudar: el.mudar, info: el.info, quando: el.quando, efeito: efeito, analise: analise,
           vale: function () { return el.combo.isConnected; },
           aoLer: function (quem) { if (est.mil === quem && est.como === 'ciclo') atualizar(); } });
         return;

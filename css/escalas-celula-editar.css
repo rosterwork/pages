@@ -121,7 +121,7 @@
 }
 
 /* as perguntas do painel (a guarnição, a folga e a mudança), o Adicionar à guarnição e o campo do Oficial de Área do
-   título (com a pergunta do banco de horas de quem sai embaixo), sem a moldura delas */
+   título (com as perguntas embaixo: se quem entra sai do pelotão e o banco de horas de quem sai), sem a moldura delas */
 .escala-celula-perguntas,
 .escala-celula-guarnicao,
 .escala-celula-oficial-campo {

@@ -747,8 +747,8 @@
 
 <!-- a caixa 2 do Adicionar o Oficial de Área e do Pôr outro no lugar dele (componente geral-combo-militar): a busca e os
      subtenentes e oficiais da companhia, livres ou de serviço, por unidade; escolhido quem está de serviço num pelotão, a
-     frase de que ele sai de lá; no Pôr outro, a pergunta do banco de horas de quem sai, quando vale (os textos e a ordem
-     vêm do JS) -->
+     pergunta se ele sai de lá neste dia ou fica nas duas unidades; no Pôr outro, a pergunta do banco de horas de quem
+     sai, quando vale (os textos e a ordem vêm do JS) -->
 <template id="tpl-escala-celula-oficial-campo">
   <div class="escala-celula-oficial-campo">
     <div class="dropdown campo-combo escala-celula-adicionar">
@@ -756,11 +756,12 @@
       <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
     </div>
-    <div class="nota escala-celula-oficial-nota oculto">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-      <span class="nota-texto"></span>
+    <div class="escala-celula-pergunta escala-celula-oficial-origem oculto">
+      <span class="escala-celula-pergunta-texto"></span>
+      <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-celula-pergunta-nao"></span></label>
+      <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-celula-pergunta-sim"></span></label>
     </div>
-    <div class="escala-celula-pergunta oculto">
+    <div class="escala-celula-pergunta escala-celula-oficial-banco oculto">
       <span class="escala-celula-pergunta-texto"></span>
       <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-celula-pergunta-nao"></span></label>
       <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-celula-pergunta-sim"></span></label>
@@ -799,6 +800,13 @@
       <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
       <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares"></div>
     </div>
+    <!-- quem muda com o descanso menor que o de sempre: a mesma pergunta do Adicionar militar do painel -->
+    <div class="campo escala-guarnicao-quando escala-celula-guarnicao-quando oculto">
+      <span class="campo-rotulo">Quando entra</span>
+      <span class="campo-ajuda">O último serviço dele na guarnição <span class="escala-guarnicao-quando-de"></span> é em <span class="escala-guarnicao-quando-ultimo"></span>.</span>
+      <label class="geral-opcao"><input type="radio" value="sempre" /><span>Em <span class="escala-guarnicao-quando-sempre"></span>, com o descanso de sempre</span></label>
+      <label class="geral-opcao"><input type="radio" value="menor" /><span>Em <span class="escala-guarnicao-quando-menor"></span>, com o descanso menor</span></label>
+    </div>
     <div class="nota nota--alerta escala-celula-guarnicao-mudar oculto">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="nota-texto"></span>
@@ -825,10 +833,7 @@
 </template>
 
 <!-- ===== OP. VERÃO (a página Op. Verão; op-verao*.js) ===== -->
-<!-- na célula: o título de cada posto (e o Sem posto, com quantos) e o dia do período sem ninguém -->
-<template id="tpl-op-verao-posto">
-  <span class="op-verao-posto"></span>
-</template>
+<!-- na célula: o dia do período sem ninguém (o título de cada posto é o tpl-escala-mes-posto do index.html) -->
 <template id="tpl-op-verao-vazio">
   <span class="op-verao-vazio">Ninguém neste dia.</span>
 </template>

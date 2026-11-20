@@ -156,10 +156,11 @@
       return RosterWork.avisoSaida(a.pendencias, { tipo: 'tirar', escala: escala });
     });
   }
-  /* quem sai da escala a partir do dia, e quem muda de guarnição no dia */
+  /* quem sai da escala a partir do dia, e quem muda de guarnição a partir de desde (entra = o primeiro dia na nova; sem
+     ele, o próprio desde) */
   function analisarSair(unidadeId, iso, m) { return analisar(unidadeId, m.cpf, iso, RosterWork.mensagens.saida.escalaTirar); }
-  function analisarMudar(unidadeId, iso, m, letra) {
-    return analisar(unidadeId, m.cpf, iso, RosterWork.mensagens.escala.linha.guarnicaoEscalaMudar(letra, iso.split('-').reverse().slice(0, 2).join('/')));
+  function analisarMudar(unidadeId, desde, m, letra, entra) {
+    return analisar(unidadeId, m.cpf, desde, RosterWork.mensagens.escala.linha.guarnicaoEscalaMudar(letra, (entra || desde).split('-').reverse().slice(0, 2).join('/')));
   }
 
   /* o efeito na sub-tela (o Adicionar militar e o Remover do dia): a nota com a lista do que acontece, no lugar do marcador.
@@ -195,10 +196,11 @@
     if (letra) { mudanca.letra = letra; mudanca.data = iso; }
     marcar(unidadeId, iso, mudanca);
   }
-  /* quem já está numa guarnição passa para a do dia (itens = o que acontece) */
-  function marcarMudar(unidadeId, iso, m, itens, letra) {
+  /* quem já está numa guarnição passa para a do dia (itens = o que acontece; data = a da mudança, sem ela o dia: com o
+     descanso de sempre, o dia seguinte, e ele entra na nova um intervalo do ritmo depois) */
+  function marcarMudar(unidadeId, iso, m, itens, letra, data) {
     var mudanca = { cpf: m.cpf, acao: 'adicionar', tipo: 'mudar', itens: itens || [] };
-    if (letra) { mudanca.letra = letra; mudanca.data = iso; }
+    if (letra) { mudanca.letra = letra; mudanca.data = data || iso; }
     marcar(unidadeId, iso, mudanca);
   }
   /* quem sai da escala no dia (a sub-tela já mostrou a lista; itens = o que acontece) */

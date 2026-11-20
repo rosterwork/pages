@@ -8,7 +8,7 @@
    ou nos outros dias ficam marcadas junto): Mudar o período, Mudar o
    nome e Mudar o que ele sai abrem as perguntas na caixa 2, ao lado
    (afastamentos-campos.js); Remover o afastamento vai para o
-   rascunho; nas Férias não há o que ele sai; no que começou há mais
+   rascunho; nas Férias, o que ele sai é só a guarnição; no que começou há mais
    de uma semana, só o período (o fim) e o nome; no que terminou antes
    disso, o aviso. Na célula vazia, Adicionar afastamento (no dia do
    Mês, já com o início e o fim nesse dia). Em todas, Abrir o painel do
@@ -172,8 +172,8 @@
     var menu = RW.tpl(!af ? 'tpl-afastamentos-menu-vazio' : (t.fim ? 'tpl-afastamentos-menu-travado' : 'tpl-afastamentos-menu'));
     if (!menu) return;
     if (af && !t.fim) {
-      /* as férias não têm o que ele sai; o que começou antes do limite não muda as marcas nem sai */
-      menu.querySelector('[data-acao="marcas"]').classList.toggle('oculto', af.padrao === 'ferias' || t.inicio);
+      /* o que começou antes do limite não muda as marcas nem sai (nas férias, as marcas são só a guarnição) */
+      menu.querySelector('[data-acao="marcas"]').classList.toggle('oculto', t.inicio);
       menu.querySelector('[data-acao="remover"]').classList.toggle('oculto', t.inicio);
     }
     a.campos = null;

@@ -8,8 +8,8 @@
    partir de 16 dias) e o que ele deixa nesses dias, em caixas de
    marcar. Escolher um nome da lista preenche as marcas dele (a
    Op. Verão e a F. Tarefa deixam trocar e tirar extra, e a Op. Verão
-   também fica no sobreaviso; o Litoral sai de tudo); as Férias não
-   perguntam a guarnição nem as marcas (saem de tudo). Cada resposta
+   também fica no sobreaviso; o Litoral sai de tudo); as Férias
+   perguntam só a guarnição (saem do resto). Cada resposta
    entra no rascunho na hora. O que é de mais de uma semana atrás fica
    travado (o mesmo limite do banco): o que terminou antes não muda; o
    que começou antes muda só o fim e o nome.
@@ -38,10 +38,9 @@
     var d = D().paraData(valor);
     return d ? D().paraIsoDeData(d) : '';
   }
-  /* sem a escolha do administrador, a regra dos dias: a partir de 16 sai da guarnição (as férias sempre saem) */
+  /* sem a escolha do administrador, a regra dos dias: a partir de 16 sai da guarnição (as férias também) */
   function sugestao(af, campos) {
     var x = Object.assign({}, af, campos);
-    if (x.padrao === 'ferias') return { gua: true };
     if (x.escolheu) return {};
     return { gua: dias(x) >= 16 };
   }
@@ -179,9 +178,8 @@
         selo.textContent = n ? M().dias(n) : '';
         selo.classList.toggle('oculto', !n);
       }
-      /* as férias não perguntam a guarnição nem as marcas */
+      /* as férias perguntam só a guarnição (saem do resto) */
       if (el.guarnicao) {
-        el.guarnicao.classList.toggle('oculto', ferias);
         Array.prototype.forEach.call(el.guarnicao.querySelectorAll('input[type="radio"]'), function (radio) {
           radio.checked = (radio.value === 'sim') === !!a.gua;
         });

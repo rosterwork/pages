@@ -283,19 +283,12 @@
         </div>
       </div>
       <div class="extrajornada-voluntarios-banda">
-        <div class="extrajornada-voluntarios-banda-item">
-          <span>Repartir por</span>
-          <div class="dropdown extrajornada-reparticao" id="p2-modo">
-            <button type="button" class="campo-entrada campo-selecao" aria-label="Repartir por">
-              <span class="campo-selecao-texto" id="p2-modo-texto"></span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-            </button>
-            <div class="dropdown-menu">
-              <button type="button" class="dropdown-item" data-modo="grupo">Entre todos</button>
-              <button type="button" class="dropdown-item" data-modo="por_unidade">Unidades</button>
-            </div>
-          </div>
-        </div>
+        <!-- o jeito de repartir vem dos Ajustes (aba Extrajornada): aqui só se lê -->
+        <span class="extrajornada-voluntarios-banda-item" id="p2-modo" data-dica="Muda nos Ajustes, na aba Extrajornada">
+          <span>Repartir</span>
+          <b class="extrajornada-banda-texto" data-modo="grupo">Entre todos</b>
+          <b class="extrajornada-banda-texto oculto" data-modo="por_unidade">Por unidade</b>
+        </span>
         <label class="extrajornada-voluntarios-banda-item">
           <span>Cotas da <span class="extrajornada-cia"></span></span>
           <input type="text" inputmode="numeric" maxlength="3" class="campo-entrada extrajornada-voluntarios-total" id="p2-recebidas" />
@@ -807,7 +800,7 @@
       <li>Só recebe quem entregou o termo, e ninguém recebe mais do que pediu.</li>
       <li>O total entregue não pode passar do recebido. Se passar, o número fica vermelho e o Salvar trava.</li>
       <li>Entregues em amarelo: ainda sobra cota e há voluntário que pediu mais.</li>
-      <li>Em "Entre todos", a fila é uma só, da companhia. Em "Unidades", cada uma tem a sua fila e o seu total.</li>
+      <li>O jeito de repartir fica nos Ajustes, na aba Extrajornada. Entre todos, a fila é uma só, da companhia; por unidade, cada uma tem a sua fila e o seu total.</li>
       <li>Diminuir a cota de quem já tem extra colocada tira as extras que passam.</li>
     </ul>
   </div>
@@ -857,12 +850,14 @@
   <div class="escala-legenda-grupo">
     <span class="rotulo-secao">Regras do Preencher pela sugestão</span>
     <ol class="extrajornada-legenda-lista">
-      <li>Corrige primeiro o vermelho dos pelotões de fora da cidade da companhia, depois o da cidade da companhia e depois o amarelo, na mesma ordem.</li>
-      <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem, e vai de preferência o mais moderno.</li>
+      <li>Cada regra vale mais que todas as de baixo juntas. A ordem e as escolhas da companhia ficam nos Ajustes, na aba Extrajornada.</li>
+      <li>Corrige primeiro o vermelho, um pelotão por vez na ordem dos Ajustes, e depois o amarelo, na mesma ordem.</li>
+      <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem, e vai quem os Ajustes dizem: o mais moderno ou, em rodízio, quem foi menos vezes nos últimos 12 meses.</li>
+      <li>As bombeiras, só nos pelotões marcados nos Ajustes.</li>
       <li>Passar do necessário, com duas extras que se cruzam, só em último caso.</li>
       <li>Nunca 1 cota sozinha: para usar a última, a extra pode passar do necessário.</li>
       <li>Nunca 4 dias seguidos no quartel, contando serviço, troca e extra (o expediente não conta). De preferência, nem 3.</li>
-      <li>Quando não dá para todos, fica de fora quem está no fim da fila das Cotas.</li>
+      <li>Quando dois querem o mesmo lugar, ou não dá para todos, fica quem vem primeiro: pela fila das Cotas ou pela antiguidade, como nos Ajustes.</li>
       <li>Blocos inteiros: 24 horas, e o resto num bloco só.</li>
       <li>O administrativo recebe as cotas no menor número de dias: 24 horas no fim de semana ou no feriado, ou 18 horas na quarta. O sistema nunca o quebra em mais dias: o que não couber fica para o administrador.</li>
       <li>Sem falta para corrigir, a sobra vai para o pelotão da cidade da companhia, até o máximo dos postos, deixando os dias com a mesma quantidade de gente (no máximo 1 de diferença, sempre que der). A graduação desempata.</li>

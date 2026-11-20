@@ -3,26 +3,36 @@
    O lápis de cada linha que o administrador edita abre o menu dela,
    embaixo da linha, e a linha inteira também abre (ela fica cinza
    enquanto o menu está aberto: é ela que mostra de quem é o menu).
-   Cada menu tem um assunto só, com o título de quem ele é, e os
-   itens que valem, cada um com o ícone dele (o que tira alguém por
-   último, em vermelho). Na aba Funções, o que é do lugar:
+   O menu tem até duas partes, cada uma com o título de quem ela é, e
+   os itens que valem, cada um com o ícone dele (o que tira alguém por
+   último, em vermelho, no fim da parte dele). Na aba Funções, a parte
+   do lugar e, depois do traço, a parte do dia da pessoa (os mesmos
+   itens da aba Militares):
    - militar numa função ("Condutor da ABT-14935"): Pôr outro no lugar
      dele, Mudar para outra função, Mudar o horário nesta função,
-     Adicionar mais um lugar neste posto (com lugar livre no posto),
-     Liberar para o sistema (o fixado) e Remover desta função;
-   - vaga sem ninguém e função aberta: Pôr um militar aqui e Liberar
-     para o sistema (a vaga que veio de um Remover desta função);
-   - Sem função: Pôr numa função;
-   - o Chefe de Socorro e o Oficial de Área sozinhos, e as linhas que a
-     Central só exibe, não têm lápis (o lugar é do sistema; o dia
-     da pessoa muda na aba Militares); a exceção é o Oficial de Área
-     da companhia na Central do pelotão, para quem administra a
-     companhia: o Ver o dia na companhia ("Ver o dia na 2ªCIBM") abre o
-     dia da companhia na aba Militares, já com o menu dele aberto.
-   Na aba Militares, o dia da pessoa ("Cb. Veloso no dia 21/11"):
+     Voltar ao automático (o fixado) e Remover desta função;
+   - o estagiário no Efetivo da viatura: Mudar o horário nesta função;
+   - vaga sem ninguém e função aberta: Pôr um militar aqui e Voltar ao
+     automático (a vaga que veio de um Remover desta função), sem a
+     parte do dia;
+   - Sem função: Pôr numa função e, do Chefe de Socorro que saiu da
+     cadeira dele, o Voltar ao automático (volta para ela);
+   - o Chefe de Socorro e o Oficial de Área na cadeira deles: Mudar
+     para outra função (o papel vai junto com ele) e Remover desta
+     função (vai para Sem função, ainda com o papel); o papel é sempre
+     o mais antigo do dia, que nunca muda à mão; na linha do papel que
+     foi junto com ele para outro posto e nas Funções especiais, só a
+     parte do dia;
+   - as outras linhas que a Central só exibe não têm lápis; a exceção é
+     o Oficial de Área da companhia na Central do pelotão, para quem
+     administra a companhia: o Ver o dia na companhia ("Ver o dia na
+     2ªCIBM") abre o dia da companhia na aba Militares, já com o menu
+     dele aberto.
+   Na aba Militares, só o dia da pessoa ("Cb. Veloso no dia 21/11"):
    Mudar o horário do serviço, Mudar o dia do serviço, Mudar de
    unidade neste dia, Pôr como Oficial de Área (o Sub.Ten. ou mais
-   antigo de serviço num pelotão, para quem administra a companhia: o
+   antigo de serviço num pelotão, para quem administra a companhia: a
+   pergunta embaixo da linha, se ele sai daqui ou fica nas duas, e o
    serviço dele vai para ela neste dia, escalas-celula-oficial.js),
    Registrar troca de serviço (o formulário da troca no painel, já com
    ele e o dia; na célula, com o ícone do painel, porque o painel abre), Mudar a
@@ -37,12 +47,11 @@
    Cancelar a saída. No De folga (nas
    duas abas): Cancelar a folga, ou Desfazer a mudança (a folga que
    veio da mudança de dia).
-   Embaixo do traço, o Ver o dia (na Funções) ou o Ver as funções (na
-   Militares) troca de aba já com o menu dele aberto.
+   Na Militares, embaixo do traço, o Ver as funções troca de aba já com
+   o menu da linha dele aberto.
    A mudança de dia ainda não salva (só no rascunho, sem número no
-   banco): quem vem de outro dia tem só o Remover deste dia (na Funções,
-   só o Ver o dia), e o Desfazer a mudança de quem sai; os dois só a
-   largam do rascunho.
+   banco): quem vem de outro dia tem só o Remover deste dia, e o
+   Desfazer a mudança de quem sai; os dois só a largam do rascunho.
    Cada item usa o caminho que já existe: o cartão embaixo da linha
    (escalas-painel-linha.js: o militar, só o horário ou para qual
    função), as sub-telas já com ele escolhido (Mudar o horário do
@@ -50,7 +59,7 @@
    Remover do dia para quem foi a outra unidade, a folga no dia e, do
    estagiário, a do Mudar onde fica), o
    Dar folga e o Remover deste dia (escalas-painel-remover.js › doDia) e, na hora, com o
-   Desfazer, o Liberar e o Remover desta função.
+   Desfazer, o Voltar ao automático e o Remover desta função.
    Na célula da grade (visao 'celula', escalas-celula-editar.js), o
    mesmo menu vai para a caixa flutuante: os itens do dia da pessoa
    (e do De folga, da saída e do remanejado), sem o Ver as funções, e
@@ -58,13 +67,16 @@
    API: RosterWork.escalasPainelLinhaMenu.na(linha, cfg) põe o lápis e o
    menu na linha; fazer(linha, acao) faz um item por código (o lugar
    novo do posto abre o cartão sozinho); abrir(linha) abre o menu dela
-   (o Ver o dia e o Ver as funções, na outra aba); menuDaCelula(cfg,
+   (o Ver as funções, na outra aba); menuDaCelula(cfg,
    escolher) devolve o menu pronto para a caixa; largarMudanca(cpf,
    sentido, senao) larga a mudança de dia do rascunho.
-   cfg = { tipo: 'funcao' | 'papel' | 'vaga' | 'sem' | 'folga' | 'militar'
+   cfg = { tipo: 'funcao' | 'papel' | 'exibida' (as outras linhas que a Central
+   só exibe: sem lápis) | 'vaga' | 'sem' | 'folga' | 'militar'
    (a linha da aba Militares) | 'fora' (remanejado daqui para outra
    unidade) | 'saida' (quem saiu da guarnição; saida = a data da saída) | 'companhia' (o Oficial de Área da companhia na Central do
-   pelotão), visao: 'funcoes' | 'militares', grupo() (o bloco da função
+   pelotão), visao: 'funcoes' | 'militares', exibida (no papel: a linha das
+   Funções especiais), levado (no papel: a linha do papel que foi junto com
+   ele para outra função do posto), grupo() (o bloco da função
    na lista), posto, funcao, rotulo, militar, periodos, folga (na De
    folga: a linha da folga, com o lancamento_id e a mudança), origem (no
    fora: o nome desta unidade, para onde ele volta), companhia (no
@@ -110,43 +122,53 @@
     if (r['onde-estagio']) { r['registrar-troca'] = false; r['mudar-unidade'] = false; }
   }
 
-  /* os itens que valem para a linha: { acao: true }. Na aba Funções, só o que é do lugar (e o Ver o dia); na Militares,
+  /* os itens que valem para a linha: { acao: true }. Na aba Funções, o que é do lugar e o dia da pessoa; na Militares,
      só o dia da pessoa (e o Ver as funções); o De folga é igual nas duas */
   function itens(cfg) {
     /* a célula da grade: os mesmos da aba Militares, sem o Ver as funções, e o Abrir o painel do dia em todos */
     if (cfg.visao === 'celula') {
       var c = itens(Object.assign({}, cfg, { visao: 'militares' }));
       delete c['ver-funcoes'];
-      delete c['ver-dia'];
       c['abrir-painel'] = true;
       return c;
     }
     var r = {}, m = cfg.militar, militares = cfg.visao === 'militares';
     /* quem vem de outro dia e ainda não foi salvo: só sair deste dia (o rascunho larga a mudança), pela aba Militares */
     if (m && cfg.tipo !== 'folga' && cfg.tipo !== 'saida' && ed().mudancaNoRascunho(m.cpf) === 'vem') {
-      return militares ? { 'remover-dia': true, 'ver-funcoes': true } : cfg.tipo === 'papel' ? {} : { 'ver-dia': true };
+      return militares ? { 'remover-dia': true, 'ver-funcoes': true } : { 'remover-dia': true };
     }
-    /* o estagiário no Efetivo da viatura não é lugar da guarnição: sem Pôr outro no lugar, Outra função, Adicionar mais
-       um lugar e Liberar; o horário, o Mudar onde fica, o Remover deste dia e o Ver o dia */
+    /* o estagiário no Efetivo da viatura não é lugar da guarnição: do lugar, só o horário (sem Pôr outro no lugar,
+       Outra função e Voltar ao automático); o dia dele, o mesmo da aba Estagiários */
     if (cfg.tipo === 'funcao' && cfg.estagiario && m) {
-      var dia = {};
-      itensDoDia(m.cpf, dia);
-      return { 'horario-funcao': true, 'onde-estagio': dia['onde-estagio'], 'remover-dia': dia['remover-dia'], 'ver-dia': true };
+      r['horario-funcao'] = true;
+      itensDoDia(m.cpf, r);
+      return r;
     }
     if (cfg.tipo === 'funcao') {
       r['por-outro'] = true;
       r['outra-funcao'] = true;
       r['horario-funcao'] = true;
-      r['mais-um'] = ((cfg.posto && cfg.posto.livres) || []).length > 0;
       r.liberar = A().podeLiberar(cfg);
       r['remover-funcao'] = true;
-      r['ver-dia'] = true;
+      if (m) itensDoDia(m.cpf, r);
+    } else if (cfg.tipo === 'papel' && m) {
+      /* o Chefe de Socorro e o Oficial de Área: o papel é sempre do mais antigo do dia (nunca muda à mão); o lugar dele
+         muda como o de qualquer militar, e o papel vai junto. Nas Funções especiais e na linha do papel que já foi junto
+         para outra função do posto, só o dia */
+      if (!cfg.exibida && !cfg.levado) {
+        r['outra-funcao'] = true;
+        /* sai da cadeira e fica em Sem função definida, ainda com o papel */
+        r['remover-funcao'] = true;
+      }
+      itensDoDia(m.cpf, r);
     } else if (cfg.tipo === 'vaga') {
       r['por-aqui'] = true;
       r.liberar = A().podeLiberar(cfg);
     } else if (cfg.tipo === 'sem') {
       r['por-funcao'] = true;
-      r['ver-dia'] = true;
+      /* o Chefe de Socorro que saiu da cadeira dele: o Voltar ao automático devolve ele para ela */
+      r.liberar = A().podeLiberar(cfg);
+      if (m) itensDoDia(m.cpf, r);
     } else if (cfg.tipo === 'folga') {
       var mudanca = !!(cfg.folga && cfg.folga.mudanca);
       r['cancelar-folga'] = !mudanca;
@@ -182,10 +204,11 @@
     titulos[0].textContent = cfg.tipo === 'sem' ? RosterWork.mensagens.escala.semFuncaoRotulo
       : cfg.posto && cfg.funcao ? ed().funcaoNoPosto(cfg.funcao, cfg.posto) : '';
     titulos[1].textContent = m ? L().noDia(nome, diaMes(ed().iso())) : '';
-    dd.querySelector('.escala-edicao-opcoes-ver-dia').textContent = m ? L().verDiaDe(nome) : '';
     dd.querySelector('.escala-edicao-opcoes-ver-funcoes').textContent = m ? L().verFuncoesDe(nome) : '';
     dd.querySelector('.escala-edicao-opcoes-ver-companhia').textContent = cfg.companhia ? L().verDiaNa(cfg.companhia.nome) : '';
     dd.querySelector('.escala-edicao-opcoes-devolver').textContent = cfg.origem ? L().devolverA(cfg.origem) : '';
+    /* o traço entre a parte do lugar e a do dia, só com as duas */
+    dd.querySelector('.escala-edicao-opcoes-traco-dia').classList.toggle('oculto', !(tem.funcao && tem.dia));
     dd.querySelector('.escala-edicao-opcoes-traco').classList.toggle('oculto', !(tem.ver && (tem.funcao || tem.dia)));
     /* o Mudar de unidade depende das unidades da companhia (lidas uma vez): chegando com o menu aberto, ele se refaz */
     var R = RosterWork.escalasPainelRemanejar;
@@ -230,14 +253,13 @@
     'outra-funcao': function (cfg) { cartao(cfg, 'funcao'); },
     'por-funcao': function (cfg) { cartao(cfg, 'funcao'); },
     'horario-funcao': function (cfg) { cartao(cfg, 'horario'); },
-    'mais-um': function (cfg) { ed().abrirLugar(cfg.posto); },
     liberar: function (cfg) { ed().mudar(function () { A().liberar(cfg); }); },
     'remover-funcao': function (cfg) { ed().mudar(function () { A().tirarDaFuncao(cfg, cfg.periodos.map(copiar)); }); },
     'horario-dia': function (cfg) { RosterWork.escalasPainelHorarioDia.abrir({ cpf: cfg.militar.cpf }); },
     'onde-estagio': function (cfg) { RosterWork.escalasPainelOnde.abrirEstagio({ cpf: cfg.militar.cpf }); },
     'mudar-dia': function (cfg) { RosterWork.escalasPainelMudarDia.abrir({ cpf: cfg.militar.cpf }); },
     'mudar-unidade': function (cfg) { RosterWork.escalasPainelRemanejar.abrir({ cpf: cfg.militar.cpf }); },
-    'oficial-area': function (cfg) { RosterWork.escalasCelulaOficial.porComoOficial(cfg.militar.cpf); },
+    'oficial-area': function (cfg) { RosterWork.escalasCelulaOficial.perguntarNaLinha(cfg.militar.cpf, cfg.linha); },
     'registrar-troca': function (cfg) { ed().registrarTroca(cfg.militar.cpf); },
     'mudar-extra': function () { RosterWork.escalasPainel.abrirAba('extra'); },
     'remover-dia': function (cfg) { largarMudanca(cfg.militar.cpf, 'vem', function () { removerDoDia(cfg); }); },
@@ -250,7 +272,6 @@
     /* quem foi remanejado daqui: a tela do Remover do dia, já com ele (Devolver ou Tirar do dia) */
     devolver: function (cfg) { RosterWork.escalasPainelRemover.abrir({ cpf: cfg.militar.cpf }); },
     /* a outra aba, já com o menu dele aberto */
-    'ver-dia': function (cfg) { ed().verMilitar(cfg.militar.cpf, 'militares'); },
     'ver-funcoes': function (cfg) { ed().verMilitar(cfg.militar.cpf, 'funcoes'); },
     /* o Oficial de Área no pelotão: o dia dele é o da companhia; abre o dia dela, na aba Militares, já com o menu dele */
     'ver-companhia': function (cfg) {
@@ -265,8 +286,9 @@
     var cfg = cfgs.get(linha);
     if (!cfg || !linha.isConnected || !ACOES[acao] || !ed().livre()) return;
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-    /* a pergunta do Remover da guarnição aberta em outra linha fica respondida */
+    /* a pergunta do Remover da guarnição aberta em outra linha fica respondida; a do Pôr como Oficial de Área fecha */
     if (RosterWork.escalasPainelCiclo && RosterWork.escalasPainelCiclo.fecharPergunta) RosterWork.escalasPainelCiclo.fecharPergunta('guardar');
+    if (RosterWork.escalasCelulaOficial) RosterWork.escalasCelulaOficial.fecharPergunta();
     ACOES[acao](cfg);
   }
 

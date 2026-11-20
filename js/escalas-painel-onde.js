@@ -33,7 +33,9 @@
            periodos() (os horários dele), cpf() (quem entra),
            vagas (true: as vagas sem ninguém no horário), so (['funcao']: só as opções da lista, sem o "O sistema
            distribui", que deixa de ser a resposta de começo: o cartão Para qual função),
-           estagio() (as Funções e postos do estágio de quem entra, ou nada), aoMudar() }
+           estagio() (as Funções e postos do estágio de quem entra, ou nada),
+           refaz (true: o dia é refeito ao salvar e quem chama mostra o que acontece em volta, pela conta do banco: sem
+           a nota daqui no Escolher a função e no No lugar de outro militar; o Mudar de unidade), aoMudar() }
    ============================================================ */
 (function () {
   'use strict';
@@ -251,8 +253,10 @@
       comboSai.preencher(itens);
     }
 
-    /* o que acontece com quem está em volta: quem sai da função escolhida, ou o que sobra para quem sai */
+    /* o que acontece com quem está em volta: quem sai da função escolhida, ou o que sobra para quem sai (com o dia
+       refeito ao salvar, quem chama diz) */
     function efeito() {
+      if (cfg.refaz) return '';
       if (est.onde === 'funcao' && est.posto && est.funcao) {
         var partes = ocupantes(est.posto, est.funcao).map(function (o) {
           var pr = H.periodo(o.x);
