@@ -15,8 +15,9 @@
    Oficial de Área do título, o dia da companhia (escalas-celula-
    oficial.js). O que cada item faz: escalas-celula-editar-acoes.js. O
    dia, as unidades da companhia e o mês da extra começam a ser lidos
-   antes do clique (escalas-celula-adiantar.js); a caixa abre na hora,
-   com as faixas enquanto eles chegam; o clique fora e o
+   antes do clique (escalas-celula-adiantar.js); a caixa abre com o menu
+   quando eles chegam e, passando de 0,2 s, com as faixas até lá
+   (geral-caixa-flutuante.js); o clique fora e o
    Esc fecham (o concluído fica, o que ficou pela metade sai); trocar
    de dia não pergunta (o rascunho de cada dia fica guardado,
    escalas-rascunho-dias.js). Com o painel aberto, a caixa abre do
@@ -143,8 +144,8 @@
   }
 
   /* abre a caixa da peça (titulo: o da folha do celular; junto: o pelotão do nome), já escolhida (a borda forte); ela
-     aparece ao lado na hora, com o menu, ou com as faixas até ele chegar (no pelotão, com o topo um pouco abaixo do dele,
-     sem cobrir os nomes) */
+     aparece ao lado com o menu, ou, passando de 0,2 s sem ele, com as faixas até ele chegar (no pelotão, com o topo um
+     pouco abaixo do dele, sem cobrir os nomes) */
   function abrirCaixa(a, peca, titulo, junto) {
     aberto = a;
     a.caixa = RW.caixaFlutuante.abrir({

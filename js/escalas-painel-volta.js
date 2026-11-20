@@ -43,11 +43,13 @@
   var leitura = 0;     // a última leitura vence
   var pedido = null;   // a volta pedida pela Pendências: { unidadeId, iso }
 
+  /* as unidades na tela que chegam para ele (o admin de pelotão, só o pelotão dele) */
   function idsNaTela() {
-    return nota ? (nota.opcoes.unidades() || []).map(function (u) { return Number(u.id); }) : [];
+    return nota ? (nota.opcoes.unidades() || []).map(function (u) { return Number(u.id); })
+      .filter(function (id) { return !!RW.sessao && RW.sessao.acompanha(id); }) : [];
   }
 
-  /* lê as voltas das unidades na tela (só quem administra; o banco filtra a área) */
+  /* lê as voltas das unidades na tela que ele acompanha (o banco confere de novo a área) */
   function ler() {
     var ids = idsNaTela(), minha = ++leitura;
     lidas = ids.join(',');

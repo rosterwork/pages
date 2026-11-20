@@ -219,9 +219,10 @@
     /* identificador escolhido (CPF/RG/telefone/email) */
     item.querySelector('.usuario-item-cpf').textContent = textoIdentificador(pessoa, ex.identificador);
     preencherSituacao(item.querySelector('.usuario-item-selo'), pessoa);
-    /* quem pediu correção e ainda espera decisão (decide quem administra o militar; só ele vê) */
+    /* quem pediu correção e ainda espera decisão: o selo só para quem acompanha o militar (o admin do pelotão dele,
+       o da companhia e o geral); o de outro pelotão decide pela ficha, sem o selo na lista */
     var correcao = item.querySelector('.usuario-item-correcao');
-    if (correcao) correcao.classList.toggle('oculto', !(pessoa.correcao_pendente && RosterWork.sessao.podeAdministrar('pelotao', pessoa.lotacao_atual)));
+    if (correcao) correcao.classList.toggle('oculto', !(pessoa.correcao_pendente && RosterWork.sessao.acompanha(pessoa.lotacao_atual)));
     if (casa && modoBusca === 'marcar') item.classList.add('linha-militar--marcada');
     if (casa) item.classList.add('busca-achado');   // o que o Enter da busca percorre (geral-busca.js)
     item.classList.add('linha-militar--clicavel');

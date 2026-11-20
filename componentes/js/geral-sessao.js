@@ -1,9 +1,10 @@
 /* ============================================================
    SESSÃO — dados do usuário logado (lê o sessionStorage)
    Fonte única para o perfil (rosterwork_user), o CPF, se é
-   administrador e onde ele pode administrar.
+   administrador, onde ele pode administrar e o que chega para ele.
    API: RosterWork.sessao.perfil() / .cpf() / .ehAdmin() /
-        .podeAdministrar(nivel, unidadeId) / .temPapel(nivel)
+        .podeAdministrar(nivel, unidadeId) / .temPapel(nivel) /
+        .acompanha(unidadeId)
    ============================================================ */
 (function () {
   'use strict';
@@ -11,6 +12,9 @@
 
   /* os papéis, do menor para o maior: quem tem um nível pode o que os de baixo podem */
   var NIVEIS = ['pelotao', 'companhia', 'geral'];
+
+  /* o nível com que o papel age: o de pelotão age como o de companhia (a mesma régua do banco, _admin_pode) */
+  function nivelDoPapel(papel) { return NIVEIS.indexOf(papel === 'pelotao' ? 'companhia' : papel); }
 
   function perfil() {
     try { return JSON.parse(sessionStorage.getItem('rosterwork_user')); }
@@ -37,7 +41,7 @@
     if (!u) return false;
     var adm = u.administracao;
     if (adm === undefined || (adm && !adm.unidades)) return !!u.is_administrador;
-    if (!adm || NIVEIS.indexOf(nivel) < 0 || NIVEIS.indexOf(adm.papel) < NIVEIS.indexOf(nivel)) return false;
+    if (!adm || NIVEIS.indexOf(nivel) < 0 || nivelDoPapel(adm.papel) < NIVEIS.indexOf(nivel)) return false;
     return adm.unidades.indexOf(Number(unidadeId)) >= 0;
   }
 
@@ -47,10 +51,21 @@
     if (!u) return false;
     var adm = u.administracao;
     if (adm === undefined || (adm && !adm.unidades)) return !!u.is_administrador;
-    return !!adm && NIVEIS.indexOf(nivel) >= 0 && NIVEIS.indexOf(adm.papel) >= NIVEIS.indexOf(nivel);
+    return !!adm && NIVEIS.indexOf(nivel) >= 0 && nivelDoPapel(adm.papel) >= NIVEIS.indexOf(nivel);
+  }
+
+  /* a unidade chega para ele (selos e notas de lembrete)? a unidade do papel e tudo abaixo; o de pelotão, só o
+     pelotão dele (a mesma régua do banco, _admin_acompanha). Sessão aberta antes de o login trazer o campo: vale a área */
+  function acompanha(unidadeId) {
+    var u = perfil();
+    if (!u) return false;
+    var adm = u.administracao;
+    if (adm === undefined || (adm && !adm.unidades)) return !!u.is_administrador;
+    if (!adm) return false;
+    return (adm.acompanha || adm.unidades).indexOf(Number(unidadeId)) >= 0;
   }
 
   window.RosterWork.sessao = { perfil: perfil, cpf: cpf, ehAdmin: ehAdmin, ehProgramador: ehProgramador,
-    podeAdministrar: podeAdministrar, temPapel: temPapel, estagioUnidades: estagioUnidades,
+    podeAdministrar: podeAdministrar, temPapel: temPapel, acompanha: acompanha, estagioUnidades: estagioUnidades,
     guardarEstagioUnidades: guardarEstagioUnidades };
 })();

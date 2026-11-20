@@ -15,7 +15,9 @@
      pedaço da tela (uma pergunta, uma lista pequena), até o resultado
      tomar o lugar dela.
    O que apareceu não pisca: a forma fica pelo menos 0,4 s e o cartão
-   0,8 s. Quem lê segura a leitura (segurar) e só desenha depois; a
+   0,8 s. A caixa flutuante espera o conteúdo sem aparecer até 0,2 s,
+   e a forma dela, quando aparece, fica pelo menos 0,2 s (atrasoCaixa,
+   faltaCaixa). Quem lê segura a leitura (segurar) e só desenha depois; a
    leitura rápida, que chega antes de a forma aparecer, não espera nada.
    Pedir de novo com a forma ainda no lugar continua a espera de antes.
    Quando as etapas acontecem dentro de um pedido só ao banco, a ordem
@@ -30,7 +32,8 @@
    opcoes.doServidor = quantas etapas acontecem no banco (as outras,
    quem chama avança). .segurarDesde(inicio, leitura): a forma que a
    tela pôs na hora (as caixas de um painel) · .falta(formaEm, cartaoEm):
-   quanto falta para o mínimo · .abrindoDaCasca(desde): a tela que sai
+   quanto falta para o mínimo · .atrasoCaixa e .faltaCaixa(formaEm): os
+   tempos da caixa flutuante · .abrindoDaCasca(desde): a tela que sai
    da casca já mostra a forma na hora.
    Clona moldes; não cria HTML.
    ============================================================ */
@@ -45,17 +48,23 @@
   var PASSO_MS = 700;           // o ritmo estimado das etapas de dentro de um pedido só ao banco
   var MINIMO_FORMA_MS = 400;    // a forma que apareceu fica pelo menos isto (não pisca)
   var MINIMO_CARTAO_MS = 800;   // o cartão que apareceu fica pelo menos isto (dá para ler o título)
+  var CAIXA_FORMA_MS = 200;     // a caixa flutuante: até aqui, ela espera o conteúdo sem aparecer
+  var MINIMO_CAIXA_MS = 200;    // a forma da caixa flutuante que apareceu fica pelo menos isto
 
   var daCasca = null;           // a tela abrindo depois da casca: quando a casca apareceu
   var naTela = new WeakMap();   // lugar → a espera dele (de quando começou, quando a forma e o cartão apareceram)
 
   function agora() { return performance.now(); }
 
-  /* quanto falta para o que já apareceu cumprir o mínimo na tela (0: nada a esperar) */
-  function falta(formaEm, cartaoEm) {
-    var t = agora();
-    return Math.max(0, formaEm == null ? 0 : formaEm + MINIMO_FORMA_MS - t, cartaoEm == null ? 0 : cartaoEm + MINIMO_CARTAO_MS - t);
+  /* quanto falta para o que já apareceu cumprir o mínimo na tela (0: nada a esperar); minimoForma: o da forma, quando
+     não é o de sempre */
+  function falta(formaEm, cartaoEm, minimoForma) {
+    var t = agora(), minimo = minimoForma == null ? MINIMO_FORMA_MS : minimoForma;
+    return Math.max(0, formaEm == null ? 0 : formaEm + minimo - t, cartaoEm == null ? 0 : cartaoEm + MINIMO_CARTAO_MS - t);
   }
+
+  /* a forma da caixa flutuante (geral-caixa-flutuante.js), que apareceu em formaEm: quanto falta para o mínimo dela */
+  function faltaCaixa(formaEm) { return falta(formaEm, null, MINIMO_CAIXA_MS); }
 
   /* a leitura cumprida igual (o valor ou a falha), só quando o que apareceu cumpriu o mínimo; quanto() diz, na hora
      em que ela chega, quanto falta */
@@ -370,6 +379,7 @@
   }
 
   RW.etapas = {
-    area: area, acao: acao, janela: janela, linha: linha, frase: frase, segurarDesde: segurarDesde, falta: falta, abrindoDaCasca: abrindoDaCasca
+    area: area, acao: acao, janela: janela, linha: linha, frase: frase, segurarDesde: segurarDesde, falta: falta, abrindoDaCasca: abrindoDaCasca,
+    atrasoCaixa: CAIXA_FORMA_MS, faltaCaixa: faltaCaixa
   };
 })();

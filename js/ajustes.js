@@ -72,7 +72,7 @@
       if (RosterWork.ajustesHorario) RosterWork.ajustesHorario.montar(conteudo);
       if (RosterWork.ajustesFeriados) RosterWork.ajustesFeriados.montar(conteudo);
       if (RosterWork.ajustesEstagios) RosterWork.ajustesEstagios.montar(conteudo);
-      /* o Sobreaviso e a Op. Verão são da companhia: as abas só para o administrador da companhia (ou de cima) */
+      /* o Sobreaviso e a Op. Verão são da companhia: as abas para quem age na companhia (o de pelotão, o de companhia e o geral) */
       var companhia = !!S.temPapel && S.temPapel('companhia');
       abas.querySelector('[data-aba="sobreaviso"]').classList.toggle('oculto', !companhia);
       abas.querySelector('[data-aba="op-verao"]').classList.toggle('oculto', !companhia);

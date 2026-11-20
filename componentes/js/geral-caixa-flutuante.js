@@ -8,17 +8,19 @@
    lugar; a página pode dar o desenho dela). No computador, a caixa 1
    abre ao lado, a 4px da peça, com o primeiro item na altura do nome
    (ou, no bloco, com o topo a opcoes.topo do topo dele); com
-   opcoes.esperar, o conteúdo que já chega no clique aparece direto; o
-   que ainda não chegou no quadro seguinte dá lugar à forma (as faixas
-   do esqueleto, molde #tpl-caixa-flutuante-forma), que aparece na hora
-   e fica o mínimo na tela (faltaForma, geral-etapas.js). Um item
+   opcoes.esperar, a caixa espera o conteúdo no lugar, sem aparecer: o
+   que chega em até 0,2 s aparece direto; passando disso, a forma (as
+   faixas do esqueleto, molde #tpl-caixa-flutuante-forma) aparece e fica
+   o mínimo na tela (0,2 s; atrasoCaixa e faltaCaixa, geral-etapas.js).
+   Enquanto ela não apareceu, o clique fora fecha e segue para onde foi
+   (ninguém viu a caixa), e, no celular, o véu espera com a folha. Um item
    escolhido abre a caixa 2 ao lado da caixa 1, cobrindo 4px da borda
    dela, com a primeira linha na altura do item, e o item fica cinza.
    No celular, a folha de baixo, sobre o véu, com a alça e o título; a
    caixa 2 troca o conteúdo da folha, com a seta de voltar.
    Fecham: o clique fora, o Esc, a peça que sai da tela ou da página
-   e o Voltar do navegador. O clique fora só fecha, como num menu: ele
-   não chega ao que está embaixo (outra célula, um botão, um link); o
+   e o Voltar do navegador. Com a caixa à vista, o clique fora só fecha,
+   como num menu: ele não chega ao que está embaixo (outra célula, um botão, um link); o
    rodapé largo da página (.rodape--largo) é a exceção: fecha e faz o
    que o botão diz no mesmo clique. Com a resposta pela metade, a página
    segura o clique fora (aoClicarFora devolve false): a caixa fica e o
@@ -58,6 +60,12 @@
   function menosMovimento() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   /* depois do primeiro quadro: a classe de aberto entra depois, para a animação sair do jeito de fechado */
   function depois(fn) { requestAnimationFrame(function () { requestAnimationFrame(fn); }); }
+  /* o véu do celular entra com a folha (a que espera o conteúdo, só quando aparece), atrás dela */
+  function porVeu(c) {
+    if (!c.veu || c.veu.isConnected) return;
+    document.body.insertBefore(c.veu, c.c1);
+    depois(function () { if (atual === c) c.veu.classList.add('caixa-flutuante-veu--aberto'); });
+  }
   /* a saída: as classes de aberto saem já; as caixas, depois da animação. O lugar fixo delas só se desliga (soltar) na
      hora de sair da página: soltas antes, elas cairiam no fim da página e a barra de rolagem do navegador piscaria */
   function tirar(els, soltar) {
@@ -140,25 +148,25 @@
     if (opcoes.conteudo) c.c1.querySelector('.caixa-flutuante-corpo').appendChild(opcoes.conteudo);
     atual = c;
     marcar(c, true);
-    /* esperando o conteúdo, a caixa fica no lugar, sem aparecer (a peça já fica escolhida), com a forma dentro: o que já
-       chega no clique (a leitura guardada) aparece direto; senão, no quadro seguinte, a forma aparece */
+    /* esperando o conteúdo, a caixa fica no lugar, sem aparecer (a peça já fica escolhida), com a forma dentro: o que
+       chega em até 0,2 s (a leitura guardada, a rápida) aparece direto; passando disso, a forma aparece */
     c.esperando = !!opcoes.esperar && !opcoes.conteudo;
     if (c.esperando) {
       c.c1.classList.add('caixa-flutuante--esperando');
       var forma = RW.tpl('tpl-caixa-flutuante-forma');
       if (forma) c.c1.querySelector('.caixa-flutuante-corpo').appendChild(forma);
-      requestAnimationFrame(function () {
+      c.relogioForma = setTimeout(function () {
         if (atual !== c || !c.esperando || !forma) return;
         c.formaEm = performance.now();
         revelar(c);
-      });
+      }, RW.etapas ? RW.etapas.atrasoCaixa : 0);
     }
     if (c.folha) {
       c.c1.classList.add('caixa-flutuante--folha');
       c.veu = RW.tpl('tpl-caixa-flutuante-veu');
       c.c1.querySelector('.caixa-flutuante-voltar').addEventListener('click', function () { fecharSegunda(c); });
-      if (c.veu) document.body.appendChild(c.veu);
       document.body.appendChild(c.c1);
+      if (!c.esperando) porVeu(c);
     } else {
       document.body.appendChild(c.c1);
       ancorarPeca(c);
@@ -166,18 +174,20 @@
     depois(function () {
       if (atual !== c) return;
       if (!c.esperando) c.c1.classList.add('caixa-flutuante--aberta');
-      if (c.veu) c.veu.classList.add('caixa-flutuante-veu--aberto');
     });
     return api(c);
   }
 
-  /* a caixa que esperava aparece (o conteúdo chegou, ou a página mostrou a barra): já está no lugar e no tamanho */
+  /* a caixa que esperava aparece (o conteúdo chegou, a forma passou do tempo ou a página mostrou a barra): já está no
+     lugar e no tamanho; no celular, com o véu */
   function revelar(c) {
     if (!c.esperando) return;
     c.esperando = false;
+    clearTimeout(c.relogioForma);
     c.c1.classList.remove('caixa-flutuante--esperando');
     /* o lugar com o conteúdo já dentro, antes de aparecer (sem esperar o quadro seguinte) */
     reposicionar(c);
+    if (c.folha) porVeu(c);
     depois(function () { if (atual === c) c.c1.classList.add('caixa-flutuante--aberta'); });
   }
 
@@ -281,6 +291,7 @@
   function fecharDe(c, avisar) {
     if (atual !== c) return;
     atual = null;
+    clearTimeout(c.relogioForma);
     marcar(c, false);
     [c.c1, c.c2, c.veu].forEach(function (e) {
       if (e) e.classList.remove('caixa-flutuante--aberta', 'caixa-flutuante-veu--aberto');
@@ -297,6 +308,8 @@
       var c = atual, t = ev.target;
       if (!c || !t || !t.closest) return;
       if (t.closest(DENTRO)) return;
+      /* a caixa que ainda não apareceu (esperando o conteúdo): o clique fecha e segue para onde foi */
+      if (c.esperando) { fecharDe(c, true); return; }
       /* a resposta pela metade (a página diz, aoClicarFora): a caixa fica, e o clique não faz mais nada */
       if (c.opcoes.aoClicarFora && c.opcoes.aoClicarFora(t) === false) {
         ev.stopPropagation();
@@ -336,7 +349,7 @@
         if (sim) revelar(c);
       },
       /* a forma que apareceu fica o mínimo na tela (não pisca): quantos ms ainda faltam (0: o conteúdo pode entrar) */
-      faltaForma: function () { return c.formaEm != null && RW.etapas ? RW.etapas.falta(c.formaEm, null) : 0; },
+      faltaForma: function () { return c.formaEm != null && RW.etapas ? RW.etapas.faltaCaixa(c.formaEm) : 0; },
       segunda: function (item, el, titulo) { segunda(c, item, el, titulo); },
       fecharSegunda: function () { if (atual === c) fecharSegunda(c); },
       trocarPeca: function (nova, junto) { trocarPeca(c, nova, junto); },
