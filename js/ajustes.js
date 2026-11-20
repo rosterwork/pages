@@ -5,7 +5,8 @@
    Horário de expediente (um só para a companhia e os pelotões),
    Feriados (o calendário de cada unidade), Estágios (as regras de
    cada estágio da unidade), Sobreaviso e Op. Verão (as regras da
-   companhia; as duas abas só para o administrador da companhia) e
+   companhia; as duas abas para qualquer administrador da companhia,
+   inclusive o de pelotão) e
    Extrajornada (as regras das extras da companhia; todo administrador
    vê, o da companhia muda) e Pontuação (o placar da Escala, para
    todas as unidades; todo administrador vê, o geral muda).

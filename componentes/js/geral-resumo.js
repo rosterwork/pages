@@ -5,7 +5,10 @@
      { titulo (cabeçalho do modal), mostrarAssunto, mostrarQuando }.
      O "assunto" vem de resumo.titulo (o que foi alterado); as linhas
      "Escala do 1ºPEL refeita a partir de..." vêm de resumo.escalas_refeitas
-     ([{ unidade, desde }], o que o recálculo refez ao salvar).
+     ([{ unidade, desde }], o que o recálculo refez ao salvar), e as
+     "A folga do ... saiu junto com a troca." de resumo.saiu_junto
+     ([{ tipo: 'folga' | 'mudanca', quem, data, para }], a troca que saiu
+     ou mudou).
    RosterWork.resumo.abrirModal(log, { pagina, desfazer? }) -> abre o
      modal de confirmação (#veu-resumo) com o título de sucesso; se
      "desfazer" (função que reverte e devolve Promise) vier, mostra o
@@ -123,16 +126,26 @@
       else assunto.classList.add('oculto');
     }
 
-    /* uma linha por unidade cuja escala o salvar refez */
+    /* uma linha por unidade cuja escala o salvar refez e, na troca que saiu ou mudou, uma pelo que saiu junto com ela
+       (a folga e a mudança de dia em cima do serviço dela) */
     var refeitas = raiz.querySelector('.resumo-refeitas');
-    var escrever = RosterWork.mensagens && RosterWork.mensagens.geral && RosterWork.mensagens.geral.escalaRefeita;
+    var G = RosterWork.mensagens && RosterWork.mensagens.geral;
     var paraBR = RosterWork.data && RosterWork.data.isoParaBR;
-    if (refeitas && escrever && paraBR) {
-      (resumo.escalas_refeitas || []).forEach(function (r) {
+    if (refeitas && G && G.escalaRefeita && paraBR) {
+      var linhaRefeita = function (texto) {
         var linha = RosterWork.tpl('tpl-resumo-refeita');
-        if (!linha || !r || !r.unidade || !r.desde) return;
-        linha.textContent = escrever(r.unidade, paraBR(r.desde));
+        if (!linha) return;
+        linha.textContent = texto;
         refeitas.appendChild(linha);
+      };
+      var diaMes = function (iso) { return paraBR(iso).slice(0, 5); };
+      (resumo.escalas_refeitas || []).forEach(function (r) {
+        if (r && r.unidade && r.desde) linhaRefeita(G.escalaRefeita(r.unidade, paraBR(r.desde)));
+      });
+      (resumo.saiu_junto || []).forEach(function (s) {
+        if (!s || !s.quem || !s.data) return;
+        if (s.tipo === 'folga') linhaRefeita(G.folgaSaiuJunto(s.quem, diaMes(s.data)));
+        else if (s.tipo === 'mudanca' && s.para) linhaRefeita(G.mudancaSaiuJunto(s.quem, diaMes(s.data), diaMes(s.para)));
       });
       if (refeitas.children.length) refeitas.classList.remove('oculto');
     }

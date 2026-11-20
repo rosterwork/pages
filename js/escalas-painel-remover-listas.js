@@ -64,10 +64,11 @@
   /* tem o que tirar por aqui: o remanejado ou alguma parte que não é extra */
   function podeTirar(mil) { return !!mil && (!!mil.remanejado || partesDe(mil).length > 0); }
 
-  /* a frase da folga: "Das 20h às 08h, o Cb. X fica de folga (12 horas)."; o dia todo (sem horário no texto), "em 29/10" */
-  function textoFolga(periodos, nome, horas, data) {
+  /* a frase da folga: "Das 20h às 08h, o Cb. X fica de folga (12 horas)."; o dia todo (sem horário no texto), "em 29/10";
+     troca: a folga de quem está por troca, que continua valendo */
+  function textoFolga(periodos, nome, horas, data, troca) {
     var t = ed().horas.textoPeriodos(periodos);
-    return t ? L().folgaParte(t, nome, horas) : L().tirarFolga(nome, data, horas);
+    return t ? L().folgaParte(t, nome, horas, troca) : L().tirarFolga(nome, data, horas, troca);
   }
 
   /* o motivo da folga dele que já está no rascunho (o campo começa com ele) */

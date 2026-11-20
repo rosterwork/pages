@@ -1143,14 +1143,17 @@
         acumulaSim: function (funcoes) { return 'Acumula o ' + juntarComE(funcoes); },
         acumulaNao: function (vazios) { return 'Deixa o ' + juntarComE(vazios) + ' vazio'; },
         papelJunto: function (militar, papel) { return 'O ' + militar + ' continua ' + papel + ', e o sistema refaz o dia em volta dele.'; },
-        /* o pedaço que sai vira folga */
-        folgaParte: function (periodos, militar, horas) {
-          return periodos.charAt(0).toUpperCase() + periodos.slice(1) + ', o ' + militar + ' fica de folga (' + horas + '). No banco de horas:';
+        /* o pedaço que sai vira folga (troca: a folga de quem está por troca, que continua valendo) */
+        folgaParte: function (periodos, militar, horas, troca) {
+          return periodos.charAt(0).toUpperCase() + periodos.slice(1) + ', o ' + militar + ' fica de folga (' + horas + ').'
+            + (troca ? ' A troca continua valendo.' : '') + ' No banco de horas:';
         },
         descontar: function (horas) { return 'Descontar ' + horas; },
         naoDescontar: 'Não descontar',
         /* Remover do dia */
-        tirarFolga: function (militar, data, horas) { return 'O ' + militar + ' fica de folga em ' + data + ' (' + horas + '). No banco de horas:'; },
+        tirarFolga: function (militar, data, horas, troca) {
+          return 'O ' + militar + ' fica de folga em ' + data + ' (' + horas + ').' + (troca ? ' A troca continua valendo.' : '') + ' No banco de horas:';
+        },
         tirarPontualTexto: function (militar, horas) { return 'Este pontual somou +' + horas + ' ao banco de horas do ' + militar + '. No banco de horas:'; },
         tirarPontualSim: function (horas) { return 'Tirar as ' + horas; },
         tirarPontualNao: 'Manter as horas',
@@ -1198,8 +1201,9 @@
         /* Mudar para outra função: quem não pode na função escolhida (o motivo do banco) */
         naoPodeFuncao: function (militar, motivo) { return 'O ' + militar + ' não pode nesta função.' + (motivo ? ' ' + motivo + '.' : ''); },
         /* Mudar o horário do serviço: o serviço dele, o que muda e o horário em que ele não está livre */
-        horarioDiaServico: function (militar, data, pontual, periodos) {
-          return 'O ' + militar + ' está de serviço ' + (pontual ? 'pontual em ' + data : 'em ' + data + ' pela guarnição') + ', ' + periodos + '.';
+        horarioDiaServico: function (militar, data, origem, periodos) {
+          return 'O ' + militar + ' está de serviço '
+            + (origem === 'pontual' ? 'pontual em ' + data : 'em ' + data + (origem === 'troca' ? ' por troca' : ' pela guarnição')) + ', ' + periodos + '.';
         },
         horarioDiaFolga: function (periodos, militar, horas) {
           return periodos.charAt(0).toUpperCase() + periodos.slice(1) + ', o ' + militar + ' fica de folga (' + horas + ').';
@@ -1286,16 +1290,16 @@
         /* o dia novo com alteração não salva (o rascunho de vários dias): ela é gravada antes */
         salveAntes: function (dia) { return 'Salve as alterações de ' + dia + ' antes de mudar o serviço para esse dia.'; },
         grupoCiclo: 'De serviço pela guarnição',
+        grupoTroca: 'Por troca',
         grupoNao: 'Não dá para mudar por aqui',
-        ninguem: 'Ninguém de serviço pela guarnição neste dia',
+        ninguem: 'Ninguém de serviço pela guarnição ou por troca neste dia',
         /* quem não muda por aqui e o caminho certo */
-        naoTroca: 'Está por troca. Mude pela página Trocas.',
         naoExtra: 'Está de extra. Mude pela Extrajornada.',
         naoPontual: 'É pontual. Tire pelo Remover deste dia e ponha no outro dia pelo Adicionar militar.',
         naoRemanejado: 'Está remanejado neste dia. Devolva antes, pelo Remover deste dia.',
         naoMudou: function (de) { return 'Veio de ' + de + '. Para mudar de novo, devolva antes pelo Remover deste dia.'; },
         naoOutraUnidade: 'É de outra unidade neste dia.',
-        servico: function (data, periodos) { return 'De serviço em ' + data + ' pela guarnição, ' + periodos + '.'; },
+        servico: function (data, periodos, troca) { return 'De serviço em ' + data + (troca ? ' por troca, ' : ' pela guarnição, ') + periodos + '.'; },
         mes: function (mes, ano) { return mes + ' de ' + ano; },
         /* o texto embaixo do número de cada dia */
         dia: { origem: 'Sai deste', pode: 'Pode', servico: 'De serviço', extra: 'De extra', outra_unidade: 'Outra unidade',
@@ -2965,6 +2969,9 @@
       exclusaoConcluida: 'Exclusão em {pagina} concluída',
       /* linha do resumo para cada unidade cuja escala o salvar refez (data já em DD/MM/AAAA) */
       escalaRefeita: function (unidade, data) { return 'Escala d' + artigo(unidade) + ' ' + unidade + ' refeita a partir de ' + data; },
+      /* linha do resumo para o que saiu junto com a troca (datas já em DD/MM) */
+      folgaSaiuJunto: function (quem, data) { return 'A folga do ' + quem + ' em ' + data + ' saiu junto com a troca.'; },
+      mudancaSaiuJunto: function (quem, de, para) { return 'A mudança do serviço do ' + quem + ' de ' + de + ' para ' + para + ' saiu junto com a troca.'; },
       /* modal de data — recálculo direcionado ao alterar modelo/regra/viatura/instalação/ritmo */
       recalcularDesde: 'A partir de qual data a escala deve ser recalculada?',
       dataMuitoAntiga: 'A data não pode ser mais de uma semana no passado.',

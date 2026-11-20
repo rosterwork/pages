@@ -5,10 +5,11 @@
    já com ele escolhido: o Horário do serviço dele no dia (um horário
    só, começando no de agora) e o Banco de horas, só quando o horário
    muda.
-   - Pelo ciclo: o horário fica dentro do serviço dele; as horas que
-     saem viram folga (como no Remover do dia com parte do serviço),
-     com a pergunta de descontar ou não no banco de horas (o Não
-     descontar vem primeiro e marcado).
+   - Pelo ciclo e por troca: o horário fica dentro do serviço dele; as
+     horas que saem viram folga (como no Remover do dia com parte do
+     serviço), com a pergunta de descontar ou não no banco de horas (o
+     Não descontar vem primeiro e marcado); na troca, ela continua
+     valendo nas horas que ele faz, e quem ele cobre segue de folga.
    - Pontual: o horário pode diminuir ou ir para as horas livres dele
      no dia (a mesma leitura do Adicionar militar, escala_dia_disponiveis).
      O banco de horas: o pontual ainda não gravado tem a pergunta do
@@ -22,7 +23,8 @@
    largo; o horário fora das horas livres fica em vermelho, e a
    pergunta sem resposta desliga o Salvar.
    API: RosterWork.escalasPainelHorarioDia.abrir({ cpf }), pode(cpf) (o
-   serviço dele no dia é um horário só, pelo ciclo ou pontual) e
+   serviço dele no dia é um horário só, pelo ciclo, por troca ou
+   pontual) e
    criar(cpf, opcoes) (o cálculo, sem tela, que a célula da grade,
    escalas-celula-editar.js, também usa).
    ============================================================ */
@@ -41,16 +43,16 @@
   function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
   function mostra(no, sim) { no.classList.toggle('oculto', !sim); }
 
-  /* o serviço dele no dia que muda por aqui: { mil, origem: 'ciclo' | 'pontual', periodo } (null: um horário só, pelo
-     ciclo ou pontual; a troca, a extra, a mudança de dia e o remanejado mudam pelos caminhos deles) */
+  /* o serviço dele no dia que muda por aqui: { mil, origem: 'ciclo' | 'troca' | 'pontual', periodo } (null: um horário
+     só, pelo ciclo, por troca ou pontual; a extra, a mudança de dia e o remanejado mudam pelos caminhos deles) */
   function servicoDe(cpf) {
     var api = ed(), mil = cpf && api.dados() ? api.militarDoDia(cpf) : null;
     if (!mil || mil.remanejado || !R()) return null;
-    if (mil.janelas.some(function (j) { return ['troca', 'extra', 'mudanca'].indexOf(j.origem) >= 0; })) return null;
+    if (mil.janelas.some(function (j) { return ['extra', 'mudanca'].indexOf(j.origem) >= 0; })) return null;
     var partes = R().partesDe(mil);
     if (partes.length !== 1 || partes[0].periodos.length !== 1) return null;
     var p = partes[0];
-    if (p.origem !== 'ciclo' && p.origem !== 'pontual') return null;
+    if (p.origem !== 'ciclo' && p.origem !== 'troca' && p.origem !== 'pontual') return null;
     return { mil: mil, origem: p.origem, periodo: { hi: p.periodos[0].hi, hf: p.periodos[0].hf } };
   }
 
@@ -164,7 +166,7 @@
       });
     }
 
-    return { cpf: cpf, nome: nome, pontual: pontual, servico: pontual ? s.periodo : H.periodo(base[0]), est: est,
+    return { cpf: cpf, nome: nome, origem: s.origem, pontual: pontual, servico: pontual ? s.periodo : H.periodo(base[0]), est: est,
       opcoes: function () { return H.opcoesHoras(est.livres.map(H.periodo)); },
       dentro: dentro, calcular: calcular, aplicar: aplicar, lerLivres: lerLivres };
   }
@@ -213,7 +215,7 @@
         contabilizaSim: q('.escala-horario-dia-contabilizar-sim'), contabilizaNao: q('.escala-horario-dia-contabilizar-nao')
       };
       var servico = sessao.servico;
-      el.servico.textContent = L().horarioDiaServico(sessao.nome, diaMes(api.iso()), sessao.pontual, msg().dasAs(H.curta(servico.hi), H.curta(servico.hf)));
+      el.servico.textContent = L().horarioDiaServico(sessao.nome, diaMes(api.iso()), sessao.origem, msg().dasAs(H.curta(servico.hi), H.curta(servico.hf)));
       var marcarDesconta = ligarRadios(el.desconta, function (v) { est.banco = v; atualizar(); });
       /* pelo ciclo, o Motivo da folga, embaixo das respostas (a caixa do Descontar some no pontual) */
       R().campoMotivo(el.desconta, est.motivo, function (t) { est.motivo = t; sessao.aplicar(); });

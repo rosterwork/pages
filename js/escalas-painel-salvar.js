@@ -56,7 +56,8 @@
    parte; .descartarTudo() tira também o dos dias guardados;
    .paraPrevia() dá o rascunho para a prévia das
    telas (null sem mudança); .marcado(unidade, dia) diz se o dia leva a
-   borda; .mostrarRelendo(sim) diz no rodapé que a escala está sendo
+   borda; .tocaODia(dia) diz se uma mudança pendente toca o dia (a caixa
+   da célula só espera a prévia nele); .mostrarRelendo(sim) diz no rodapé que a escala está sendo
    lida com o rascunho.
    ============================================================ */
 (function () {
@@ -157,6 +158,16 @@
       return unidadeId != null && !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return iso >= (x.data || d.iso); });
     });
     return achou || !!(X() && X().marcado(unidadeId, iso));
+  }
+  /* uma mudança pendente toca este dia (a caixa da célula espera a prévia dele)? A mesma data em qualquer unidade (o banco
+     refaz a companhia inteira no dia; a mudança de unidade mexe nas duas), o outro dia de uma mudança de dia, as guarnições
+     de qualquer unidade com data até ele e a extra mexida nele. No dia que ela não toca, quem está de serviço é o mesmo do
+     dia gravado, que é o que a grade mostra nele */
+  function tocaODia(iso) {
+    if (marcado(null, iso)) return true;
+    return dias().some(function (d) {
+      return !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return iso >= (x.data || d.iso); });
+    });
   }
 
   /* ---------- os rodapés ---------- */
@@ -591,5 +602,6 @@
   if (RW.guardaSaida) RW.guardaSaida.registrar(function () { return !!document.querySelector('.conteudo #escala-modos') && pendente(); });
 
   RW.escalasPainelSalvar = { rodape: rodape, atualizar: atualizar, contar: contar, pendente: pendente,
-    descartar: descartar, descartarTudo: descartarTudo, paraPrevia: paraPrevia, marcado: marcado, mostrarRelendo: mostrarRelendo };
+    descartar: descartar, descartarTudo: descartarTudo, paraPrevia: paraPrevia, marcado: marcado, tocaODia: tocaODia,
+    mostrarRelendo: mostrarRelendo };
 })();

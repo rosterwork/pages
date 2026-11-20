@@ -214,9 +214,10 @@
     desenhar(c);
   }
 
-  /* Dar folga (o ciclo): sai de folga, com o Não descontar marcado. Remover deste dia: o pontual sai, ou antes responde se
-     as horas saem do banco; quem entrou de mais de um jeito, o remanejado e a troca: a sub-tela do painel, já com ele */
-  function remover(botao, c) {
+  /* Dar folga (o ciclo e a troca, que continua valendo; folga = true): sai de folga, com o Não descontar marcado. Remover
+     deste dia: o pontual sai, ou antes responde se as horas saem do banco; quem entrou de mais de um jeito, o remanejado e
+     a troca: a sub-tela do painel, já com ele */
+  function remover(botao, c, folga) {
     var a = c.a, cpf = a.cpf;
     if (api().mudancaNoRascunho(cpf) === 'vem') {
       RW.escalasPainelLinhaMenu.largarMudanca(cpf, 'vem', function () {});
@@ -224,7 +225,7 @@
       return;
     }
     var mil = api().militarDoDia(cpf);
-    var r = mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: cpf, periodos: mil.janelas.map(copiar) }) : null;
+    var r = mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: cpf, periodos: mil.janelas.map(copiar), folga: !!folga }) : null;
     if (!r) return;
     if (r.tipo === 'subtela') { c.fecharTudo('guardar'); c.abrirPainel(cpf, { fazerAcao: 'remover-dia' }); return; }
     if (r.tipo === 'sai') { api().mudar(r.aplicar); c.fecharTudo(); if (a.aoTirarDoDia) a.aoTirarDoDia(); return; }
@@ -291,8 +292,8 @@
   var ACOES = {
     'horario-dia': horario,
     'onde-estagio': ondeFica,
-    'remover-dia': remover,
-    'folga-dia': remover,
+    'remover-dia': function (botao, c) { remover(botao, c, false); },
+    'folga-dia': function (botao, c) { remover(botao, c, true); },
     'remover-guarnicao': sairDaGuarnicao,
     'cancelar-folga': function (botao, c) { folga(botao, c, 'cancelar'); },
     'desfazer-mudanca': function (botao, c) {

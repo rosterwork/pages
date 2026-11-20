@@ -38,8 +38,9 @@
    ele e o dia; na célula, com o ícone do painel, porque o painel abre), Mudar a
    extrajornada (quem está de extra: abre a
    aba Extrajornada do painel, onde a extra muda), Dar folga neste dia
-   (quem está no dia pela guarnição: sair do dia é a folga, na cor
-   normal) ou Remover deste dia (o resto, em vermelho) e,
+   (quem está no dia pela guarnição ou por troca: sair do dia é a folga,
+   na cor normal; na troca, ela continua valendo) e Remover deste dia
+   (o resto, em vermelho; na troca, as perguntas dela no painel) e,
    para quem está no dia pela guarnição, Remover da guarnição (a
    pergunta Último serviço, escalas-painel-ciclo.js); quem foi
    remanejado daqui para outra unidade, o Devolver; quem saiu da
@@ -109,11 +110,14 @@
     /* a troca: quem está de serviço aqui (fora só a extra); no Registrar, o administrador não entra */
     r['registrar-troca'] = !!mil && mil.daUnidade && cpf !== RW.sessao.cpf() && mil.janelas.some(function (j) { return j.origem !== 'extra'; });
     r['mudar-extra'] = !!mil && mil.janelas.some(function (j) { return j.origem === 'extra'; }) && RW.escalasPainel.temAba('extra');
-    /* sair do dia: pelo ciclo é a folga (Dar folga neste dia); o pontual e o resto, o Remover deste dia (o mesmo caminho) */
+    /* sair do dia: pelo ciclo é a folga (Dar folga neste dia); o pontual e o resto, o Remover deste dia (o mesmo caminho);
+       por troca, os dois: a folga dele, com a troca valendo, e o Remover deste dia com as perguntas da troca */
     var tirar = !!RW.escalasPainelRemover && RW.escalasPainelRemover.podeTirar(cpf);
-    var analise = tirar && mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: cpf, periodos: mil.janelas.map(copiar) }) : null;
-    r['folga-dia'] = !!analise && analise.tipo === 'folga';
-    r['remover-dia'] = tirar && !r['folga-dia'];
+    var periodos = mil ? mil.janelas.map(copiar) : [];
+    var analise = tirar && mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: cpf, periodos: periodos }) : null;
+    var folga = tirar && mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: cpf, periodos: periodos, folga: true }) : null;
+    r['folga-dia'] = !!folga && folga.tipo === 'folga';
+    r['remover-dia'] = tirar && !(analise && analise.tipo === 'folga');
     r['remover-guarnicao'] = !!RW.escalasPainelCiclo && RW.escalasPainelCiclo.podeSair(cpf);
     /* o estagiário: o Mudar onde fica (os postos do estágio dele), sem troca de serviço e sem mudar de unidade (ele é do
        estágio desta unidade) */
@@ -229,12 +233,12 @@
     });
   }
 
-  /* Remover do dia: o caminho da tela do Remover do dia para o serviço dele no dia todo (pelo ciclo, a pergunta do banco de horas
-     embaixo da linha; com mais perguntas, a sub-tela já com ele) */
-  function removerDoDia(cfg) {
+  /* Remover do dia e Dar folga: o caminho da tela do Remover do dia para o serviço dele no dia todo (pelo ciclo e no Dar
+     folga de quem está por troca, a pergunta do banco de horas embaixo da linha; com mais perguntas, a sub-tela já com ele) */
+  function removerDoDia(cfg, folga) {
     var api = ed(), mil = api.militarDoDia(cfg.militar.cpf);
     if (!mil || !RosterWork.escalasPainelRemover) return;
-    RosterWork.escalasPainelRemover.doDia({ cpf: mil.cpf, periodos: mil.janelas.map(copiar) }, cfg.linha);
+    RosterWork.escalasPainelRemover.doDia({ cpf: mil.cpf, periodos: mil.janelas.map(copiar), folga: !!folga }, cfg.linha);
   }
 
   function folga(cfg, escolha) {
@@ -263,7 +267,7 @@
     'registrar-troca': function (cfg) { ed().registrarTroca(cfg.militar.cpf); },
     'mudar-extra': function () { RosterWork.escalasPainel.abrirAba('extra'); },
     'remover-dia': function (cfg) { largarMudanca(cfg.militar.cpf, 'vem', function () { removerDoDia(cfg); }); },
-    'folga-dia': function (cfg) { removerDoDia(cfg); },
+    'folga-dia': function (cfg) { removerDoDia(cfg, true); },
     /* o Remover da guarnição e o Cancelar a saída (a linha riscada de quem saiu): as guarnições do painel (escalas-painel-ciclo.js) */
     'remover-guarnicao': function (cfg) { RosterWork.escalasPainelCiclo.perguntarSaida(cfg.militar, cfg.linha); },
     'cancelar-saida': function (cfg) { RosterWork.escalasPainelCiclo.cancelarSaida(cfg.militar, cfg.saida); },

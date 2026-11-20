@@ -6,7 +6,8 @@
    (escalas-dados.js › reorganizar), e o que a leitura nova de um dia
    diz vale no lugar do que se sabia dele. A nota mostra os casos das
    unidades e do período na tela, nas abas Mês e Colunas, só para quem
-   administra a unidade (pelotão, companhia ou geral) e fora do treino.
+   acompanha a unidade (o admin do pelotão dela, o da companhia e o
+   geral) e fora do treino.
    O X esconde a nota até recarregar ou entrar de novo na página; ela
    volta se a lista mudar.
    API: RosterWork.escalaExtraServico.anotar(grade) · ligar(lugar,
@@ -49,7 +50,7 @@
     Object.keys(casos).forEach(function (k) {
       var uid = k.split('|')[0], iso = k.split('|')[1];
       if (unidades.indexOf(uid) < 0 || iso < per.inicio || iso > per.fim) return;
-      if (!RW.sessao || !RW.sessao.podeAdministrar('pelotao', +uid)) return;
+      if (!RW.sessao || !RW.sessao.acompanha(+uid)) return;
       casos[k].forEach(function (p) {
         var chave = p.cpf + '|' + iso;
         if (vistos[chave]) return;

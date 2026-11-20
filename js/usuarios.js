@@ -37,9 +37,15 @@
     return !filtros || filtros.passa('graus', pessoa.grau_nome);
   }
 
+  /* a correção de dados que espera quem está logado: o pedido em aberto de quem ele acompanha (o admin do pelotão do
+     militar, o da companhia e o geral). A mesma regra no selo e no filtro: a de outro pelotão não aparece em nenhum */
+  function correcaoParaMim(pessoa) {
+    return !!pessoa.correcao_pendente && RosterWork.sessao.acompanha(pessoa.lotacao_atual);
+  }
+
   /* o cadastro: com correção de dados pendente ou em dia (o filtro é só do administrador; nada marcado = todos) */
   function pessoaPassaCadastro(pessoa) {
-    return !filtros || filtros.passa('cadastro', pessoa.correcao_pendente ? 'pendente' : 'em_dia');
+    return !filtros || filtros.passa('cadastro', correcaoParaMim(pessoa) ? 'pendente' : 'em_dia');
   }
 
   /* a pessoa casa com a busca? nome de guerra, nome completo, CPF ou RG (a regra é a mesma dos Afastamentos,
@@ -219,10 +225,10 @@
     /* identificador escolhido (CPF/RG/telefone/email) */
     item.querySelector('.usuario-item-cpf').textContent = textoIdentificador(pessoa, ex.identificador);
     preencherSituacao(item.querySelector('.usuario-item-selo'), pessoa);
-    /* quem pediu correção e ainda espera decisão: o selo só para quem acompanha o militar (o admin do pelotão dele,
-       o da companhia e o geral); o de outro pelotão decide pela ficha, sem o selo na lista */
+    /* quem pediu correção e ainda espera a decisão de quem está logado (correcaoParaMim); o de outro pelotão decide
+       pela ficha, sem o selo na lista */
     var correcao = item.querySelector('.usuario-item-correcao');
-    if (correcao) correcao.classList.toggle('oculto', !(pessoa.correcao_pendente && RosterWork.sessao.acompanha(pessoa.lotacao_atual)));
+    if (correcao) correcao.classList.toggle('oculto', !correcaoParaMim(pessoa));
     if (casa && modoBusca === 'marcar') item.classList.add('linha-militar--marcada');
     if (casa) item.classList.add('busca-achado');   // o que o Enter da busca percorre (geral-busca.js)
     item.classList.add('linha-militar--clicavel');

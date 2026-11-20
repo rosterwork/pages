@@ -57,8 +57,11 @@
    e o Salvar do rodapé grava tudo.
    A célula da grade (escalas-celula-editar.js) usa o mesmo rascunho
    com o painel fechado: montar sem o corpo, com opcoes.semLista; o
-   dia é lido e a prévia refeita como no painel, sem a lista, e
-   opcoes.aoMostrar(dados) recebe cada leitura (null: falhou). O
+   dia é lido e a prévia refeita como no painel, sem a lista, só
+   quando uma mudança pendente toca o dia (precisaPrevia); no dia
+   que ela não toca, a caixa fica com o dia gravado, o mesmo da grade.
+   O dia que vai mostrar a prévia já a pede junto com a leitura dele
+   (pedirPrevia). opcoes.aoMostrar(dados) recebe cada leitura (null: falhou). O
    painel que abre no mesmo dia continua o rascunho. Com o painel
    aberto no dia, a caixa da célula trabalha no rascunho dele: ela
    pede as leituras com sub.ouvir(fn), e o que muda numa aparece na
@@ -718,26 +721,43 @@
       if (!ctx.semLista) montarSubcabecalho();
       avisarRascunho();
       /* com mudança em qualquer aba, o dia como vai ficar; sem nenhuma, o dia gravado */
-      if (RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.paraPrevia()) { mostrarPrevia(vinhaDaSub); return; }
+      if (precisaPrevia()) { mostrarPrevia(vinhaDaSub); return; }
       exibir(base.dados);
       return;
     }
     if (!ctx.semLista) montarSubcabecalho();
     mostrarCarregando();
     var meu = ++pedido, c = ctx;
+    /* o dia que vai mostrar a prévia já a pede junto com a leitura dele, e não depois dela (a tela espera as duas) */
+    var previa = editavel() && precisaPrevia() ? pedirPrevia() : null;
     RosterWork.painel.segurar(RosterWork.escalasDados.lerDistribuicaoDia(ctx.unidadeId, ctx.iso)).then(function (dados) {
       if (ctx !== c || meu !== pedido) return;
       if (!dados) { mostrarFalha(); return; }
-      comecar(dados);
+      comecar(dados, previa);
     });
   }
 
-  /* o dia lido: vira a base e desenha */
-  function comecar(dados) {
+  /* o dia mostra a prévia (o dia como vai ficar)? Com mudança esperando o Salvar em algum dia; na caixa da célula, só
+     quando uma delas toca este dia (escalas-painel-salvar.js › tocaODia): no dia que ela não toca, quem está de serviço é o
+     do dia gravado, que é o que a grade mostra nele, e a caixa abre sem esperar a prévia. O painel mostra sempre a prévia */
+  function precisaPrevia() {
+    var S = RosterWork.escalasPainelSalvar;
+    if (!S || !S.paraPrevia()) return false;
+    return !ctx.semLista || S.tocaODia(ctx.iso);
+  }
+
+  /* o pedido da prévia do dia, com a marca do Salvar de quando ele saiu: { marca, pedido } (pedido nulo sem mudança) */
+  function pedirPrevia() {
+    var D = RosterWork.escalasDados;
+    return { marca: D.marcaDoSalvar(), pedido: D.lerPrevia('ler_distribuicao_dia', {}) };
+  }
+
+  /* o dia lido: vira a base e desenha; previa: o pedido dela que já saiu junto com a leitura */
+  function comecar(dados, previa) {
     aceitar(dados);
     ctx.dadosAntes = dados;
-    /* com mudança esperando o Salvar na outra aba (o Ciclo), o dia já como vai ficar */
-    if (editavel() && RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.paraPrevia()) { mostrarPrevia(); return; }
+    /* com mudança esperando o Salvar (em outro dia ou na outra aba, o Ciclo), o dia já como vai ficar */
+    if (editavel() && precisaPrevia()) { mostrarPrevia(false, previa); return; }
     pronta();
     if (ctx.semLista) { avisarCelula(dados); return; }
     renderLista(dados);
@@ -753,14 +773,13 @@
   /* o dia como vai ficar com os rascunhos das duas abas (escala_previa: o Salvar num ensaio, nada é gravado). A mudança
      do Dia que a gravação recusaria (ex.: efetivo acima do máximo, a folga recusada) dá o aviso, e o rascunho do Dia volta
      um passo; a recusa do Ciclo só avisa (desmarca-se lá). Com a lista na tela, ela fica até a prévia chegar; quem volta da
-     sub-tela vê o dia de antes até lá */
-  function mostrarPrevia(vinhaDaSub) {
+     sub-tela vê o dia de antes até lá. previa: o pedido que já saiu junto com a leitura do dia (pedirPrevia) */
+  function mostrarPrevia(vinhaDaSub, previa) {
     var c = ctx, meu = ++pedido;
     if (vinhaDaSub && ctx.dados) renderLista(ctx.dados);
     if (ctx.listaNaTela) apagarLista();
     else mostrarCarregando();
-    var D = RosterWork.escalasDados, marca = D.marcaDoSalvar();
-    var pedidoPrevia = D.lerPrevia('ler_distribuicao_dia', {});
+    var D = RosterWork.escalasDados, p = previa || pedirPrevia(), marca = p.marca, pedidoPrevia = p.pedido;
     if (!pedidoPrevia) { exibir(base.dados); return; }
     RosterWork.painel.segurar(pedidoPrevia).then(function (dados) {
       if (ctx !== c || meu !== pedido) return;

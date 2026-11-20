@@ -1,12 +1,13 @@
 /* ============================================================
    ESCALAS — Mudar o dia do serviço (o lápis da aba Militares; só admin).
-   O serviço pelo ciclo de um militar neste dia passa para outro dia,
-   na mesma unidade e no mesmo horário: o serviço inteiro ou uma
-   parte. Não é folga: o banco de horas não muda, e o militar é
-   avisado no sino. Sub-tela em caixas de pergunta, uma depois da
-   outra (Guia visual › Ações e perguntas): Quem (só o serviço pelo
-   ciclo; quem está por troca, extra, pontual, remanejado ou já veio
-   de outro dia aparece apagado, com o caminho certo), Qual parte muda
+   O serviço pelo ciclo ou por troca de um militar neste dia passa para
+   outro dia, na mesma unidade e no mesmo horário: o serviço inteiro ou
+   uma parte; a troca continua valendo (quem ele cobre segue de folga).
+   Não é folga: o banco de horas não muda, e o militar é avisado no
+   sino. Sub-tela em caixas de pergunta, uma depois da outra (Guia
+   visual › Ações e perguntas): Quem (o serviço pelo ciclo e, num grupo
+   próprio, o por troca; quem está de extra, pontual, remanejado ou já
+   veio de outro dia aparece apagado, com o caminho certo), Qual parte muda
    (só com o serviço dividido no dia), Para qual dia (o mês em
    miniatura, geral-mini-calendario, com a situação dele em cada dia
    e as vagas sem ninguém, da escala_mudar_dia_dias), Horário (o
@@ -23,7 +24,7 @@
    Remover do dia no dia novo.
    API: RosterWork.escalasPainelMudarDia.abrir(opcoes) (opcoes = { cpf }:
    chega com ele escolhido, o menu da linha) e podeMudar(cpf) (ele
-   está na lista Quem, pelo ciclo).
+   está na lista Quem, pelo ciclo ou por troca).
    ============================================================ */
 (function () {
   'use strict';
@@ -31,8 +32,8 @@
   window.RosterWork = window.RosterWork || {};
 
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-  /* as origens do serviço pelo ciclo (o que muda de dia por aqui) */
-  var CICLO = ['base', 'saida', 'sistema'];
+  /* as origens do serviço que muda de dia por aqui: pelo ciclo e por troca */
+  var MUDAM = ['base', 'saida', 'sistema', 'troca'];
   var conta = 0;               // nome único para os rádios de cada abertura
 
   function ed() { return RosterWork.escalasPainelEditar.sub; }
@@ -51,32 +52,33 @@
     function tem(origem) { return js.filter(function (j) { return j.origem === origem; })[0]; }
     if (mil.remanejado) return t.naoRemanejado;
     if (tem('mudanca')) return t.naoMudou(tem('mudanca').mudanca_de || '');
-    if (tem('troca')) return t.naoTroca;
     if (tem('pontual')) return t.naoPontual;
     if (tem('extra')) return t.naoExtra;
     return daUnidade ? '' : t.naoOutraUnidade;
   }
 
-  /* as horas do ciclo dele nesta unidade, as que mudam de dia por aqui (vazio: não muda por aqui) */
-  function cicloDe(mil, daUnidade) {
-    return daUnidade && !mil.remanejado ? mil.janelas.filter(function (j) { return CICLO.indexOf(j.origem) >= 0; }) : [];
+  /* as horas dele nesta unidade que mudam de dia por aqui, pelo ciclo e por troca (vazio: não muda por aqui) */
+  function janelasQueMudam(mil, daUnidade) {
+    return daUnidade && !mil.remanejado ? mil.janelas.filter(function (j) { return MUDAM.indexOf(j.origem) >= 0; }) : [];
   }
+  /* só por troca (o grupo Por troca e o texto do serviço) */
+  function soTroca(janelas) { return janelas.length > 0 && janelas.every(function (j) { return j.origem === 'troca'; }); }
 
-  /* a lista Quem: quem está de serviço pelo ciclo nesta unidade (o ícone de origem e o horário do ciclo) e, no fim e
-     apagados, quem está no dia de outro jeito, com o caminho certo */
+  /* a lista Quem: quem está de serviço pelo ciclo nesta unidade, depois quem está por troca (o ícone de origem e o
+     horário) e, no fim e apagados, quem está no dia de outro jeito, com o caminho certo */
   function itensQuem(dados) {
-    var api = ed(), Q = RosterWork.escalasPainelQuem, pode = [], nao = [], visto = {};
+    var api = ed(), Q = RosterWork.escalasPainelQuem, pode = [], porTroca = [], nao = [], visto = {};
     (dados.picker || []).forEach(function (u) {
       (u.militares || []).forEach(function (pm) {
         if (visto[pm.cpf] || !(pm.disp || []).length) return;
         var mil = api.militarDoDia(pm.cpf);
         if (!mil) return;
         visto[pm.cpf] = true;
-        var ciclo = cicloDe(mil, !!u.editando);
-        if (ciclo.length) {
-          var item = Q.itemServico({ cpf: pm.cpf, grad: pm.grad, nome: pm.nome, disp: ciclo });
+        var muda = janelasQueMudam(mil, !!u.editando);
+        if (muda.length) {
+          var item = Q.itemServico({ cpf: pm.cpf, grad: pm.grad, nome: pm.nome, disp: muda });
           item.mil = mil;
-          pode.push(item);
+          (soTroca(muda) ? porTroca : pode).push(item);
           return;
         }
         var porque = motivo(mil, !!u.editando);
@@ -89,11 +91,12 @@
     });
     var lista = [];
     if (pode.length) lista = lista.concat([{ titulo: M().grupoCiclo }], pode);
+    if (porTroca.length) lista = lista.concat([{ titulo: M().grupoTroca }], porTroca);
     if (nao.length) lista = lista.concat([{ titulo: M().grupoNao }], nao);
     return lista;
   }
 
-  /* ele muda o dia por aqui: está na lista Quem, pelo ciclo (o menu da linha só mostra o item a quem pode) */
+  /* ele muda o dia por aqui: está na lista Quem, pelo ciclo ou por troca (o menu da linha só mostra o item a quem pode) */
   function podeMudar(cpf) {
     var dados = ed().dados();
     if (!dados) return false;
@@ -107,7 +110,7 @@
     if (!dados) return;
     var uid = api.unidadeId(), deIso = api.iso(), data = diaMes(deIso);
     var hoje = iso(new Date());   // a marca de hoje: o dia do relógio, como nas outras abas da Escala
-    /* item: quem (o item da lista, com .mil e .janelas = as do ciclo); janela: a do ciclo que muda; mes: o do calendário;
+    /* item: quem (o item da lista, com .mil e .janelas = as que mudam); janela: a que muda; mes: o do calendário;
        para: o dia novo; horario: o valor do Serviço inteiro / Parte do serviço; limite e fim: o primeiro e o último dia
        que o banco aceita */
     var est = { item: null, janela: null, mes: inicioDoMes(dataDeIso(deIso)), para: null, horario: null, limite: null, fim: null };
@@ -193,7 +196,7 @@
       atualizar();
     }
 
-    /* Qual parte muda: só com o serviço pelo ciclo dividido no dia (uma parte de cada vez) */
+    /* Qual parte muda: só com o serviço pelo ciclo ou por troca dividido no dia (uma parte de cada vez) */
     function montarJanelas() {
       el.janelasLista.textContent = '';
       if (est.item.janelas.length < 2) return;
@@ -210,7 +213,7 @@
           onde.reiniciar();
           atualizar();
         });
-        op.querySelector('.escala-remover-parte-texto').textContent = msg().linha.parte('ciclo', msg().dasAs(H.curta(j.hi), H.curta(j.hf)));
+        op.querySelector('.escala-remover-parte-texto').textContent = msg().linha.parte(j.origem === 'troca' ? 'troca' : 'ciclo', msg().dasAs(H.curta(j.hi), H.curta(j.hf)));
         el.janelasLista.appendChild(op);
       });
     }
@@ -336,7 +339,7 @@
 
     /* ---------- desenho ---------- */
 
-    /* "das 08h às 08h" (o serviço pelo ciclo dele, cada janela) */
+    /* "das 08h às 08h" (o serviço dele que muda, cada janela) */
     function textoJanelas(js) { return js.map(function (j) { return msg().dasAs(H.curta(j.hi), H.curta(j.hf)); }).join(' e '); }
     /* o serviço dele aqui que fica no dia de antes (fora as horas que mudam): o texto, vazio quando sai todo */
     function textoResto(periodo) {
@@ -355,7 +358,7 @@
       /* falta resposta (true) até o Onde fica */
       var falta = (function () {
         if (!est.item) return true;
-        el.servico.textContent = M().servico(data, textoJanelas(est.item.janelas));
+        el.servico.textContent = M().servico(data, textoJanelas(est.item.janelas), soTroca(est.item.janelas));
         if (est.item.janelas.length > 1) { mostra(el.janelas, true); if (!est.janela) return true; }
         mostra(el.dia, true);
         if (!est.para) return true;

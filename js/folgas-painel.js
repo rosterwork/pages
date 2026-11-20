@@ -20,7 +20,8 @@
   var aoFecharExterno = null;// limpeza da tela que abriu (ex.: realce do card)
   var ligado = false;
 
-  /* o admin age sobre quem ele administra (o de pelotão no pelotão dele; o de companhia e o geral na área deles).
+  /* o admin age sobre quem ele administra (o de pelotão e o de companhia na companhia e nos pelotões dela; o geral em
+     todas as unidades).
      Sem militar (o extrato do próprio), vale a lotação de quem está logado */
   function administra(militar) {
     var lotacao = militar ? militar.lotacao_atual : (RosterWork.sessao.perfil() || {}).lotacao_id;
