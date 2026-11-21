@@ -266,7 +266,9 @@
       padroes: [
         { valor: 'ferias', rotulo: 'Férias' }, { valor: 'atestado', rotulo: 'Atestado' }, { valor: 'licenca', rotulo: 'Licença' },
         { valor: 'dispensa', rotulo: 'Dispensa' }, { valor: 'op_verao', rotulo: 'Op. Verão' }, { valor: 'op_verao_litoral', rotulo: 'Litoral' },
-        { valor: 'forca_tarefa', rotulo: 'F. Tarefa' }
+        { valor: 'forca_tarefa', rotulo: 'F. Tarefa' },
+        /* não é afastamento: só tira do sobreaviso; "nome" é o texto do dia */
+        { valor: 'viagem', rotulo: 'Autorização de viagem', nome: 'Viagem' }
       ],
       outro: 'Outro',
       /* no filtro Afastamento, os nomes escritos no Outro */
@@ -719,20 +721,6 @@
         pref: { quer: 'Marcou Quero neste dia.', nao: 'Marcou Não quero neste dia.', sem: 'Sem preferência neste dia.' },
         /* a dica da bolinha do militar em foco, no bloco em que ele não tem extra */
         prefDia: { quer: 'Quer este dia', nao: 'Não quer este dia', sem: 'Sem preferência' },
-        /* a linha da Falta de gente embaixo do gráfico (o Exibir; extrajornada-por-dia.js): o "1 de 2", o "+1" das extras a
-           mais e a dica de cada horário (quando: '08h às 14h'; h: a conta do horário, extrajornada-falta.js › porHorario;
-           so: quando falta só numa parte do horário, as horas, 'das 07h às 08h') */
-        faltaDe: function (n, de) { return n + ' de ' + de; },
-        faltaMais: function (n) { return '+' + n; },
-        faltaDica: {
-          falta: function (quando, h, so) {
-            return 'Das ' + quando + ', ' + (h.cobriu ? 'as extras cobriram ' + h.cobriu + ' de ' + h.antes + ' e ' : '') +
-              (h.falta === 1 ? 'falta 1' : 'faltam ' + h.falta) + (so ? ', só ' + so : '') + '.';
-          },
-          coberta: function (quando, h) {
-            return 'Das ' + quando + ', ' + (h.mais ? h.mais + (h.mais === 1 ? ' extra a mais' : ' extras a mais') + ' do que faltava.' : 'as extras cobriram a falta.');
-          }
-        },
         /* o campo do Adicionar militar na célula: a busca e a lista sem ninguém para pôr */
         pesquisarMilitar: 'Pesquisar militar',
         ninguemParaPor: 'Ninguém mais pode neste dia',
@@ -1080,6 +1068,8 @@
          grade) */
       militaresSaida: function (n) { return 'Saiu da guarnição (' + n + ')'; },
       saiuDaGuarnicao: function (data) { return 'Saiu da guarnição em ' + data; },
+      /* a linha riscada de quem saiu à mão: o último serviço dele, a data que a pergunta do Mudar a saída usa */
+      ultimoNaGuarnicao: function (data) { return 'Último serviço na guarnição em ' + data; },
       militaresFuncoes: function (lugares) { return juntarComE(lugares); },
       militaresSemFuncao: function (periodos, comFuncao) { return (comFuncao ? '; sem função' : 'Sem função') + (periodos ? ' ' + periodos : ''); },
       militaresVazio: 'Ninguém de serviço neste dia.',
@@ -1424,7 +1414,8 @@
           ferias: 'Sobreaviso, mas de férias neste dia',
           licenca: 'Sobreaviso, mas de licença neste dia',
           dispensa: 'Sobreaviso, mas dispensado neste dia',
-          missao: 'Sobreaviso, mas em missão neste dia'
+          missao: 'Sobreaviso, mas em missão neste dia',
+          viagem: 'Sobreaviso, mas em viagem neste dia'
         },
         menuTitulo: function (nome, dia) { return nome + ' no sobreaviso de ' + dia; },
         grupos: { vez: 'Na vez da fila', outros: 'Também podem', nao_podem: 'Não podem neste dia' },
@@ -1447,7 +1438,8 @@
           ferias: function (ate) { return 'Férias até ' + ate; },
           licenca: function (ate) { return 'Licença até ' + ate; },
           dispensa: function (ate) { return 'Dispensa até ' + ate; },
-          missao: function (ate) { return 'Missão até ' + ate; }
+          missao: function (ate) { return 'Missão até ' + ate; },
+          viagem: function (ate) { return 'Viagem até ' + ate; }
         },
         escolherNoLugar: function (nome) { return 'Escolha quem fica no lugar do ' + nome; },
         escolherNovo: 'Escolha quem entra no sobreaviso',
@@ -1488,10 +1480,15 @@
         foi: function (para) { return para ? 'Foi para ' + artigo(para) + ' ' + para + ' nesse dia' : 'Foi para outra unidade nesse dia'; },
         /* quem fica nas duas unidades, na dele (antes de salvar, a outra ainda não tem nome) */
         tambem: function (para) { return para ? 'Também n' + artigo(para) + ' ' + para + ' nesse dia' : 'Também em outra unidade nesse dia'; },
-        /* o militar do grupo Fora da escala (o operacional da unidade sem guarnição); quem voltou de um afastamento há até 5
-           dias (o aviso amarelo), de férias ou de outro afastamento */
-        fora: 'Fora da escala, sem guarnição',
-        foraVoltou: function (data, ferias) { return 'Fora da escala, voltou ' + (ferias ? 'de férias' : 'de afastamento') + ' em ' + data; }
+        /* o militar do grupo Fora da escala (o operacional da unidade sem guarnição), com o motivo: a saída à mão, a volta de
+           um afastamento (de férias ou de outro), a transferência para cá ("chegou do 1ºPEL em 10/11") ou ainda sem
+           guarnição; e, embaixo, a entrada marcada */
+        fora: 'Fora da escala: ainda sem guarnição',
+        foraUltimo: function (data) { return 'Fora da escala: último serviço na guarnição em ' + data; },
+        foraSaiu: function (data) { return 'Fora da escala: saiu da guarnição em ' + data; },
+        foraVoltou: function (data, ferias) { return 'Fora da escala: voltou ' + (ferias ? 'de férias' : 'de afastamento') + ' em ' + data; },
+        foraChegou: function (de, data) { return 'Fora da escala: chegou ' + (de ? 'd' + artigo(de) + ' ' + de + ' ' : '') + 'em ' + data; },
+        entraNa: function (letra, data) { return (letra ? 'Entra na guarnição ' + letra : 'Entra na escala') + ' em ' + data; }
       },
       /* os grupos da célula da Escala (escalas-celula-grupos.js): a dica da linha tracejada diz o grupo de baixo */
       grupoCelula: { guarnicao: 'Guarnição', troca: 'Trocas', pontual: 'Pontual', remanejado: 'Remanejados', extra: 'Extrajornada',
@@ -2098,6 +2095,23 @@
       aoSalvarFica: function (nome, n, total) { return 'Ao salvar, ' + nome + ' fica com ' + n + ' de ' + total + (total === 1 ? ' cota.' : ' cotas.'); },
       aoSalvarFicam: function (n) { return 'Ao salvar, ' + n + ' militares ficam com cotas a menos.'; },
       aoSalvarCompletam: function (n) { return 'Ao salvar, ' + n + ' militares ficam com todas as cotas.'; }
+    },
+
+    /* a linha da Falta de gente embaixo do gráfico (componente geral-falta-gente; a Escala e a Extrajornada): o "1 de 2",
+       o "+1" das extras a mais e a dica de cada horário (quando: '08h às 14h'; h: a conta do horário, porHorario; so:
+       quando falta só numa parte do horário, as horas, 'das 07h às 08h') */
+    faltaGente: {
+      de: function (n, de) { return n + ' de ' + de; },
+      mais: function (n) { return '+' + n; },
+      dica: {
+        falta: function (quando, h, so) {
+          return 'Das ' + quando + ', ' + (h.cobriu ? 'as extras cobriram ' + h.cobriu + ' de ' + h.antes + ' e ' : '') +
+            (h.falta === 1 ? 'falta 1' : 'faltam ' + h.falta) + (so ? ', só ' + so : '') + '.';
+        },
+        coberta: function (quando, h) {
+          return 'Das ' + quando + ', ' + (h.mais ? h.mais + (h.mais === 1 ? ' extra a mais' : ' extras a mais') + ' do que faltava.' : 'as extras cobriram a falta.');
+        }
+      }
     },
 
     /* análise de impacto na escala — componente compartilhado (geral-impacto), usado por Trocas e Folgas */

@@ -203,26 +203,15 @@
     if (marcados[un.id + '|' + k]) cel.classList.add('escala-celula--nao-salvo');
   }
 
-  /* a linha da Falta de gente embaixo do gráfico (o Exibir): uma casinha por horário de 6 h, embaixo das barras dele, com
-     quantos ainda faltam ("1 de 2" quando as extras cobriram parte) ou o certo quando não falta ninguém e, pequeno no
-     canto direito, o "+1" das extras a mais do que faltava; a dica diz o horário e, quando falta só numa parte dele, as
-     horas (as vermelhas do gráfico). Sem nada em nenhum horário, a linha não entra (a conta mora no
-     extrajornada-falta.js) */
+  /* a linha da Falta de gente embaixo do gráfico (o Exibir; o componente geral-falta-gente, o mesmo da Escala): a falta
+     sem e com as extras vem da conta do dia (extrajornada-falta.js) e as extras de cada horário, das vagas do pelotão no
+     dia (só os horários que cada uma cobre inteiros) */
   function faixaDaFalta(cel, uid, k, alocs, falta) {
     var grafico = cel.querySelector('.escala-mes-grafico');
     if (!grafico) return;
-    var horarios = RW.extrajornadaFalta.porHorario(falta, alocs.filter(function (a) { return +a.unidade === +uid && a.data === k; }), grafico.dataset.erro);
-    if (!horarios.some(function (h) { return h.estado; })) return;
-    var faixa = RW.tpl('tpl-extrajornada-falta');
-    Array.prototype.forEach.call(faixa.querySelectorAll('.extrajornada-falta-hora'), function (casa, i) {
-      var h = horarios[i];
-      if (!h.estado) return;
-      casa.classList.add('extrajornada-falta-hora--' + h.estado);
-      casa.querySelector('.extrajornada-falta-numero').textContent = h.estado === 'falta' ? (h.cobriu ? msg().faltaDe(h.falta, h.antes) : String(h.falta)) : '';
-      casa.querySelector('.extrajornada-falta-mais').textContent = h.estado === 'coberta' && h.mais ? msg().faltaMais(h.mais) : '';
-      casa.setAttribute('data-dica', msg().faltaDica[h.estado](u().horas([h.horario]), h, h.so.length ? u().trechos(h.so) : ''));
-    });
-    grafico.parentNode.insertBefore(faixa, grafico.nextSibling);
+    var extras = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    alocs.forEach(function (a) { if (+a.unidade === +uid && a.data === k) u().cheios(a).forEach(function (b) { extras[b]++; }); });
+    RW.faltaGente.linha(grafico, RW.faltaGente.porHorario(falta.base, falta.total, extras, grafico.dataset.erro));
   }
 
   /* o militar em foco no bloco de cada pelotão, em todos os dias: onde ele tem extra, o cartão de sempre (posto por

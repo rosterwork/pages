@@ -10,8 +10,8 @@
    vermelha e depois a amarela). No dia de verdade (o mês
    lançado sem mudança por salvar no dia), o que sobra é o da escala
    de hoje: a falta "real" do banco e a cor da barra da Escala.
-   E a conta da linha da Falta de gente (o Exibir), por horário: só
-   o vermelho, o que as extras cobriram e as extras a mais.
+   A linha da Falta de gente (o Exibir) usa a base e o total daqui
+   no componente geral-falta-gente (extrajornada-por-dia.js).
    Só conta: não cria HTML nem escreve estilo.
    RosterWork.extrajornadaFalta.
    ============================================================ */
@@ -100,25 +100,5 @@
     });
   }
 
-  /* a linha da Falta de gente (o Exibir; só o vermelho, onde falta gente), por horário de 6 h: quantos faltavam sem as
-     extras (antes), quantos ainda faltam (falta), quantos as extras cobriram (cobriu) e quantas extras passam do que
-     faltava (mais; a que só cobre o ideal conta aqui). estado: 'falta' (ainda falta gente), 'coberta' (não falta
-     ninguém: as extras cobriram ou há extra a mais) ou '' (nada no horário); so: quando ainda falta só numa parte do
-     horário, as horas (0 a 23, contadas das 08h) em vermelho no gráfico, para a dica. f: a conta do dia (doDia); extras:
-     as do pelotão no dia; erro: a cor de cada hora do gráfico (o data-erro dele: '1' vermelho) */
-  function porHorario(f, extras, erro) {
-    return [1, 2, 3, 4].map(function (b) {
-      var antes = f.base[b] || 0, resta = f.total[b] || 0, cobriu = Math.max(0, antes - resta);
-      var mais = Math.max(0, extras.filter(function (a) { return blocos(a).indexOf(b) >= 0; }).length - cobriu);
-      var estado = resta > 0 ? 'falta' : (antes > 0 || mais > 0) ? 'coberta' : '';
-      var so = [];
-      if (resta > 0 && erro) {
-        for (var h = (b - 1) * 6; h < b * 6; h++) if (String(erro[h]) === '1') so.push(h);
-        if (so.length === 6) so = [];
-      }
-      return { horario: b, antes: antes, falta: resta, cobriu: cobriu, mais: mais, estado: estado, so: so };
-    });
-  }
-
-  RW.extrajornadaFalta = { doDia: doDia, soma: soma, cor: cor, situacao: situacao, conduz: conduz, porHorario: porHorario };
+  RW.extrajornadaFalta = { doDia: doDia, soma: soma, cor: cor, situacao: situacao, conduz: conduz };
 })();

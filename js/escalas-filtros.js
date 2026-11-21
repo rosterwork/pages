@@ -10,6 +10,9 @@
    Filtro e busca se aplicam juntos nas linhas de militar já
    desenhadas: cada linha traz a situação (escalas-celula.js).
    Os afastados vêm escondidos e só aparecem com Incluir afastados marcado.
+   A última opção, Falta de gente (desmarcada ao abrir), não esconde
+   ninguém: liga a linha dos horários embaixo do gráfico das grades
+   (escalas-falta.js; fica fora da nota do PDF).
    A escolha fica guardada na sessão (geral-filtros, chave 'escala'),
    menos nas páginas filtradas (Sobreaviso, Estágios e Op. Verão).
    A linha de quem está logado ganha o realce claro (--voce) nas
@@ -30,8 +33,11 @@
     { rotulo: 'Folgas', valor: 'folga' },
     { rotulo: 'Sobreaviso', valor: 'sobreaviso' },
     { rotulo: 'Fora da escala', valor: 'fora' },
-    { rotulo: 'Incluir afastados', valor: 'afastamento', separado: true }
+    { rotulo: 'Incluir afastados', valor: 'afastamento', separado: true },
+    { rotulo: 'Falta de gente', valor: 'falta-gente', separado: true }
   ];
+  /* a última opção não filtra ninguém: liga a linha da Falta de gente embaixo do gráfico (escalas-falta.js) */
+  var FALTA = SITUACOES[SITUACOES.length - 1];
 
   /* modos em que os filtros valem (as grades de célula e o Militares) */
   var MODOS_COM_FILTRO = { mes: true, semana: true, colunas: true, militares: true };
@@ -71,9 +77,26 @@
      para a nota do painel de impressão */
   function resumo() {
     if (!conteudo || !filtrosValem() || (window.RosterWork.paginaFiltrada && RosterWork.paginaFiltrada())) return [];
-    return Array.prototype.map.call(conteudo.querySelectorAll('.filtros-ativos:not(.oculto) .filtro-ativo'), function (etiqueta) {
+    /* a Falta de gente não sai no PDF, então não entra na nota */
+    return Array.prototype.filter.call(conteudo.querySelectorAll('.filtros-ativos:not(.oculto) .filtro-ativo'), function (etiqueta) {
+      return etiqueta.querySelector('.filtro-ativo-valor').textContent !== FALTA.rotulo;
+    }).map(function (etiqueta) {
       return etiqueta.querySelector('.filtro-ativo-tipo').textContent + ': ' + etiqueta.querySelector('.filtro-ativo-valor').textContent;
     });
+  }
+
+  /* a Falta de gente marcada? Só com esta página na tela, nas grades de célula (não no Militares) e fora das páginas
+     filtradas (Sobreaviso, Estágios e Op. Verão) */
+  function faltaDeGente() {
+    if (!filtros || !conteudo || !conteudo.isConnected || obterModo() === 'militares' || !filtrosValem()) return false;
+    if (window.RosterWork.paginaFiltrada && RosterWork.paginaFiltrada()) return false;
+    return filtros.passa('situacao', FALTA.valor);
+  }
+
+  /* a escolha dos filtros mudou: as linhas e a Falta de gente (marcada, a linha embaixo do gráfico; desmarcada, some) */
+  function mudou() {
+    aplicar();
+    if (window.RosterWork.escalasFalta) RosterWork.escalasFalta.atualizar();
   }
 
   /* a linha é de quem está logado? O data-busca traz o CPF em dígitos, separado por espaço (geral-busca, chave) */
@@ -146,9 +169,11 @@
     var caixaFiltros = conteudo.querySelector('#escala-filtros');
     var filtrada = window.RosterWork.paginaFiltrada && RosterWork.paginaFiltrada();
     filtros = (caixaFiltros && window.RosterWork.filtros)
-      ? RosterWork.filtros.criar(caixaFiltros, { aoMudar: aplicar, guardar: filtrada ? null : 'escala' })
+      ? RosterWork.filtros.criar(caixaFiltros, { aoMudar: mudou, guardar: filtrada ? null : 'escala' })
       : null;
     if (filtros) filtros.definir('situacao', SITUACOES);
+    /* a página é nova: a Falta de gente lê de novo (e, marcada, pede a conta das células que já estiverem na tela) */
+    if (window.RosterWork.escalasFalta) RosterWork.escalasFalta.reiniciar();
     var caixaBusca = conteudo.querySelector('#escala-busca-geral');
     if (caixaBusca && window.RosterWork.busca) {
       RosterWork.busca.criar({
@@ -172,5 +197,5 @@
   }
 
   window.RosterWork.escalasFiltros = { iniciar: iniciar, aplicarModo: aplicarModo, passaPessoa: passaPessoa, passaSituacao: passa,
-    resumo: resumo, mostrarSituacao: mostrarSituacao };
+    resumo: resumo, mostrarSituacao: mostrarSituacao, faltaDeGente: faltaDeGente };
 })();

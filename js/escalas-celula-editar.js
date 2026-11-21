@@ -282,12 +282,13 @@
   function cliqueNoNome(cel, linha) {
     var cpf = linha.getAttribute('data-cpf'), d = diaDe(cel), tipo = tipoDaLinha(linha);
     var lancamento = linha.getAttribute('data-lancamento');   // a folga ou a mudança da linha riscada
+    var saida = linha.getAttribute('data-saida');             // a saída à mão de quem está no Fora da escala
     var a = aberto;
     if (a && a.tipo === 'nome' && mesmo(a, d.unidadeId, d.iso) && a.cpf === cpf && a.linha === tipo && a.lancamento === lancamento
       && a.caixa && a.caixa.aberta()) return;
     fecharTudo();
     irPara(d, function () {
-      abrirCaixa({ tipo: 'nome', unidadeId: d.unidadeId, iso: d.iso, cpf: cpf, linha: tipo, lancamento: lancamento }, linha,
+      abrirCaixa({ tipo: 'nome', unidadeId: d.unidadeId, iso: d.iso, cpf: cpf, linha: tipo, lancamento: lancamento, saida: saida }, linha,
         L().noDia(nomeDa(linha), diaMes(d.iso)), [pecaDoPelotao(cel)]);
     });
   }

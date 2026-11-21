@@ -4,7 +4,8 @@
    linha da dica (a guarnição, a troca com quem, a Parte e o RW, a
    folga e o motivo dela, o pontual, a extrajornada, o remanejado, a
    mudança de dia, a saída da guarnição, o serviço e a extra no mesmo
-   horário e o afastamento).
+   horário, o afastamento e, no Fora da escala, o motivo de estar fora
+   e a entrada marcada).
    A grade (ler_escala_mes) traz a origem de cada linha; o resto vem
    da leitura escala_motivos (a letra da guarnição, as trocas, o
    motivo da folga e a unidade do remanejado), feita depois que as
@@ -31,6 +32,18 @@
   /* a Escala está na tela (a Extrajornada desenha a mesma célula, sem esta dica) */
   function ligada() { return !!document.querySelector('.conteudo #escala-modos'); }
 
+  /* por que ele está fora da escala (o motivo que o banco manda, _escala_ausentes): a saída à mão (pelo último serviço,
+     a data que a pergunta do Mudar a saída usa; sem ele, o dia da saída), a volta de um afastamento, a transferência para
+     cá ou ainda sem guarnição; ainda sem guarnição e voltando de um afastamento há até 5 dias (o aviso amarelo), de onde
+     ele voltou */
+  function motivoFora(p, d) {
+    var desde = diaMes(p.fora_desde);
+    if (p.fora_motivo === 'saida') return p.fora_ultimo ? d.foraUltimo(diaMes(p.fora_ultimo)) : d.foraSaiu(desde);
+    if (p.fora_motivo === 'afastamento') return d.foraVoltou(desde, p.fora_ferias);
+    if (p.fora_motivo === 'transferencia') return d.foraChegou(p.fora_de, desde);
+    return p.aviso && p.voltou_em ? d.foraVoltou(diaMes(p.voltou_em), p.voltou_ferias) : d.fora;
+  }
+
   /* o texto da dica: o porquê da linha (pela origem dela) e, embaixo, o remanejado e o serviço e a extra juntos */
   function texto(p, dia, unidadeId) {
     var t = msg(), d = t.dica, m = (dia && dia.militares && dia.militares[p.cpf]) || {};
@@ -56,9 +69,11 @@
       case 'sobreaviso': frases.push(RW.escalasCelulaSobreaviso.dica(p)); break;
       /* o nome do afastamento até a data */
       case 'afastamento': frases.push(RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5))); break;
-      /* o operacional da unidade sem guarnição (o grupo Fora da escala); quem voltou de um afastamento há até 5 dias, o dia
-         e se foi de férias */
-      case 'fora': frases.push(p.aviso && p.voltou_em ? d.foraVoltou(diaMes(p.voltou_em), p.voltou_ferias) : d.fora); break;
+      /* o operacional da unidade sem guarnição (o grupo Fora da escala): o motivo e, embaixo, a entrada marcada */
+      case 'fora':
+        frases.push(motivoFora(p, d));
+        if (p.entra_em) frases.push(d.entraNa(p.entra_letra, diaMes(p.entra_em)));
+        break;
     }
     /* o remanejado: na unidade para onde foi (o grupo Remanejados da grade), de onde veio; na dele, quem fica nas duas,
        onde mais ele está */

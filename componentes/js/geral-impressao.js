@@ -9,7 +9,9 @@
    leitor do navegador, cada folha inteira num quadro do formato dela,
    refeita a cada mudança, a última pedida vale,
    com as folhas embaixo; no celular não aparece) e o rodapé
-   Cancelar · Gerar PDF (baixa o arquivo da prévia). Aqui também: a
+   Cancelar · Imprimir · Gerar PDF (o Imprimir abre a janela de
+   imprimir do navegador com o PDF da Prévia, na mesma aba, e não
+   aparece no celular; o Gerar PDF baixa o mesmo arquivo). Aqui também: a
    numeração das caixas à vista (refeita a cada mudança, para a
    caixa que aparece ou some), o Mostrar (data-mostrar) e, quando o
    molde tem a árvore ([data-impressao-arvore]), as Unidades
@@ -29,7 +31,7 @@
            conferir(escolhas, estado): opcional, resolve em { titulo, descricao } (o aviso) ou null }
    escolhas = { unidades (as marcadas que têm escala, na ordem da árvore), ids, mostrar };
    montar() resolve em { arquivo, nome, folhas (o texto da contagem) }; a falha pode trazer { mensagem }.
-   estado.avisar: o erro também abre o aviso no Gerar PDF (quando não há campo para marcar)
+   estado.avisar: o erro também abre o aviso no Imprimir e no Gerar PDF (quando não há campo para marcar)
    ============================================================ */
 (function () {
   'use strict';
@@ -38,8 +40,11 @@
 
   var ESPERA = 400;   // ms sem mexer antes da prévia e da conferência
   var A4 = 297 / 210;  // a altura da folha A4 em vezes a largura (retrato; em paisagem, o inverso)
+  var ESPERA_QUADRO = 10000;   // ms: o quadro da Prévia que não carrega nesse tempo conta como recusa do navegador
 
-  var form = null;   // o painel aberto: o cfg, o corpo e o rodapé, o seletor, o Mostrar, o arquivo pedido e a url da prévia
+  /* o painel aberto: o cfg, o corpo e o rodapé, o seletor, o Mostrar, o arquivo pedido, a url da prévia, a chave do
+     arquivo que está no quadro dela (e se ele já carregou) e o Imprimir que espera por ele */
+  var form = null;
   var tokenAviso = 0, esperaAviso = null;     // latest-wins da conferência
   var tokenPrevia = 0, esperaPrevia = null;   // latest-wins da prévia
 
@@ -201,24 +206,92 @@
       var quadro = peca('previa');
       quadro.parentNode.classList.toggle('impressao-previa--paisagem', a.folha === 'paisagem');
       quadro.parentNode.classList.toggle('impressao-previa--retrato', a.folha === 'retrato');
+      /* o arquivo novo no quadro: o Imprimir que espera por ele conta o tempo a partir daqui */
+      form.quadroChave = est.chave;
+      form.quadroPronto = false;
       quadro.src = form.url + '#toolbar=0&navpanes=0&' + (a.folha ? 'view=Fit&zoom=page-fit' : 'view=FitH');
+      if (form.aguardando && form.aguardando.chave === est.chave) vigiarQuadro();
       peca('previa-aviso').classList.add('oculto');
       peca('folhas').textContent = a.folhas || '';
       mostrarCarregandoPrevia(false);
     }, function (e) {
       if (form !== ref || token !== tokenPrevia) return;
       mostrarAvisoPrevia((e && e.mensagem) || msg().falhaPrevia);
+      responderEspera(est.chave, e || {});
     });
   }
 
-  /* ---------- gerar e sair ---------- */
+  /* o Imprimir pedido antes de a Prévia mostrar estas escolhas: espera o quadro carregar o arquivo delas. Se ele ainda
+     não está no quadro, a prévia sai agora, sem a pausa (o mesmo arquivo, se já foi pedido) */
+  function esperarQuadro(est) {
+    return new Promise(function (ok, falha) {
+      form.aguardando = { chave: est.chave, ok: ok, falha: falha, relogio: null };
+      if (form.quadroChave === est.chave) { vigiarQuadro(); return; }
+      clearTimeout(esperaPrevia);
+      mostrarCarregandoPrevia(true);
+      fazerPrevia(++tokenPrevia, est);
+    });
+  }
+
+  /* o quadro que não carrega o arquivo em ESPERA_QUADRO conta como recusa do navegador */
+  function vigiarQuadro() {
+    var espera = form.aguardando;
+    if (!espera || espera.relogio) return;
+    espera.relogio = setTimeout(function () { responderEspera(espera.chave, { recusa: true }); }, ESPERA_QUADRO);
+  }
+
+  /* responde ao Imprimir que espera o arquivo desta chave: sem erro, o quadro carregou */
+  function responderEspera(chave, erro) {
+    var espera = form && form.aguardando;
+    if (!espera || espera.chave !== chave) return;
+    clearTimeout(espera.relogio);
+    form.aguardando = null;
+    if (erro) espera.falha(erro);
+    else espera.ok();
+  }
+
+  /* ---------- imprimir, gerar e sair ---------- */
+  /* as escolhas, com os erros marcados; null quando falta algo (o erro sem campo para marcar abre o aviso) */
+  function validas() {
+    var r = ler(true);
+    if (!r.estado.erro) return r;
+    if (r.estado.avisar && RW.avisar) RW.avisar({ tipo: 'erro', mensagem: r.estado.erro });
+    return null;
+  }
+
+  /* a janela de imprimir do navegador com o PDF da Prévia, na mesma aba; o painel continua aberto (o navegador não
+     conta se imprimiu ou cancelou). Com a Prévia ainda sem estas escolhas: os pontinhos no Imprimir na hora e o cartão
+     das etapas só se passar de 1,5 s, até o quadro carregar o arquivo */
+  function imprimir() {
+    var r = validas();
+    if (!r) return;
+    if (form.quadroChave === r.estado.chave && form.quadroPronto) { mandarImprimir(); return; }
+    var ref = form;
+    var espera = RW.etapas.acao('pdfGerar', null, { doServidor: 1, botao: peca('imprimir'), atraso: true, semFila: true });
+    esperarQuadro(r.estado).then(function () {
+      return espera.parar().then(function () { if (form === ref) mandarImprimir(); });
+    }, function (e) {
+      espera.parar();
+      if (form !== ref || !e) return;   // o formulário saiu da tela enquanto esperava
+      if (e.recusa) abrirNaAba();
+      else if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: e.mensagem || msg().falhaGerar });
+    });
+  }
+
+  /* imprime o quadro da Prévia; o navegador que recusa abre o PDF numa aba nova, onde se imprime pelo leitor dele */
+  function mandarImprimir() {
+    try { peca('previa').contentWindow.print(); }
+    catch (e) { abrirNaAba(); }
+  }
+
+  function abrirNaAba() {
+    window.open(form.url, '_blank');
+  }
+
   /* baixa o arquivo da prévia (ou monta agora, se ela ainda não saiu) */
   function gerar() {
-    var r = ler(true);
-    if (r.estado.erro) {
-      if (r.estado.avisar && RW.avisar) RW.avisar({ tipo: 'erro', mensagem: r.estado.erro });
-      return;
-    }
+    var r = validas();
+    if (!r) return;
     var ref = form;
     var botao = peca('gerar');
     /* os pontinhos no Gerar PDF na hora e o cartão das etapas só se passar de 1,5 s */
@@ -237,6 +310,8 @@
   /* o formulário saiu da tela (o painel fechou, ou a sub-tela voltou ao dia): para a prévia e a conferência */
   function esquecer() {
     if (form && form.url) URL.revokeObjectURL(form.url);
+    /* o Imprimir que esperava a Prévia desiste (os pontinhos saem) */
+    if (form && form.aguardando) { clearTimeout(form.aguardando.relogio); form.aguardando.falha(null); }
     form = null;
     tokenAviso++;
     clearTimeout(esperaAviso);
@@ -249,6 +324,20 @@
     var aoSair = form && form.cfg.aoSair;
     esquecer();
     if (aoSair) aoSair();
+  }
+
+  /* o Imprimir imprime a Prévia: sem ela (no celular), não aparece. O quadro avisa quando carregou o arquivo da vez */
+  function ligarImprimir() {
+    var ref = form;
+    var quadro = peca('previa');
+    var botao = peca('imprimir');
+    botao.classList.toggle('oculto', !!(RW.celular && RW.celular()));
+    botao.addEventListener('click', imprimir);
+    quadro.addEventListener('load', function () {
+      if (form !== ref || !form.url || quadro.src.indexOf(form.url) !== 0) return;
+      form.quadroPronto = true;
+      responderEspera(form.quadroChave);
+    });
   }
 
   /* ---------- montar ---------- */
@@ -264,13 +353,15 @@
     if (rodape && acoes) { rodape.appendChild(acoes.content.cloneNode(true)); rodape.classList.remove('oculto'); }
     var mostrar = {};
     Object.keys(cfg.mostrar || {}).forEach(function (k) { mostrar[k] = cfg.mostrar[k]; });
-    form = { cfg: cfg, corpo: corpo, rodape: rodape, mostrar: mostrar, seletor: null, arquivo: null, url: null };
+    form = { cfg: cfg, corpo: corpo, rodape: rodape, mostrar: mostrar, seletor: null, arquivo: null, url: null,
+      quadroChave: null, quadroPronto: false, aguardando: null };
     form.arvore = peca('arvore');
     if (cfg.marcas) aplicarMarcas(cfg.marcas);
     numerarCaixas();
     ligarMostrar();
     peca('cancelar').addEventListener('click', sair);
     peca('gerar').addEventListener('click', gerar);
+    ligarImprimir();
     if (!(RW.celular && RW.celular())) mostrarCarregandoPrevia(true);
     cfg.ligar(peca, atualizar);
 

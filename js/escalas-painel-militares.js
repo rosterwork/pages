@@ -12,7 +12,8 @@
    - De folga (N): o mesmo De folga da aba Funções;
    - Saiu da guarnição (N): quem saiu da guarnição e não faz mais o
      serviço deste dia (a lista saidas do ler_distribuicao_dia), riscado,
-     com a data da saída e o Cancelar a saída no lápis.
+     com o último serviço (a saída à mão; nas outras, a data da saída) e
+     o Mudar a saída e o Cancelar a saída no lápis.
    O lápis de cada um (só para quem edita o dia) traz só o dia da
    pessoa e o Ver as funções (escalas-painel-linha-menu.js, visao
    'militares'); o de quem foi para outra unidade, o Devolver. Os
@@ -170,8 +171,8 @@
       alguem = true;
     }
 
-    /* quem saiu da guarnição e não faz mais o serviço deste dia: riscado, com a data da saída embaixo do nome e, no
-       lápis, o Mudar a saída (só na saída à mão) e o Cancelar a saída */
+    /* quem saiu da guarnição e não faz mais o serviço deste dia: riscado, com o último serviço (ou a data da saída) embaixo
+       do nome e, no lápis, o Mudar a saída (só na saída à mão) e o Cancelar a saída */
     var saidas = dados.saidas || [];
     if (saidas.length) {
       var gs = caixaGrupo(msg().militaresSaida(saidas.length));
@@ -181,7 +182,11 @@
           var linha = P.linhaMilitar(m, { folga: true, icone: 'icone-origem-saida' });
           if (!linha) return;
           var el = RosterWork.tpl('tpl-escala-militares-funcoes');
-          if (el) { el.querySelector('.escala-militares-funcoes-texto').textContent = msg().saiuDaGuarnicao(diaMes(x.saida)); linha.appendChild(el); }
+          /* a saída à mão diz o último serviço (a data da pergunta do Mudar a saída); as outras, o dia da saída */
+          if (el) {
+            el.querySelector('.escala-militares-funcoes-texto').textContent = x.ultimo ? msg().ultimoNaGuarnicao(diaMes(x.ultimo)) : msg().saiuDaGuarnicao(diaMes(x.saida));
+            linha.appendChild(el);
+          }
           if (editavel) P.menuNaLinha(linha, { tipo: 'saida', visao: 'militares', militar: m, saida: x.saida, ultimo: x.ultimo || null, dias: x.dias || [] });
           gs.linhas.appendChild(linha);
         });

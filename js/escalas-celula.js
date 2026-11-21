@@ -357,6 +357,9 @@
       var grafico = montarGrafico(cobDia, maxUnidade, erroDia, estagiarios);
       if (grafico) celula.appendChild(grafico);
     }
+    /* a Falta de gente (a última opção dos Filtros, só na Escala): as extras do dia e a linha embaixo do gráfico
+       (escalas-falta.js) */
+    if (RosterWork.escalasFalta) RosterWork.escalasFalta.decorar(celula, pessoas);
     var D = RosterWork.escalasCelulaDica && RosterWork.escalasCelulaDica.ligada() ? RosterWork.escalasCelulaDica : null;
     /* quem está no dia, nos grupos da Escala (escalas-celula-grupos.js); embaixo, o sobreaviso da companhia, no lugar em
        que ele aparece (escalas-celula-sobreaviso.js), e o Fora da escala (escalas-celula-fora.js) */

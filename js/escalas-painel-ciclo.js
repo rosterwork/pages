@@ -388,6 +388,8 @@
     /* a aba Militares (o menu da linha): o Remover da guarnição, o Mudar a saída e o Cancelar a saída */
     podeSair: podeSair, perguntarSaida: perguntarSaida, cancelarSaida: cancelarSaida, fecharPergunta: fecharPergunta,
     saidaMarcada: saidaMarcada, perguntarMudarSaida: perguntarMudarSaida,
+    /* o dia mais antigo que se mexe (o Cancelar a saída da caixa do Fora da escala, escalas-celula-fora.js) */
+    limite: limite,
     abrirDia: abrirDia,
     /* para a gaveta dos dias (escalas-rascunho-dias.js): o Ciclo fica fora da ordem do Desfazer do rodapé (a aba
        Guarnições tem o dela) */

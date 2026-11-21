@@ -9,7 +9,9 @@
    marcar. Escolher um nome da lista preenche as marcas dele (a
    Op. Verão e a F. Tarefa deixam trocar e tirar extra, e a Op. Verão
    também fica no sobreaviso; o Litoral sai de tudo); as Férias
-   perguntam só a guarnição (saem do resto). Cada resposta
+   perguntam só a guarnição (saem do resto); a Autorização de
+   viagem, que não é afastamento e só tira do sobreaviso, pergunta
+   só o período. Cada resposta
    entra no rascunho na hora. Na caixa da grade, o nome em branco só
    aparece quando se tenta fechar (podeFechar). O que é de mais de uma semana atrás fica
    travado (o mesmo limite do banco): o que terminou antes não muda; o
@@ -27,9 +29,15 @@
   function D() { return RW.data; }
   function R() { return RW.afastamentosRascunho; }
 
+  function padraoDe(valor) { return M().padroes.filter(function (x) { return x.valor === valor; })[0]; }
+  /* o texto da lista; o do dia ("nome") só difere na Autorização de viagem */
   function rotuloDe(padrao) {
-    var p = M().padroes.filter(function (x) { return x.valor === padrao; })[0];
+    var p = padraoDe(padrao);
     return p ? p.rotulo : '';
+  }
+  function nomeDe(padrao) {
+    var p = padraoDe(padrao);
+    return p ? (p.nome || p.rotulo) : '';
   }
   function dias(af) {
     if (!af.inicio || !af.fim || af.fim < af.inicio) return 0;
@@ -86,21 +94,30 @@
         entrada.disabled = true;
       } else {
         RW.campos.ligarSelecao(botao, function (valor) {
+          /* quem sai da Autorização de viagem volta às marcas de um afastamento novo e à regra dos 16 dias */
+          var deViagem = !iniTravado && (atual() || {}).padrao === 'viagem';
           if (valor === 'outro') {
             /* o campo à vista antes do rascunho: a grade se redesenha nele e o Nome segue no Outro */
             el.outro.classList.remove('oculto');
-            mudar({ padrao: null, nome: entrada.value.trim() });
+            mudar(Object.assign({ padrao: null, nome: entrada.value.trim() },
+              deViagem ? { tro: true, ext: true, sob: true, escolheu: false } : {}));
             entrada.focus();
             return;
           }
-          var campos = { padrao: valor, nome: rotuloDe(valor) };
+          var campos = { padrao: valor, nome: nomeDe(valor) };
           /* as marcas do item: as férias e o Litoral saem de tudo; a Op. Verão e a F. Tarefa deixam trocar e tirar extra,
-             e a Op. Verão fica também no sobreaviso */
+             e a Op. Verão fica também no sobreaviso; a Autorização de viagem só tira do sobreaviso e não mexe na guarnição */
           if (!iniTravado) {
-            var deixa = MISSOES.indexOf(valor) >= 0;
+            var deixa = MISSOES.indexOf(valor) >= 0 || valor === 'viagem';
             campos.tro = !deixa;
             campos.ext = !deixa;
             campos.sob = valor !== 'op_verao';
+            if (valor === 'viagem') {
+              campos.gua = false;
+              campos.escolheu = true;
+            } else if (deViagem) {
+              campos.escolheu = false;
+            }
           }
           mudar(campos);
           el.outro.classList.add('oculto');
@@ -170,6 +187,7 @@
       var a = atual();
       if (!a) return;
       var ferias = a.padrao === 'ferias';
+      var viagem = a.padrao === 'viagem';
       if (el.nome) {
         var gatilho = el.nome.querySelector('[data-af-nome]');
         var valor = a.padrao || (a.nome || !el.outro.classList.contains('oculto') ? 'outro' : '');
@@ -183,14 +201,15 @@
         selo.textContent = n ? M().dias(n) : '';
         selo.classList.toggle('oculto', !n);
       }
-      /* as férias perguntam só a guarnição (saem do resto) */
+      /* as férias perguntam só a guarnição (saem do resto); a Autorização de viagem, só o período */
       if (el.guarnicao) {
+        el.guarnicao.classList.toggle('oculto', viagem);
         Array.prototype.forEach.call(el.guarnicao.querySelectorAll('input[type="radio"]'), function (radio) {
           radio.checked = (radio.value === 'sim') === !!a.gua;
         });
       }
       if (el.marcas) {
-        el.marcas.classList.toggle('oculto', ferias);
+        el.marcas.classList.toggle('oculto', ferias || viagem);
         Array.prototype.forEach.call(el.marcas.querySelectorAll('[data-af-marca]'), function (b) {
           var ligado = !!a[b.getAttribute('data-af-marca')];
           b.setAttribute('aria-checked', String(ligado));

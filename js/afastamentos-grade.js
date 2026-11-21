@@ -58,6 +58,8 @@
     return total;
   }
   function diasNoAno(afs, ano) { return diasNoPeriodo(afs, ano + '-01-01', ano + '-12-31'); }
+  /* a Autorização de viagem não é afastamento: fica fora dos dias afastado (o selo cinza e o Resumo do ano) */
+  function afastado(af) { return af.padrao !== 'viagem'; }
 
   /* o mês de hoje no ano da tela (-1 em outro ano) */
   function mesAtual(ano) {
@@ -136,7 +138,7 @@
     });
     pessoas.forEach(function (p) {
       var afs = c.afastamentos(p);
-      var total = diasNoAno(afs, c.ano);
+      var total = diasNoAno(afs.filter(afastado), c.ano);
       var linha = linhaDoMilitar(p, c, total, M().diasNoAno(total, c.ano));
       if (!linha) return;
       var pode = c.podeMudar(p);
@@ -200,7 +202,7 @@
     var prefixo = c.periodo.inicio.slice(0, 8);
     pessoas.forEach(function (p) {
       var afs = c.afastamentos(p);
-      var total = diasNoPeriodo(afs, ini, fim);
+      var total = diasNoPeriodo(afs.filter(afastado), ini, fim);
       var linha = linhaDoMilitar(p, c, total, M().diasNoMes(total, c.mes));
       if (!linha) return;
       linha.classList.add('afastamentos-linha-mes');
@@ -283,6 +285,6 @@
 
   window.RosterWork.afastamentosGrade = {
     desenhar: desenhar, desenharMes: desenharMes, desenharLista: desenharLista, textoDatas: textoDatas,
-    diasNoAno: diasNoAno, diasNoPeriodo: diasNoPeriodo
+    diasNoAno: diasNoAno, diasNoPeriodo: diasNoPeriodo, afastado: afastado
   };
 })();

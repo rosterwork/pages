@@ -11,11 +11,13 @@
    menu).
    ============================================================ */
 
-/* o menu do lápis dentro da caixa: ele mesmo, sem a moldura do menu suspenso */
+/* o menu do lápis dentro da caixa: ele mesmo, sem a moldura do menu suspenso e sem rolagem própria (quem rola para baixo
+   e corta dos lados é a caixa; com a rolagem do menu, a dica escondida do ícone do painel abria uma barra para o lado) */
 .caixa-flutuante .escala-edicao-opcoes-menu {
   display: block;
   position: static;
   min-width: 0;
+  overflow: visible;
   padding: 0;
   border: 0;
   box-shadow: none;

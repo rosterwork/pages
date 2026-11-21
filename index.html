@@ -49,6 +49,7 @@
   <link rel="stylesheet" href="componentes/css/geral-combo-militar.css" />
   <link rel="stylesheet" href="componentes/css/geral-filtros.css" />
   <link rel="stylesheet" href="componentes/css/geral-exibir.css" />
+  <link rel="stylesheet" href="componentes/css/geral-falta-gente.css" />
   <link rel="stylesheet" href="componentes/css/geral-pagina-cabecalho.css" />
   <link rel="stylesheet" href="componentes/css/geral-abas.css" />
   <link rel="stylesheet" href="componentes/css/geral-opcao.css" />
@@ -3505,6 +3506,17 @@
   </template>
 
   <!-- a linha do sobreaviso de quando falta gente, em amarelo (escalas-celula-sobreaviso.js, no grupo Sobreaviso) -->
+  <!-- a linha da Falta de gente embaixo do gráfico da unidade (componente geral-falta-gente: a Escala, na última opção
+       dos Filtros, e a Extrajornada, no Exibir): uma casinha por horário de 6 h, com o certo, o número e o "+1" -->
+  <template id="tpl-falta-gente">
+    <div class="falta-gente">
+      <span class="falta-gente-hora"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="falta-gente-numero"></span><span class="falta-gente-mais"></span></span>
+      <span class="falta-gente-hora"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="falta-gente-numero"></span><span class="falta-gente-mais"></span></span>
+      <span class="falta-gente-hora"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="falta-gente-numero"></span><span class="falta-gente-mais"></span></span>
+      <span class="falta-gente-hora"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="falta-gente-numero"></span><span class="falta-gente-mais"></span></span>
+    </div>
+  </template>
+
   <template id="tpl-escala-sobreaviso-falta">
     <span class="linha-escalado linha-escalado--sobreaviso-falta" data-situacao="sobreaviso">
       <span class="linha-escalado-icones"><svg class="icone" width="13" height="13" aria-hidden="true"><use href="icones/todos.svg#icone-sobreaviso"/></svg></span>
@@ -4863,9 +4875,11 @@
     </div>
   </template>
 
-  <!-- o rodapé do painel de impressão -->
+  <!-- o rodapé do painel de impressão: o Imprimir abre a janela de imprimir do navegador com o PDF da Prévia (some no
+       celular, que não tem a Prévia); o Gerar PDF baixa o mesmo arquivo -->
   <template id="tpl-impressao-acoes">
     <button type="button" class="botao" data-impressao-cancelar>Cancelar</button>
+    <button type="button" class="botao" data-impressao-imprimir>Imprimir</button>
     <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
   </template>
 

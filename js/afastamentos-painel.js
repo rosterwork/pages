@@ -55,10 +55,11 @@
     });
   }
 
-  /* o Resumo do ano: os dias de cada nome e o total (só os que já têm as datas) */
+  /* o Resumo do ano: os dias de cada nome e o total (só os que já têm as datas; sem a Autorização de viagem, que não é
+     afastamento) */
   function montarResumo(cpf) {
     var L = RW.usuariosPainelLeitura;
-    var comDatas = doAno(cpf).filter(function (af) { return af.inicio && af.fim && af.fim >= af.inicio; });
+    var comDatas = doAno(cpf).filter(function (af) { return af.inicio && af.fim && af.fim >= af.inicio && G().afastado(af); });
     if (!comDatas.length) return null;
     var b = L.bloco(M().resumo(ano), null, null);
     if (!b) return null;

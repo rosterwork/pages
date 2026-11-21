@@ -7,8 +7,8 @@
    de gente (a linha dos horários embaixo do gráfico,
    extrajornada-por-dia.js). Um clique marca ou desmarca, o menu
    fica aberto e a escolha fica na sessão
-   (rosterwork_preferencias.extrajornada_exibir; as duas começam
-   desmarcadas).
+   (rosterwork_preferencias.extrajornada_exibir; a Escala completa
+   começa desmarcada e a Falta de gente, marcada).
    A pesquisa de militar (geral-busca) marca (realça a vaga, a linha da
    escala e o bloco) ou filtra (esconde as outras) no calendário e,
    com texto, deixa na lista dos voluntários só quem casa.
@@ -23,7 +23,7 @@
   var pagina = null;
   var exibir = null;       // o menu Exibir (o olho)
   var completa = false;    // a Escala completa marcada
-  var falta = false;       // a Falta de gente marcada
+  var falta = true;        // a Falta de gente marcada (começa marcada)
   var visivel = false;     // o Exibir à vista (só na Distribuição e nos Ajustes)
   var termo = '';
   var modo = 'marcar';     // 'marcar' (realça) | 'filtrar' (esconde quem não casa)
@@ -55,7 +55,7 @@
     modo = 'marcar';
     var guardado = lerPrefs().extrajornada_exibir || {};
     completa = !!guardado.escala;
-    falta = !!guardado.falta;
+    falta = guardado.falta !== false;   // começa marcada: só desmarca quem tirou
     exibir = el.querySelector('#extrajornada-exibir');
     if (exibir) {
       exibir.classList.toggle('oculto', !visivel);

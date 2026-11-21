@@ -768,19 +768,6 @@
   </div>
 </template>
 
-<!-- passos 3 e 4, com a Falta de gente marcada no Exibir: a linha embaixo do gráfico do pelotão, uma casinha por horário
-     de 6 h, embaixo das barras dele: quantos ainda faltam (vermelho; "1 de 2" quando as extras cobriram parte), o certo
-     quando não falta ninguém e, pequeno no canto direito, o "+1" das extras a mais do que faltava; a dica diz o horário
-     (extrajornada-por-dia.js) -->
-<template id="tpl-extrajornada-falta">
-  <div class="extrajornada-falta">
-    <span class="extrajornada-falta-hora"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="extrajornada-falta-numero"></span><span class="extrajornada-falta-mais"></span></span>
-    <span class="extrajornada-falta-hora"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="extrajornada-falta-numero"></span><span class="extrajornada-falta-mais"></span></span>
-    <span class="extrajornada-falta-hora"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="extrajornada-falta-numero"></span><span class="extrajornada-falta-mais"></span></span>
-    <span class="extrajornada-falta-hora"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="extrajornada-falta-numero"></span><span class="extrajornada-falta-mais"></span></span>
-  </div>
-</template>
-
 <!-- passos 3 e 4, a caixa do pelotão (o clique no bloco, fora dos nomes; extrajornada-celula.js): Adicionar neste dia, que
      abre o campo de militar na caixa 2, e Abrir o painel do dia -->
 <template id="tpl-extrajornada-caixa-pelotao">
@@ -854,15 +841,15 @@
     <span class="rotulo-secao">Falta de gente (no Exibir)</span>
     <div class="escala-legenda-grade escala-legenda-grade--uma">
       <span class="escala-legenda-item">
-        <span class="extrajornada-falta-hora extrajornada-falta-hora--falta"><span class="extrajornada-falta-numero">1</span></span>
+        <span class="falta-gente-hora falta-gente-hora--falta"><span class="falta-gente-numero">1</span></span>
         <span>Quantos ainda faltam no horário (1 de 2: as extras cobriram parte)</span>
       </span>
       <span class="escala-legenda-item">
-        <span class="extrajornada-falta-hora extrajornada-falta-hora--coberta"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+        <span class="falta-gente-hora falta-gente-hora--coberta"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
         <span>As extras cobriram a falta</span>
       </span>
       <span class="escala-legenda-item">
-        <span class="extrajornada-falta-hora extrajornada-falta-hora--coberta"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="extrajornada-falta-mais">+1</span></span>
+        <span class="falta-gente-hora falta-gente-hora--coberta"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="falta-gente-mais">+1</span></span>
         <span>Extras a mais do que faltava</span>
       </span>
     </div>
@@ -924,15 +911,15 @@
     <span class="rotulo-secao">Falta de gente (no Exibir)</span>
     <div class="escala-legenda-grade escala-legenda-grade--uma">
       <span class="escala-legenda-item">
-        <span class="extrajornada-falta-hora extrajornada-falta-hora--falta"><span class="extrajornada-falta-numero">1</span></span>
+        <span class="falta-gente-hora falta-gente-hora--falta"><span class="falta-gente-numero">1</span></span>
         <span>Quantos ainda faltam no horário (1 de 2: as extras cobriram parte)</span>
       </span>
       <span class="escala-legenda-item">
-        <span class="extrajornada-falta-hora extrajornada-falta-hora--coberta"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+        <span class="falta-gente-hora falta-gente-hora--coberta"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
         <span>As extras cobriram a falta</span>
       </span>
       <span class="escala-legenda-item">
-        <span class="extrajornada-falta-hora extrajornada-falta-hora--coberta"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="extrajornada-falta-mais">+1</span></span>
+        <span class="falta-gente-hora falta-gente-hora--coberta"><svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span class="falta-gente-mais">+1</span></span>
         <span>Extras a mais do que faltava</span>
       </span>
     </div>
