@@ -155,7 +155,7 @@
       if (unidadeId != null && String(d.unidadeId) !== String(unidadeId)) return false;
       if (d.iso === iso) return true;
       if (d.dia && noDia(d.dia, E().outrosDias).indexOf(iso) >= 0) return true;
-      return unidadeId != null && !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return iso >= (x.data || d.iso); });
+      return unidadeId != null && !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return iso >= C().desde(x, d.iso); });
     });
     return achou || !!(X() && X().marcado(unidadeId, iso));
   }
@@ -166,7 +166,7 @@
   function tocaODia(iso) {
     if (marcado(null, iso)) return true;
     return dias().some(function (d) {
-      return !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return iso >= (x.data || d.iso); });
+      return !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return iso >= C().desde(x, d.iso); });
     });
   }
 

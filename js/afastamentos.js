@@ -9,11 +9,11 @@
    e Calendário (o da Escala, um bloquinho por unidade em cada dia,
    também nos dias de outro mês das pontas; afastamentos-calendario.js).
    A aba fica guardada na sessão. Na barra, o período (afastamentos-
-   periodo.js), os Filtros (Graus; Situação no período, que some no
+   periodo.js), os Filtros (Situação no período, que some no
    Calendário; Afastamento: escolher um nome esconde os outros), a
    busca e, depois do traço, as unidades lado a lado e o tamanho (só no
-   Calendário, os da Escala) e a Ordem (a busca, a ordem e os Graus
-   vêm do usuarios-exibir.js). O clique no militar abre o painel dele
+   Calendário, os da Escala) e a Ordem (a busca e a ordem vêm do
+   usuarios-exibir.js). O clique no militar abre o painel dele
    (afastamentos-painel.js); quem administra edita na caixa da grade
    (afastamentos-celula.js) ou no painel; o rascunho é um só.
    ============================================================ */
@@ -101,10 +101,9 @@
     return modoBusca === 'filtrar' ? 'esconder' : '';
   }
 
-  /* o militar entra? graus, a busca e a situação no período (pelos afastamentos à vista; no Calendário não vale: ali só
+  /* o militar entra? a busca e a situação no período (pelos afastamentos à vista; no Calendário não vale: ali só
      aparece quem tem afastamento) */
   function passa(pessoa) {
-    if (filtros && !filtros.passa('graus', pessoa.grau_nome)) return false;
     if (busca(pessoa) === 'esconder') return false;
     if (lendo() || noCalendario()) return true;
     return !filtros || filtros.passa('situacao', visiveis(pessoa).length ? 'com' : 'sem');
@@ -186,11 +185,10 @@
     return noMes() ? M().contagemMes(n) : M().contagem(n);
   }
 
-  /* depois de desenhar: os graus e os nomes do período nos Filtros; no Calendário, o calendário com as unidades da
+  /* depois de desenhar: os nomes do período nos Filtros; no Calendário, o calendário com as unidades da
      passada; a caixa aberta acompanha a grade nova; e a contagem do título */
   function aoRenderizar(pessoas) {
     if (filtros) {
-      filtros.definir('graus', X().arvoreDeGraus(pessoas || []));
       var tem = {};
       (pessoas || []).forEach(function (p) { doPeriodo(p).forEach(function (af) { tem[chaveFiltro(af)] = true; }); });
       var opcoes = M().padroes.filter(function (x) { return tem[x.valor]; }).map(function (x) { return { rotulo: x.rotulo, valor: x.valor }; });

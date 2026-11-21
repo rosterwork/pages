@@ -56,8 +56,9 @@
       case 'sobreaviso': frases.push(RW.escalasCelulaSobreaviso.dica(p)); break;
       /* o nome do afastamento até a data */
       case 'afastamento': frases.push(RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5))); break;
-      /* o operacional da unidade sem guarnição (o grupo Fora da escala); quem voltou de um afastamento há até 5 dias, o dia */
-      case 'fora': frases.push(p.aviso && p.voltou_em ? d.foraVoltou(diaMes(p.voltou_em)) : d.fora); break;
+      /* o operacional da unidade sem guarnição (o grupo Fora da escala); quem voltou de um afastamento há até 5 dias, o dia
+         e se foi de férias */
+      case 'fora': frases.push(p.aviso && p.voltou_em ? d.foraVoltou(diaMes(p.voltou_em), p.voltou_ferias) : d.fora); break;
     }
     /* o remanejado: na unidade para onde foi (o grupo Remanejados da grade), de onde veio; na dele, quem fica nas duas,
        onde mais ele está */

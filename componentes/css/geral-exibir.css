@@ -1,49 +1,21 @@
 /* ============================================================
    EXIBIR — o menu "Exibir" (o olho) das barras de controles: as
-   opções que mantêm o menu aberto, com a marca na escolhida.
+   opções que mostram mais (sem esconder nada) e mantêm o menu
+   aberto. Cada opção é a linha padrão do sistema (.geral-opcao,
+   geral-opcao.css): a caixa de marcar (.caixa-selecao) no que liga
+   e desliga, a bolinha (rádio) na escolha de um entre vários. Não
+   são .dropdown-item, então o geral-dropdown não fecha o menu ao
+   escolher (troca-se várias de uma vez). O menu leva .exibir-menu.
    Usado pela Usuários (usuarios-exibir.js) e pela Extrajornada
-   (extrajornada-filtros.js, a Escala completa). Os filtros da barra
-   são o componente geral (geral-filtros).
+   (extrajornada-filtros.js). Os filtros da barra são o componente
+   geral (geral-filtros).
    ============================================================ */
 
-/* ---------- menu "Exibir" (cabeçalho): opções que mantêm o menu aberto ---------- */
-/* mesma linha do .dropdown-item, mas classe própria para o geral-dropdown NÃO fechar
-   o menu ao escolher (o usuário troca várias opções de uma vez) */
-.exibir-opcao {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* a linha na largura do menu (a do botão da caixa de marcar não estica sozinha), sem quebrar o texto */
+.exibir-menu .geral-opcao {
   width: 100%;
-  min-height: 30px;
-  padding: 0 8px;
-  border: none;
-  border-radius: var(--raio-pequeno);
-  background: none;
-  font-size: var(--fonte-padrao);
-  color: var(--texto);
   text-align: left;
-  cursor: pointer;
   white-space: nowrap;
-}
-
-.exibir-opcao:hover {
-  background-color: var(--fundo-medio);
-}
-
-/* a check só aparece na opção ativa (reserva o espaço nas demais para alinhar) */
-.exibir-check {
-  flex-shrink: 0;
-  color: var(--texto-forte);
-  visibility: hidden;
-}
-
-.exibir-opcao--ativo {
-  font-weight: 600;
-  color: var(--texto-forte);
-}
-
-.exibir-opcao--ativo .exibir-check {
-  visibility: visible;
 }
 
 /* ============================================================
@@ -51,7 +23,7 @@
    As opções na altura do toque, como as linhas dos outros menus.
    ============================================================ */
 @media (max-width: 767px) {
-  html[data-celular] .exibir-opcao {
+  html[data-celular] .exibir-menu .geral-opcao {
     min-height: var(--toque-altura-celular);
   }
 }

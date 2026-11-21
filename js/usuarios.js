@@ -287,7 +287,7 @@
     });
   }
 
-  /* a árvore de graus do filtro (a regra é a mesma dos Afastamentos, usuarios-exibir.js) */
+  /* a árvore de graus do filtro (a regra fica no usuarios-exibir.js) */
   function arvoreDeGraus(pessoas) {
     return RosterWork.usuariosExibir.arvoreDeGraus(pessoas);
   }

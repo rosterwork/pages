@@ -108,39 +108,20 @@
       <button type="button" class="botao botao--quadrado" id="exibir-seletor" aria-label="Exibir" data-dica="Exibir">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-exibir"/></svg>
       </button>
-      <div class="dropdown-menu" id="exibir-menu">
+      <!-- o Identificador e o Nome são uma escolha só cada um (a bolinha); a hierarquia liga e desliga (a caixa de marcar);
+           o menu fica aberto ao escolher (usuarios-exibir.js) -->
+      <div class="dropdown-menu exibir-menu" id="exibir-menu">
         <div class="dropdown-titulo">Identificador</div>
-        <button type="button" class="exibir-opcao" data-exibir-id="cpf">
-          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-          <span>CPF</span>
-        </button>
-        <button type="button" class="exibir-opcao" data-exibir-id="rg">
-          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-          <span>RG</span>
-        </button>
-        <button type="button" class="exibir-opcao" data-exibir-id="telefone">
-          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-          <span>Telefone</span>
-        </button>
-        <button type="button" class="exibir-opcao" data-exibir-id="email">
-          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-          <span>E-mail</span>
-        </button>
+        <label class="geral-opcao"><input type="radio" name="exibir-identificador" value="cpf" data-exibir-id="cpf" /><span>CPF</span></label>
+        <label class="geral-opcao"><input type="radio" name="exibir-identificador" value="rg" data-exibir-id="rg" /><span>RG</span></label>
+        <label class="geral-opcao"><input type="radio" name="exibir-identificador" value="telefone" data-exibir-id="telefone" /><span>Telefone</span></label>
+        <label class="geral-opcao"><input type="radio" name="exibir-identificador" value="email" data-exibir-id="email" /><span>E-mail</span></label>
         <div class="dropdown-divisor"></div>
         <div class="dropdown-titulo">Nome</div>
-        <button type="button" class="exibir-opcao" data-exibir-nome="guerra">
-          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-          <span>Nome de guerra</span>
-        </button>
-        <button type="button" class="exibir-opcao" data-exibir-nome="completo">
-          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-          <span>Completo + guerra</span>
-        </button>
+        <label class="geral-opcao"><input type="radio" name="exibir-nome" value="guerra" data-exibir-nome="guerra" /><span>Nome de guerra</span></label>
+        <label class="geral-opcao"><input type="radio" name="exibir-nome" value="completo" data-exibir-nome="completo" /><span>Completo + guerra</span></label>
         <div class="dropdown-divisor"></div>
-        <button type="button" class="exibir-opcao" data-exibir-toggle="hierarquia">
-          <svg class="icone exibir-check" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg>
-          <span>Mostrar hierarquia</span>
-        </button>
+        <button type="button" class="geral-opcao" role="checkbox" aria-checked="false" data-exibir-toggle="hierarquia"><span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span><span>Mostrar hierarquia</span></button>
       </div>
     </div>
   </div>

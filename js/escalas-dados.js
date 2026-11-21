@@ -454,11 +454,12 @@
   }
 
   /* o calendário do Mudar o dia do serviço (RPC escala_mudar_dia_dias): para cada dia do período (até 63 dias), a
-     situação do militar se o serviço pelo ciclo dele em "de" fosse para lá, no mesmo horário, e quantos faltam para o
-     mínimo na unidade. { hi, hf, limite, fim, dias: { 'AAAA-MM-DD': { estado, tipo, horas, antes, depois, faltas } } },
-     { erro } na recusa, ou null em falha */
-  function mudarDiaDias(unidadeId, cpf, de, inicio, fim) {
+     situação do militar se o serviço pelo ciclo dele em "de" (ou, com mudancaId, o que veio de outro dia) fosse para lá,
+     no mesmo horário, e quantos faltam para o mínimo na unidade. { hi, hf, limite, fim, dias: { 'AAAA-MM-DD': { estado,
+     tipo, horas, antes, depois, faltas } } }, { erro } na recusa, ou null em falha */
+  function mudarDiaDias(unidadeId, cpf, de, inicio, fim, mudancaId) {
     var corpo = { p_unidade_id: Number(unidadeId), p_cpf: String(cpf), p_de: de, p_inicio: inicio, p_fim: fim };
+    if (mudancaId) corpo.p_mudanca = mudancaId;   // o Muda para outra data: o serviço que veio de outro dia
     return RosterWork.apiFetch('/rest/v1/rpc/escala_mudar_dia_dias', { metodo: 'POST', corpo: corpo })
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });

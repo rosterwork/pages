@@ -27,6 +27,8 @@
   var NIVEIS = [0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5];   // os do navegador
   var MENOR = NIVEIS[0], MAIOR = NIVEIS[NIVEIS.length - 1];
   var PINCA_PASSO = 100;     // a pinça: cada evento muda o tamanho em e^(−deltaY/100)
+  var PINCA_MAXIMO = 20;     // e um evento conta no máximo 20 (e^0,2, cerca de um nível)
+  var CLIQUE_MINIMO = 40;    // o clique da roda: o passo de 40 ou mais (100 com o navegador em 100%; 100 ÷ o zoom nos outros)
   var REPINTAR_MS = 150;     // os gráficos repintam quando o movimento para
   var GRAVAR_MS = 800;       // e a escolha grava um pouco depois (a roda e a pinça mandam muitos passos seguidos)
 
@@ -134,16 +136,19 @@
     return MENOR;
   }
 
-  /* o Ctrl e a roda (ou a pinça do touchpad) em cima de um calendário: o clique da roda vem em passos grandes e inteiros
-     (ou em linhas) e pula um nível; a pinça vem em passos pequenos e muda aos poucos. Um passo por quadro de tela */
+  /* o Ctrl e a roda (ou a pinça do touchpad) em cima de um calendário: o clique da roda vem em passos grandes (ou em
+     linhas) e pula um nível; a pinça vem em passos pequenos e muda aos poucos, no máximo um nível por evento. Só o
+     tamanho do passo separa os dois: com o zoom do navegador fora de 100%, o clique chega quebrado (133,33 no de 75%).
+     Um passo por quadro de tela */
   function aoRodar(e) {
     if (!e.ctrlKey || !e.deltaY) return;
     var cal = e.target.closest ? e.target.closest('.geral-calendario-mes') : null;
     if (!cal) return;
     e.preventDefault();
     var base = pedido ? pedido.tamanho : atual;
-    var clique = e.deltaMode !== 0 || (Math.abs(e.deltaY) >= 40 && Number.isInteger(e.deltaY));
-    var novo = clique ? proximoNivel(base, e.deltaY < 0) : limitar(base * Math.exp(-e.deltaY / PINCA_PASSO));
+    var clique = e.deltaMode !== 0 || Math.abs(e.deltaY) >= CLIQUE_MINIMO;
+    var passo = Math.max(-PINCA_MAXIMO, Math.min(PINCA_MAXIMO, e.deltaY));
+    var novo = clique ? proximoNivel(base, e.deltaY < 0) : limitar(base * Math.exp(-passo / PINCA_PASSO));
     pedido = { tamanho: novo, cal: cal, x: e.clientX, y: e.clientY };
     if (quadro) return;
     quadro = requestAnimationFrame(function () {

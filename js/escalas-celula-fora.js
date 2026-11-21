@@ -2,16 +2,16 @@
    ESCALAS — o grupo Fora da escala na célula da grade da Escala
    O banco (ler_escala_mes, a chave "fora" de cada dia) manda os
    operacionais da unidade que estão sem guarnição no dia, por
-   antiguidade, com o ícone de quem está fora: em amarelo, com "Voltou
-   em DD/MM" no lugar do horário, quem voltou de um afastamento há até
-   5 dias (as férias tiram da guarnição; o administrador decide para
-   onde ele vai); em vermelho quem devia estar na escala (do 6º dia
-   depois da volta, ou sem volta: a mesma regra do Para corrigir do
-   Início); "Entra em DD/MM" de quem já tem a entrada marcada; riscado,
-   com "Férias até DD/MM", quem está afastado, também quem continua na
-   guarnição (só com o filtro Afastamentos). O
-   grupo vem por último, embaixo do Sobreaviso, na caixa dos grupos
-   (escalas-celula-grupos.js).
+   antiguidade, com o ícone de quem está fora: em amarelo quem voltou
+   de um afastamento há até 5 dias (as férias tiram da guarnição; o
+   administrador decide para onde ele vai) e em vermelho quem devia
+   estar na escala (do 6º dia depois da volta, ou sem volta: a mesma
+   regra do Para corrigir do Início), os dois com "Fora da escala" no
+   lugar do horário; "Entra em DD/MM" de quem já tem a entrada marcada
+   (também no vermelho); riscado, com "Férias até DD/MM", quem está
+   afastado, também quem continua na guarnição (só com o filtro
+   Afastamentos). O grupo vem por último, embaixo do Sobreaviso, na
+   caixa dos grupos (escalas-celula-grupos.js).
    Para quem administra o dia, o nome em vermelho ou em amarelo abre a caixa dele
    (escalas-celula-editar.js): Adicionar neste dia e Adicionar à
    guarnição do dia, os do pelotão já com ele (escalas-celula-editar-
@@ -40,9 +40,11 @@
         linha.classList.add('linha-escalado--fora');
         if (p.vermelho) linha.classList.add('linha-escalado--fora-vermelho');
         if (p.aviso) linha.classList.add('linha-escalado--fora-aviso');
+        /* no lugar do horário: no amarelo, "Fora da escala"; a entrada marcada; sem ela, no vermelho, "Fora da escala" */
         var hora = linha.querySelector('.linha-escalado-hora');
-        if (p.aviso && p.voltou_em) hora.textContent = RW.mensagens.escala.voltouEm(diaMes(p.voltou_em));
+        if (p.aviso) hora.textContent = RW.mensagens.escala.foraDaEscala;
         else if (p.entra_em) hora.textContent = RW.mensagens.escala.entraEm(diaMes(p.entra_em));
+        else if (p.vermelho) hora.textContent = RW.mensagens.escala.foraDaEscala;
       }
       grupo.appendChild(linha);
     });

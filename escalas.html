@@ -635,6 +635,27 @@
   </div>
 </template>
 
+<!-- a caixa 2 de quem veio de outro dia (o Remover deste dia do pontual do dia novo): de onde ele veio e as três
+     respostas (as datas, do JS): Fica de folga no dia de antes e, embaixo, a pergunta do banco de horas (a frase e as duas
+     respostas, com os textos e a ordem do JS); Muda para outra data e, embaixo, as perguntas do Mudar o dia; ou Volta ao
+     serviço de antes -->
+<template id="tpl-escala-celula-mudanca">
+  <div class="escala-celula-cartao">
+    <div class="escala-celula-pergunta escala-celula-mudanca">
+      <span class="escala-celula-pergunta-texto"></span>
+      <label class="geral-opcao"><input type="radio" value="tirar" /><span class="escala-celula-mudanca-tirar"></span></label>
+      <label class="geral-opcao"><input type="radio" value="outra" /><span>Muda para outra data</span></label>
+      <label class="geral-opcao"><input type="radio" value="devolver" /><span class="escala-celula-mudanca-devolver"></span></label>
+    </div>
+    <div class="escala-celula-pergunta escala-celula-mudanca-folga oculto">
+      <span class="escala-celula-pergunta-texto"></span>
+      <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-celula-pergunta-nao"></span></label>
+      <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-celula-pergunta-sim"></span></label>
+    </div>
+    <div class="escala-celula-mudanca-outra oculto"></div>
+  </div>
+</template>
+
 <!-- a caixa 2 do Mudar onde fica (o estagiário): uma caixa de marcar por posto do estágio dele (as do tpl-escala-marcar,
      o texto vem do JS); todas marcadas, o sistema distribui -->
 <template id="tpl-escala-celula-onde">

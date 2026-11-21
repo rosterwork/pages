@@ -8,7 +8,9 @@
    cor do dia (verde, vermelho, amarelo), o gráfico do dia já com as
    extras (a régua de cada unidade no mês; o painel do dia mostra o sem
    e o com) e uma vaga por militar, com o horário
-   escrito (sem nenhum, ele fica no dia até o Salvar). O bloco com
+   escrito (sem nenhum, ele fica no dia até o Salvar). Com a Falta de
+   gente marcada no Exibir, embaixo do gráfico, a linha dos horários
+   (faixaDaFalta). O bloco com
    mudança ainda não salva leva a borda tracejada da Escala. O clique
    no bloco fica com a edição rápida (extrajornada-celula.js): o nome
    e o pelotão abrem a caixa deles ao lado. Lê o rascunho por
@@ -183,6 +185,8 @@
         var g = G().grafico(cob, un.id, erro, estagiarios);
         if (g) cel.appendChild(g);
       }
+      /* com a Falta de gente marcada no Exibir, a linha dos horários embaixo do gráfico */
+      if (F.faltaDeGente()) faixaDaFalta(cel, un.id, k, alocs, falta);
     }
     var foco = RW.extrajornadaLista.foco();
     aqui.forEach(function (a) {
@@ -197,6 +201,28 @@
     RW.extrajornadaCelula.decorar(cel, un.id, k, curto);
     /* a mudança ainda não salva: a borda tracejada no bloco, a mesma da Escala */
     if (marcados[un.id + '|' + k]) cel.classList.add('escala-celula--nao-salvo');
+  }
+
+  /* a linha da Falta de gente embaixo do gráfico (o Exibir): uma casinha por horário de 6 h, embaixo das barras dele, com
+     quantos ainda faltam ("1 de 2" quando as extras cobriram parte) ou o certo quando não falta ninguém e, pequeno no
+     canto direito, o "+1" das extras a mais do que faltava; a dica diz o horário e, quando falta só numa parte dele, as
+     horas (as vermelhas do gráfico). Sem nada em nenhum horário, a linha não entra (a conta mora no
+     extrajornada-falta.js) */
+  function faixaDaFalta(cel, uid, k, alocs, falta) {
+    var grafico = cel.querySelector('.escala-mes-grafico');
+    if (!grafico) return;
+    var horarios = RW.extrajornadaFalta.porHorario(falta, alocs.filter(function (a) { return +a.unidade === +uid && a.data === k; }), grafico.dataset.erro);
+    if (!horarios.some(function (h) { return h.estado; })) return;
+    var faixa = RW.tpl('tpl-extrajornada-falta');
+    Array.prototype.forEach.call(faixa.querySelectorAll('.extrajornada-falta-hora'), function (casa, i) {
+      var h = horarios[i];
+      if (!h.estado) return;
+      casa.classList.add('extrajornada-falta-hora--' + h.estado);
+      casa.querySelector('.extrajornada-falta-numero').textContent = h.estado === 'falta' ? (h.cobriu ? msg().faltaDe(h.falta, h.antes) : String(h.falta)) : '';
+      casa.querySelector('.extrajornada-falta-mais').textContent = h.estado === 'coberta' && h.mais ? msg().faltaMais(h.mais) : '';
+      casa.setAttribute('data-dica', msg().faltaDica[h.estado](u().horas([h.horario]), h, h.so.length ? u().trechos(h.so) : ''));
+    });
+    grafico.parentNode.insertBefore(faixa, grafico.nextSibling);
   }
 
   /* o militar em foco no bloco de cada pelotão, em todos os dias: onde ele tem extra, o cartão de sempre (posto por

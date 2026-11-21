@@ -32,6 +32,15 @@
       }
       return partes.join(' e ');
     },
+    /* horas soltas do dia (0 a 23, contadas das 08h) escritas em trechos seguidos: 'das 07h às 08h e das 10h às 11h' */
+    trechos: function (lista) {
+      var t = [];
+      lista.slice().sort(function (x, y) { return x - y; }).forEach(function (h) {
+        var ult = t[t.length - 1];
+        if (ult && h === ult[1]) ult[1] = h + 1; else t.push([h, h + 1]);
+      });
+      return t.map(function (x) { return 'das ' + hh(x[0]) + ' às ' + hh(x[1]); }).join(' e ');
+    },
     /* as horas (0 a 23, contadas das 08h) em que a extra está no dia */
     horasDe: function (a) {
       var b = (a.blocos || []).map(Number), l = [];

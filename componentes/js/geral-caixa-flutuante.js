@@ -26,7 +26,13 @@
    segura o clique fora (aoClicarFora devolve false): a caixa fica e o
    clique não faz mais nada (no celular, o toque no véu também). A
    caixa 2, no computador, tem o X no alto, que fecha as duas como o
-   Esc. O Esc fecha só a caixa (o painel
+   Esc; a página pode segurar os dois também (aoTentarFechar devolve
+   false). Na linha do alto fica também a espera da página: a linha
+   do conteúdo da caixa 2 marcada no molde com .caixa-flutuante-no-alto
+   (o Conferindo a mudança) vem para a direita da linha, antes do X (na
+   folha, no fim da linha do título); só a barra aparece, a frase fica
+   para o leitor de tela (.texto-leitor), e a caixa não muda de tamanho
+   quando ela aparece ou some. O Esc fecha só a caixa (o painel
    lateral atrás dela fica); com a lista ou o calendário de um campo
    dela aberto, fecha só ele. Uma caixa por vez. A posição vem do geral-flutuante.js
    (que acompanha a rolagem e o tamanho da peça) e a animação do CSS;
@@ -38,10 +44,11 @@
                    sem ele, o primeiro item no meio da peça), titulo (o da folha), conteudo, esperar (sem o conteúdo no
                    quadro seguinte, a forma), aoFechar() (fechou pelo clique fora, pelo Esc, pelo X ou pela peça que
                    saiu), aoVoltar() (o Voltar da folha), aoClicarFora(alvo) (false: a caixa fica, e o clique não faz
-                   mais nada; o alvo é o que foi clicado, também no rodapé largo), preferirEsquerda (a caixa 1 abre à
+                   mais nada; o alvo é o que foi clicado, também no rodapé largo), aoTentarFechar(alvo) (o mesmo para o
+                   X e o Esc; o alvo é o X, ou null no Esc), preferirEsquerda (a caixa 1 abre à
                    esquerda da peça quando cabe: booleano ou função, como no geral-flutuante) }
-        caixa = { conteudo(el), espera(sim), faltaForma() (quantos ms a forma à vista ainda fica), segunda(item, el,
-                  titulo), fecharSegunda(), trocarPeca(peca, junto), fechar(), aberta() }
+        caixa = { conteudo(el), faltaForma() (quantos ms a forma à vista ainda fica), segunda(item, el, titulo),
+                  fecharSegunda(), trocarPeca(peca, junto), fechar(), aberta() }
    ============================================================ */
 (function () {
   'use strict';
@@ -78,11 +85,8 @@
     if (menosMovimento()) fim(); else setTimeout(fim, SAIDA);
   }
 
-  /* o primeiro item à vista do corpo (ou a barra, ou a 1ª faixa da forma, enquanto espera): a caixa 1 o põe na altura
-     do nome */
+  /* o primeiro item à vista do corpo (ou a 1ª faixa da forma, enquanto espera): a caixa 1 o põe na altura do nome */
   function primeiraLinha(caixa) {
-    var espera = caixa.querySelector('.caixa-flutuante-espera');
-    if (espera && !espera.classList.contains('oculto')) return espera;
     var faixa = caixa.querySelector('.caixa-flutuante-corpo > .caixa-flutuante-forma .caixa-flutuante-forma-fila');
     if (faixa) return faixa;
     var itens = caixa.querySelectorAll('.caixa-flutuante-corpo .dropdown-item');
@@ -95,6 +99,20 @@
     if (!el) return null;
     el.querySelector('.caixa-flutuante-titulo').textContent = titulo || '';
     return el;
+  }
+
+  /* a espera da página (a linha marcada com .caixa-flutuante-no-alto no conteúdo da caixa 2) vai para a linha do alto, à
+     direita (antes do X; na folha, no fim da linha do título): só a barra aparece, a frase fica para o leitor de tela. Sem
+     el, o lugar fica vazio (a folha voltou ao menu) */
+  function subirEspera(caixa, el) {
+    var lugar = caixa.querySelector('.caixa-flutuante-espera');
+    if (!lugar) return;
+    lugar.textContent = '';
+    var linha = el && el.querySelector ? el.querySelector('.caixa-flutuante-no-alto') : null;
+    if (!linha) return;
+    var frase = linha.querySelector('.etapas-linha-texto');
+    if (frase) frase.classList.add('texto-leitor');
+    lugar.appendChild(linha);
   }
 
   /* ---------- a peça escolhida ---------- */
@@ -182,8 +200,8 @@
     return api(c);
   }
 
-  /* a caixa que esperava aparece (o conteúdo chegou, a forma passou do tempo ou a página mostrou a barra): já está no
-     lugar e no tamanho; no celular, com o véu */
+  /* a caixa que esperava aparece (o conteúdo chegou ou a forma passou do tempo): já está no lugar e no tamanho; no
+     celular, com o véu */
   function revelar(c) {
     if (!c.esperando) return;
     c.esperando = false;
@@ -208,6 +226,7 @@
       }
       corpoF.textContent = '';
       corpoF.appendChild(el);
+      subirEspera(c.c1, el);
       c.c1.querySelector('.caixa-flutuante-titulo').textContent = titulo || '';
       c.c1.querySelector('.caixa-flutuante-voltar').classList.remove('oculto');
       c.item = item;
@@ -218,6 +237,7 @@
       var corpo = c.c2.querySelector('.caixa-flutuante-corpo');
       corpo.textContent = '';
       corpo.appendChild(el);
+      subirEspera(c.c2, el);
       return;
     }
     fecharSegunda(c);
@@ -225,11 +245,12 @@
     if (!c2) return;
     c2.classList.add('caixa-flutuante--segunda');
     c2.querySelector('.caixa-flutuante-corpo').appendChild(el);
+    subirEspera(c2, el);
     /* o X no alto (no computador): fecha as duas, como o Esc (a página decide o que fica, aoFechar) */
     var x = c2.querySelector('.caixa-flutuante-fechar');
     if (x) {
       x.classList.remove('oculto');
-      x.addEventListener('click', function () { fecharDe(c, true); });
+      x.addEventListener('click', function () { if (podeFechar(c, x)) fecharDe(c, true); });
     }
     document.body.appendChild(c2);
     c.c2 = c2;
@@ -252,6 +273,7 @@
       var corpo = c.c1.querySelector('.caixa-flutuante-corpo');
       corpo.textContent = '';
       c.guardado.filhos.forEach(function (f) { corpo.appendChild(f); });
+      subirEspera(c.c1, null);
       c.c1.querySelector('.caixa-flutuante-titulo').textContent = c.guardado.titulo;
       c.c1.querySelector('.caixa-flutuante-voltar').classList.add('oculto');
       c.guardado = null;
@@ -290,6 +312,11 @@
   }
 
   /* ---------- fechar ---------- */
+
+  /* o X e o Esc: a página pode segurar a caixa (aoTentarFechar devolve false: a resposta pela metade) */
+  function podeFechar(c, alvo) {
+    return !c.opcoes.aoTentarFechar || c.opcoes.aoTentarFechar(alvo) !== false;
+  }
 
   /* avisar: fechou pelo clique fora, pelo Esc ou pela peça que saiu (a página fecha o que é dela) */
   function fecharDe(c, avisar) {
@@ -330,7 +357,7 @@
       if (ev.key !== 'Escape' || !atual) return;
       if (document.querySelector('.dropdown--aberto, .modal-veu--aberto')) return;
       ev.preventDefault();   // o Esc foi da caixa: o painel atrás dela fica (geral-painel.js)
-      fecharDe(atual, true);
+      if (podeFechar(atual, null)) fecharDe(atual, true);
     });
     window.addEventListener('popstate', function () { if (atual) fecharDe(atual, true); });
   }
@@ -345,12 +372,6 @@
         corpo.textContent = '';
         if (el) corpo.appendChild(el);
         if (el) revelar(c);
-      },
-      /* a barra (a página a mostra quando uma ação demora): com ela, a caixa que esperava aparece */
-      espera: function (sim) {
-        if (atual !== c) return;
-        c.c1.querySelector('.caixa-flutuante-espera').classList.toggle('oculto', !sim);
-        if (sim) revelar(c);
       },
       /* a forma que apareceu fica o mínimo na tela (não pisca): quantos ms ainda faltam (0: o conteúdo pode entrar) */
       faltaForma: function () { return c.formaEm != null && RW.etapas ? RW.etapas.faltaCaixa(c.formaEm) : 0; },

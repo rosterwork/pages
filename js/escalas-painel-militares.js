@@ -171,7 +171,7 @@
     }
 
     /* quem saiu da guarnição e não faz mais o serviço deste dia: riscado, com a data da saída embaixo do nome e, no
-       lápis, o Cancelar a saída */
+       lápis, o Mudar a saída (só na saída à mão) e o Cancelar a saída */
     var saidas = dados.saidas || [];
     if (saidas.length) {
       var gs = caixaGrupo(msg().militaresSaida(saidas.length));
@@ -182,7 +182,7 @@
           if (!linha) return;
           var el = RosterWork.tpl('tpl-escala-militares-funcoes');
           if (el) { el.querySelector('.escala-militares-funcoes-texto').textContent = msg().saiuDaGuarnicao(diaMes(x.saida)); linha.appendChild(el); }
-          if (editavel) P.menuNaLinha(linha, { tipo: 'saida', visao: 'militares', militar: m, saida: x.saida });
+          if (editavel) P.menuNaLinha(linha, { tipo: 'saida', visao: 'militares', militar: m, saida: x.saida, ultimo: x.ultimo || null, dias: x.dias || [] });
           gs.linhas.appendChild(linha);
         });
         corpo.appendChild(gs.caixa);

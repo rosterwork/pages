@@ -53,18 +53,21 @@
   display: none;
 }
 
-/* a caixa 2, no computador: a linha do alto só com o X, à direita (fecha as duas, como o Esc) */
+/* a caixa 2, no computador: a linha do alto, com a espera da página e o X no fim (fecha as duas, como o Esc); a espera
+   não muda a altura da linha */
 .caixa-flutuante--segunda .caixa-flutuante-cabeca {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
 }
 
-/* a barra enquanto o conteúdo espera (na altura de um item) */
+/* a espera da página na linha do alto (o Conferindo a mudança, que o JS traz do conteúdo da caixa 2): o resto da linha,
+   com a barra à direita, antes do X (na folha, no fim da linha do título); a frase fica só para o leitor de tela */
 .caixa-flutuante-espera {
   display: flex;
-  align-items: center;
-  min-height: 30px;
-  padding: 0 8px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .caixa-flutuante-corpo {

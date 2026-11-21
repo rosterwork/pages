@@ -70,6 +70,13 @@
   flex-shrink: 0;
 }
 
+/* o que só alguns veem (item + divisória da seção): à vista só com a marca do papel no <html>, posta antes da
+   primeira pintura pelo js/index-sessao.js (e pelo js/index-sidebar.js na entrada pelo login lembrado) */
+html:not([data-menu-admin]) .sidebar [data-admin],
+html:not([data-menu-programador]) .sidebar [data-programador] {
+  display: none;
+}
+
 /* Botão de recolher/expandir — fica no fundo do sidebar */
 .sidebar-toggle {
   display: flex;

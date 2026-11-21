@@ -117,11 +117,11 @@
   /* afastado (com o filtro Afastamentos): "Férias até DD/MM" no lugar do horário */
   function textoAfastado(p) { return RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5)); }
 
-  /* quem está fora da escala: "Voltou em DD/MM" (a volta de um afastamento, o aviso amarelo) ou "Entra em DD/MM" (a entrada
-     marcada) no lugar do horário; vazio sem nenhum dos dois */
-  function textoEntra(p) {
+  /* quem está fora da escala, no lugar do horário, como na tela (escalas-celula-fora.js): "Fora da escala" no amarelo (a
+     volta de um afastamento há até 5 dias); "Entra em DD/MM", a entrada marcada; sem ela, "Fora da escala" no vermelho */
+  function textoFora(p) {
     var E = RW.mensagens.escala, br = function (iso) { return RW.data.isoParaBR(iso).slice(0, 5); };
-    return p.aviso && p.voltou_em ? E.voltouEm(br(p.voltou_em)) : p.entra_em ? E.entraEm(br(p.entra_em)) : '';
+    return p.aviso ? E.foraDaEscala : p.entra_em ? E.entraEm(br(p.entra_em)) : p.vermelho ? E.foraDaEscala : '';
   }
 
   function horarios(p, c) {
@@ -129,7 +129,7 @@
       return { text: textoAfastado(p), fontSize: FONTE.hora, color: c.texto, width: 'auto', margin: MARGEM.hora };
     }
     if (p.origem === 'fora') {
-      return { text: textoEntra(p), fontSize: FONTE.hora, color: c.texto, width: 'auto', margin: MARGEM.hora };
+      return { text: textoFora(p), fontSize: FONTE.hora, color: c.texto, width: 'auto', margin: MARGEM.hora };
     }
     return {
       stack: comInicio(p).map(function (per) {
@@ -144,7 +144,7 @@
   /* a largura (pt) da coluna do horário: o par mais largo (ou o texto do afastado) */
   function larguraHorarios(p) {
     if (p.origem === 'afastamento') return larguraTexto(textoAfastado(p), FONTE.hora, false);
-    if (p.origem === 'fora') return textoEntra(p) ? larguraTexto(textoEntra(p), FONTE.hora, false) : 0;
+    if (p.origem === 'fora') return textoFora(p) ? larguraTexto(textoFora(p), FONTE.hora, false) : 0;
     var maior = 0;
     comInicio(p).forEach(function (per) {
       var w = larguraTexto(soHora(per.inicio), FONTE.hora, false);

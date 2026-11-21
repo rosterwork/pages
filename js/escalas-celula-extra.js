@@ -133,21 +133,31 @@
     preparar(d).then(function (pode) { item.classList.toggle('oculto', !pode); });
   }
 
-  /* Adicionar extra neste dia: o mês ainda vindo, a caixa espera por ele (os pontos passando de 0,5 s); se a extra não se
-     mexe mais ali (o mês reaberto, a leitura que falhou), o painel do dia na aba Extrajornada, que diz por quê */
+  /* Adicionar extra neste dia: o mês ainda vindo, passando de 0,2 s a caixa 2 abre com as faixas até o campo de militar
+     chegar (elas ficam o mínimo na tela); se a extra não se mexe mais ali (o mês reaberto, a leitura que falhou), o painel
+     do dia na aba Extrajornada, que diz por quê */
   function adicionar(botao, c) {
     var a = c.a;
     if (!a) return;
     a.acao = 'extra';
     a.botao = botao;
-    var pontos = setTimeout(function () { if (c.a === a && a.acao === 'extra') a.caixa.espera(true); }, 500);
+    function vale() { return c.a === a && a.acao === 'extra' && a.botao === botao; }
+    var formaEm = null;
+    var relogio = setTimeout(function () {
+      var forma = vale() && RW.tpl('tpl-caixa-flutuante-forma');
+      if (!forma) return;
+      formaEm = performance.now();
+      a.caixa.segunda(botao, forma, textoDo(botao));
+    }, RW.etapas ? RW.etapas.atrasoCaixa : 0);
     preparar(c.dia).then(function (pode) {
-      clearTimeout(pontos);
-      if (c.a !== a) return;
-      a.caixa.espera(false);
-      if (a.acao !== 'extra' || a.botao !== botao) return;
-      if (!pode) { c.fecharTudo('guardar'); c.abrirPainel(null, { secao: 'extra' }); return; }
-      abrirCampo(botao, c);
+      clearTimeout(relogio);
+      function seguir() {
+        if (!vale()) return;
+        if (!pode) { c.fecharTudo('guardar'); c.abrirPainel(null, { secao: 'extra' }); return; }
+        abrirCampo(botao, c);
+      }
+      var falta = formaEm != null && RW.etapas ? RW.etapas.faltaCaixa(formaEm) : 0;
+      if (falta > 0) setTimeout(seguir, falta); else seguir();
     });
   }
 

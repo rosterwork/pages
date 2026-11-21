@@ -31,7 +31,8 @@
   var foco = null;         // o militar em foco no calendário: { cpf, grupo ('faltam' ou 'completos') }
   var escLigado = false;
   var recolhidaPeloPainel = false;   // a lista recolhida pelo sistema ao abrir o painel do dia (volta ao fechar)
-  var MIN_CALENDARIO = 800;          // 4 dias à vista (cada dia tem no mínimo 200px)
+  var DIAS_A_VISTA = 4;              // com menos dias à vista no calendário, falta lugar
+  var MIN_AGENDA = 800;              // na Agenda, que não tem colunas de dias: a largura de 4 dias de 200px
 
   function msg() { return RW.mensagens.extrajornada.org; }
   function u() { return RW.extrajornadaUtil; }
@@ -49,7 +50,7 @@
       var abrir = alca.getAttribute('aria-expanded') !== 'true';
       abrirLista(abrir);
       /* a lista aberta deixou o calendário com menos de 4 dias à vista: o painel do dia fecha */
-      if (abrir && RW.extrajornadaDia.aberto() && el.querySelector('#p3-cal').clientWidth < MIN_CALENDARIO) RW.extrajornadaDia.fechar();
+      if (abrir && RW.extrajornadaDia.aberto() && apertado()) RW.extrajornadaDia.fechar();
     });
     Array.prototype.forEach.call(el.querySelectorAll('.extrajornada-esq-faixa'), function (faixa) {
       faixa.addEventListener('click', function () {
@@ -85,10 +86,18 @@
     pagina.querySelector('#p3-lateral').classList.toggle('geral-layout-lateral--fechado', !sim);
   }
 
+  /* o calendário com menos de 4 dias à vista: a largura dele dividida pela de um dia como aparece na tela, que já conta
+     os pelotões lado a lado e o tamanho do calendário. Na Agenda, menos de 800px */
+  function apertado() {
+    var cal = pagina.querySelector('#p3-cal'), dia = cal.querySelector('.geral-calendario-mes-dia');
+    if (!dia) return cal.clientWidth < MIN_AGENDA;
+    return cal.clientWidth < DIAS_A_VISTA * dia.getBoundingClientRect().width;
+  }
+
   /* com o painel do dia aberto: se o calendário ficou com menos de 4 dias à vista, a lista recolhe */
   function recolherSeApertado() {
     if (!naPagina() || pagina.querySelector('#p3-alca').getAttribute('aria-expanded') !== 'true') return;
-    if (pagina.querySelector('#p3-cal').clientWidth >= MIN_CALENDARIO) return;
+    if (!apertado()) return;
     abrirLista(false);
     recolhidaPeloPainel = true;
   }

@@ -10,7 +10,8 @@
    Op. Verão e a F. Tarefa deixam trocar e tirar extra, e a Op. Verão
    também fica no sobreaviso; o Litoral sai de tudo); as Férias
    perguntam só a guarnição (saem do resto). Cada resposta
-   entra no rascunho na hora. O que é de mais de uma semana atrás fica
+   entra no rascunho na hora. Na caixa da grade, o nome em branco só
+   aparece quando se tenta fechar (podeFechar). O que é de mais de uma semana atrás fica
    travado (o mesmo limite do banco): o que terminou antes não muda; o
    que começou antes muda só o fim e o nome.
    ============================================================ */
@@ -46,8 +47,10 @@
   }
 
   /* as perguntas de um afastamento no lugar. opcoes = { cpf, chave, partes ('nome', 'periodo', 'guarnicao', 'marcas';
-     sem elas, todas), origem (quem pergunta: o rascunho não o redesenha), editavel }.
-     Devolve { pintar() } (o que muda sem perder o campo que se digita) ou null */
+     sem elas, todas), origem (quem pergunta: o rascunho não o redesenha), editavel, nomeNaTentativa (o nome em branco
+     só aparece quando se tenta fechar: a caixa da grade) }.
+     Devolve { pintar() (o que muda sem perder o campo que se digita), podeFechar() (com o nome em branco, não: a
+     frase aparece) } ou null */
   function montar(lugar, opcoes) {
     var cpf = String(opcoes.cpf), chave = opcoes.chave;
     var partes = opcoes.partes || ['nome', 'periodo', 'guarnicao', 'marcas'];
@@ -59,6 +62,7 @@
     var fimTravado = !editavel || !!(g && g.fim < lim);
     var iniTravado = fimTravado || !!(g && g.inicio < lim);
     var el = {};
+    var tentou = false;   // tentou fechar com o nome em branco (nomeNaTentativa)
 
     function atual() { return R().achar(cpf, chave); }
     function mudar(campos, juntar) {
@@ -83,8 +87,9 @@
       } else {
         RW.campos.ligarSelecao(botao, function (valor) {
           if (valor === 'outro') {
-            mudar({ padrao: null, nome: entrada.value.trim() });
+            /* o campo à vista antes do rascunho: a grade se redesenha nele e o Nome segue no Outro */
             el.outro.classList.remove('oculto');
+            mudar({ padrao: null, nome: entrada.value.trim() });
             entrada.focus();
             return;
           }
@@ -194,12 +199,32 @@
       }
       if (el.nota) {
         var problema = R().problemaDe(a);
+        /* o nome em branco (o problema do afastamento sem nome): na caixa da grade, só depois de tentar fechar */
+        if (a.nome) tentou = false;
+        else if (opcoes.nomeNaTentativa && !tentou) problema = '';
         el.nota.querySelector('.nota-texto').textContent = problema;
         el.nota.classList.toggle('oculto', !problema);
+        /* junto da frase, a borda vermelha no campo que falta: o Nome no dia (no Outro) ou a lista */
+        if (el.nome) {
+          var faltaNome = !a.nome && !!problema;
+          var noOutro = !el.outro.classList.contains('oculto');
+          el.outro.classList.toggle('campo--erro', faltaNome && noOutro);
+          el.nome.classList.toggle('campo--erro', faltaNome && !noOutro);
+        }
       }
     }
+
+    /* pode fechar? Com as perguntas à vista e o nome em branco, não: a frase aparece */
+    function podeFechar() {
+      var a = atual();
+      if (!a || a.nome || !el.nota || !el.nota.isConnected || !R().problemaDe(a)) return true;
+      tentou = true;
+      pintar();
+      return false;
+    }
+
     pintar();
-    return { pintar: pintar };
+    return { pintar: pintar, podeFechar: podeFechar };
   }
 
   window.RosterWork.afastamentosCampos = { montar: montar, dias: dias };

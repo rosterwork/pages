@@ -70,6 +70,18 @@
     } catch (e) {}
   }
 
+  /* o que só alguns veem no menu (data-admin: os Ajustes e o Histórico; data-programador: o Programador): o <html>
+     marcado com o papel de quem entrou antes da primeira pintura, como o menu recolhido (data-menu-admin e
+     data-menu-programador; sem a marca, o css/index-sidebar.css esconde o item). Na entrada pelo login lembrado o perfil
+     chega depois, e quem marca é o js/index-sidebar.js, pelo mesmo RosterWork.papeisDoMenu.marcar() */
+  function marcarPapeis() {
+    var daSessao = window.RosterWork.sessao;
+    if (!daSessao) return;
+    document.documentElement.toggleAttribute('data-menu-admin', daSessao.temPapel('pelotao'));
+    document.documentElement.toggleAttribute('data-menu-programador', daSessao.ehProgramador());
+  }
+  window.RosterWork.papeisDoMenu = { marcar: marcarPapeis };
+
   var RW = window.RosterWork;
   var sessao = null;
   try { sessao = JSON.parse(sessionStorage.getItem('rosterwork_session')); } catch (e) {}
@@ -81,6 +93,7 @@
       if (payload.exp && payload.exp * 1000 > Date.now()) {
         ligarCelular();
         marcarMenuRecolhido();
+        marcarPapeis();
         RW.sessaoPronta = Promise.resolve({ ok: true });
         return;
       }
@@ -98,8 +111,9 @@
   } catch (e) {}
 
   /* sem sessão nesta aba, mas com o login lembrado no aparelho (Manter-me conectado): entra direto, sem
-     passar pelo login. A tela "entrando" cobre o sistema enquanto o acesso é renovado (componentes/js/
-     geral-entrada.js), e o js/index-carregar.js roda o sistema quando a sessão fica pronta, ou mostra a falha */
+     passar pelo login. Enquanto o acesso é renovado (componentes/js/geral-entrada.js), o menu e o cabeçalho
+     ficam em cinza (componentes/css/geral-entrando.css), e o js/index-carregar.js roda o sistema quando a
+     sessão fica pronta, ou mostra a falha */
   if (RW.conectado && RW.conectado.lembrado() && RW.entrada) {
     ligarCelular();
     document.documentElement.setAttribute('data-entrando', '');

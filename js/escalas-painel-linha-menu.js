@@ -44,12 +44,20 @@
    na cor normal; na troca, ela continua valendo) e Remover deste dia
    (o resto, em vermelho; na troca, as perguntas dela no painel) e,
    para quem está no dia pela guarnição, Remover da guarnição (a
-   pergunta Último serviço, escalas-painel-ciclo.js); quem foi
+   pergunta Último serviço, escalas-painel-ciclo.js) ou, no dia do
+   último serviço antes da saída marcada à mão, o Mudar a saída (a
+   pergunta Último serviço com os dias de serviço dele) e o Cancelar
+   a saída no lugar dele; quem foi
    remanejado daqui para outra unidade, o Devolver; quem saiu da
-   guarnição (a linha riscada do grupo Saiu da guarnição), o
-   Cancelar a saída. No De folga (nas
-   duas abas): Cancelar a folga, ou Desfazer a mudança (a folga que
-   veio da mudança de dia).
+   guarnição (a linha riscada do grupo Saiu da guarnição), o Mudar a
+   saída e o Cancelar a saída. No De folga (nas
+   duas abas) e na linha riscada da célula (uma por folga e por
+   mudança de dia): Cancelar a folga, ou Desfazer a mudança (a folga
+   que veio da mudança de dia), na hora, com o Desfazer; na da mudança,
+   também o Mudar o dia do serviço (a mudança vai para outra data, o
+   Mudar o dia com ela, sem outra folga dele no dia) e o Dar folga
+   neste dia (ele não trabalha em nenhum dos dois dias, a pergunta do
+   banco de horas embaixo da linha).
    Na Militares, embaixo do traço, o Ver as funções troca de aba já com
    o menu da linha dele aberto.
    A mudança de dia ainda não salva (só no rascunho, sem número no
@@ -59,8 +67,8 @@
    (escalas-painel-linha.js: o militar, só o horário ou para qual
    função), as sub-telas já com ele escolhido (Mudar o horário do
    serviço, Mudar o dia do serviço, Mudar de unidade neste dia, a do
-   Remover do dia para quem foi a outra unidade, a folga no dia e, do
-   estagiário, a do Mudar onde fica), o
+   Remover do dia para quem foi a outra unidade e, do estagiário, a do
+   Mudar onde fica), o
    Dar folga e o Remover deste dia (escalas-painel-remover.js › doDia) e, na hora, com o
    Desfazer, o Voltar ao automático e o Remover desta função.
    Na célula da grade (visao 'celula', escalas-celula-editar.js), o
@@ -72,11 +80,14 @@
    novo do posto abre o cartão sozinho); abrir(linha) abre o menu dela
    (o Ver as funções, na outra aba); menuDaCelula(cfg,
    escolher) devolve o menu pronto para a caixa; largarMudanca(cpf,
-   sentido, senao) larga a mudança de dia do rascunho.
+   sentido, senao) larga a mudança de dia do rascunho; cancelarFolga(cfg),
+   desfazerMudanca(cfg), cancelarSaida(cfg) e mudarSaida(cfg, opcoes)
+   (a célula usa as mesmas).
    cfg = { tipo: 'funcao' | 'papel' | 'exibida' (as outras linhas que a Central
    só exibe: sem lápis) | 'vaga' | 'sem' | 'folga' | 'militar'
    (a linha da aba Militares) | 'fora' (remanejado daqui para outra
-   unidade) | 'saida' (quem saiu da guarnição; saida = a data da saída) | 'companhia' (o Oficial de Área da companhia na Central do
+   unidade) | 'saida' (quem saiu da guarnição; saida = a data da saída; ultimo e dias = o último serviço e os dias do
+   Mudar a saída, só na saída à mão) | 'companhia' (o Oficial de Área da companhia na Central do
    pelotão), visao: 'funcoes' | 'militares', exibida (no papel: a linha das
    Funções especiais), levado (no papel: a linha do papel que foi junto com
    ele para outra função do posto), grupo() (o bloco da função
@@ -120,7 +131,12 @@
     var folga = tirar && mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: cpf, periodos: periodos, folga: true }) : null;
     r['folga-dia'] = !!folga && folga.tipo === 'folga';
     r['remover-dia'] = tirar && !(analise && analise.tipo === 'folga');
-    r['remover-guarnicao'] = !!RW.escalasPainelCiclo && RW.escalasPainelCiclo.podeSair(cpf);
+    /* sair da guarnição: no dia do último serviço antes da saída marcada à mão, o Mudar a saída e o Cancelar a saída no
+       lugar do Remover da guarnição */
+    var marcada = !!RW.escalasPainelCiclo && RW.escalasPainelCiclo.saidaMarcada(cpf);
+    r['remover-guarnicao'] = !marcada && !!RW.escalasPainelCiclo && RW.escalasPainelCiclo.podeSair(cpf);
+    r['mudar-saida'] = !!marcada && (marcada.dias || []).length > 1;
+    r['cancelar-saida'] = !!marcada;
     /* o estagiário: o Mudar onde fica (os postos do estágio dele), sem troca de serviço e sem mudar de unidade (ele é do
        estágio desta unidade) */
     var dd = ed().dados() || {};
@@ -184,10 +200,17 @@
       var mudanca = !!(cfg.folga && cfg.folga.mudanca);
       r['cancelar-folga'] = !mudanca;
       r['desfazer-mudanca'] = mudanca;
+      /* a mudança também vai para outra data (sem outra folga dele no dia: o banco não muda o pedaço que sobra dela) ou
+         vira folga nos dois dias */
+      r['mudar-mudanca'] = mudanca && !((ed().dados() || {}).folgas || []).some(function (x) {
+        return x.cpf === cfg.folga.cpf && !x.mudanca;
+      });
+      r['folga-mudanca'] = mudanca;
     } else if (cfg.tipo === 'militar' && m) {
       itensDoDia(m.cpf, r);
       r['ver-funcoes'] = true;
     } else if (cfg.tipo === 'saida') {
+      r['mudar-saida'] = (cfg.dias || []).length > 1;
       r['cancelar-saida'] = true;
     } else if (cfg.tipo === 'fora') {
       r.devolver = true;
@@ -248,14 +271,40 @@
     RosterWork.escalasPainelRemover.doDia({ cpf: mil.cpf, periodos: mil.janelas.map(copiar), folga: !!folga }, cfg.linha);
   }
 
-  function folga(cfg, escolha) {
-    if (RosterWork.escalasPainelMilitar) RosterWork.escalasPainelMilitar.abrirFolga(cfg.folga.lancamento_id, { escolha: escolha });
-  }
-
   /* a mudança de dia ainda no rascunho ('vem' ou 'sai'): sair dela é largá-la, na hora, com o Desfazer */
   function largarMudanca(cpf, sentido, senao) {
     if (ed().mudancaNoRascunho(cpf) !== sentido) { senao(); return; }
     ed().mudar(function () { ed().largarMudancaDia(cpf); });
+  }
+
+  /* Cancelar a folga (ele volta ao serviço no horário dela) e Desfazer a mudança (o serviço volta para este dia e sai do
+     dia novo): na hora, com o Desfazer; a linha da caixa De folga e a riscada da célula usam as mesmas */
+  function cancelarFolga(cfg) {
+    ed().mudar(function () { ed().cancelarFolga(cfg.folga.lancamento_id); });
+  }
+  function desfazerMudanca(cfg) {
+    var m = cfg.folga && cfg.folga.mudanca;
+    largarMudanca(cfg.militar.cpf, 'sai', function () {
+      if (m) ed().mudar(function () { ed().desfazerMudanca(m.id, String(m.para_iso || '').slice(0, 10)); });
+    });
+  }
+
+  /* a saída marcada da linha: a da linha riscada ou a de quem faz neste dia o último serviço antes dela (a leitura do
+     dia): { saida, ultimo, dias } */
+  function saidaDa(cfg) {
+    if (cfg.tipo === 'saida') return { saida: cfg.saida, ultimo: cfg.ultimo || null, dias: cfg.dias || [] };
+    return RosterWork.escalasPainelCiclo.saidaMarcada(cfg.militar.cpf);
+  }
+  /* Cancelar a saída (na hora, com o Desfazer) e Mudar a saída (a pergunta Último serviço embaixo da linha; na célula,
+     opcoes = { dentro, aoCancelar }, dentro da caixa 2): as guarnições do painel (escalas-painel-ciclo.js); a célula usa
+     as mesmas */
+  function cancelarSaida(cfg) {
+    var s = saidaDa(cfg);
+    if (s) RosterWork.escalasPainelCiclo.cancelarSaida(cfg.militar, s.saida);
+  }
+  function mudarSaida(cfg, opcoes) {
+    var s = saidaDa(cfg);
+    if (s) RosterWork.escalasPainelCiclo.perguntarMudarSaida(cfg.militar, s, opcoes && opcoes.dentro ? null : cfg.linha, opcoes);
   }
 
   var ACOES = {
@@ -275,11 +324,21 @@
     'mudar-extra': function () { RosterWork.escalasPainel.abrirAba('extra'); },
     'remover-dia': function (cfg) { largarMudanca(cfg.militar.cpf, 'vem', function () { removerDoDia(cfg); }); },
     'folga-dia': function (cfg) { removerDoDia(cfg, true); },
-    /* o Remover da guarnição e o Cancelar a saída (a linha riscada de quem saiu): as guarnições do painel (escalas-painel-ciclo.js) */
+    /* o Remover da guarnição, o Mudar a saída e o Cancelar a saída: as guarnições do painel (escalas-painel-ciclo.js) */
     'remover-guarnicao': function (cfg) { RosterWork.escalasPainelCiclo.perguntarSaida(cfg.militar, cfg.linha); },
-    'cancelar-saida': function (cfg) { RosterWork.escalasPainelCiclo.cancelarSaida(cfg.militar, cfg.saida); },
-    'cancelar-folga': function (cfg) { folga(cfg, 'cancelar'); },
-    'desfazer-mudanca': function (cfg) { largarMudanca(cfg.militar.cpf, 'sai', function () { folga(cfg, 'desfazer'); }); },
+    'mudar-saida': function (cfg) { mudarSaida(cfg); },
+    'cancelar-saida': cancelarSaida,
+    'cancelar-folga': cancelarFolga,
+    'desfazer-mudanca': desfazerMudanca,
+    /* a linha da mudança, pelo dia de antes: o Mudar o dia com a mudança (a sub-tela) e o Dar folga (embaixo da linha) */
+    'mudar-mudanca': function (cfg) {
+      var MD = RosterWork.escalasPainelMudarDia;
+      MD.abrir({ cpf: cfg.militar.cpf, mudanca: MD.mudancaDaFolga(cfg.folga, ed().iso()) });
+    },
+    'folga-mudanca': function (cfg) {
+      var R = RosterWork.escalasPainelRemover;
+      R.doDia(null, cfg.linha, R.analisarFolgaDaMudanca(cfg.folga));
+    },
     /* quem foi remanejado daqui: a tela do Remover do dia, já com ele (Devolver ou Tirar do dia) */
     devolver: function (cfg) { RosterWork.escalasPainelRemover.abrir({ cpf: cfg.militar.cpf }); },
     /* a outra aba, já com o menu dele aberto */
@@ -365,5 +424,6 @@
   }
 
   window.RosterWork.escalasPainelLinhaMenu = { na: na, fazer: fazer, abrir: abrir, menuDaCelula: menuDaCelula,
-    largarMudanca: largarMudanca };
+    largarMudanca: largarMudanca, cancelarFolga: cancelarFolga, desfazerMudanca: desfazerMudanca,
+    cancelarSaida: cancelarSaida, mudarSaida: mudarSaida };
 })();

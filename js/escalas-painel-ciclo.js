@@ -20,7 +20,12 @@
      guarnição mostram (o efeito, molde tpl-escala-ciclo-efeito);
    - o Remover da guarnição e o Cancelar a saída do menu da linha, na
      aba Militares: a pergunta Último serviço embaixo da linha e a
-     saída que sai do rascunho (ou o cancelamento da gravada).
+     saída que sai do rascunho (ou o cancelamento da gravada);
+   - o Mudar a saída de quem tem a saída marcada à mão (a linha riscada
+     e quem faz no dia o último serviço antes dela, a lista
+     ultimo_servico do ler_distribuicao_dia): a pergunta Último
+     serviço com os dias de serviço dele, e a saída nova no rascunho
+     (mudar_saida).
    ============================================================ */
 (function () {
   'use strict';
@@ -28,9 +33,10 @@
   window.RosterWork = window.RosterWork || {};
 
   /* o rascunho do dia aberto (chave = unidade|dia), uma mudança por militar: [{ cpf, acao, data?, letra?, ultimo_servico?,
-     tipo, itens, de? }]; acao = adicionar (pôr numa guarnição ou mudar de guarnição), tirar ou cancelar_saida; tipo =
-     entrar, mudar, sair ou cancelar_saida; itens = o que acontece com as trocas e folgas (a lista da pergunta); de = a
-     guarnição de antes (quem muda pela aba Guarnições) */
+     saida?, ultimo?, tipo, itens, de? }]; acao = adicionar (pôr numa guarnição ou mudar de guarnição), tirar,
+     cancelar_saida ou mudar_saida (a saída marcada, saida, passa para a data; ultimo = o último serviço novo, a resposta da
+     pergunta); tipo = entrar, mudar, sair, cancelar_saida ou mudar_saida; itens = o que acontece com as trocas e folgas (a
+     lista da pergunta); de = a guarnição de antes (quem muda pela aba Guarnições) */
   var rascunho = { chave: '', lista: [] };
   var pilha = [];      // os passos da aba Guarnições, { cpf, antes, depois } ou, de vários, { lista: [...] } (o Desfazer volta o último)
   var refeitos = [];   // os passos desfeitos (o Refazer)
@@ -80,8 +86,15 @@
       if (x.data) m.data = x.data;
       if (x.letra) m.letra = x.letra;
       if (x.ultimo_servico) m.ultimo_servico = x.ultimo_servico;
+      if (x.saida) m.saida = x.saida;
       return m;
     });
+  }
+  /* o primeiro dia que a mudança mexe (iso = o dia dela): a data dela ou, na saída que muda de dia, a que vem antes, a de
+     agora ou a nova */
+  function desde(x, iso) {
+    var d = x.data || iso;
+    return x.saida && x.saida < d ? x.saida : d;
   }
   function limpar() {
     pilha = []; refeitos = [];
@@ -206,19 +219,32 @@
   /* quem sai da escala no dia (a sub-tela já mostrou a lista; itens = o que acontece) */
   function marcarSair(unidadeId, iso, m, itens) { marcar(unidadeId, iso, { cpf: m.cpf, acao: 'tirar', tipo: 'sair', itens: itens }); }
 
-  /* ---------- a aba Militares: o Remover da guarnição e o Cancelar a saída (o menu da linha) ---------- */
+  /* ---------- a aba Militares: o Remover da guarnição, o Mudar a saída e o Cancelar a saída (o menu da linha) ---------- */
 
   var pergunta = null;   // a pergunta Último serviço aberta embaixo de uma linha: { el, pedido, passos }
   var conta = 0;         // nome único para os rádios de cada pergunta
 
   function ed() { return RosterWork.escalasPainelEditar.sub; }
+  function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
+  function diaSeguinte(iso) { var d = iso.split('-'); return RosterWork.data.paraIsoDeData(new Date(Number(d[0]), Number(d[1]) - 1, Number(d[2]) + 1)); }
+  /* o dia mais antigo que se mexe (hoje − 7), como toda mudança */
+  function limite() { var h = new Date(); return RosterWork.data.paraIsoDeData(new Date(h.getFullYear(), h.getMonth(), h.getDate() - 7)); }
 
   /* ele está no dia pela guarnição (o Remover da guarnição vale)? Até 7 dias atrás, como toda mudança */
   function podeSair(cpf) {
-    var api = ed(), mil = api.militarDoDia(cpf), R = RosterWork.escalasPainelRemoverListas, h = new Date();
+    var api = ed(), mil = api.militarDoDia(cpf), R = RosterWork.escalasPainelRemoverListas;
     if (!mil || !R || mil.remanejado) return false;
-    if (api.iso() < RosterWork.data.paraIsoDeData(new Date(h.getFullYear(), h.getMonth(), h.getDate() - 7))) return false;
+    if (api.iso() < limite()) return false;
     return R.partesDe(mil).some(function (p) { return p.origem === 'ciclo'; });
+  }
+
+  /* a saída à mão de quem faz neste dia o último serviço antes dela (a lista ultimo_servico do dia): { saida, ultimo,
+     dias }; nula sem ela e no dia de mais de 7 dias atrás. Com ela, o Mudar a saída e o Cancelar a saída ficam no lugar do
+     Remover da guarnição */
+  function saidaMarcada(cpf) {
+    var api = ed(), dd = api.dados() || {};
+    if (api.iso() < limite()) return null;
+    return (dd.ultimo_servico || []).filter(function (x) { return x.cpf === cpf; })[0] || null;
   }
 
   /* a pergunta sai: 'largar', sem mudar o rascunho (o Cancelar já voltou); 'guardar', a resposta fica; sem modo, também
@@ -244,9 +270,9 @@
     var el = RosterWork.tpl('tpl-escala-remover-guarnicao');
     if (!el || !(linha || opcoes.dentro)) return;
     var api = ed(), uid = api.unidadeId(), iso = api.iso(), cpf = m.cpf, antes = marcado(uid, iso, cpf);
-    var d = iso.split('-'), amanha = RosterWork.data.paraIsoDeData(new Date(Number(d[0]), Number(d[1]) - 1, Number(d[2]) + 1));
+    var amanha = diaSeguinte(iso);
     var p = { el: el, pedido: 0, passos: 0 };
-    [].forEach.call(el.querySelectorAll('.escala-remover-guarnicao-data'), function (s) { s.textContent = d[2] + '/' + d[1]; });
+    [].forEach.call(el.querySelectorAll('.escala-remover-guarnicao-data'), function (s) { s.textContent = diaMes(iso); });
     var ver = efeito(el.querySelector('.escala-remover-guarnicao-efeito'));
     var nome = 'escala-remover-guarnicao-' + (++conta);
     [].forEach.call(el.querySelectorAll('input[type="radio"]'), function (r) {
@@ -280,25 +306,88 @@
     pergunta = p;
   }
 
-  /* o Cancelar a saída da linha riscada (aba Militares; data = a da saída): a saída marcada sai, no rascunho; a que só
-     estava no rascunho (o Remover da guarnição) só sai dele. A lista se refaz sem ela */
+  /* o Mudar a saída de quem tem a saída marcada à mão (m; s = { saida, ultimo, dias }, a da linha riscada ou a de quem faz
+     no dia o último serviço antes dela; linha = a linha dele na aba Militares): a pergunta Último serviço embaixo da linha,
+     com os dias de serviço dele que dá para escolher e o de agora marcado. Outro dia põe no rascunho a saída no dia
+     seguinte a ele e, quando ela vem para antes, mostra embaixo o que acontece com as trocas e folgas dele; o dia da saída
+     gravada tira a mudança. A saída que só está no rascunho (o Remover da guarnição) muda nele. O Cancelar volta ao que
+     era. Na caixa flutuante da célula: opcoes = { dentro, aoCancelar }, como no Remover da guarnição */
+  function perguntarMudarSaida(m, s, linha, opcoes) {
+    opcoes = opcoes || {};
+    if (RosterWork.escalasPainelRemover) RosterWork.escalasPainelRemover.fecharPergunta('guardar');
+    fecharPergunta('guardar');
+    var el = RosterWork.tpl('tpl-escala-mudar-saida');
+    if (!el || !s || !(linha || opcoes.dentro)) return;
+    var api = ed(), uid = api.unidadeId(), iso = api.iso(), cpf = m.cpf, antes = marcado(uid, iso, cpf);
+    var soNoRascunho = !!antes && antes.acao === 'tirar';
+    var gravada = antes && antes.acao === 'mudar_saida' ? antes.saida : s.saida;
+    var p = { el: el, pedido: 0, passos: 0 }, ver = null;
+    var marcador = el.querySelector('.escala-mudar-saida-efeito'), nome = 'escala-mudar-saida-' + (++conta);
+    (s.dias || []).forEach(function (dia) {
+      var op = RosterWork.tpl('tpl-escala-mudar-saida-opcao');
+      if (!op) return;
+      var r = op.querySelector('input');
+      r.name = nome;
+      r.value = dia;
+      r.checked = dia === s.ultimo;
+      op.querySelector('.escala-mudar-saida-data').textContent = diaMes(dia);
+      r.addEventListener('change', function () {
+        if (!r.checked) return;
+        var nova = diaSeguinte(dia), meu = ++p.pedido;
+        ver.esconder();
+        if (soNoRascunho) marcarPasso(uid, iso, { cpf: cpf, acao: 'tirar', tipo: 'sair', data: nova, itens: [] });
+        else if (nova === gravada) desmarcarPasso(uid, iso, cpf);
+        else marcarPasso(uid, iso, { cpf: cpf, acao: 'mudar_saida', tipo: 'mudar_saida', saida: gravada, data: nova, ultimo: dia, itens: [] });
+        p.passos++;
+        /* para antes: o que acontece com as trocas e folgas dele dali em diante (para depois, nada sai) */
+        if (nova >= s.saida) return;
+        analisar(uid, cpf, nova, RosterWork.mensagens.saida.escalaTirar).then(function (aviso) {
+          if (pergunta !== p || meu !== p.pedido) return;
+          if (aviso.erro) { RosterWork.avisar({ tipo: 'erro', mensagem: aviso.erro }); return; }
+          ver.mostrar(aviso);
+          var atual = marcado(uid, iso, cpf);
+          if (atual && atual.data === nova) atual.itens = aviso.itens || [];
+        });
+      });
+      el.insertBefore(op, marcador);
+    });
+    ver = efeito(marcador);
+    el.querySelector('.escala-mudar-saida-cancelar').addEventListener('click', function () {
+      if (p.passos) {
+        pilha.splice(pilha.length - p.passos, p.passos);
+        trocarDe(cpf, antes);
+        avisar();
+      }
+      fecharPergunta('largar');
+      if (opcoes.aoCancelar) opcoes.aoCancelar();
+    });
+    if (opcoes.dentro) opcoes.dentro.appendChild(el);
+    else linha.insertAdjacentElement('afterend', el);
+    pergunta = p;
+  }
+
+  /* o Cancelar a saída (data = a da saída; a linha riscada ou o dia do último serviço antes dela): a saída marcada sai, no
+     rascunho; a que só estava no rascunho (o Remover da guarnição) só sai dele; a que o Mudar a saída mexeu no rascunho
+     sai da data gravada. A lista se refaz sem ela */
   function cancelarSaida(m, data) {
     fecharPergunta('guardar');
     var api = ed(), uid = api.unidadeId(), iso = api.iso(), antes = marcado(uid, iso, m.cpf);
     if (antes && antes.acao === 'tirar') desmarcarPasso(uid, iso, m.cpf);
-    else marcarPasso(uid, iso, { cpf: m.cpf, acao: 'cancelar_saida', tipo: 'cancelar_saida', data: data, itens: [] });
+    else marcarPasso(uid, iso, { cpf: m.cpf, acao: 'cancelar_saida', tipo: 'cancelar_saida',
+      data: antes && antes.acao === 'mudar_saida' ? antes.saida : data, itens: [] });
     api.redesenhar();
   }
 
   window.RosterWork.escalasPainelCiclo = {
     doDia: doDia, marcado: marcado, desmarcar: desmarcar, contar: contar, envio: envio, limpar: limpar,
-    copia: copia, voltarA: voltarA,
+    copia: copia, voltarA: voltarA, desde: desde,
     marcarPasso: marcarPasso, desmarcarPasso: desmarcarPasso, podeDesfazer: podeDesfazer, podeRefazer: podeRefazer,
     desfazer: desfazer, refazer: refazer, porVarias: porVarias, passoVarios: passoVarios,
     analisar: analisar, analisarSair: analisarSair, analisarMudar: analisarMudar, efeito: efeito,
     entrar: entrar, marcarMudar: marcarMudar, marcarSair: marcarSair,
-    /* a aba Militares (o menu da linha): o Remover da guarnição e o Cancelar a saída */
+    /* a aba Militares (o menu da linha): o Remover da guarnição, o Mudar a saída e o Cancelar a saída */
     podeSair: podeSair, perguntarSaida: perguntarSaida, cancelarSaida: cancelarSaida, fecharPergunta: fecharPergunta,
+    saidaMarcada: saidaMarcada, perguntarMudarSaida: perguntarMudarSaida,
     abrirDia: abrirDia,
     /* para a gaveta dos dias (escalas-rascunho-dias.js): o Ciclo fica fora da ordem do Desfazer do rodapé (a aba
        Guarnições tem o dela) */

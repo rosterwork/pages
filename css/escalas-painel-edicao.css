@@ -463,11 +463,29 @@
   display: contents;
 }
 
-/* a barra curta (geral-etapas.css) ao lado do Para qual dia, enquanto os dias dele ou a leitura do dia novo chegam */
+/* a barra curta (geral-etapas.css) do Para qual dia, enquanto os dias dele ou a leitura do dia novo chegam: na linha do
+   rótulo, à direita (fora do fluxo, para o número da pergunta e o texto não mudarem) */
+.escala-mudar-dia-dia > .rotulo-secao {
+  position: relative;
+}
+
 .rotulo-secao > .escala-mudar-dia-carregando {
-  display: inline-block;
-  margin-left: 8px;
-  vertical-align: middle;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+/* ---------- Remover militar › Muda para outra data ---------- */
+/* as perguntas do Mudar o dia (a sub-tela dele, dentro desta, sem o título e sem o Quem) entram como as outras caixas: o
+   espaço e a numeração continuam os da sub-tela do Remover */
+.escala-remover-mudanca-outra,
+.escala-remover-mudanca-outra > .subtela {
+  display: contents;
+}
+
+.escala-remover-mudanca-outra > .subtela {
+  counter-reset: none;
 }
 
 /* ---------- Remover militar › por troca ---------- */

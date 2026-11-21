@@ -176,15 +176,12 @@
     var tituloEl = conteudo.querySelector('.escala-como-funcao-titulo');
     tituloEl.textContent = titulo;
     if (RW.celular && RW.celular()) tituloEl.classList.add('oculto');   // no celular, o título vai na folha
-    /* a caixa abre quando as frases chegam; se demoram, com a barra */
-    var caixa = RW.caixaFlutuante.abrir({ peca: b, copiar: true, titulo: titulo });
+    /* a caixa aparece quando as frases chegam; passando de 0,2 s, com as faixas, que ficam o mínimo na tela */
+    var caixa = RW.caixaFlutuante.abrir({ peca: b, titulo: titulo, esperar: true });
     if (!caixa) return;
     caixaAberta = caixa;
-    var demora = setTimeout(function () { caixa.espera(true); }, 300);
     ler(info.unidadeId, info.iso).then(function (dados) {
-      clearTimeout(demora);
       if (!caixa.aberta()) return;
-      caixa.espera(false);
       if (!dados) { caixa.fechar(); RW.avisar({ tipo: 'erro', mensagem: msg().erro }); return; }
       /* o nome da função antes de cada pessoa só quando o grupo tem funções diferentes (o Chefe com o Condutor) */
       var M = msg(), frases = [], efetivo = false, prefixo = funcoes.length > 1 && (info.rotulos || funcoes).length > 1;
@@ -197,7 +194,9 @@
       });
       encher(conteudo.querySelector('[data-como-lista]'), frases);
       conteudo.querySelector('[data-como-efetivos]').classList.toggle('oculto', !efetivo);
-      caixa.conteudo(conteudo);
+      var falta = caixa.faltaForma();
+      if (!falta) { caixa.conteudo(conteudo); return; }
+      setTimeout(function () { if (caixa.aberta()) caixa.conteudo(conteudo); }, falta);
     });
   }
 

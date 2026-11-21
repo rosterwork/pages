@@ -161,10 +161,18 @@
     escala = { comp: d.competencia, cobertura: r.cobertura, erro: r.erro, militares: r.militares };
   }
   function escalaPronta() { return !!escala && escala.comp === d.competencia; }
-  /* o antes: com extra na escala (mês lançado ou reaberto), a escala sem elas, do banco (sem_extra); senão, a da Escala */
+  /* o antes: o pelotão com extra na escala do dia (mês lançado ou reaberto), a escala sem elas, do banco (sem_extra);
+     sem extra no dia, a escala como está, a da Escala (a conta sem as extras refaz a distribuição do dia e pode mudar
+     as funções, como no rodízio) */
   function antesDoDia(uid, k) {
-    return ((d.sem_extra || {})[uid] || {})[k] || { cobertura: escala && (escala.cobertura[uid] || {})[k], erro: escala && (escala.erro[uid] || {})[k],
-                                                    estagiarios: estagiariosDaEscala(uid, k) };
+    var sem = temExtraNaEscala(uid, k) && ((d.sem_extra || {})[uid] || {})[k];
+    return sem || { cobertura: escala && (escala.cobertura[uid] || {})[k], erro: escala && (escala.erro[uid] || {})[k],
+                    estagiarios: estagiariosDaEscala(uid, k) };
+  }
+  /* alguém de extra na escala do pelotão no dia */
+  function temExtraNaEscala(uid, k) {
+    var dia = ((d.escala || {})[uid] || {})[k];
+    return !!(dia && (dia.militares || []).some(function (m) { return m.origem === 'extra'; }));
   }
   /* os estagiários que não são efetivo, por hora, da escala de hoje (a dica da faixa; escalas-celula.js) */
   function estagiariosDaEscala(uid, k) { return RW.escalasCelula ? RW.escalasCelula.estagiariosDoDia(uid, k) : null; }

@@ -3,17 +3,12 @@
 
 
   /* itens marcados só aparecem para o papel certo: data-admin (qualquer administrador: os Ajustes e o
-     Histórico, que mostra a área dele; item + divisória da seção), data-programador (programador — item +
-     divisória da seção) */
+     Histórico, que mostra a área dele; item + divisória da seção), data-programador (programador: item +
+     divisória da seção). Quem esconde é o css/index-sidebar.css, pela marca do papel no <html>, posta pelo
+     js/index-sessao.js antes da primeira pintura; aqui ela é posta de novo para a entrada pelo login lembrado,
+     em que o perfil chega depois */
   function aplicarPermissoesMenu() {
-    if (!RosterWork.sessao.temPapel('pelotao')) {
-      var admins = document.querySelectorAll('.sidebar [data-admin]');
-      for (var i = 0; i < admins.length; i++) admins[i].classList.add('oculto');
-    }
-    if (!(RosterWork.sessao.ehProgramador && RosterWork.sessao.ehProgramador())) {
-      var progs = document.querySelectorAll('[data-programador]');
-      for (var j = 0; j < progs.length; j++) progs[j].classList.add('oculto');
-    }
+    if (RosterWork.papeisDoMenu) RosterWork.papeisDoMenu.marcar();
   }
 
   function salvarPreferenciaSidebar(recolhido) {

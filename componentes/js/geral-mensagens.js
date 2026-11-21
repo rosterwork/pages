@@ -719,6 +719,20 @@
         pref: { quer: 'Marcou Quero neste dia.', nao: 'Marcou Não quero neste dia.', sem: 'Sem preferência neste dia.' },
         /* a dica da bolinha do militar em foco, no bloco em que ele não tem extra */
         prefDia: { quer: 'Quer este dia', nao: 'Não quer este dia', sem: 'Sem preferência' },
+        /* a linha da Falta de gente embaixo do gráfico (o Exibir; extrajornada-por-dia.js): o "1 de 2", o "+1" das extras a
+           mais e a dica de cada horário (quando: '08h às 14h'; h: a conta do horário, extrajornada-falta.js › porHorario;
+           so: quando falta só numa parte do horário, as horas, 'das 07h às 08h') */
+        faltaDe: function (n, de) { return n + ' de ' + de; },
+        faltaMais: function (n) { return '+' + n; },
+        faltaDica: {
+          falta: function (quando, h, so) {
+            return 'Das ' + quando + ', ' + (h.cobriu ? 'as extras cobriram ' + h.cobriu + ' de ' + h.antes + ' e ' : '') +
+              (h.falta === 1 ? 'falta 1' : 'faltam ' + h.falta) + (so ? ', só ' + so : '') + '.';
+          },
+          coberta: function (quando, h) {
+            return 'Das ' + quando + ', ' + (h.mais ? h.mais + (h.mais === 1 ? ' extra a mais' : ' extras a mais') + ' do que faltava.' : 'as extras cobriram a falta.');
+          }
+        },
         /* o campo do Adicionar militar na célula: a busca e a lista sem ninguém para pôr */
         pesquisarMilitar: 'Pesquisar militar',
         ninguemParaPor: 'Ninguém mais pode neste dia',
@@ -1233,9 +1247,12 @@
         /* o Oficial de Área que vem de um pelotão (escalas-celula-oficial.js): o motivo do remanejamento (a pergunta se ele
            sai de lá ou fica nas duas usa as frases remanejarSai, remanejarSoNa e remanejarNasDuas) */
         motivoOficial: 'Oficial de Área',
-        /* Remover do dia › quem veio de outro dia (mudança de dia): volta para o dia de antes ou sai deste dia, e o de
-           antes vira folga (a pergunta do banco de horas vem depois) */
-        devolverPara: function (de) { return 'Devolver para ' + de; },
+        /* Remover do dia › quem veio de outro dia (mudança de dia): de onde veio e as três respostas, fica de folga no dia
+           de antes (a pergunta do banco de horas vem depois), muda para outra data (o texto dela fica no molde) ou volta
+           ao serviço de antes; as ajudas, só no painel */
+        mudancaVeio: function (de) { return 'Mudou de dia: veio de ' + de + '.'; },
+        ficaDeFolga: function (de) { return 'Fica de folga em ' + de; },
+        voltaAoServico: function (de) { return 'Volta ao serviço de ' + de; },
         devolverParaAjuda: function (de, para) { return 'O serviço volta para ' + de + ' e sai de ' + para + '. O banco de horas não muda.'; },
         tirarMudancaAjuda: function (de) { return 'Ele sai deste dia e fica de folga em ' + de + '.'; },
         /* Mudar de unidade neste dia: Trazer para esta unidade ou Enviar para outra; as perguntas, o serviço de quem vai
@@ -1297,9 +1314,12 @@
         naoExtra: 'Está de extra. Mude pela Extrajornada.',
         naoPontual: 'É pontual. Tire pelo Remover deste dia e ponha no outro dia pelo Adicionar militar.',
         naoRemanejado: 'Está remanejado neste dia. Devolva antes, pelo Remover deste dia.',
-        naoMudou: function (de) { return 'Veio de ' + de + '. Para mudar de novo, devolva antes pelo Remover deste dia.'; },
+        naoMudou: function (de) { return 'Veio de ' + de + '. Para mudar de novo, use o lápis dele.'; },
         naoOutraUnidade: 'É de outra unidade neste dia.',
-        servico: function (data, periodos, troca) { return 'De serviço em ' + data + (troca ? ' por troca, ' : ' pela guarnição, ') + periodos + '.'; },
+        /* o serviço que muda; veio = o dia de antes de quem já mudou de dia (o Muda para outra data) */
+        servico: function (data, periodos, troca, veio) {
+          return 'De serviço em ' + data + (veio ? ', que veio de ' + veio + ', ' : (troca ? ' por troca, ' : ' pela guarnição, ')) + periodos + '.';
+        },
         mes: function (mes, ano) { return mes + ' de ' + ano; },
         /* embaixo do campo do Para qual dia: a situação dele no dia escolhido (a folga em volta, ou as horas seguidas sem
            ela) e as vagas sem ninguém no dia */
@@ -1375,20 +1395,7 @@
         var t = partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : partes[0];
         return t.charAt(0).toUpperCase() + t.slice(1);
       },
-      /* a folga no dia (o lápis da caixa De folga): o horário e o efeito de cancelar */
-      /* a folga no dia que veio da mudança de dia: o serviço passou para outro dia; desfazer o traz de volta */
-      mudancaNoDia: function (para, periodo) { return 'Passou para ' + para + (periodo ? ', ' + periodo : ''); },
-      desfazerMudancaEfeito: function (de, para) {
-        return 'O serviço volta para ' + de + ' e sai de ' + para + '. A distribuição dos dois dias é refeita, e o banco de horas não muda.';
-      },
-      folgaNoDia: function (periodo, contabilizada) {
-        return 'De folga ' + (periodo || 'o dia todo') + ', ' + (contabilizada ? 'contabilizada' : 'não contabilizada');
-      },
-      cancelarFolgaEfeito: function (militar, contabilizada) {
-        return 'Ao cancelar, o ' + militar + ' volta ao serviço no dia e a distribuição é refeita. '
-          + (contabilizada ? 'Como a folga foi contabilizada, as horas dela voltam ao saldo.' : 'Como a folga não foi contabilizada, o saldo dele não muda.');
-      },
-      /* a extra por cima da folga (o painel do dia e a página Folgas): faixas = [['08h', '08h'], ...] */
+      /* a extra por cima da folga (a página Folgas): faixas = [['08h', '08h'], ...] */
       cancelarFolgaExtra: function (faixas) {
         return 'Ele tem extra neste dia, ' + faixas.map(function (f) { return 'das ' + f[0] + ' às ' + f[1]; }).join(' e ') + ': fica de serviço e de extra no mesmo horário.';
       },
@@ -1482,19 +1489,19 @@
         /* quem fica nas duas unidades, na dele (antes de salvar, a outra ainda não tem nome) */
         tambem: function (para) { return para ? 'Também n' + artigo(para) + ' ' + para + ' nesse dia' : 'Também em outra unidade nesse dia'; },
         /* o militar do grupo Fora da escala (o operacional da unidade sem guarnição); quem voltou de um afastamento há até 5
-           dias (o aviso amarelo) */
+           dias (o aviso amarelo), de férias ou de outro afastamento */
         fora: 'Fora da escala, sem guarnição',
-        foraVoltou: function (data) { return 'Fora da escala, voltou em ' + data; }
+        foraVoltou: function (data, ferias) { return 'Fora da escala, voltou ' + (ferias ? 'de férias' : 'de afastamento') + ' em ' + data; }
       },
       /* os grupos da célula da Escala (escalas-celula-grupos.js): a dica da linha tracejada diz o grupo de baixo */
       grupoCelula: { guarnicao: 'Guarnição', troca: 'Trocas', pontual: 'Pontual', remanejado: 'Remanejados', extra: 'Extrajornada',
         estagio: 'Estágio', sobreaviso: 'Sobreaviso', fora: 'Fora da escala' },
       /* o título de quem não está em nenhum posto, com quantos (Op. Verão e Estágios, o .escala-mes-posto--sem) */
       semPosto: function (n) { return 'Sem posto (' + n + ')'; },
-      /* no lugar do horário de quem está fora da escala: a entrada na guarnição já marcada; a volta de um afastamento (o
-         aviso amarelo, até 5 dias depois dela) */
+      /* no lugar do horário de quem está fora da escala: a entrada na guarnição já marcada; o amarelo (a volta de um
+         afastamento há até 5 dias) e o vermelho sem a entrada marcada */
       entraEm: function (data) { return 'Entra em ' + data; },
-      voltouEm: function (data) { return 'Voltou em ' + data; },
+      foraDaEscala: 'Fora da escala',
       /* o Adicionar neste dia de quem está fora da escala, sem horas livres no dia (escalas-celula-fora.js) */
       foraSemHoras: 'Este militar não tem horas livres neste dia.',
       /* Observações do dia (notas do admin, trocas, folgas, outra unidade, remanejados) — o banco manda os dados, aqui vira texto */
@@ -1532,7 +1539,7 @@
         }
         /* mudança de dia: aparece nos dois dias, com o horário quando é só uma parte do serviço */
         if (o.classe === 'mudanca') {
-          return quem(o.grad, o.nome) + ' passou o serviço de ' + (o.de || '') + ' para ' + (o.para || '')
+          return quem(o.grad, o.nome) + ' mudou o dia de serviço de ' + (o.de || '') + ' para ' + (o.para || '')
             + (o.hi === o.hf ? '' : ', das ' + hh(o.hi) + ' às ' + hh(o.hf)) + '.';
         }
         if (o.classe === 'folga') {

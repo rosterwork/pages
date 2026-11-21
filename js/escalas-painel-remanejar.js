@@ -21,8 +21,7 @@
    escolhida); no Trazer, Quem vem (quem está de serviço nas outras
    unidades, um grupo por unidade, com o serviço dele). Depois, Em
    troca, Na unidade de origem (sem troca e sem extra: sai ou fica nas
-   duas), Motivo (opcional) e um Onde fica para cada militar que entra
-   numa unidade (escalas-painel-onde.js, sem a nota do que acontece com
+   duas) e um Onde fica para cada militar que entra numa unidade (escalas-painel-onde.js, sem a nota do que acontece com
    quem está em volta: o dia é refeito ao salvar); embaixo, a linha
    Conferindo a mudança e a recusa (escalas-painel-remanejar-conferir.js:
    o banco confere numa prévia das duas unidades). O dia da outra
@@ -30,9 +29,8 @@
    leitura do painel (ler_distribuicao_dia). As listas ficam em
    escalas-painel-remanejar-listas.js. Sem botão próprio: com tudo
    respondido, o remanejamento entra no rascunho do Dia ao vivo
-   (escalas-painel-editar.js › aoVivo; o motivo, quando escrito, vai
-   junto); depois da primeira resposta, a resposta pela metade e a
-   recusa desligam o Salvar. Depois de salvo, desfaz-se pelo Devolver
+   (escalas-painel-editar.js › aoVivo); depois da primeira resposta, a
+   resposta pela metade e a recusa desligam o Salvar. Depois de salvo, desfaz-se pelo Devolver
    (o lápis de quem foi para outra unidade, na aba Militares) ou pelo
    Remover do dia.
    API: RosterWork.escalasPainelRemanejar.abrir(opcoes) (a sub-tela do
@@ -52,8 +50,7 @@
 
   window.RosterWork = window.RosterWork || {};
 
-  var conta = 0;               // nome único para os rádios e os campos de cada abertura
-  var cancelarGuarda = null;   // o guarda de saída do motivo (um Remanejar aberto por vez)
+  var conta = 0;   // nome único para os rádios e os campos de cada abertura
 
   function ed() { return RosterWork.escalasPainelEditar.sub; }
   function msg() { return RosterWork.mensagens.escala; }
@@ -205,10 +202,9 @@
       trocaCampo: q('.escala-remanejar-troca-campo'), trocaCombo: q('.escala-remanejar-troca-combo'),
       sai: q('.escala-remanejar-sai'), saiPergunta: q('.escala-remanejar-sai-pergunta'),
       saiSim: q('.escala-remanejar-sai-sim'), saiNao: q('.escala-remanejar-sai-nao'),
-      motivo: q('.escala-remanejar-motivo'), ondes: q('.escala-remanejar-ondes'),
+      ondes: q('.escala-remanejar-ondes'),
       conferindo: q('.escala-remanejar-conferindo'), erro: q('.escala-remanejar-erro')
     };
-    el.campoMotivo = el.motivo.querySelector('textarea');
     /* o Enviar ou o Trazer, para o desenho (na caixa da célula, o Quem do Enviar não aparece) */
     tela.classList.add(trazer() ? 'escala-remanejar--trazer' : 'escala-remanejar--enviar');
     /* o banco confere (escalas-painel-remanejar-conferir.js) */
@@ -239,17 +235,6 @@
       aoPerder: function () { est.itemTroca = null; },
       textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemNaUnidade, filtroVazio: msg().ninguemEncontrado }
     });
-    el.campoMotivo.addEventListener('input', function () {
-      respondeu = true;
-      if (RosterWork.campos) RosterWork.campos.limparErro(el.campoMotivo);
-      atualizar();
-    });
-    /* o motivo escrito e não salvo: o navegador avisa antes de sair */
-    if (cancelarGuarda) cancelarGuarda();
-    var campo = el.campoMotivo;
-    cancelarGuarda = RosterWork.guardaSaida ? RosterWork.guardaSaida.registrar(function () {
-      return document.contains(campo) && campo.value.trim() !== '';
-    }) : null;
 
     /* ---------- as respostas ---------- */
 
@@ -348,7 +333,7 @@
     function atualizar(manter) {
       if (!tela.isConnected) return;
       if (manter !== true && RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-      ['quem', 'servico', 'unidade', 'troca', 'trocaCampo', 'sai', 'motivo', 'conferindo', 'erro'].forEach(function (k) { mostra(el[k], false); });
+      ['quem', 'servico', 'unidade', 'troca', 'trocaCampo', 'sai', 'conferindo', 'erro'].forEach(function (k) { mostra(el[k], false); });
       [el.unidade, el.troca, el.sai].forEach(function (c) { c.classList.remove('grupo-caixa--erro'); });
       Object.keys(ondes).forEach(function (k) { ondes[k].caixa.classList.remove('grupo-caixa--erro'); });
       var semOutras = unidadesChegaram && !outras.length;
@@ -358,7 +343,7 @@
       metade = false;
       recusa = false;
       var lista = [];
-      /* falta resposta (true) até o Onde fica; o motivo é à parte */
+      /* falta resposta (true) até o Onde fica */
       var falta = (function () {
         if (semOutras) return true;
         mostra(el.quem, true);
@@ -388,7 +373,6 @@
           el.marcarSai(est.sai);
           if (!est.sai) { metade = respondeu; return true; }
         }
-        mostra(el.motivo, true);
         lista = entradas();
         return false;
       })();
@@ -396,8 +380,8 @@
       /* o Onde fica de cada um (a caixa nova já entra com a falta dela) */
       if (!falta && ondeQueFalta()) { falta = true; metade = respondeu; }
       if (falta) { api.aoVivo(null, metade); return; }
-      /* tudo respondido: o remanejamento entra no rascunho (o motivo é opcional e não muda a prévia) e o banco confere
-         esta resposta (a recusa desliga o Salvar); a conta vem meio segundo depois, e até lá fica o Conferindo a mudança */
+      /* tudo respondido: o remanejamento entra no rascunho e o banco confere esta resposta (a recusa desliga o Salvar);
+         a conta vem meio segundo depois, e até lá fica o Conferindo a mudança */
       var chave = chaveDaResposta(lista), c = conf.resultado(chave);
       recusa = metade = !!c && !!c.erro;
       api.aoVivo(function () { noRascunho(lista); }, recusa);
@@ -419,7 +403,7 @@
       mostra(el.erro, true);
     }
 
-    /* a resposta de agora, sem o motivo (que não muda a escala): a conta do banco vale enquanto ela não muda */
+    /* a resposta de agora: a conta do banco vale enquanto ela não muda */
     function chaveDaResposta(lista) {
       var u = outra();
       return JSON.stringify([est.fazer, u && u.unidade_id, est.item && est.item.cpf, est.troca, est.itemTroca && est.itemTroca.cpf, est.sai,
@@ -428,10 +412,10 @@
 
     /* ---------- no rascunho ---------- */
 
-    /* os remanejamentos (quem vai ou vem e, em troca, quem faz o caminho contrário, com o motivo); quem sai perde as
-       colocações manuais de onde saiu (quem fica nas duas, não), e cada um que entra fica onde foi escolhido */
+    /* os remanejamentos (quem vai ou vem e, em troca, quem faz o caminho contrário); quem sai perde as colocações
+       manuais de onde saiu (quem fica nas duas, não), e cada um que entra fica onde foi escolhido */
     function noRascunho(ent) {
-      var u = outra(), motivo = el.campoMotivo.value.trim(), itens = [];
+      var u = outra(), itens = [];
       var fica = est.troca === 'nao' && !R().temExtra(est.item) && est.sai === 'fica';
       function item(i, origem, destino, dadosOrigem, ficaNasDuas) {
         itens.push({ cpf: i.cpf, origem: Number(origem), destino: Number(destino), fica: ficaNasDuas, dadosOrigem: dadosOrigem });
@@ -445,7 +429,7 @@
       }
       itens.forEach(function (i) { if (!i.fica) R().cortarNaOrigem(api.rascunho(), i.cpf, i.dadosOrigem); });
       ent.forEach(function (e) { ondes[e.chave].comp.aplicar(null); });
-      api.remanejar(itens.map(function (i) { return { cpf: i.cpf, origem: i.origem, destino: i.destino, fica: i.fica, motivo: motivo }; }));
+      api.remanejar(itens.map(function (i) { return { cpf: i.cpf, origem: i.origem, destino: i.destino, fica: i.fica }; }));
     }
 
     /* ---------- começo ---------- */

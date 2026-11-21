@@ -39,7 +39,9 @@
    dois dias),
    desfazer_mudanca ([{ id, dia }]: volta ao dia de antes; dia = o
    outro dia da mudança), tirar_mudanca ([{ id, contabilizar, dia }]:
-   sai do dia novo e o de antes vira folga), automatico (o
+   sai do dia novo e o de antes vira folga), remarcar_mudanca ([{ id,
+   para, onde, dia }]: o Muda para outra data, no dia novo; dia = o de
+   antes, que continua com a mesma marca), automatico (o
    sistema decide o dia de novo, sem devolver cada um ao lugar de
    antes: o Voltar ao automático e o Adicionar com O sistema
    distribui) }.
@@ -209,9 +211,10 @@
   }
   function difOnde() { return Object.keys(ondeMudou()).length; }
 
-  /* a mudança de dia no rascunho (mudar, desfazer ou tirar)? */
+  /* a mudança de dia no rascunho (mudar, desfazer, tirar ou remarcar)? */
   function comMudancaDeDia() {
-    return rasc.mudar_dia.length > 0 || rasc.desfazer_mudanca.length > 0 || rasc.tirar_mudanca.length > 0;
+    return rasc.mudar_dia.length > 0 || rasc.desfazer_mudanca.length > 0 || rasc.tirar_mudanca.length > 0
+      || rasc.remarcar_mudanca.length > 0;
   }
 
   /* o rascunho mudou o dia gravado? (funções, pontuais, folgas dadas ou canceladas, observações, remanejados ou
@@ -228,7 +231,7 @@
     rasc = { ajustes: copiar(base.ajustes), pontuais: copiar(base.pontuais), estagio_onde: copiar(base.estagio_onde || {}),
       estornar: [], folgas: [], folgas_cancelar: [],
       observacoes: { adicionar: [], remover: [] }, abertas: [], remanejar: [], devolver: [],
-      mudar_dia: [], desfazer_mudanca: [], tirar_mudanca: [] };
+      mudar_dia: [], desfazer_mudanca: [], tirar_mudanca: [], remarcar_mudanca: [] };
   }
 
   /* o dia gravado (a leitura, ou o que o banco devolve ao gravar) vira a base */
@@ -266,6 +269,9 @@
     if (rasc.desfazer_mudanca.length) r.desfazer_mudanca = rasc.desfazer_mudanca.map(function (x) { return x.id; });
     if (rasc.tirar_mudanca.length) {
       r.tirar_mudanca = rasc.tirar_mudanca.map(function (x) { return { id: x.id, contabilizar: !!x.contabilizar }; });
+    }
+    if (rasc.remarcar_mudanca.length) {
+      r.remarcar_mudanca = rasc.remarcar_mudanca.map(function (x) { return { id: x.id, para: x.para, onde: x.onde }; });
     }
     if (rasc.automatico) r.automatico = true;
     return r;
@@ -574,12 +580,22 @@
       .concat([{ id: id, contabilizar: !!contabilizar, dia: dia }]);
   }
 
+  /* o Muda para outra data de quem veio de outro dia (no dia novo): o serviço sai daqui e vai inteiro para "para" (onde =
+     o Onde fica de lá, no formato do banco); dia = o dia de antes, que continua com a mesma marca (as telas o leem de novo:
+     a dica dele passa a dizer o dia novo). As colocações manuais dele nas horas que saem (periodos) saem deste dia */
+  function remarcarMudanca(id, para, onde, dia, cpf, periodos) {
+    if (cpf && periodos) cortarAjustes(cpf, periodos.map(faixa));
+    rasc.remarcar_mudanca = rasc.remarcar_mudanca.filter(function (x) { return x.id !== id; })
+      .concat([{ id: id, para: para, onde: copiar(onde), dia: dia }]);
+  }
+
   /* os outros dias que o rascunho do Dia muda (a mudança de dia mexe em dois dias): AAAA-MM-DD, sem repetir */
   function outrosDias() {
     if (!rasc) return [];
     var dias = [], iso = donoIso();
     rasc.mudar_dia.map(function (x) { return x.de && x.de !== iso ? x.de : x.para; })
-      .concat(rasc.desfazer_mudanca.map(function (x) { return x.dia; }), rasc.tirar_mudanca.map(function (x) { return x.dia; }))
+      .concat(rasc.desfazer_mudanca.map(function (x) { return x.dia; }), rasc.tirar_mudanca.map(function (x) { return x.dia; }),
+        rasc.remarcar_mudanca.map(function (x) { return x.dia; }), rasc.remarcar_mudanca.map(function (x) { return x.para; }))
       .forEach(function (d) { if (d && d !== iso && dias.indexOf(d) < 0) dias.push(d); });
     return dias;
   }
@@ -1979,6 +1995,7 @@
       largarMudancaDia: largarMudancaDia,
       desfazerMudanca: desfazerMudanca,
       tirarMudanca: tirarMudanca,
+      remarcarMudanca: remarcarMudanca,
       postoFeminino: postoFeminino,
       tirarPontual: tirarPontual,
       pontualSalvo: pontualSalvo,

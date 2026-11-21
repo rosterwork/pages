@@ -40,9 +40,10 @@
     folga: 'icone-folgas',
     extra: 'icone-extrajornada',
     afastamento: 'icone-afastamentos',
-    /* a mudança de dia: o dia novo é um pontual e o de antes, riscado, uma folga (a dica diz de onde veio ou para onde foi) */
+    /* a mudança de dia: o dia novo é um pontual e o de antes, riscado, o Mudou de dia, ao lado da origem do serviço que
+       saiu (a dica diz de onde veio ou para onde foi) */
     mudanca: 'icone-origem-pontual',
-    mudanca_saida: 'icone-folgas',
+    mudanca_saida: 'icone-origem-mudanca',
     /* quem saiu da guarnição: riscado no primeiro serviço que não faz mais */
     saida_guarnicao: 'icone-origem-saida',
     /* o sobreaviso da companhia, embaixo do dia (escalas-celula-sobreaviso.js) */
@@ -240,9 +241,9 @@
     if (uso) uso.setAttribute('href', 'icones/todos.svg#' + nomeIcone);
   }
 
-  /* quem mudou de dia: no dia novo o ícone do pontual e, na linha riscada do dia de antes, o da folga, com a dica de onde o
-     serviço veio ou para onde foi (o span recebe a dica; com a dica da linha, escalas-celula-dica.js, ela vai nela); null
-     nas outras origens */
+  /* quem mudou de dia: no dia novo o ícone do pontual e, na linha riscada do dia de antes, o do Mudou de dia, com a dica
+     de onde o serviço veio ou para onde foi (o span recebe a dica; com a dica da linha, escalas-celula-dica.js, ela vai
+     nela); null nas outras origens */
   function iconeDaMudanca(p, D) {
     var t = RosterWork.mensagens.escala;
     var dica = p.origem === 'mudanca' && p.mudanca_de ? t.mudouDeDiaDe(p.mudanca_de)
@@ -278,6 +279,8 @@
     if (p.origem === 'remanejado_saida') linha.classList.add('linha-escalado--remanejado');   /* saiu para outra unidade: riscado */
     if (p.origem === 'mudanca_saida') linha.classList.add('linha-escalado--mudou-dia');   /* passou para outro dia: riscado */
     if (p.origem === 'saida_guarnicao') linha.classList.add('linha-escalado--saiu');   /* saiu da guarnição: riscado */
+    /* a folga ou a mudança de dia da linha riscada (uma linha por uma): o menu dela age só nela */
+    if (p.lancamento_id) linha.setAttribute('data-lancamento', p.lancamento_id);
     /* de serviço e de extra no mesmo horário (o banco marca): o nome em vermelho, com a dica */
     if (p.extra_servico && p.extra_servico.length) {
       linha.classList.add('linha-escalado--extra-servico');

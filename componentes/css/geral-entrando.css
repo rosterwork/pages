@@ -1,13 +1,19 @@
 /* ============================================================
-   ENTRANDO — a tela de quando o sistema abre pelo login lembrado
-   (Manter-me conectado): cobre o sistema enquanto o acesso é
-   renovado. Aparece com html[data-entrando], posto pelo
-   js/index-sessao.js e tirado pelo js/index-carregar.js.
-   Enquanto renova, só o cartão das etapas no meio da tela, sem a
-   logo e sem a moldura do cartão. Na falha (data-entrando="falhou"),
-   a logo volta com a frase e o Tentar de novo no lugar dele.
+   ENTRANDO — o sistema abrindo pelo login lembrado (Manter-me
+   conectado): html[data-entrando], posto pelo js/index-sessao.js
+   e tirado pelo js/index-carregar.js quando o código do sistema
+   rodou.
+   Enquanto o acesso é renovado, o menu e o cabeçalho aparecem em
+   cinza: cada peça vira o desenho dela, no mesmo lugar e do mesmo
+   tamanho, e respira como as formas do geral-esqueleto.css. Ainda
+   não se sabe quem entra; o que é só do administrador e do
+   programador entra depois, embaixo. A página mostra a casca com o
+   cartão da abertura, como no F5.
+   Na falha (data-entrando="falhou"), a tela .entrando cobre tudo:
+   a logo, a frase e o Tentar de novo.
    ============================================================ */
 
+/* ---------- a falha ---------- */
 .entrando {
   display: none;
   position: fixed;
@@ -21,7 +27,7 @@
   background-color: var(--fundo-pagina);
 }
 
-html[data-entrando] .entrando {
+html[data-entrando="falhou"] .entrando {
   display: flex;
 }
 
@@ -51,15 +57,137 @@ html[data-entrando] .entrando {
   text-align: center;
 }
 
-.entrando .etapas {
-  background: none;
-  border: 0;
-  box-shadow: none;
+/* ---------- o desenho do menu e do cabeçalho ---------- */
+/* respiram juntos, como as formas, e não respondem ao clique; a logo fica parada */
+html[data-entrando] .cabecalho > :not(.cabecalho-logo),
+html[data-entrando] .sidebar-itens {
+  animation: esqueleto-respira 2s ease-in-out infinite;
+  pointer-events: none;
 }
 
-html:not([data-entrando="falhou"]) .entrando-logo,
-html:not([data-entrando="falhou"]) .entrando-mensagem,
-html:not([data-entrando="falhou"]) .entrando .botao,
-html[data-entrando="falhou"] .entrando .etapas {
+/* o que só alguns veem entra depois, embaixo dos itens de todos; o Recolher menu também */
+html[data-entrando] .sidebar [data-admin],
+html[data-entrando] .sidebar [data-programador],
+html[data-entrando] .sidebar-toggle {
   display: none;
+}
+
+/* o item: o ícone num quadrado cinza e o nome numa barra cinza da largura dele */
+html[data-entrando] .menu-item {
+  background: none;
+}
+
+html[data-entrando] .menu-item .icone {
+  color: transparent;
+  background-color: var(--fundo-medio);
+  border-radius: var(--raio-pequeno);
+}
+
+html[data-entrando] .menu-item-label {
+  position: relative;
+  color: transparent;
+}
+
+html[data-entrando] .menu-item-label::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  min-height: 10px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-medio);
+  transform: translateY(-50%);
+}
+
+/* o cabeçalho: o seletor de unidades, os botões e o usuário em cinza */
+html[data-entrando] .cabecalho .seletor {
+  border-color: transparent;
+  background-color: var(--fundo-medio);
+}
+
+html[data-entrando] .cabecalho .seletor > *,
+html[data-entrando] .cabecalho-usuario-seta {
+  visibility: hidden;
+}
+
+html[data-entrando] .cabecalho-btn,
+html[data-entrando] .cabecalho-usuario-avatar {
+  color: transparent;
+  background-color: var(--fundo-medio);
+}
+
+html[data-entrando] .cabecalho-usuario-textos {
+  gap: 4px;
+}
+
+html[data-entrando] .cabecalho-usuario-nome,
+html[data-entrando] .cabecalho-usuario-lotacao {
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-medio);
+}
+
+html[data-entrando] .cabecalho-usuario-nome {
+  min-width: 96px;
+  min-height: 10px;
+}
+
+html[data-entrando] .cabecalho-usuario-lotacao {
+  min-width: 64px;
+  min-height: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-entrando] .cabecalho > :not(.cabecalho-logo),
+  html[data-entrando] .sidebar-itens {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A barra de baixo: a pílula de cada ícone em cinza e o nome numa
+   barra cinza, respirando como o menu.
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular][data-entrando] .barra-celular {
+    animation: esqueleto-respira 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* o ícone e o nome somem (a tela aberta também, que o css/index-sidebar.css destaca) */
+  html[data-celular][data-entrando] .barra-celular .barra-celular-item {
+    color: transparent;
+  }
+
+  html[data-celular][data-entrando] .barra-celular-icone {
+    background-color: var(--fundo-medio);
+  }
+
+  /* dentro da pílula, o ícone fica sem o quadrado do menu lateral */
+  html[data-celular][data-entrando] .barra-celular-icone .icone {
+    background: none;
+  }
+
+  html[data-celular][data-entrando] .barra-celular-rotulo {
+    position: relative;
+  }
+
+  html[data-celular][data-entrando] .barra-celular-rotulo::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    min-height: 10px;
+    border-radius: var(--raio-pequeno);
+    background-color: var(--fundo-medio);
+    transform: translateY(-50%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html[data-celular][data-entrando] .barra-celular {
+      animation: none;
+    }
+  }
 }

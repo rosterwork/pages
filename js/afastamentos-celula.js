@@ -6,7 +6,7 @@
    Ano, a célula do dia e a barra no Mês e a linha do nome no
    Calendário. No afastamento (as partes dele nos outros meses
    ou nos outros dias ficam marcadas junto): Mudar o período, Mudar o
-   nome e Mudar o que ele sai abrem as perguntas na caixa 2, ao lado
+   afastamento e Mudar o que ele sai abrem as perguntas na caixa 2, ao lado
    (afastamentos-campos.js); Remover o afastamento vai para o
    rascunho; nas Férias, o que ele sai é só a guarnição; no que começou há mais
    de uma semana, só o período (o fim) e o nome; no que terminou antes
@@ -82,6 +82,13 @@
     return peca ? { peca: peca, junto: linhas.filter(function (l) { return l !== peca; }) } : null;
   }
 
+  /* a caixa pode fechar? Com o nome em branco, não (a frase aparece); o Cancelar e o Desfazer do rodapé desistem */
+  function podeFechar(a, alvo) {
+    if (aberto !== a || !a.campos) return true;
+    if (alvo && alvo.closest && alvo.closest('#afastamentos-cancelar, #afastamentos-desfazer')) return true;
+    return a.campos.podeFechar();
+  }
+
   /* abre a caixa 1 na peça, com o menu; o item escolhido segue em escolher */
   function abrirCaixa(a, peca, junto, menu, titulo, topo) {
     a.caixa = RW.caixaFlutuante.abrir({
@@ -90,7 +97,10 @@
         if (aberto !== a) return;
         aberto = null;
         if (a.chave && a.cpf) R().largar(a.cpf, a.chave);
-      }
+      },
+      /* o nome em branco segura o clique fora (e o rodapé), o X e o Esc */
+      aoClicarFora: function (alvo) { return podeFechar(a, alvo); },
+      aoTentarFechar: function (alvo) { return podeFechar(a, alvo); }
     });
     if (!a.caixa) { aberto = null; return; }
     menu.addEventListener('click', function (ev) {
@@ -101,7 +111,9 @@
 
   /* as perguntas de um afastamento na caixa 2 (no lugar, depois do que já estiver nele) */
   function perguntas(a, lugar, acao) {
-    a.campos = RW.afastamentosCampos.montar(lugar, { cpf: a.cpf, chave: a.chave, partes: PARTES[acao], origem: 'celula' });
+    a.campos = RW.afastamentosCampos.montar(lugar, {
+      cpf: a.cpf, chave: a.chave, partes: PARTES[acao], origem: 'celula', nomeNaTentativa: true
+    });
   }
 
   /* o Adicionar do bloquinho: o Militar e, escolhido ele, as outras perguntas embaixo (trocar o militar leva o que já

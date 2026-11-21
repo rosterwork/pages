@@ -9,9 +9,9 @@
      (aí seguem as perguntas de sempre; quem saiu daqui para outra
      unidade, sem serviço aqui, tira o dia todo). O serviço que veio
      de outro dia (a mudança de dia, escalas-painel-mudar-dia.js)
-     responde Devolver para o dia de antes ou Tirar do dia (sai o
-     pedaço inteiro, e o dia de antes vira folga, com a pergunta do
-     banco de horas). Pelo ciclo: só no dia (o horário e o banco de horas,
+     responde Fica de folga no dia de antes (sai o pedaço inteiro, com a
+     pergunta do banco de horas), Muda para outra data (as perguntas do
+     Mudar o dia, embaixo) ou Volta ao serviço de antes. Pelo ciclo: só no dia (o horário e o banco de horas,
      que vira folga) ou do ciclo (com a lista do que acontece com as
      trocas, folgas e extras dele, para o rascunho do ciclo). O
      pontual: o horário e, contado no banco, as horas que ele tem lá
@@ -33,7 +33,9 @@
      que fazer vem do analisarDoDia(m), que a célula da grade
      (escalas-celula-editar.js) também usa; o remanejado, na célula, vem
      do analisarRemanejado(cpf): onde ele está, Devolver ou Tirar do dia
-     (com as perguntas de sempre, as mesmas do analisarDoDia).
+     (com as perguntas de sempre, as mesmas do analisarDoDia); quem veio
+     de outro dia, do analisarMudanca(cpf), com as três respostas da
+     sub-tela.
    - Na sub-tela, a folga começa no Não descontar (primeiro); o
      pontual, no Tirar as horas (no Corrigir, saindo só uma parte).
    Sem botão próprio: a resposta completa entra no rascunho do Dia ao
@@ -111,6 +113,7 @@
       reman: null, remanFazer: null, mudancaFazer: null, motivo: '' };
     var el = {}, combo = null, troca = null, efeito = null;
     var ultimo = null;   // a última resposta posta no rascunho (o Motivo da folga a refaz com o texto novo)
+    var outra = null;    // as perguntas do Mudar o dia do Muda para outra data (a mudança de dia), enquanto ela está marcada
     var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece no ciclo de quem sai do ciclo (lido uma vez)
 
     function escolher(item) {
@@ -144,6 +147,7 @@
 
     /* a parte escolhida: o horário começa com ela toda */
     function comecarParte() {
+      largarOutra();
       var p = est.parte;
       est.alcance = 'dia'; est.banco = null; est.mudancaFazer = null;
       est.periodos = p ? p.periodos.map(copiar) : [];
@@ -163,7 +167,8 @@
         erro: q('.escala-remover-erro'), troca: q('.escala-remover-troca'),
         reman: q('.escala-remover-reman'), remanTexto: q('.escala-remover-reman-texto'), remanDevolver: q('.escala-remover-reman-devolver'),
         mudanca: q('.escala-remover-mudanca'), mudancaDevolver: q('.escala-remover-mudanca-devolver'),
-        mudancaDevolverAjuda: q('.escala-remover-mudanca-devolver-ajuda'), mudancaTirarAjuda: q('.escala-remover-mudanca-tirar-ajuda')
+        mudancaDevolverAjuda: q('.escala-remover-mudanca-devolver-ajuda'), mudancaTirarAjuda: q('.escala-remover-mudanca-tirar-ajuda'),
+        mudancaTirar: q('.escala-remover-mudanca-tirar'), mudancaOutra: q('.escala-remover-mudanca-outra')
       };
       var inp = el.combo.querySelector('input');
       inp.id = 'escala-remover-combo-' + (++conta);
@@ -233,7 +238,7 @@
 
     function atualizar() {
       if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-      ['reman', 'mudanca', 'partes', 'alcance', 'horario', 'banco', 'motivo'].forEach(function (k) { mostra(el[k], false); });
+      ['reman', 'mudanca', 'mudancaOutra', 'partes', 'alcance', 'horario', 'banco', 'motivo'].forEach(function (k) { mostra(el[k], false); });
       efeito.esconder();
       erro('');
       troca.esconder();
@@ -320,30 +325,45 @@
       });
     }
 
-    /* a mudança de dia (ele veio de outro dia para este): Devolver (o serviço volta para o dia de antes; o banco de horas
-       não muda) ou Tirar do dia (sai o pedaço inteiro, e o dia de antes vira folga, contada ou não no banco de horas) */
+    /* a mudança de dia (ele veio de outro dia para este): Fica de folga no dia de antes (sai o pedaço inteiro, contado ou
+       não no banco de horas), Muda para outra data (as perguntas do Mudar o dia, embaixo) ou Volta ao serviço de antes (o
+       banco de horas não muda); as mesmas respostas da caixa da célula (respostasDaMudanca) */
     function mudancaDeDia(mil, p) {
-      var nome = nomeDe(mil), cpf = mil.cpf, de = p.mudancaDe, deIso = p.mudancaDeIso;
+      var a = respostasDaMudanca(mil, mudancaDaParte(mil, p));
       mostra(el.mudanca, true);
-      el.mudancaDevolver.textContent = L().devolverPara(de);
-      el.mudancaDevolverAjuda.textContent = L().devolverParaAjuda(de, data);
-      el.mudancaTirarAjuda.textContent = L().tirarMudancaAjuda(de);
+      el.mudancaTirar.textContent = a.folgaTexto;
+      el.mudancaDevolver.textContent = a.voltaTexto;
+      el.mudancaDevolverAjuda.textContent = L().devolverParaAjuda(a.de, data);
+      el.mudancaTirarAjuda.textContent = L().tirarMudancaAjuda(a.de);
       el.marcarMudanca(est.mudancaFazer);
+      if (est.mudancaFazer !== 'outra') largarOutra();
       if (!est.mudancaFazer) { noRascunho(null, true); return; }
-      if (est.mudancaFazer === 'devolver') {
-        noRascunho(function () { api.desfazerMudanca(p.mudancaId, deIso, cpf, p.periodos); });
+      if (est.mudancaFazer === 'devolver') { noRascunho(function () { a.volta(); }); return; }
+      /* Muda para outra data: as perguntas do Mudar o dia põem a resposta no rascunho sozinhas */
+      if (est.mudancaFazer === 'outra') {
+        mostra(el.mudancaOutra, true);
+        if (!outra) {
+          ultimo = null;
+          api.rodapeProprio('');
+          outra = a.outra(function (tela) { el.mudancaOutra.appendChild(tela); }, { dentro: true });
+        }
         return;
       }
-      var horas = H.horasTexto(minutos(p.periodos));
       mostra(el.banco, true);
-      el.bancoTexto.textContent = L().tirarFolga(nome, de, horas);
-      el.bancoSim.textContent = L().descontar(horas);
-      el.bancoNao.textContent = L().naoDescontar;
+      el.bancoTexto.textContent = a.folga.texto;
+      el.bancoSim.textContent = a.folga.sim;
+      el.bancoNao.textContent = a.folga.nao;
       naOrdem(el.bancoSim, el.bancoNao, true);
-      if (!est.banco) est.banco = 'nao';
+      if (!est.banco) est.banco = a.folga.padrao;
       el.marcarBanco(est.banco);
-      var descontar = est.banco === 'sim';
-      noRascunho(function () { api.tirarMudanca(p.mudancaId, descontar, deIso, cpf, p.periodos); });
+      var escolha = est.banco;
+      noRascunho(function () { a.folga.aplicar(escolha); });
+    }
+    /* o Muda para outra data sai (outra resposta, outra parte ou outro militar): as perguntas dele somem */
+    function largarOutra() {
+      if (!outra) return;
+      outra = null;
+      el.mudancaOutra.textContent = '';
     }
 
     /* do ciclo: a lista do que acontece com as trocas, folgas e extras dele (lida uma vez) e, com ela, a marca no rascunho
@@ -479,10 +499,58 @@
     return { texto: texto, devolverTexto: L().devolverA(rm.de_nome), devolver: function () { api.devolverRemanejado(cpf); }, tirar: tirar };
   }
 
-  /* m = { cpf, periodos }: quem sai e as horas que saem (o dia todo dele, do menu da linha); linha = a linha da lista */
-  function doDia(m, linha) {
+  /* a mudança da parte dele que veio de outro dia (p, de partesDe): { id, de ("19/11"), deIso, periodos, janelas, troca (o
+     serviço era de troca) }, o mesmo formato do escalasPainelMudarDia.mudancaDe */
+  function mudancaDaParte(mil, p) {
+    var js = (mil.janelas || []).filter(function (j) { return j.origem === 'mudanca' && j.mudanca_id === p.mudancaId; });
+    return { id: p.mudancaId, de: p.mudancaDe, deIso: p.mudancaDeIso, periodos: p.periodos, janelas: js,
+      troca: js.some(function (j) { return !!j.mudanca_troca; }) };
+  }
+
+  /* quem veio de outro dia (v, a mudança dele): a frase de onde veio e as três respostas, as mesmas no painel e na caixa
+     da célula: Fica de folga no dia de antes (com a pergunta do banco de horas; na troca, ela continua valendo), Muda para
+     outra data (as perguntas do Mudar o dia, escalas-painel-mudar-dia.js, que põem a resposta no rascunho sozinhas) e
+     Volta ao serviço de antes. volta() e folga.aplicar(escolha) mudam o rascunho (quem chama os põe no aoVivo);
+     outra(pendurar, opcoes) monta as perguntas e devolve { pelaMetade(), marcarFalta() } */
+  function respostasDaMudanca(mil, v) {
+    var api = ed(), H = api.horas, cpf = mil.cpf, nome = nomeDe(mil);
+    var horas = H.horasTexto(H.uniao(v.periodos.map(H.faixa)).reduce(function (s, f) { return s + f[1] - f[0]; }, 0));
+    return {
+      de: v.de, texto: L().mudancaVeio(v.de), folgaTexto: L().ficaDeFolga(v.de), voltaTexto: L().voltaAoServico(v.de),
+      folga: { texto: L().tirarFolga(nome, v.de, horas, v.troca), sim: L().descontar(horas), nao: L().naoDescontar, padrao: 'nao',
+        aplicar: function (escolha) { api.tirarMudanca(v.id, escolha === 'sim', v.deIso, cpf, v.periodos); } },
+      volta: function () { api.desfazerMudanca(v.id, v.deIso, cpf, v.periodos); },
+      outra: function (pendurar, opcoes) {
+        return RosterWork.escalasPainelMudarDia.criar(Object.assign({ cpf: cpf, mudanca: v }, opcoes || {}), pendurar);
+      }
+    };
+  }
+
+  /* quem está no dia só pelo serviço que veio de outro dia, sem tela (a caixa da célula: o Remover deste dia do pontual
+     do dia novo): as respostas dele (respostasDaMudanca), ou null nos outros */
+  function analisarMudanca(cpf) {
+    var mil = ed().militarDoDia(cpf), MD = RosterWork.escalasPainelMudarDia;
+    var v = mil && MD ? MD.mudancaDe(mil) : null;
+    return v ? respostasDaMudanca(mil, v) : null;
+  }
+
+  /* o Dar folga neste dia da linha riscada da mudança de dia, pelo dia de antes (f = a linha da folga do dia, com a
+     mudança): ele sai do dia novo e este vira folga, com a pergunta do banco de horas do Tirar do dia (o Não descontar
+     marcado; sem o Motivo: o banco escreve o dele). O mesmo no painel (doDia) e na caixa 2 da célula */
+  function analisarFolgaDaMudanca(f) {
+    var api = ed(), H = api.horas, mud = f && f.mudanca;
+    if (!mud || !f.hi || !f.hf) return null;
+    var faixa = H.faixa({ hi: f.hi, hf: f.hf }), horas = H.horasTexto(faixa[1] - faixa[0]);
+    return { tipo: 'folga', semMotivo: true, cpf: f.cpf, padrao: 'nao', motivo: '',
+      texto: L().tirarFolga(nomeDe(f), diaMes(api.iso()), horas), sim: L().descontar(horas), nao: L().naoDescontar,
+      aplicar: function (escolha) { api.tirarMudanca(mud.id, escolha === 'sim', String(mud.para_iso || '').slice(0, 10)); } };
+  }
+
+  /* m = { cpf, periodos }: quem sai e as horas que saem (o dia todo dele, do menu da linha); linha = a linha da lista;
+     pronta: a pergunta já pronta (o Dar folga da linha da mudança, analisarFolgaDaMudanca) */
+  function doDia(m, linha, pronta) {
     fecharPergunta('guardar');
-    var api = ed(), a = linha ? analisarDoDia(m) : null;
+    var api = ed(), a = linha ? (pronta || analisarDoDia(m)) : null;
     if (!a) return;
     if (a.tipo === 'subtela') { abrir({ cpf: a.cpf }); return; }
     /* o pontual sem pergunta: sai na hora, com o Desfazer */
@@ -504,8 +572,10 @@
       ligarRadios(el, function () {})(a.padrao);
       aplicar();
       var acoes = q('.pergunta-linha-acoes');
-      acoes.parentNode.insertBefore(R().campoMotivo(null, motivo, function (t) { motivo = t; aplicar(); },
-        function () { aplicar(); fecharPergunta(); }), acoes);
+      if (!a.semMotivo) {
+        acoes.parentNode.insertBefore(R().campoMotivo(null, motivo, function (t) { motivo = t; aplicar(); },
+          function () { aplicar(); fecharPergunta(); }), acoes);
+      }
       [].forEach.call(el.querySelectorAll('input[type="radio"]'), function (r) {
         r.addEventListener('click', function () { escolha = r.value; aplicar(); fecharPergunta(); });
       });
@@ -523,7 +593,8 @@
   }
 
   window.RosterWork.escalasPainelRemover = { abrir: abrir, doDia: doDia, analisarDoDia: analisarDoDia,
-    analisarRemanejado: analisarRemanejado, fecharPergunta: fecharPergunta,
+    analisarRemanejado: analisarRemanejado, analisarMudanca: analisarMudanca, analisarFolgaDaMudanca: analisarFolgaDaMudanca,
+    fecharPergunta: fecharPergunta,
     /* o menu da linha mostra o Remover do dia só com algo que sai por aqui (a extra muda na Extrajornada) */
     podeTirar: function (cpf) { return podeTirar(ed().militarDoDia(cpf)); } };
 })();

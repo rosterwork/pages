@@ -206,7 +206,6 @@
       return;
     }
     a.esperando = false;
-    a.caixa.espera(false);
     var menu;
     if (a.tipo === 'pelotao') menu = A().menuDoPelotao(contexto());
     else if (a.tipo === 'oficial') menu = RW.escalasCelulaOficial.menu(contexto());
@@ -236,11 +235,15 @@
     var dados = api().dados() || {}, cpf = a.cpf, base = { visao: 'celula' };
     var de = function (x) { return x.cpf === cpf; };
     if (a.linha === 'folga') {
-      var f = (dados.folgas || []).filter(de)[0];
+      /* uma linha riscada por folga e por mudança de dia: a da linha clicada (a do dia guardado antes, sem o número, a
+         primeira dele) */
+      var doDia = (dados.folgas || []).filter(de);
+      var f = doDia.filter(function (x) { return a.lancamento && x.lancamento_id === a.lancamento; })[0] || doDia[0];
       if (f) return Object.assign(base, { tipo: 'folga', militar: { cpf: cpf, grad: f.grad, nome: f.nome, periodos: [] }, folga: f });
     } else if (a.linha === 'saida') {
       var s = (dados.saidas || []).filter(de)[0];
-      if (s) return Object.assign(base, { tipo: 'saida', militar: { cpf: cpf, grad: s.grad, nome: s.nome, periodos: [{ hi: s.hi, hf: s.hf }] }, saida: s.saida });
+      if (s) return Object.assign(base, { tipo: 'saida', militar: { cpf: cpf, grad: s.grad, nome: s.nome, periodos: [{ hi: s.hi, hf: s.hf }] }, saida: s.saida,
+        ultimo: s.ultimo || null, dias: s.dias || [] });
     } else if (a.linha === 'fora') {
       var pm = null;
       (dados.picker || []).forEach(function (u) {
@@ -278,12 +281,14 @@
 
   function cliqueNoNome(cel, linha) {
     var cpf = linha.getAttribute('data-cpf'), d = diaDe(cel), tipo = tipoDaLinha(linha);
+    var lancamento = linha.getAttribute('data-lancamento');   // a folga ou a mudança da linha riscada
     var a = aberto;
-    if (a && a.tipo === 'nome' && mesmo(a, d.unidadeId, d.iso) && a.cpf === cpf && a.linha === tipo && a.caixa && a.caixa.aberta()) return;
+    if (a && a.tipo === 'nome' && mesmo(a, d.unidadeId, d.iso) && a.cpf === cpf && a.linha === tipo && a.lancamento === lancamento
+      && a.caixa && a.caixa.aberta()) return;
     fecharTudo();
     irPara(d, function () {
-      abrirCaixa({ tipo: 'nome', unidadeId: d.unidadeId, iso: d.iso, cpf: cpf, linha: tipo }, linha, L().noDia(nomeDa(linha), diaMes(d.iso)),
-        [pecaDoPelotao(cel)]);
+      abrirCaixa({ tipo: 'nome', unidadeId: d.unidadeId, iso: d.iso, cpf: cpf, linha: tipo, lancamento: lancamento }, linha,
+        L().noDia(nomeDa(linha), diaMes(d.iso)), [pecaDoPelotao(cel)]);
     });
   }
 
@@ -372,10 +377,13 @@
 
   /* ---------- a grade refeita ---------- */
 
-  /* a linha dele no bloco, do tipo da clicada (a de serviço; a riscada, quando é a única) */
-  function linhaDe(cel, cpf, tipo) {
+  /* a linha dele no bloco, do tipo da clicada (a de serviço; a riscada, quando é a única; com o número, a da mesma folga
+     ou mudança) */
+  function linhaDe(cel, cpf, tipo, lancamento) {
     var todas = [].slice.call(cel.querySelectorAll('.linha-escalado[data-cpf="' + cpf + '"]'));
-    var doTipo = todas.filter(function (l) { return tipoDaLinha(l) === tipo; })[0];
+    var doTipo = todas.filter(function (l) {
+      return tipoDaLinha(l) === tipo && (!lancamento || l.getAttribute('data-lancamento') === lancamento);
+    })[0] || todas.filter(function (l) { return tipoDaLinha(l) === tipo; })[0];
     var deServico = todas.filter(function (l) { return !l.matches(RISCADAS); })[0];
     return doTipo || deServico || todas[0] || null;
   }
@@ -397,7 +405,7 @@
       : a.fixa ? (a.fixa.isConnected ? a.fixa : null)
       : !cel ? null : a.tipo === 'pelotao' ? pecaDoPelotao(cel)
       : a.tipo === 'sobreaviso' ? (a.cpf ? cel.querySelector('.linha-escalado--sobreaviso[data-cpf="' + a.cpf + '"]') : pecaDoPelotao(cel))
-      : linhaDe(cel, a.cpf, a.linha);
+      : linhaDe(cel, a.cpf, a.linha, a.lancamento);
     var junto = cel && !a.fixa && (a.tipo === 'nome' || (a.tipo === 'sobreaviso' && a.cpf)) ? [pecaDoPelotao(cel)] : [];
     if (!a.caixa) {
       if (peca && a.novo) abrirCaixa(a, peca, L().noDia(nomeDa(peca), diaMes(a.iso)), junto);

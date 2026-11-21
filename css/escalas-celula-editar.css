@@ -84,8 +84,8 @@
   font-size: 12px;
 }
 
-/* a pergunta do banco de horas: a frase e as duas respostas (e a do remanejado, onde ele está, Devolver ou Tirar do dia:
-   a primeira da caixa, sem o traço de cima) */
+/* a pergunta do banco de horas: a frase e as duas respostas (e a do remanejado, onde ele está, Devolver ou Tirar do dia, e
+   a de quem veio de outro dia, de onde veio e as três respostas: a primeira da caixa, sem o traço de cima) */
 .escala-celula-pergunta {
   display: flex;
   flex-direction: column;
@@ -95,7 +95,8 @@
 }
 
 .escala-celula-cartao-horario.oculto + .escala-celula-pergunta,
-.escala-celula-remanejado {
+.escala-celula-remanejado,
+.escala-celula-mudanca {
   padding-top: 0;
   border-top: 0;
 }
@@ -176,7 +177,6 @@
 .caixa-flutuante .escala-mudar-dia-onde > .grupo-caixa,
 .caixa-flutuante .escala-remanejar-troca,
 .caixa-flutuante .escala-remanejar-sai,
-.caixa-flutuante .escala-remanejar-motivo,
 .caixa-flutuante .escala-remanejar-ondes > .grupo-caixa {
   padding-top: 8px;
   border-top: 1px solid var(--borda);

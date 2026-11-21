@@ -30,12 +30,25 @@
    resposta pela metade (o horário fora do serviço ou o Onde fica sem a
    escolha) também desliga o Salvar. Depois de salvo, desfaz-se pela
    folga no dia de antes ou pelo Remover do dia no dia novo.
+   O Muda para outra data: quem já veio de outro dia (o pontual do dia
+   novo, mudancaDe) chega escolhido pelo menu dele ou pelo Remover deste
+   dia; o serviço vai inteiro (sem o Horário), o calendário é o da
+   mudança dele (a escala_mudar_dia_dias com p_mudanca: o dia de antes
+   também é origem) e a resposta vai ao rascunho como remarcar_mudanca
+   (o dia de antes continua com a mesma marca). Também pelo dia de
+   antes (o Mudar o dia do serviço da linha riscada da mudança,
+   mudancaDaFolga): a mudança leva o paraIso (o dia novo dela), que o
+   calendário e a frase usam no lugar do dia aberto.
    API: RosterWork.escalasPainelMudarDia.abrir(opcoes) (a sub-tela do
    painel; opcoes = { cpf }: chega com ele escolhido, o menu da linha),
    criar(opcoes, pendurar) (as perguntas em outro lugar, a caixa 2 da
-   célula: pendurar(tela) põe a tela na página; devolve { pelaMetade(),
-   marcarFalta() }) e podeMudar(cpf) (ele está na lista Quem, pelo ciclo
-   ou por troca).
+   célula e o Remover deste dia: pendurar(tela) põe a tela na página;
+   opcoes.mudanca: o Muda para outra data dessa mudança dele;
+   opcoes.dentro: sem o título e sem o Quem, dentro de outra sub-tela;
+   devolve { pelaMetade(), marcarFalta() }), podeMudar(cpf) (ele está na
+   lista Quem, pelo ciclo ou por troca, ou veio de outro dia),
+   mudancaDe(mil) e mudancaDaFolga(f, iso) (a mudança da linha riscada
+   do dia de antes, para o opcoes.mudanca).
    ============================================================ */
 (function () {
   'use strict';
@@ -75,6 +88,28 @@
   /* só por troca (o grupo Por troca e o texto do serviço) */
   function soTroca(janelas) { return janelas.length > 0 && janelas.every(function (j) { return j.origem === 'troca'; }); }
 
+  /* quem está aqui só pelo serviço que veio de outro dia (o pontual do dia novo: uma mudança só, nesta unidade e fora o
+     remanejado), que muda de novo pelo Muda para outra data: { id, de ("19/11"), deIso, periodos, janelas, troca (o
+     serviço era de troca) }; null nos outros */
+  function mudancaDe(mil) {
+    if (!mil || mil.remanejado || !mil.daUnidade) return null;
+    var partes = RosterWork.escalasPainelRemoverListas.partesDe(mil);
+    if (partes.length !== 1 || partes[0].origem !== 'mudanca' || !partes[0].mudancaId) return null;
+    var js = mil.janelas.filter(function (j) { return j.origem === 'mudanca'; });
+    return { id: partes[0].mudancaId, de: partes[0].mudancaDe, deIso: partes[0].mudancaDeIso, periodos: partes[0].periodos,
+      janelas: js, troca: js.some(function (j) { return !!j.mudanca_troca; }) };
+  }
+
+  /* a mesma mudança, pelo dia de antes (a linha riscada dela, f = a linha da folga do dia com a mudança; iso = o dia
+     aberto): paraIso = o dia novo dela, onde o serviço está agora; grad e nome, porque ele não está de serviço aqui */
+  function mudancaDaFolga(f, diaIso) {
+    var m = f && f.mudanca;
+    if (!m || !f.hi || !f.hf) return null;
+    var periodo = { hi: f.hi, hf: f.hf };
+    return { id: m.id, de: diaMes(diaIso), deIso: diaIso, paraIso: String(m.para_iso || '').slice(0, 10), periodos: [periodo],
+      janelas: [{ hi: f.hi, hf: f.hf, origem: 'mudanca' }], troca: false, grad: f.grad, nome: f.nome };
+  }
+
   /* a lista Quem: quem está de serviço pelo ciclo nesta unidade, depois quem está por troca (o ícone de origem e o
      horário) e, no fim e apagados, quem está no dia de outro jeito, com o caminho certo */
   function itensQuem(dados) {
@@ -107,11 +142,13 @@
     return lista;
   }
 
-  /* ele muda o dia por aqui: está na lista Quem, pelo ciclo ou por troca (o menu da linha só mostra o item a quem pode) */
+  /* ele muda o dia por aqui: está na lista Quem, pelo ciclo ou por troca, ou veio de outro dia (o Muda para outra data; o
+     menu da linha só mostra o item a quem pode) */
   function podeMudar(cpf) {
     var dados = ed().dados();
     if (!dados) return false;
-    return itensQuem(dados).some(function (i) { return i.cpf === cpf && !i.inativo && !i.titulo; });
+    return itensQuem(dados).some(function (i) { return i.cpf === cpf && !i.inativo && !i.titulo; })
+      || !!mudancaDe(ed().militarDoDia(cpf));
   }
 
   /* a sub-tela do painel. opcoes = { cpf }: chega com ele escolhido (o menu da linha) */
@@ -151,6 +188,8 @@
       onde: q('.escala-mudar-dia-onde'), conferindo: q('.escala-mudar-dia-conferindo'), papel: q('.escala-mudar-dia-papel'),
       minimo: q('.escala-mudar-dia-minimo'), erro: q('.escala-mudar-dia-erro')
     };
+    /* dentro de outra sub-tela (o Muda para outra data do Remover deste dia): sem o título e sem o Quem */
+    if (opcoes && opcoes.dentro) { mostra(q('.subtela-cab'), false); mostra(q('.escala-mudar-dia-quem'), false); }
     var inp = el.combo.querySelector('input');
     inp.id = 'escala-mudar-dia-campo-' + (++conta);
     combo = RosterWork.comboMilitar.criar(inp, el.combo.querySelector('.dropdown-menu'), {
@@ -253,7 +292,9 @@
       function ler(de, ate) {
         var pedidos = [];
         for (var i = de; i < ate; i++) {
-          pedidos.push(RosterWork.escalasDados.mudarDiaDias(uid, cpf, deIso, somarDias(inicio, i * LEITURA), somarDias(inicio, (i + 1) * LEITURA - 1)));
+          /* o Muda para outra data: o p_de é o dia novo da mudança (o aberto, ou o paraIso, pelo dia de antes) */
+          pedidos.push(RosterWork.escalasDados.mudarDiaDias(uid, cpf, (est.item.veio && est.item.veio.paraIso) || deIso,
+            somarDias(inicio, i * LEITURA), somarDias(inicio, (i + 1) * LEITURA - 1), est.item.veio ? est.item.veio.id : null));
         }
         Promise.all(pedidos).then(function (rs) {
           if (meu !== pedidoDias || !tela.isConnected) return;
@@ -341,13 +382,16 @@
       /* falta resposta (true) até o Onde fica */
       var falta = (function () {
         if (!est.item) return true;
-        el.servico.textContent = M().servico(data, textoJanelas(est.item.janelas), soTroca(est.item.janelas));
+        var diaServico = est.item.veio && est.item.veio.paraIso ? diaMes(est.item.veio.paraIso) : data;   // onde ele está de serviço
+        el.servico.textContent = M().servico(diaServico, textoJanelas(est.item.janelas), soTroca(est.item.janelas),
+          est.item.veio ? est.item.veio.de : '');
         if (est.item.janelas.length > 1) { mostra(el.janelas, true); if (!est.janela) return true; }
         mostra(el.dia, true);
         if (!est.para) return true;
         el.situacao.textContent = textoDoDia(respostaDoDia(est.para));
         mostra(el.situacao, !!el.situacao.textContent);
-        mostra(el.horario, true);
+        /* o Muda para outra data leva o serviço inteiro: sem o Horário */
+        mostra(el.horario, !est.item.veio);
         var periodo = periodoQueMuda();
         if (!periodo) { metade = true; return true; }
         /* a frase da parte: só quando muda menos que o serviço (o serviço todo, como no Serviço inteiro, não tem frase) */
@@ -362,11 +406,17 @@
         return metade;
       })();
       if (falta) { api.aoVivo(null, metade); return; }
+      var v = est.item.veio;
       var item = { cpf: est.item.cpf, para: est.para, periodos: [periodoQueMuda()], onde: onde.paraBanco() };
+      if (v) item.remarcar = v.id;
       var chave = JSON.stringify(item);
       var c = conf.resultado(chave);
       recusa = metade = !!c && !!c.erro;
-      api.aoVivo(function () { api.mudarDia(item); }, recusa);
+      api.aoVivo(function () {
+        /* pelo dia de antes: o outro dia é o dia novo de agora, e as colocações do dia aberto não mudam */
+        if (v) api.remarcarMudanca(v.id, item.para, item.onde, v.paraIso || v.deIso, v.paraIso ? null : item.cpf, v.paraIso ? null : v.periodos);
+        else api.mudarDia(item);
+      }, recusa);
       conf.mostrar(item, c);
       if (!c) conf.agendar(item, chave);
     }
@@ -389,11 +439,24 @@
     var itens = itensQuem(dados);
     combo.preencher(itens);
     var pedidoCpf = opcoes && opcoes.cpf;
+    /* quem veio de outro dia (o Muda para outra data: opcoes.mudanca, ou ele só está aqui por ela) chega escolhido, e o
+       Quem não troca */
+    var veio = (opcoes && opcoes.mudanca) || (pedidoCpf ? mudancaDe(api.militarDoDia(pedidoCpf)) : null);
     var ja = pedidoCpf ? itens.filter(function (i) { return i.cpf === pedidoCpf && !i.inativo && !i.titulo; })[0] : null;
+    if (veio) {
+      /* pelo dia de antes (veio.paraIso), ele não está de serviço aqui: o nome vem da mudança */
+      var mil = api.militarDoDia(pedidoCpf) || { cpf: pedidoCpf, grad: veio.grad, nome: veio.nome, janelas: veio.janelas };
+      ja = RosterWork.escalasPainelQuem.itemServico({ cpf: mil.cpf, grad: mil.grad, nome: mil.nome, disp: veio.janelas });
+      ja.mil = mil;
+      ja.janelas = veio.janelas;
+      ja.veio = veio;
+      inp.disabled = true;
+    }
     if (ja) { escolher(ja); combo.mostrarAtual(); }
     else atualizar();
     return { pelaMetade: function () { return metade; }, marcarFalta: marcarFalta };
   }
 
-  window.RosterWork.escalasPainelMudarDia = { abrir: abrir, criar: criar, podeMudar: podeMudar };
+  window.RosterWork.escalasPainelMudarDia = { abrir: abrir, criar: criar, podeMudar: podeMudar, mudancaDe: mudancaDe,
+    mudancaDaFolga: mudancaDaFolga };
 })();

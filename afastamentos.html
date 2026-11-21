@@ -25,10 +25,9 @@
   <div class="pagina-subcabecalho">
     <span class="espacador-flex"></span>
 
-    <!-- Filtros: Graus, Situação no ano ou no mês (some no Calendário) e Afastamento (os nomes do período; escolher um
-         esconde os outros) -->
+    <!-- Filtros: Situação no ano ou no mês (some no Calendário) e Afastamento (os nomes do período; escolher um esconde
+         os outros) -->
     <div class="filtros" id="afastamentos-filtros">
-      <div data-filtro="graus" data-filtro-nome="Grau" data-filtro-titulo="Graus"></div>
       <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
       <div data-filtro="afastamento" data-filtro-nome="Afastamento" data-filtro-titulo="Afastamento"></div>
     </div>
@@ -226,7 +225,7 @@
 <template id="tpl-afastamentos-menu">
   <div class="afastamentos-menu">
     <button type="button" class="dropdown-item" data-acao="periodo"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg><span>Mudar o período</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
-    <button type="button" class="dropdown-item" data-acao="nome"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg><span>Mudar o nome</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="nome"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg><span>Mudar o afastamento</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item" data-acao="marcas"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lista"/></svg><span>Mudar o que ele sai</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg><span>Remover o afastamento</span></button>
     <div class="dropdown-divisor"></div>
@@ -299,12 +298,12 @@
   </div>
 </template>
 
-<!-- molde: o nome escrito no Outro (até 10 letras), com o aviso de que todos o veem -->
+<!-- molde: o nome escrito no Outro (até 10 letras) -->
 <template id="tpl-afastamento-outro">
   <label class="campo afastamento-campo-outro oculto">
     <span class="campo-rotulo">Nome no dia</span>
     <input class="campo-entrada" type="text" maxlength="10" autocomplete="off" data-af-outro />
-    <span class="campo-ajuda">Até 10 letras. Todos veem este nome na escala: não escreva doença nem diagnóstico.</span>
+    <span class="campo-ajuda">Até 10 letras.</span>
   </label>
 </template>
 

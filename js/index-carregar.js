@@ -5,10 +5,11 @@
    Manter-me conectado (js/index-sessao.js põe RosterWork.sessaoPronta).
    Os arquivos são pedidos juntos e rodam na ordem da lista
    (async = false, como o roteador faz com as páginas). Enquanto a
-   renovação corre, a tela "entrando" cobre o sistema
-   (html[data-entrando], .entrando no index.html); na falha, a frase e
-   o Tentar de novo; o login recusado volta ao login com o aviso.
-   Fica no corpo do index.html, no lugar onde ficavam os <script>.
+   renovação corre, o menu e o cabeçalho ficam em cinza
+   (html[data-entrando], componentes/css/geral-entrando.css) e a
+   página mostra a casca com o cartão da abertura; na falha, a tela
+   .entrando com a frase e o Tentar de novo; o login recusado volta ao
+   login com o aviso. É o único <script> do corpo do index.html.
    ============================================================ */
 (function () {
   'use strict';
@@ -23,7 +24,6 @@
     'componentes/js/geral-etapas.js',
     'componentes/js/geral-teclado.js',
     'componentes/js/geral-grade-teclado.js',
-    'componentes/js/geral-sessao.js',
     'componentes/js/geral-tpl.js',
     'componentes/js/geral-celular.js',
     'componentes/js/geral-recolher-topo.js',
@@ -103,8 +103,9 @@
   var MENSAGENS = 'componentes/js/geral-mensagens.js';   /* a frase da falha, antes do resto */
 
   /* ---------- as etapas da abertura ----------
-     O mesmo cartão na tela "entrando" e na casca da página (.etapas--abertura, no index.html): a etapa de agora e a barra,
-     que acompanha os arquivos do sistema e, depois, os da primeira tela (RosterWork.abertura, pela navegação) */
+     O cartão da casca da página (.etapas--abertura, no index.html), no F5 e na entrada pelo login lembrado: a etapa de
+     agora e a barra, que acompanha os arquivos do sistema e, depois, os da primeira tela (RosterWork.abertura, pela
+     navegação) */
   var PARTE_DO_SISTEMA = 0.6;   // o quanto da barra é do sistema; o resto é da primeira tela
 
   function cartoesDaAbertura() { return Array.prototype.slice.call(document.querySelectorAll('.etapas--abertura')); }

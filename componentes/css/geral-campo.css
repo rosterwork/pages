@@ -58,7 +58,9 @@ textarea.campo-entrada {
   color: var(--erro);
 }
 
-.campo--erro .campo-entrada {
+/* o erro fica à vista até ser corrigido: também com o mouse em cima */
+.campo--erro .campo-entrada,
+.campo--erro .campo-entrada:not(:disabled):hover {
   border-color: var(--erro);
 }
 

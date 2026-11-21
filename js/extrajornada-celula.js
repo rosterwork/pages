@@ -83,7 +83,8 @@
   /* ---------- a caixa ---------- */
 
   /* abre a caixa da peça (a de antes fecha; titulo: o da folha do celular; junto: o pelotão do nome). Com espera (a Escala
-     lendo o mês), a caixa aparece com o menu quando a leitura chega (os pontos passando de 0,5 s) */
+     lendo o mês), a caixa aparece com o menu quando a leitura chega (até lá, passando de 0,2 s, as faixas, que ficam o
+     mínimo na tela) */
   function abrirCaixa(c, peca, junto, titulo, espera) {
     var antes = a;
     a = c;
@@ -101,14 +102,13 @@
     /* o militar em foco mostra o nome enquanto a caixa dele está aberta */
     if (c.foco) porDia().atualizarDia(c.k);
     if (!espera) return;
-    var pontos = setTimeout(function () { if (a === c && c.caixa) c.caixa.espera(true); }, 500);
     espera.then(function (pode) {
-      clearTimeout(pontos);
       if (a !== c || !c.caixa) return;
       c.pode = !!pode;
       prepararMenu(c);
-      c.caixa.espera(false);
-      c.caixa.conteudo(c.menu);
+      var falta = c.caixa.faltaForma();
+      if (!falta) { c.caixa.conteudo(c.menu); return; }
+      setTimeout(function () { if (a === c && c.caixa) c.caixa.conteudo(c.menu); }, falta);
     });
   }
 

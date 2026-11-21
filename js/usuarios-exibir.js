@@ -2,15 +2,17 @@
    USUÁRIOS — controles do cabeçalho da página, os dois só de ícone:
    "Exibir" (o olho) e "Ordem" (o ícone mostra a ordem ativa).
    Exibir: identificador (CPF/RG/Telefone/E-mail, um por vez,
-   padrão CPF), formato do nome (só guerra ou completo+guerra) e
-   hierarquia on/off — o menu fica aberto ao escolher (as opções
-   não são .dropdown-item). Ordem: escolha única entre as quatro
+   padrão CPF) e formato do nome (só guerra ou completo+guerra),
+   cada um com a bolinha, e a hierarquia on/off, com a caixa de
+   marcar — o menu fica aberto ao escolher (as opções são a linha
+   .geral-opcao, não .dropdown-item). Ordem: escolha única entre as quatro
    (fecha ao escolher, são .dropdown-item). O estado dos dois vive
    em rosterwork_preferencias.exibir — some no login (volta ao
    padrão). Aqui também as regras da lista do efetivo que Usuários e
    Afastamentos usam iguais: a busca (nome de guerra, nome completo,
-   CPF ou RG), a ordem (a do botão) e a árvore de Graus do filtro. A
-   página Afastamentos carrega este arquivo e usa a mesma Ordem.
+   CPF ou RG) e a ordem (a do botão); e a árvore de Graus do filtro,
+   só de Usuários. A página Afastamentos carrega este arquivo e usa a
+   mesma Ordem.
    ============================================================ */
 (function () {
   'use strict';
@@ -48,15 +50,18 @@
     try { sessionStorage.setItem('rosterwork_preferencias', JSON.stringify(p)); } catch (_e) {}
   }
 
-  /* realça a opção ativa de cada grupo (a check aparece via .exibir-opcao--ativo) */
+  /* marca a escolha de cada grupo: a bolinha do identificador e a do nome, e a caixa de marcar da hierarquia */
   function marcar(menu) {
     var e = estado();
     var ids = menu.querySelectorAll('[data-exibir-id]');
-    for (var i = 0; i < ids.length; i++) ids[i].classList.toggle('exibir-opcao--ativo', ids[i].getAttribute('data-exibir-id') === e.identificador);
+    for (var i = 0; i < ids.length; i++) ids[i].checked = ids[i].getAttribute('data-exibir-id') === e.identificador;
     var noms = menu.querySelectorAll('[data-exibir-nome]');
-    for (var j = 0; j < noms.length; j++) noms[j].classList.toggle('exibir-opcao--ativo', noms[j].getAttribute('data-exibir-nome') === e.nome);
+    for (var j = 0; j < noms.length; j++) noms[j].checked = noms[j].getAttribute('data-exibir-nome') === e.nome;
     var h = menu.querySelector('[data-exibir-toggle="hierarquia"]');
-    if (h) h.classList.toggle('exibir-opcao--ativo', !!e.hierarquia);
+    if (h) {
+      h.setAttribute('aria-checked', e.hierarquia ? 'true' : 'false');
+      h.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', !!e.hierarquia);
+    }
   }
 
   /* realça a ordem escolhida no menu e troca o ícone + a dica do botão */
@@ -95,17 +100,25 @@
     var menu = conteudo.querySelector('#exibir-menu');
     if (!menu) return;
     marcar(menu);
-    menu.addEventListener('click', function (evento) {
-      var op = evento.target.closest ? evento.target.closest('.exibir-opcao') : null;
-      if (!op) return;
-      var e = estado();
-      if (op.hasAttribute('data-exibir-id')) e.identificador = op.getAttribute('data-exibir-id');
-      else if (op.hasAttribute('data-exibir-nome')) e.nome = op.getAttribute('data-exibir-nome');
-      else if (op.getAttribute('data-exibir-toggle') === 'hierarquia') e.hierarquia = !e.hierarquia;
-      else return;
+    function mudou(e) {
       salvar(e);
       marcar(menu);
       if (aoMudar) aoMudar();
+    }
+    /* a bolinha do identificador e a do nome: a escolha chega pelo change do rádio */
+    menu.addEventListener('change', function (evento) {
+      var r = evento.target, e = estado();
+      if (r.hasAttribute('data-exibir-id')) e.identificador = r.getAttribute('data-exibir-id');
+      else if (r.hasAttribute('data-exibir-nome')) e.nome = r.getAttribute('data-exibir-nome');
+      else return;
+      mudou(e);
+    });
+    /* a caixa de marcar da hierarquia liga e desliga */
+    menu.addEventListener('click', function (evento) {
+      if (!(evento.target.closest && evento.target.closest('[data-exibir-toggle="hierarquia"]'))) return;
+      var e = estado();
+      e.hierarquia = !e.hierarquia;
+      mudou(e);
     });
   }
 

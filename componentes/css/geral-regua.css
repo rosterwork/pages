@@ -12,15 +12,16 @@
    ============================================================ */
 
 .regua-barra-caixa {
-  --regua-alca: 10px;   /* o tamanho das bolinhas de arrastar */
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-/* abaixo dos campos de horário */
+/* abaixo dos campos de horário: a barra encolhe 12px de cada lado (meia hora escrita), para cada hora ficar centrada
+   embaixo do seu risquinho, cada bolinha no centro do risquinho e nada passar da margem */
 .regua-barra-caixa--afastada {
   margin-top: 8px;
+  padding: 0 12px;
 }
 
 /* a barra: --regua-linha é a altura do meio do risco (os risquinhos ficam logo abaixo dele, dentro da altura das horas) */
@@ -36,13 +37,6 @@
   --regua-linha: 6px;
   --regua-risco: 4px;
   --regua-tracos: 1;
-}
-
-/* abaixo dos campos, a barra fica na largura deles e dos textos: encolhe meia bolinha de cada lado, para as bolinhas
-   das pontas não passarem da margem */
-.regua-barra-caixa--afastada .regua-barra {
-  width: calc(100% - var(--regua-alca));
-  align-self: center;
 }
 
 .regua-barra-trilho {
@@ -143,10 +137,19 @@
   right: 0;
 }
 
+/* abaixo dos campos (a barra com folga dos lados): os das pontas também no meio da divisa, como os outros */
+.regua-barra-caixa--afastada .regua-barra-risco--0 {
+  left: -1px;
+}
+
+.regua-barra-caixa--afastada .regua-barra-risco--24 {
+  right: -1px;
+}
+
 /* as bolinhas de arrastar (o começo e o fim da faixa), no meio do risco; a posição vem de --regua-pos, em horas desde
-   as 08h. Desenham --regua-alca (o tamanho, na caixa) e pegam o mouse numa área invisível de --regua-alca-area em
-   volta do centro */
+   as 08h. Desenham 10px e pegam o mouse numa área invisível de --regua-alca-area em volta do centro */
 .regua-barra-alca {
+  --regua-alca: 10px;
   --regua-alca-area: 24px;
   position: absolute;
   top: var(--regua-linha);
@@ -206,13 +209,10 @@
   transform: translateX(-100%);
 }
 
-/* abaixo dos campos (a barra encolhida): as horas do meio seguem os risquinhos; as das pontas ficam na margem */
-.regua-barra-caixa--afastada .regua-barra-horas .regua-barra-horas-6 {
-  left: calc(var(--regua-alca) / 2 + (100% - var(--regua-alca)) / 4);
-}
-
-.regua-barra-caixa--afastada .regua-barra-horas .regua-barra-horas-18 {
-  left: calc(var(--regua-alca) / 2 + (100% - var(--regua-alca)) * 3 / 4);
+/* abaixo dos campos (a barra com folga dos lados): as horas das pontas também centradas embaixo dos risquinhos */
+.regua-barra-caixa--afastada .regua-barra-horas .regua-barra-horas-0,
+.regua-barra-caixa--afastada .regua-barra-horas .regua-barra-horas-24 {
+  transform: translateX(-50%);
 }
 
 /* ============================================================

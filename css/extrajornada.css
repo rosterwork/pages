@@ -1021,9 +1021,65 @@
   border-radius: var(--raio-pequeno);
 }
 
+/* com os pelotões lado a lado, o selo no centro da coluna, como o nome sem cor (escalas-calendario.css) */
+.geral-calendario-mes--lado-a-lado .extrajornada-uni-nome {
+  align-self: center;
+}
+
 .extrajornada-uni-nome--ok { background-color: var(--sucesso-fundo); color: var(--sucesso); }
 .extrajornada-uni-nome--erro { background-color: var(--erro-fundo); color: var(--erro); }
 .extrajornada-uni-nome--alerta { background-color: var(--alerta-fundo); color: var(--alerta); }
+
+/* a Falta de gente (o Exibir): a linha embaixo do gráfico, uma casinha por horário de 6 h, com o recuo do gráfico dos
+   lados, para cada uma ficar embaixo das suas 6 barras. Vermelho: quantos ainda faltam; verde com o certo: não falta
+   ninguém, e o "+1" pequeno no canto direito quando há extra a mais do que faltava; sem nada, a casinha clara */
+.extrajornada-falta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px 4px 0;
+  flex-shrink: 0;
+}
+
+.extrajornada-falta-hora {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 16px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-suave);
+  color: var(--texto-fraco);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* o certo só na casinha da falta coberta */
+.extrajornada-falta-hora .icone { display: none; }
+.extrajornada-falta-hora--coberta .icone { display: block; }
+
+.extrajornada-falta-hora--falta { background-color: var(--erro-fundo); color: var(--erro); }
+.extrajornada-falta-hora--coberta { background-color: var(--sucesso-fundo); color: var(--sucesso); }
+
+/* o "+1" das extras a mais, pequeno (a microetiqueta, 9px) no canto direito da casinha do certo, na cor dela */
+.extrajornada-falta-mais {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.extrajornada-falta-mais:empty { display: none; }
+
+/* na Legenda, a casinha de exemplo, com a largura de uma da linha no Calendário (o "+1" cabe ao lado do certo) */
+.escala-legenda-item .extrajornada-falta-hora {
+  width: 44px;
+  flex-shrink: 0;
+}
 
 /* a Legenda da barra: as regras da sugestão em listas curtas */
 .extrajornada-legenda-lista {

@@ -46,9 +46,10 @@
 }
 
 /* ---------- a camada do cartão ---------- */
-/* a das ações fica no shell (#etapas-camada, no .conteudo): no meio da área da página, ao lado do painel aberto */
+/* todo cartão fica no centro da tela, o mesmo lugar do aviso, com o menu e o painel abertos ou não: a camada cobre a
+   tela inteira, sem receber clique. A das ações fica no shell (#etapas-camada, no .conteudo) */
 .etapas-camada {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 30;
   display: flex;
@@ -58,11 +59,7 @@
   pointer-events: none;
 }
 
-.conteudo:has(> .painel-lateral--aberto) > .etapas-camada {
-  right: var(--painel-largura);
-}
-
-/* a da leitura de uma área fica dentro dela, abaixo dos menus */
+/* a da leitura de uma área fica dentro dela (sai junto com ela), abaixo dos menus */
 .etapas-camada--area {
   z-index: 9;
 }
@@ -198,8 +195,9 @@ html[data-treino] .etapas-veu {
   color: var(--texto-forte);
 }
 
-/* a barra curta: a da linha e a que fica sozinha ao lado de um texto que já diz o que espera (o nome do mês, a nota
-   amarela da Escala, a caixa flutuante) */
+/* a barra curta: a da linha e a que fica sozinha ao lado de um texto que já diz o que espera (o nome do mês, o rótulo
+   do Para qual dia, a nota amarela da Escala); a da linha fica sozinha também na linha do alto da caixa flutuante, com a
+   frase só para o leitor de tela */
 .etapas-linha .cobertura-viva,
 .cobertura-viva--curta {
   width: 64px;
@@ -255,16 +253,11 @@ html[data-treino] .etapas-veu {
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   O painel cobre a tela: o cartão fica no meio da área toda. A linha
-   divide o rodapé com os botões: a frase quebra em duas linhas e a
-   conta sai (com o painel aberto, uma linha só, com reticências); na
-   demora, a frase dela fica no lugar da etapa.
+   A linha divide o rodapé com os botões: a frase quebra em duas
+   linhas e a conta sai (com o painel aberto, uma linha só, com
+   reticências); na demora, a frase dela fica no lugar da etapa.
    ============================================================ */
 @media (max-width: 767px) {
-  html[data-celular] .conteudo:has(> .painel-lateral--aberto) > .etapas-camada {
-    right: 0;
-  }
-
   html[data-celular] .etapas-linha {
     display: flex;
   }
