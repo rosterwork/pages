@@ -3,16 +3,21 @@
    (escalas-celula-editar.js), no rascunho do Dia, com o mesmo código
    do painel:
    - na caixa 2: Mudar o horário do serviço (escalas-painel-horario-dia
-     › criar), Mudar onde fica do estagiário (escalas-painel-onde ›
+     › criar), Mudar o dia do serviço (escalas-painel-mudar-dia ›
+     criar), Mudar de unidade neste dia (escalas-painel-remanejar ›
+     criar, no Enviar), Mudar onde fica do estagiário (escalas-painel-onde ›
      estagio), Dar folga neste dia e Remover deste dia (escalas-painel-
-     remover › analisarDoDia), Remover da guarnição (escalas-painel-ciclo
+     remover › analisarDoDia), o Devolver e o Remover deste dia do
+     remanejado (escalas-painel-remover › analisarRemanejado: onde ele
+     está, Devolver ou Tirar do dia), Remover da guarnição (escalas-painel-ciclo
      › perguntarSaida), Cancelar a folga e Desfazer a mudança
      (escalas-painel-militar › perguntas);
    - na hora, com o Desfazer: Cancelar a saída da guarnição, o pontual
      que sai sem pergunta e a mudança de dia ainda no rascunho;
-   - o painel do dia, já na tela do item: Mudar o dia, Mudar de
-     unidade, Registrar troca, Devolver, o Remover deste dia de quem
-     entrou de mais de um jeito, Mudar a extrajornada e o painel;
+   - o painel do dia, já na tela do item: Registrar troca, o Remover
+     deste dia de quem entrou de mais de um jeito ou por troca (também o
+     Tirar do dia do remanejado nesses casos), Mudar a extrajornada e o
+     painel;
    - o pelotão: Adicionar neste dia (escolhido o nome, ele já entra no
      dia, ao vivo, nas horas livres, e a linha dele aparece na célula na
      hora; a caixa continua com o horário e o banco de horas, com o
@@ -21,7 +26,8 @@
      (escalas-painel-adicionar › lerGuarnicao e desenharGuarnicao; o
      mesmo no nome em vermelho do Fora da escala, escalas-celula-fora.js),
      Adicionar extra neste dia (escalas-celula-extra.js), Trazer de
-     outra unidade (o painel, já no Trazer), Voltar o dia ao automático
+     outra unidade (escalas-painel-remanejar › criar, no Trazer, na
+     caixa 2), Voltar o dia ao automático
      (a confirmação do painel) e Abrir o painel do dia. O Oficial de Área do título (escalas-celula-
      oficial.js) usa o campo do Adicionar, o Remover e a pergunta, e o
      Pôr como Oficial de Área do nome vai para ele. A lista do campo de
@@ -50,13 +56,18 @@
 
   function vivo(a) { if (!a.vivo) { a.vivo = true; api().comecarVivo(); } }
 
-  /* a resposta está pela metade? (o horário fora de onde ele pode ficar, a pergunta do pontual sem resposta, ou a do
-     Oficial de Área que vem de um pelotão, se sai de lá ou fica nas duas, escalas-celula-oficial.js) */
+  /* a resposta está pela metade? (o horário fora de onde ele pode ficar, a pergunta do pontual sem resposta, a do
+     Oficial de Área que vem de um pelotão, se sai de lá ou fica nas duas, escalas-celula-oficial.js, ou, nas perguntas do
+     painel, o Mudar o dia, o Mudar de unidade e o Trazer, depois da primeira resposta, uma que falta ou a recusa do
+     banco) */
   function pelaMetade(a) {
     if (a.acao === 'horario') {
       var c = a.sessao.calcular();
       return !c.ok || (c.pergunta && !a.sessao.est.banco);
     }
+    if (a.perguntas) return a.perguntas.pelaMetade();
+    /* o remanejado: sem Devolver nem Tirar do dia, ou o Tirar do pontual sem resposta */
+    if (a.acao === 'remanejado') return !a.remanFazer || (a.remanFazer === 'tirar' && !!a.remocao && a.remocao.tipo === 'pontual' && !a.escolha);
     return (!!a.remocao && a.remocao.tipo === 'pontual' && !a.escolha) || !!a.origemFalta;
   }
 
@@ -65,7 +76,7 @@
   function terminar(a, modo) {
     var acao = a.acao, tinha = a.vivo;
     if (acao === 'remover-guarnicao') RW.escalasPainelCiclo.fecharPergunta(modo === 'largar' ? 'largar' : 'guardar');
-    var metade = tinha && (acao === 'horario' || !!a.remocao || !!a.origemFalta) && pelaMetade(a);
+    var metade = tinha && (acao === 'horario' || acao === 'remanejado' || !!a.perguntas || !!a.remocao || !!a.origemFalta) && pelaMetade(a);
     a.origemFalta = false;
     a.vivo = false;
     a.acao = null;
@@ -85,6 +96,9 @@
     terminar(a);
     a.sessao = null;
     a.remocao = null;
+    a.perguntas = null;
+    a.reman = null;
+    a.remanFazer = null;
     a.entrada = null;
     a.sairam = null;
     a.escolha = a.escolhido = null;
@@ -155,12 +169,14 @@
     mostrarFalta(a);
     return false;
   }
-  /* a pergunta que falta (a do banco de horas, ou a do Remover do dia) com a borda de erro; o horário fora de onde ele
-     pode ficar já está em vermelho. Embaixo da caixa 2, a frase de responder ou fechar */
+  /* a pergunta que falta (a do banco de horas, ou a do Remover do dia; no remanejado, a última à vista) com a borda de
+     erro; o horário fora de onde ele pode ficar já está em vermelho. Embaixo da caixa 2, a frase de responder ou fechar
+     (as perguntas do painel marcam as delas) */
   function mostrarFalta(a) {
+    if (a.perguntas) { a.perguntas.marcarFalta(); return; }
     var el = a.el2;
     if (!el || !el.isConnected) return;
-    var p = el.querySelector('.escala-celula-pergunta:not(.oculto)');
+    var ps = el.querySelectorAll('.escala-celula-pergunta:not(.oculto)'), p = ps[ps.length - 1];
     if (p) p.classList.add('escala-celula-pergunta--falta');
     if (el.querySelector('.escala-celula-falta')) return;
     var nota = RW.tpl('tpl-escala-nota');
@@ -215,8 +231,8 @@
   }
 
   /* Dar folga (o ciclo e a troca, que continua valendo; folga = true): sai de folga, com o Não descontar marcado. Remover
-     deste dia: o pontual sai, ou antes responde se as horas saem do banco; quem entrou de mais de um jeito, o remanejado e
-     a troca: a sub-tela do painel, já com ele */
+     deste dia: o pontual sai, ou antes responde se as horas saem do banco; o remanejado, a caixa dele (remanejado); quem
+     entrou de mais de um jeito e a troca: a sub-tela do painel, já com ele */
   function remover(botao, c, folga) {
     var a = c.a, cpf = a.cpf;
     if (api().mudancaNoRascunho(cpf) === 'vem') {
@@ -224,6 +240,7 @@
       c.fecharTudo();
       return;
     }
+    if (!folga && RW.escalasPainelRemover.analisarRemanejado(cpf)) { remanejado(botao, c, false); return; }
     var mil = api().militarDoDia(cpf);
     var r = mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: cpf, periodos: mil.janelas.map(copiar), folga: !!folga }) : null;
     if (!r) return;
@@ -239,6 +256,87 @@
     desenhar(c);
   }
 
+  /* ---------- a caixa 2 do remanejado ---------- */
+
+  /* o remanejado (o Devolver de quem saiu daqui, devolver = true, e o Remover deste dia de quem veio de outra unidade):
+     onde ele está e Devolver ou Tirar do dia (escalas-painel-remover › analisarRemanejado, o mesmo do painel). No
+     Devolver, ele já vem marcado e vale; no Tirar do dia, a pergunta de sempre embaixo (a folga, com o Não descontar
+     marcado, ou o pontual); por troca ou de mais de um jeito, o painel, já com ele */
+  function remanejado(botao, c, devolver) {
+    var a = c.a, r = RW.escalasPainelRemover.analisarRemanejado(a.cpf);
+    if (!r) return;
+    vivo(a);
+    a.acao = 'remanejado';
+    a.botao = botao;
+    a.reman = r;
+    a.remanFazer = null;
+    a.remocao = null;
+    a.escolha = null;
+    a.motivo = '';
+    if (devolver) fazerRemanejado(c, 'devolver');
+    else desenharRemanejado(c);
+  }
+
+  /* Devolver ou Tirar do dia: a resposta vai ao rascunho ao vivo (o Tirar do pontual, depois da pergunta dele) */
+  function fazerRemanejado(c, valor) {
+    var a = c.a, r = a.reman, t = r.tirar;
+    a.remanFazer = valor;
+    a.remocao = null;
+    a.escolha = null;
+    if (valor === 'devolver') {
+      api().aoVivo(function () { r.devolver(); }, false);
+      desenharRemanejado(c);
+      return;
+    }
+    /* por troca ou de mais de um jeito: o painel, já com ele (o Devolver que estava no rascunho sai antes) */
+    if (!t || t.tipo === 'subtela') {
+      var cpf = a.cpf;
+      api().aoVivo(null, false);
+      c.fecharTudo('guardar');
+      c.abrirPainel(cpf, { fazerAcao: 'remover-dia' });
+      return;
+    }
+    /* o pontual sem pergunta: sai do dia, e não sobra nada para a caixa */
+    if (t.tipo === 'sai') { api().aoVivo(function () { t.aplicar(); }, false); c.fecharTudo(); return; }
+    a.remocao = t;
+    a.escolha = t.padrao;
+    a.motivo = t.motivo || '';
+    api().aoVivo(t.padrao ? function () { t.aplicar(t.padrao, a.motivo); } : null, false);
+    desenharRemanejado(c);
+  }
+
+  /* a resposta da pergunta do Tirar do dia (o banco de horas): a folga fica; o pontual sai do dia (a caixa fecha) */
+  function responderRemanejado(c, valor) {
+    var a = c.a, t = a.remocao;
+    if (!t) return;
+    a.escolha = valor;
+    api().aoVivo(function () { t.aplicar(valor, a.motivo); }, false);
+    if (t.tipo === 'pontual') { c.fecharTudo(); return; }
+    desenharRemanejado(c);
+  }
+
+  /* a caixa 2: onde ele está, Devolver ou Tirar do dia e, no Tirar, a pergunta de sempre embaixo (com o Motivo da folga) */
+  function desenharRemanejado(c) {
+    var a = c.a, r = a.reman, el = RW.tpl('tpl-escala-celula-remanejado');
+    if (!el || !a.caixa) return;
+    var fazer = el.querySelector('.escala-celula-remanejado');
+    fazer.querySelector('.escala-celula-pergunta-texto').textContent = r.texto;
+    fazer.querySelector('.escala-celula-remanejado-devolver').textContent = r.devolverTexto;
+    var nome = 'escala-celula-remanejado-' + (++conta);
+    [].forEach.call(fazer.querySelectorAll('input[type="radio"]'), function (x) {
+      x.name = nome;
+      x.checked = x.value === a.remanFazer;
+      x.addEventListener('change', function () { if (x.checked) fazerRemanejado(c, x.value); });
+    });
+    var t = a.remanFazer === 'tirar' ? a.remocao : null;
+    if (t) {
+      pergunta(el.querySelector('.escala-celula-remanejado-tirar'), { texto: t.texto, sim: t.sim, nao: t.nao, naoPrimeiro: t.tipo === 'folga',
+        escolha: a.escolha, motivo: t.tipo === 'folga' && motivoDaFolga(c) }, function (v) { responderRemanejado(c, v); });
+    }
+    a.el2 = el;
+    a.caixa.segunda(a.botao, el, textoDo(a.botao));
+  }
+
   /* ---------- a caixa 2 das perguntas do painel (a guarnição, a folga e a mudança) ---------- */
 
   /* Remover da guarnição: a pergunta Último serviço do painel, dentro da caixa 2 (o Cancelar dela volta e fecha a caixa 2) */
@@ -252,6 +350,41 @@
       aoCancelar: function () { if (c.a === a) { a.acao = null; a.caixa.fecharSegunda(); } }
     });
     a.caixa.segunda(botao, caixa, textoDo(botao));
+  }
+
+  /* as perguntas do painel na caixa 2 (o Mudar o dia, o Mudar de unidade e o Trazer): o mesmo código do painel, com cada
+     resposta no rascunho ao vivo; criar(pendurar) monta a tela e a pendura na caixa 2 */
+  function perguntasDoPainel(botao, c, acao, criar) {
+    var a = c.a;
+    vivo(a);
+    a.acao = acao;
+    a.botao = botao;
+    a.perguntas = criar(function (el) {
+      a.el2 = el;
+      a.caixa.segunda(botao, el, textoDo(botao));
+    });
+  }
+
+  /* Mudar o dia do serviço, já com ele (Para qual dia, Horário e Onde fica). Quem não muda o dia por aqui (o menu nem
+     mostra o item) vai ao painel */
+  function mudarDia(botao, c) {
+    var M = RW.escalasPainelMudarDia, cpf = c.a.cpf;
+    if (!M.podeMudar(cpf)) { painelNo('mudar-dia')(botao, c); return; }
+    perguntasDoPainel(botao, c, 'mudar-dia', function (pendurar) { return M.criar({ cpf: cpf }, pendurar); });
+  }
+
+  /* Mudar de unidade neste dia (o Enviar), já com ele (Para qual unidade, Em troca, Na unidade de origem, Motivo e Onde
+     fica). Quem não vai daqui por aqui (o menu nem mostra o item) vai ao painel */
+  function mudarUnidade(botao, c) {
+    var R = RW.escalasPainelRemanejar, cpf = c.a.cpf;
+    if (!R.podeEnviar(cpf)) { painelNo('mudar-unidade')(botao, c); return; }
+    perguntasDoPainel(botao, c, 'mudar-unidade', function (pendurar) { return R.criar({ cpf: cpf }, pendurar); });
+  }
+
+  /* Trazer de outra unidade (o pelotão): Quem vem e as mesmas perguntas do Enviar */
+  function trazer(botao, c) {
+    var R = RW.escalasPainelRemanejar;
+    perguntasDoPainel(botao, c, 'trazer', function (pendurar) { return R.criar({ fazer: 'trazer' }, pendurar); });
   }
 
   /* Cancelar a folga e Desfazer a mudança: a pergunta do painel, já com a escolha (que já vale, ao vivo) */
@@ -310,8 +443,8 @@
       RW.escalasPainelCiclo.cancelarSaida(c.a.cfg.militar, c.a.cfg.saida);
       c.fecharTudo();
     },
-    'mudar-dia': painelNo('mudar-dia'),
-    'mudar-unidade': painelNo('mudar-unidade'),
+    'mudar-dia': mudarDia,
+    'mudar-unidade': mudarUnidade,
     'registrar-troca': painelNo('registrar-troca'),
     /* a caixa 2 com a pergunta se ele sai daqui ou fica nas duas (o cartão da célula, sem o horário); a resposta faz */
     'oficial-area': function (botao, c) {
@@ -323,8 +456,14 @@
       RW.escalasCelulaOficial.perguntarComo(el.querySelector('.escala-celula-pergunta'), a.cpf, function () { c.fecharTudo(); });
       a.caixa.segunda(botao, el, textoDo(botao));
     },
-    devolver: painelNo('devolver'),
-    'mudar-extra': function (botao, c) { c.fecharTudo('guardar'); c.abrirPainel(null, { secao: 'extra' }); },
+    devolver: function (botao, c) { remanejado(botao, c, true); },
+    /* a caixa da extra dele, a mesma do clique na linha da extra (escalas-celula-extra.js); sem ela (quem não administra a
+       companhia, ou a linha da extra escondida), o painel do dia na aba Extrajornada */
+    'mudar-extra': function (botao, c) {
+      if (RW.escalasCelulaExtra && RW.escalasCelulaExtra.abrirDe(c.dia, c.a.cpf)) return;
+      c.fecharTudo('guardar');
+      c.abrirPainel(null, { secao: 'extra' });
+    },
     'abrir-painel': function (botao, c) { var cpf = c.a.cpf; c.fecharTudo('guardar'); c.abrirPainel(cpf); }
   };
 
@@ -342,17 +481,25 @@
     ACOES[acao](botao, c);
   }
 
-  /* o sinal do Remover deste dia: a setinha quando ele abre a caixa 2 (o Dar folga sempre abre), o ícone do painel quando
-     vai ao painel (quem entrou de mais de um jeito, o remanejado e a troca) e nenhum quando sai na hora */
+  /* o sinal do Remover deste dia: a setinha quando ele abre a caixa 2 (o Dar folga sempre abre; o remanejado, a caixa
+     dele), o ícone do painel quando vai ao painel (quem entrou de mais de um jeito e a troca) e nenhum quando sai na hora.
+     O do Mudar a extrajornada: a setinha quando abre a caixa da extra; senão, o ícone do painel */
   function prepararMenu(c, menu) {
     var a = c.a;
     if (!a || !menu) return;
-    var mil = api().militarDoDia(a.cpf);
-    var r = mil ? RW.escalasPainelRemover.analisarDoDia({ cpf: a.cpf, periodos: mil.janelas.map(copiar) }) : null;
-    var seta = menu.querySelector('[data-acao="remover-dia"] .escala-edicao-opcoes-seta');
-    var painel = menu.querySelector('[data-acao="remover-dia"] .escala-edicao-opcoes-painel');
-    if (seta) seta.classList.toggle('oculto', !r || r.tipo === 'sai' || r.tipo === 'subtela');
-    if (painel) painel.classList.toggle('oculto', !r || r.tipo !== 'subtela');
+    var mil = api().militarDoDia(a.cpf), P = RW.escalasPainelRemover;
+    var reman = !!mil && !!P.analisarRemanejado(a.cpf);
+    var r = mil && !reman ? P.analisarDoDia({ cpf: a.cpf, periodos: mil.janelas.map(copiar) }) : null;
+    sinal(menu, 'remover-dia', !!reman || (!!r && r.tipo !== 'sai' && r.tipo !== 'subtela'), !reman && !!r && r.tipo === 'subtela');
+    var caixaDaExtra = !!RW.escalasCelulaExtra && RW.escalasCelulaExtra.podeAbrir(c.dia, a.cpf);
+    sinal(menu, 'mudar-extra', caixaDaExtra, !caixaDaExtra);
+  }
+  /* o sinal à direita do item: a setinha (abre a caixa) ou o ícone do painel */
+  function sinal(menu, acao, seta, painel) {
+    var s = menu.querySelector('[data-acao="' + acao + '"] .escala-edicao-opcoes-seta');
+    var p = menu.querySelector('[data-acao="' + acao + '"] .escala-edicao-opcoes-painel');
+    if (s) s.classList.toggle('oculto', !seta);
+    if (p) p.classList.toggle('oculto', !painel);
   }
 
   /* o militar que acabou de entrar já abre no horário */
@@ -413,7 +560,7 @@
     if (a.botao === botao && a.acao) return;
     encerrar(c);
     if (acao === 'painel') { c.fecharTudo('guardar'); c.abrirPainel(null); }
-    else if (acao === 'trazer') { c.fecharTudo('guardar'); c.abrirPainel(null, { trazer: true }); }
+    else if (acao === 'trazer') trazer(botao, c);
     else if (acao === 'automatico') { c.fecharTudo(); api().voltarAoAutomatico(); }
     else if (acao === 'neste-dia') nesteDia(botao, c);
     else if (acao === 'estagiario') adicionarEstagiario(botao, c);

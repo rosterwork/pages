@@ -13,6 +13,7 @@
     <div class="abas" id="trocas-abas">
       <button type="button" class="aba aba--ativa" data-aba="todas">Todas</button>
       <button type="button" class="aba" data-aba="minhas" data-manual="solicitar-troca">Minhas</button>
+      <button type="button" class="aba" data-aba="calendario">Calendário</button>
       <button type="button" class="aba" data-aba="saldos">Saldos</button>
       <!-- o que espera decisão sobre trocas (a mesma fila da página Pendências) -->
       <button type="button" class="aba" data-aba="pendencias">
@@ -23,7 +24,8 @@
   </div>
 
   <!-- barra de comandos: à esquerda as ações, em todas as abas (Solicitar troca, do militar;
-       o grupo Administração, só admin); à direita a ferramenta Imprimir (o painel Imprimir trocas) -->
+       o grupo Administração, só admin); à direita a ferramenta Imprimir (o painel Imprimir trocas). Na aba Calendário
+       (data-aba-painel="calendario"), também o mês, o Filtros, a busca, o traço e a Legenda (trocas-calendario.js) -->
   <div class="pagina-subcabecalho">
     <button type="button" class="botao botao--primario" id="btn-solicitar-troca">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-trocas"/></svg>
@@ -44,7 +46,35 @@
         </button>
       </div>
     </div>
+    <!-- Calendário: o mês (as setas andam um mês; o Hoje aparece fora do mês de hoje) -->
+    <div class="geral-periodo oculto" data-aba-painel="calendario">
+      <button type="button" class="botao botao--icone" id="trocas-cal-anterior" aria-label="Mês anterior">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
+      </button>
+      <span class="geral-periodo-nome" id="trocas-cal-mes"></span>
+      <button type="button" class="botao botao--icone" id="trocas-cal-proximo" aria-label="Próximo mês">
+        <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
+      </button>
+      <button type="button" class="botao geral-periodo-hoje oculto" id="trocas-cal-hoje">Hoje</button>
+    </div>
     <span class="espacador-flex"></span>
+    <!-- Calendário: o botão Filtros (componente geral-filtros: a Situação; quem mostra e esconde é o trocas-calendario.js,
+         junto com a linha "Filtros:"), a busca de militar (marcar ou filtrar), o traço e a Legenda (molde geral #tpl-legenda) -->
+    <div class="filtros oculto" id="trocas-cal-filtros">
+      <div data-filtro="situacao" data-filtro-nome="Situação" data-filtro-titulo="Situação"></div>
+    </div>
+    <div class="busca oculto" id="trocas-cal-busca" data-aba-painel="calendario">
+      <button type="button" class="busca-modo" aria-label="Alternar entre marcar e filtrar" data-dica="Marcar">
+        <svg class="icone busca-modo-marcar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+        <svg class="icone busca-modo-filtrar" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-filtrar"/></svg>
+      </button>
+      <input type="text" class="busca-entrada" maxlength="100" enterkeyhint="search" placeholder="Pesquisar militar" aria-label="Pesquisar militar" />
+      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      </button>
+    </div>
+    <span class="pagina-subcabecalho-divisor oculto" aria-hidden="true" data-aba-painel="calendario"></span>
+    <div class="oculto" id="trocas-cal-legenda"></div>
     <button type="button" class="botao botao--quadrado" id="btn-imprimir-trocas" aria-label="Imprimir trocas" data-dica="Imprimir">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
     </button>
@@ -60,6 +90,11 @@
   <!-- Minhas: lista das trocas em que eu entro (solicitante ou solicitado) -->
   <div class="pagina-corpo oculto" data-aba-painel="minhas">
     <div class="trocas-lista coluna-leitura" id="trocas-minhas-lista"></div>
+  </div>
+
+  <!-- Calendário: o mês com as trocas de cada dia; os meses da troca escolhida abrem ao lado (trocas-calendario.js) -->
+  <div class="pagina-corpo oculto" data-aba-painel="calendario">
+    <div class="trocas-cal" id="trocas-cal"></div>
   </div>
 
   <!-- Saldos: as dívidas de horas entre militares (trocas sem devolução ou com devolução menor) -->
@@ -373,4 +408,77 @@
     <span class="espacador-flex"></span>
     <span class="selo troca-item-situacao"></span>
   </button>
+</template>
+
+<!-- molde: um mês da aba Calendário (o nome e o lugar do mês em miniatura, componente geral-mini-calendario) -->
+<template id="tpl-troca-cal-mes">
+  <div class="trocas-cal-mes">
+    <span class="trocas-cal-mes-nome"></span>
+    <div class="trocas-cal-mes-grade"></div>
+  </div>
+</template>
+
+<!-- molde: o dia da aba Calendário, uma caixa (as trocas dentro dele é que são os botões) -->
+<template id="tpl-troca-cal-dia">
+  <div class="mini-calendario-dia">
+    <span class="mini-calendario-numero"></span>
+  </div>
+</template>
+
+<!-- molde: uma troca no dia (quem trabalha em cima, quem folga embaixo, riscado; a cor da situação vem do JS) -->
+<template id="tpl-troca-cal-par">
+  <button type="button" class="trocas-cal-par">
+    <span class="trocas-dia-trabalha"></span>
+    <span class="trocas-dia-folga"></span>
+  </button>
+</template>
+
+<!-- molde: a caixa da troca escolhida na aba Calendário (a caixa flutuante da Escala): o RW nº, a situação e, na troca
+     aguardando, a análise; as ações de quem olha, as mesmas do rodapé do painel da troca (data-acao; o JS tira as que não
+     valem; data-so: só na troca de uma ou só no registro de várias) e, depois do traço, o painel -->
+<template id="tpl-troca-cal-caixa">
+  <div class="trocas-cal-caixa">
+    <div class="trocas-cal-caixa-cabecalho">
+      <span class="trocas-cal-caixa-rw"></span>
+      <span class="trocas-cal-caixa-selos">
+        <span class="selo trocas-cal-caixa-situacao"></span>
+        <span class="selo trocas-cal-caixa-analise oculto"></span>
+      </span>
+    </div>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="aceitar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span>Aceitar</span></button>
+    <button type="button" class="dropdown-item" data-acao="aceitar-depois"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span>Aceitar</span></button>
+    <button type="button" class="dropdown-item" data-acao="aprovar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span>Aprovar</span><span class="espacador-flex"></span><span class="etiqueta-adm">ADM</span></button>
+    <button type="button" class="dropdown-item" data-acao="aprovar-forcar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg><span>Aprovar com pendências</span><span class="espacador-flex"></span><span class="etiqueta-adm">ADM</span></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="recusar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg><span>Recusar</span></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="recusar-admin"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg><span>Recusar</span><span class="espacador-flex"></span><span class="etiqueta-adm">ADM</span></button>
+    <button type="button" class="dropdown-item" data-acao="editar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-editar"/></svg><span>Editar</span></button>
+    <button type="button" class="dropdown-item" data-acao="cancelar" data-so="uma"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg><span>Cancelar troca</span></button>
+    <button type="button" class="dropdown-item" data-acao="cancelar-pedido"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg><span>Cancelar pedido</span></button>
+    <button type="button" class="dropdown-item" data-acao="cancelar-alteracao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg><span>Cancelar alteração</span></button>
+    <button type="button" class="dropdown-item" data-acao="cancelar-aprovada"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg><span>Cancelar troca</span><span class="espacador-flex"></span><span class="etiqueta-adm">ADM</span></button>
+    <button type="button" class="dropdown-item" data-acao="cancelar" data-so="varias"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg><span>Cancelar trocas</span><span class="espacador-flex"></span><span class="etiqueta-adm">ADM</span></button>
+    <button type="button" class="dropdown-item" data-acao="imprimir-registro"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg><span>Imprimir registro</span></button>
+    <div class="dropdown-divisor" data-divisor-painel></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg><span>Abrir o painel da troca</span></button>
+  </div>
+</template>
+
+<!-- molde: o conteúdo da Legenda da aba Calendário (quem trabalha, quem folga e as cores da situação) -->
+<template id="tpl-troca-cal-legenda">
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Troca no dia</span>
+    <div class="escala-legenda-grade escala-legenda-grade--uma">
+      <span class="escala-legenda-item"><span class="trocas-dia-trabalha">Quem trabalha</span></span>
+      <span class="escala-legenda-item"><span class="trocas-dia-folga">Quem folga</span></span>
+    </div>
+  </div>
+  <div class="escala-legenda-grupo">
+    <span class="rotulo-secao">Situação</span>
+    <div class="escala-legenda-grade">
+      <span class="escala-legenda-item"><span class="mini-calendario-legenda-cor mini-calendario-legenda-cor--quer"></span><span>Aprovada</span></span>
+      <span class="escala-legenda-item"><span class="mini-calendario-legenda-cor mini-calendario-legenda-cor--alerta"></span><span>Aguardando</span></span>
+      <span class="escala-legenda-item"><span class="mini-calendario-legenda-cor mini-calendario-legenda-cor--ocupado"></span><span>Não vale mais</span></span>
+    </div>
+  </div>
 </template>

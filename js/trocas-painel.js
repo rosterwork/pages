@@ -267,16 +267,9 @@
     }
   }
 
-  function montarAcoes(troca, ctx) {
-    var rodape = RW.painel.rodape();
-    if (!rodape) return;
-    rodape.textContent = '';
-    var tpl = document.getElementById('tpl-troca-acoes');
-    if (!tpl) return;
-    var frag = tpl.content.cloneNode(true);
-    btnAprovar = null;
-
-    /* aceita quem foi chamado; cancela o pedido quem pediu (na alteração, só a alteração) */
+  /* quem faz o quê na troca: { acao: true } (o rodapé do painel e a caixa do calendário da página Trocas usam a mesma
+     regra). Aceita quem foi chamado; cancela o pedido quem pediu (na alteração, só a alteração) */
+  function acoesDe(troca, ctx) {
     var souChamado = ctx.cpf && ctx.cpf === quemAceita(troca);
     var souQuemPediu = ctx.cpf && ctx.cpf === quemPediu(troca);
     var cancelarPedido = troca.substitui_troca_id ? 'cancelar-alteracao' : 'cancelar';
@@ -297,7 +290,19 @@
     /* o registro técnico: os dois militares e o administrador da área, em qualquer situação */
     var participa = !!ctx.cpf && (ctx.cpf === troca.solicitante_cpf || ctx.cpf === troca.parceiro_cpf);
     usar['imprimir-registro'] = !!RW.trocasRegistroPdf && (participa || admin);
-    usar.editar = comEditar && podeEditar(troca, ctx);
+    usar.editar = temEditar() && podeEditar(troca, ctx);
+    return usar;
+  }
+
+  function montarAcoes(troca, ctx) {
+    var rodape = RW.painel.rodape();
+    if (!rodape) return;
+    rodape.textContent = '';
+    var tpl = document.getElementById('tpl-troca-acoes');
+    if (!tpl) return;
+    var frag = tpl.content.cloneNode(true);
+    btnAprovar = null;
+    var usar = acoesDe(troca, ctx);
     var espacador = frag.querySelector('[data-espacador]');
     if (espacador && !usar['imprimir-registro']) espacador.parentNode.removeChild(espacador);
 
@@ -335,6 +340,9 @@
   /* ---------- abrir ---------- */
   var subtituloLeitura = '';
   var comEditar = false;   // o Editar só existe onde está o formulário (a página Trocas, com o molde do pedido)
+  /* o Editar só aparece onde o formulário existe (a página Trocas, com o molde do pedido);
+     o trocas-editar.js continua carregado depois de sair da página */
+  function temEditar() { return !!RW.trocasEditar && !!document.getElementById('tpl-troca-solicitar'); }
 
   /* a leitura: o pedido, as ações e, na troca em aberto, a Análise e o "Como fica a escala" */
   function desenharLeitura(troca, ctx) {
@@ -370,9 +378,7 @@
     ctx = ctx || {};
     var situacao = fmt().situacao(troca.status, !!troca.substitui_troca_id).texto;
     subtituloLeitura = ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao;
-    /* o Editar só aparece onde o formulário existe (a página Trocas, com o molde do pedido);
-       o trocas-editar.js continua carregado depois de sair da página */
-    comEditar = !!RW.trocasEditar && !!document.getElementById('tpl-troca-solicitar');
+    comEditar = temEditar();
     RW.painel.abrir({
       titulo: msg().painelTitulo,
       tituloExtra: RW.mensagens.decisao.tituloPelotao(troca.pelotoes),
@@ -398,6 +404,8 @@
   RW.trocasPainel = {
     abrir: abrir,
     acao: function (nome, troca, ctx, botao) { (troca.registro_varias ? RW.trocasPainelVarias.acao : despachar)(nome, troca, ctx || {}, botao); },
+    /* quem faz o quê (o mesmo do rodapé do painel): { acao: true } */
+    acoesDe: function (troca, ctx) { return (troca.registro_varias ? RW.trocasPainelVarias.acoesDe : acoesDe)(troca, ctx || {}); },
     /* as peças que o painel do registro de várias trocas (trocas-painel-varias.js) também usa */
     pecas: { quando: quando, linhaAceite: linhaAceite, nota: nota, registroEParte: registroEParte, confirmarEntao: confirmarEntao, executar: executar }
   };

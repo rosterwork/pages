@@ -1,8 +1,8 @@
 /* ============================================================
-   ESCALAS — Onde fica (a caixa de pergunta do Adicionar militar, do
-   Mudar de unidade neste dia, do Mudar o dia do serviço e do Para qual função
-   do cartão da linha; molde tpl-escala-onde-fica): onde fica quem
-   entra numa unidade no dia.
+   ESCALAS — Onde fica (a caixa de pergunta Em qual função fica do
+   Adicionar militar, do Mudar de unidade neste dia e do Mudar o dia do
+   serviço, e o Para qual função do cartão da linha, sem o título;
+   molde tpl-escala-onde-fica): onde fica quem entra numa unidade no dia.
    - As vagas sem ninguém (só com cfg.vagas: o Mudar o dia do serviço
      e o Para qual função do cartão da linha): uma bolinha por função
      vazia em todo o horário dele, fora o Chefe de Socorro e o Oficial
@@ -27,7 +27,7 @@
    fica da célula (RosterWork.escalasPainelOnde.estagio).
    API: RosterWork.escalasPainelOnde.criar(caixa, cfg) devolve
    { atualizar(), reiniciar(), estado(), respondido(), falta() (a escolha está pela metade),
-     quem(texto), dia(texto) (o dia no título: "Onde fica em 13/11"), aplicar(pontual),
+     quem(texto), aplicar(pontual),
      paraBanco() (a escolha no formato do banco: o Mudar o dia grava pelo escala_dia_salvar) };
    cfg = { dados() (a leitura do dia da unidade onde ele entra),
            periodos() (os horários dele), cpf() (quem entra),
@@ -120,8 +120,7 @@
       quem: q('.escala-onde-fica-quem'), opcoes: q('.escala-onde-fica-opcoes'), funcao: q('.escala-onde-fica-funcao'),
       lugar: q('.escala-onde-fica-lugar'), sai: q('.escala-onde-fica-sai'),
       funcoesRotulo: q('.escala-onde-fica-funcoes-rotulo'), funcoesLista: q('.escala-onde-fica-funcoes'),
-      efeito: q('.escala-onde-fica-efeito'), vagas: q('.escala-onde-fica-vagas'), em: q('.escala-onde-fica-em'),
-      dia: q('.escala-onde-fica-dia')
+      efeito: q('.escala-onde-fica-efeito'), vagas: q('.escala-onde-fica-vagas')
     };
     /* onde: 'vaga' | 'sistema' | 'funcao' | 'lugar'; vaga = a vaga sem ninguém escolhida; escolheu = a pessoa já
        respondeu (até lá, a vaga recomendada vem marcada) */
@@ -371,11 +370,6 @@
       mostra(el.quem, !!texto);
       el.quem.textContent = texto || '';
     }
-    /* o dia no título ("Onde fica em 13/11"); vazio, só "Onde fica" */
-    function dia(texto) {
-      mostra(el.em, !!texto);
-      el.dia.textContent = texto || '';
-    }
 
     /* liga as escolhas */
     var nomeRadios = 'escala-onde-fica-' + (++conta);
@@ -407,7 +401,7 @@
 
     return {
       atualizar: atualizar, reiniciar: reiniciar, respondido: respondido, falta: falta, aplicar: aplicar, quem: quem,
-      dia: dia, paraBanco: paraBanco, estado: function () { return est; }
+      paraBanco: paraBanco, estado: function () { return est; }
     };
   }
 

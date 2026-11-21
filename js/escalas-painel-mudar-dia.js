@@ -1,39 +1,50 @@
 /* ============================================================
-   ESCALAS — Mudar o dia do serviço (o lápis da aba Militares; só admin).
+   ESCALAS — Mudar o dia do serviço (só admin): o item do menu do
+   militar no painel do dia (a sub-tela) e na caixa da célula da grade
+   (a caixa 2, escalas-celula-editar-acoes.js), com as mesmas
+   perguntas e o mesmo código.
    O serviço pelo ciclo ou por troca de um militar neste dia passa para
    outro dia, na mesma unidade e no mesmo horário: o serviço inteiro ou
    uma parte; a troca continua valendo (quem ele cobre segue de folga).
    Não é folga: o banco de horas não muda, e o militar é avisado no
-   sino. Sub-tela em caixas de pergunta, uma depois da outra (Guia
-   visual › Ações e perguntas): Quem (o serviço pelo ciclo e, num grupo
+   sino. Caixas de pergunta, uma depois da outra (Guia visual › Ações e
+   perguntas): Quem (só no painel: o serviço pelo ciclo e, num grupo
    próprio, o por troca; quem está de extra, pontual, remanejado ou já
-   veio de outro dia aparece apagado, com o caminho certo), Qual parte muda
-   (só com o serviço dividido no dia), Para qual dia (o mês em
-   miniatura, geral-mini-calendario, com a situação dele em cada dia
-   e as vagas sem ninguém, da escala_mudar_dia_dias), Horário (o
-   serviço inteiro ou uma parte, geral-horario › periodoServico), Onde
-   fica no dia novo (escalas-painel-onde.js, com as vagas sem ninguém
-   no horário, a primeira recomendada) e o Como fica. Com tudo
-   respondido, a mudança entra no rascunho do Dia ao vivo
-   (escalas-painel-editar.js › aoVivo) e o banco confere numa prévia
-   (escala_previa): a recusa fica em vermelho e desliga o Salvar do
-   rodapé largo; o dia de antes abaixo do mínimo e quem assume o Chefe
-   de Socorro ou o Oficial de Área avisam e deixam salvar (o Como fica
-   e a conferência ficam em escalas-painel-mudar-dia-conferir.js).
-   Depois de salvo, desfaz-se pela folga no dia de antes ou pelo
-   Remover do dia no dia novo.
-   API: RosterWork.escalasPainelMudarDia.abrir(opcoes) (opcoes = { cpf }:
-   chega com ele escolhido, o menu da linha) e podeMudar(cpf) (ele
-   está na lista Quem, pelo ciclo ou por troca).
+   veio de outro dia aparece apagado, com o caminho certo; na caixa da
+   célula, ele já vem escolhido e fica só a frase do serviço dele), Qual
+   parte muda (só com o serviço dividido no dia), Para qual dia (o campo
+   de data padrão, geral-calendario: o calendário abre por cima, com
+   acesos só os dias em que ele pode ficar, da escala_mudar_dia_dias, e,
+   embaixo do campo, a situação do dia escolhido: a folga em volta, ou
+   as horas seguidas, e as vagas sem ninguém), Horário (o serviço
+   inteiro ou uma parte, geral-horario › periodoServico) e Onde fica
+   no dia novo (escalas-painel-onde.js, com as vagas sem ninguém no
+   horário, a primeira recomendada). Com tudo respondido, a mudança
+   entra no rascunho do Dia ao vivo (escalas-painel-editar.js ›
+   aoVivo) e o banco confere numa prévia (escala_previa), com a linha
+   Conferindo a mudança: a recusa fica em vermelho e desliga o Salvar
+   do rodapé largo; o dia de antes abaixo do mínimo e quem assume o
+   Chefe de Socorro ou o Oficial de Área avisam e deixam salvar (a
+   conferência fica em escalas-painel-mudar-dia-conferir.js).
+   Escolhido o dia novo, a
+   resposta pela metade (o horário fora do serviço ou o Onde fica sem a
+   escolha) também desliga o Salvar. Depois de salvo, desfaz-se pela
+   folga no dia de antes ou pelo Remover do dia no dia novo.
+   API: RosterWork.escalasPainelMudarDia.abrir(opcoes) (a sub-tela do
+   painel; opcoes = { cpf }: chega com ele escolhido, o menu da linha),
+   criar(opcoes, pendurar) (as perguntas em outro lugar, a caixa 2 da
+   célula: pendurar(tela) põe a tela na página; devolve { pelaMetade(),
+   marcarFalta() }) e podeMudar(cpf) (ele está na lista Quem, pelo ciclo
+   ou por troca).
    ============================================================ */
 (function () {
   'use strict';
 
   window.RosterWork = window.RosterWork || {};
 
-  var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   /* as origens do serviço que muda de dia por aqui: pelo ciclo e por troca */
   var MUDAM = ['base', 'saida', 'sistema', 'troca'];
+  var LEITURA = 63;            // dias em cada leitura da escala_mudar_dia_dias (o máximo do banco)
   var conta = 0;               // nome único para os rádios de cada abertura
 
   function ed() { return RosterWork.escalasPainelEditar.sub; }
@@ -44,7 +55,7 @@
   function dataDeIso(s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function diaMes(s) { var p = String(s || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
   function somarDias(s, n) { var d = dataDeIso(s); d.setDate(d.getDate() + n); return iso(d); }
-  function inicioDoMes(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function diasEntre(a, b) { return Math.round((dataDeIso(b) - dataDeIso(a)) / 86400000); }
 
   /* por que quem está no dia não muda por aqui (o caminho certo) */
   function motivo(mil, daUnidade) {
@@ -103,82 +114,80 @@
     return itensQuem(dados).some(function (i) { return i.cpf === cpf && !i.inativo && !i.titulo; });
   }
 
-  /* opcoes = { cpf }: chega com ele escolhido (o menu da linha) */
+  /* a sub-tela do painel. opcoes = { cpf }: chega com ele escolhido (o menu da linha) */
   function abrir(opcoes) {
+    if (!ed().dados()) return;
+    ed().abrir(function (corpo) { criar(opcoes, function (tela) { corpo.appendChild(tela); }); });
+  }
+
+  /* as perguntas numa tela. opcoes = { cpf }: chega com ele escolhido; pendurar(tela) põe a tela na página (a sub-tela do
+     painel ou a caixa 2 da célula), antes da primeira resposta. Devolve o que a caixa da célula usa: pelaMetade() (o dia
+     novo escolhido e falta resposta, ou o banco recusa: a caixa segura o clique fora) e marcarFalta() */
+  function criar(opcoes, pendurar) {
     var api = ed(), H = api.horas;
     var dados = api.dados();
-    if (!dados) return;
+    if (!dados) return null;
     var uid = api.unidadeId(), deIso = api.iso(), data = diaMes(deIso);
-    var hoje = iso(new Date());   // a marca de hoje: o dia do relógio, como nas outras abas da Escala
-    /* item: quem (o item da lista, com .mil e .janelas = as que mudam); janela: a que muda; mes: o do calendário;
-       para: o dia novo; horario: o valor do Serviço inteiro / Parte do serviço; limite e fim: o primeiro e o último dia
-       que o banco aceita */
-    var est = { item: null, janela: null, mes: inicioDoMes(dataDeIso(deIso)), para: null, horario: null, limite: null, fim: null };
-    var meses = {};          // as leituras do calendário: 'cpf|AAAA-MM' -> resposta
+    /* item: quem (o item da lista, com .mil e .janelas = as que mudam); janela: a que muda; para: o dia novo; horario: o
+       valor do Serviço inteiro / Parte do serviço */
+    var est = { item: null, janela: null, para: null, horario: null };
+    var dias = null;         // a situação dele em cada dia que o banco aceita: AAAA-MM-DD -> resposta (null enquanto lê)
     var dadosNovo = {};      // a leitura de cada dia novo: AAAA-MM-DD -> dados
-    var el = {}, combo = null, horario = null, onde = null, ondeCaixa = null, conf = null;
-    var pedidoMes = 0, pedidoDia = 0, carregandoMes = false, carregandoDia = false;
+    var metade = false, recusa = false;   // a resposta de agora: escolhido o dia novo, falta resposta; o banco recusa
+    var tela = null, el = {}, combo = null, horario = null, onde = null, ondeCaixa = null, conf = null;
+    var pedidoDias = 0, pedidoDia = 0, carregandoDias = false, carregandoDia = false;
 
     /* ---------- montagem ---------- */
 
-    function montar(corpo) {
-      var tela = RosterWork.tpl('tpl-escala-mudar-dia');
-      if (!tela) return;
-      var q = function (s) { return tela.querySelector(s); };
-      el = {
-        combo: q('.escala-mudar-dia-combo'), ajuda: q('.escala-mudar-dia-ajuda'), servico: q('.escala-mudar-dia-servico'),
-        janelas: q('.escala-mudar-dia-janelas'), janelasLista: q('.escala-mudar-dia-janelas-lista'),
-        dia: q('.escala-mudar-dia-dia'), mes: q('.escala-mudar-dia-mes'), carregando: q('.escala-mudar-dia-carregando'),
-        anterior: q('.escala-mudar-dia-anterior'), proximo: q('.escala-mudar-dia-proximo'),
-        calendario: q('.escala-mudar-dia-calendario'),
-        horario: q('.escala-mudar-dia-horario'), periodo: q('.escala-mudar-dia-periodo'), parte: q('.escala-mudar-dia-parte'),
-        onde: q('.escala-mudar-dia-onde'), como: q('.escala-mudar-dia-como'), comoLista: q('.escala-mudar-dia-como-lista'),
-        conferindo: q('.escala-mudar-dia-conferindo'), papel: q('.escala-mudar-dia-papel'),
-        minimo: q('.escala-mudar-dia-minimo'), erro: q('.escala-mudar-dia-erro')
-      };
-      var inp = el.combo.querySelector('input');
-      inp.id = 'escala-mudar-dia-campo-' + (++conta);
-      combo = RosterWork.comboMilitar.criar(inp, el.combo.querySelector('.dropdown-menu'), {
-        atual: function () { return est.item; },
-        aoEscolher: escolher,
-        aoPerder: function () { est.item = null; },
-        textos: { selecione: msg().linha.digiteOuEscolha, semNinguem: M().ninguem, filtroVazio: msg().ninguemEncontrado }
-      });
-      el.anterior.addEventListener('click', function () { trocarMes(-1); });
-      el.proximo.addEventListener('click', function () { trocarMes(1); });
-      horario = RosterWork.horario.periodoServico(el.periodo, {
-        aoMudar: function (v) { est.horario = v; atualizar(); }
-      });
-      /* o Onde fica do dia novo, com as vagas sem ninguém no horário */
-      ondeCaixa = RosterWork.tpl('tpl-escala-onde-fica');
-      el.onde.appendChild(ondeCaixa);
-      onde = RosterWork.escalasPainelOnde.criar(ondeCaixa, {
-        dados: function () { return est.para ? dadosNovo[est.para] : null; },
-        periodos: function () { var p = periodoQueMuda(); return p ? [p] : []; },
-        cpf: function () { return est.item ? est.item.cpf : ''; },
-        vagas: true,
-        aoMudar: atualizar
-      });
-      /* o Como fica e o banco confere (escalas-painel-mudar-dia-conferir.js) */
-      conf = RosterWork.escalasPainelMudarDiaConferir.criar({
-        el: el, dados: dados, uid: uid, data: data,
-        item: function () { return est.item; },
-        total: function () { return !!(est.horario && est.horario.total); },
-        dadosNovo: function (dia) { return dadosNovo[dia]; },
-        respostaDoDia: respostaDoDia,
-        onde: function () { return onde; },
-        textoResto: textoResto,
-        vivo: function () { return el.combo.isConnected; },
-        aoConferir: atualizar
-      });
-      corpo.appendChild(tela);
-      var itens = itensQuem(dados);
-      combo.preencher(itens);
-      var pedidoCpf = opcoes && opcoes.cpf;
-      var ja = pedidoCpf ? itens.filter(function (i) { return i.cpf === pedidoCpf && !i.inativo && !i.titulo; })[0] : null;
-      if (ja) { escolher(ja); combo.mostrarAtual(); }
-      else atualizar();
-    }
+    tela = RosterWork.tpl('tpl-escala-mudar-dia');
+    if (!tela) return null;
+    var q = function (s) { return tela.querySelector(s); };
+    el = {
+      combo: q('.escala-mudar-dia-combo'), ajuda: q('.escala-mudar-dia-ajuda'), servico: q('.escala-mudar-dia-servico'),
+      janelas: q('.escala-mudar-dia-janelas'), janelasLista: q('.escala-mudar-dia-janelas-lista'),
+      dia: q('.escala-mudar-dia-dia'), campoDia: q('.escala-mudar-dia-campo-dia'), situacao: q('.escala-mudar-dia-situacao'),
+      carregando: q('.escala-mudar-dia-carregando'),
+      horario: q('.escala-mudar-dia-horario'), periodo: q('.escala-mudar-dia-periodo'), parte: q('.escala-mudar-dia-parte'),
+      onde: q('.escala-mudar-dia-onde'), conferindo: q('.escala-mudar-dia-conferindo'), papel: q('.escala-mudar-dia-papel'),
+      minimo: q('.escala-mudar-dia-minimo'), erro: q('.escala-mudar-dia-erro')
+    };
+    var inp = el.combo.querySelector('input');
+    inp.id = 'escala-mudar-dia-campo-' + (++conta);
+    combo = RosterWork.comboMilitar.criar(inp, el.combo.querySelector('.dropdown-menu'), {
+      atual: function () { return est.item; },
+      aoEscolher: escolher,
+      aoPerder: function () { est.item = null; },
+      textos: { selecione: msg().linha.digiteOuEscolha, semNinguem: M().ninguem, filtroVazio: msg().ninguemEncontrado }
+    });
+    /* o dia novo: o campo de data padrão, e o calendário abre por cima (dentro da caixa da pergunta, fora do rótulo do
+       campo), já no dia escolhido ou no de antes, com acesos só os dias em que ele pode ficar */
+    RosterWork.calendario.ligar(el.campoDia, {
+      ancora: el.dia,
+      obterData: function () { return dataDeIso(est.para || deIso); },
+      permiteDia: function (d) { var x = dias && dias[iso(d)]; return !!x && (x.estado === 'pode' || x.estado === 'seguidas'); },
+      aoEscolher: function (d) { escolherDia(iso(d)); }
+    });
+    horario = RosterWork.horario.periodoServico(el.periodo, {
+      aoMudar: function (v) { est.horario = v; atualizar(); }
+    });
+    /* o Onde fica do dia novo, com as vagas sem ninguém no horário */
+    ondeCaixa = RosterWork.tpl('tpl-escala-onde-fica');
+    el.onde.appendChild(ondeCaixa);
+    onde = RosterWork.escalasPainelOnde.criar(ondeCaixa, {
+      dados: function () { return est.para ? dadosNovo[est.para] : null; },
+      periodos: function () { var p = periodoQueMuda(); return p ? [p] : []; },
+      cpf: function () { return est.item ? est.item.cpf : ''; },
+      vagas: true,
+      aoMudar: atualizar
+    });
+    /* o banco confere (escalas-painel-mudar-dia-conferir.js) */
+    conf = RosterWork.escalasPainelMudarDiaConferir.criar({
+      el: el, dados: dados, uid: uid, data: data,
+      item: function () { return est.item; },
+      dadosNovo: function (dia) { return dadosNovo[dia]; },
+      vivo: function () { return tela.isConnected; },
+      aoConferir: atualizar
+    });
 
     /* ---------- as respostas ---------- */
 
@@ -186,13 +195,12 @@
       est.item = item;
       est.janela = item.janelas.length === 1 ? item.janelas[0] : null;
       est.para = null;
-      est.mes = inicioDoMes(dataDeIso(deIso));
-      meses = {};
+      el.campoDia.value = '';
       conf.limpar();
       montarJanelas();
       definirJanela();
       onde.reiniciar();
-      lerMes();
+      lerDias();
       atualizar();
     }
 
@@ -230,84 +238,46 @@
       return v && v.valido ? { hi: v.hi, hf: v.hf } : null;
     }
 
-    /* ---------- o calendário ---------- */
+    /* ---------- o dia novo ---------- */
 
-    function chaveMes(d) { return est.item.cpf + '|' + iso(d).slice(0, 7); }
-    /* a situação dele no dia, em qualquer mês já lido (o dia de outro mês das pontas vem na leitura do mês da tela) */
-    function respostaDoDia(diaIso) {
-      if (!est.item) return null;
-      var prefixo = est.item.cpf + '|';
-      var chave = Object.keys(meses).filter(function (k) {
-        return k.indexOf(prefixo) === 0 && meses[k].dias && meses[k].dias[diaIso];
-      })[0];
-      return chave ? meses[chave].dias[diaIso] : null;
-    }
+    /* a situação dele no dia (a leitura da escala_mudar_dia_dias) */
+    function respostaDoDia(diaIso) { return dias ? dias[diaIso] || null : null; }
 
-    function trocarMes(passo) {
-      est.mes = new Date(est.mes.getFullYear(), est.mes.getMonth() + passo, 1);
-      lerMes();
-    }
-
-    /* a situação dele em cada dia do calendário do mês, com os dias de outro mês das pontas (lida uma vez por mês e por
-       militar) */
-    function lerMes() {
-      if (!est.item) return;
-      var chave = chaveMes(est.mes);
-      if (meses[chave]) { carregandoMes = false; desenharCalendario(); return; }
-      var meu = ++pedidoMes;
-      carregandoMes = true;
-      desenharCalendario();
-      var faixa = RosterWork.miniCalendario.periodo(est.mes);
-      RosterWork.escalasDados.mudarDiaDias(uid, est.item.cpf, deIso, iso(faixa.inicio), iso(faixa.fim)).then(function (r) {
-        if (meu !== pedidoMes || !el.combo.isConnected) return;
-        carregandoMes = false;
-        if (!r || r.erro) {
-          RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.erro) || msg().falhaCarregar });
-          desenharCalendario();
-          return;
+    /* a situação dele em cada dia que o banco aceita (de hoje − 7 até o fim da escala calculada), lida ao escolher quem
+       muda: duas leituras de 63 dias juntas e, se a escala calculada passar delas, as que faltam. O campo do dia liga
+       quando tudo chega (o calendário acende só os dias que já conhece) */
+    function lerDias() {
+      var meu = ++pedidoDias, cpf = est.item.cpf, inicio = somarDias(iso(new Date()), -7), lidos = {};
+      dias = null;
+      carregandoDias = true;
+      function ler(de, ate) {
+        var pedidos = [];
+        for (var i = de; i < ate; i++) {
+          pedidos.push(RosterWork.escalasDados.mudarDiaDias(uid, cpf, deIso, somarDias(inicio, i * LEITURA), somarDias(inicio, (i + 1) * LEITURA - 1)));
         }
-        meses[chave] = r;
-        if (r.limite) est.limite = String(r.limite).slice(0, 10);
-        if (r.fim) est.fim = String(r.fim).slice(0, 10);
-        desenharCalendario();
-        atualizar();
-      });
+        Promise.all(pedidos).then(function (rs) {
+          if (meu !== pedidoDias || !tela.isConnected) return;
+          var ruins = rs.filter(function (r) { return !r || r.erro; });
+          if (ruins.length) {
+            carregandoDias = false;
+            RosterWork.avisar({ tipo: 'erro', mensagem: (ruins[0] && ruins[0].erro) || msg().falhaCarregar });
+            atualizar();
+            return;
+          }
+          rs.forEach(function (r) { Object.keys(r.dias || {}).forEach(function (k) { lidos[k] = r.dias[k]; }); });
+          var fim = String(rs[0].fim || '').slice(0, 10), coberto = somarDias(inicio, ate * LEITURA - 1);
+          if (fim > coberto) { ler(ate, ate + Math.ceil(diasEntre(coberto, fim) / LEITURA)); return; }
+          dias = lidos;
+          carregandoDias = false;
+          atualizar();
+        });
+      }
+      ler(0, 2);
     }
 
-    function desenharCalendario() {
-      if (!est.item || !el.calendario.isConnected) return;
-      var r = meses[chaveMes(est.mes)];
-      el.mes.textContent = M().mes(MESES[est.mes.getMonth()], est.mes.getFullYear());
-      mostra(el.carregando, carregandoMes || carregandoDia);
-      var limite = est.limite || somarDias(iso(new Date()), -7);
-      el.anterior.disabled = est.mes.getTime() <= inicioDoMes(dataDeIso(limite)).getTime();
-      el.proximo.disabled = !!est.fim && est.mes.getTime() >= inicioDoMes(dataDeIso(est.fim)).getTime();
-      RosterWork.miniCalendario.renderizar(el.calendario, {
-        dataRef: est.mes,
-        comDiasDeFora: true,
-        aoDia: function (botao, diaIso) { pintarDia(botao, diaIso, r && r.dias ? r.dias[diaIso] : null); }
-      });
-    }
-
-    /* um dia: a situação dele (a cor e o texto), as vagas sem ninguém (o número vermelho) e o clique, só onde ele pode */
-    function pintarDia(botao, diaIso, d) {
-      var texto = botao.querySelector('.mini-calendario-texto'), numero = botao.querySelector('.mini-calendario-conta');
-      if (diaIso === hoje) botao.classList.add('mini-calendario-dia--hoje');
-      if (diaIso === est.para) botao.classList.add('mini-calendario-dia--selecionado');
-      var pode = !!d && (d.estado === 'pode' || d.estado === 'seguidas');   // as horas seguidas não pesam: o dia aparece como Pode
-      botao.disabled = !pode;
-      if (!d || d.estado === 'fora') { botao.classList.add('mini-calendario-dia--inativo'); return; }
-      if (d.faltas > 0) { numero.textContent = String(d.faltas); numero.classList.add('mini-calendario-conta--erro'); }
-      if (d.estado === 'origem') { botao.classList.add('mini-calendario-dia--origem'); texto.textContent = M().dia.origem; }
-      else if (d.estado === 'afastado') { botao.classList.add('mini-calendario-dia--afastado'); texto.textContent = M().dia[d.tipo] || ''; }
-      else if (pode) texto.textContent = M().dia.pode;
-      else { botao.classList.add('mini-calendario-dia--ocupado'); texto.textContent = M().dia[d.estado] || ''; }
-      if (pode) botao.addEventListener('click', function () { escolherDia(diaIso); });
-    }
-
-    /* o dia novo escolhido: a leitura dele (o Onde fica) e o Onde fica volta ao começo. O dia com alteração não salva na
-       mesma unidade (o rascunho de vários dias, escalas-rascunho-dias.js) não entra: as duas mudariam o mesmo dia, e ela é
-       gravada antes */
+    /* o dia escolhido no calendário: o campo mostra a data, a leitura dele chega (o Onde fica) e o Onde fica volta ao
+       começo. O dia com alteração não salva na mesma unidade (o rascunho de vários dias, escalas-rascunho-dias.js) não
+       entra: as duas mudariam o mesmo dia, e ela é gravada antes */
     function escolherDia(diaIso) {
       var G = RosterWork.escalasRascunhoDias;
       if (G && G.porDia().some(function (d) { return String(d.unidadeId) === String(uid) && d.iso === diaIso; })) {
@@ -315,10 +285,10 @@
         return;
       }
       est.para = diaIso;
+      el.campoDia.value = RosterWork.data.isoParaBR(diaIso);
       conf.limpar();
       onde.reiniciar();
       lerDiaNovo();
-      desenharCalendario();
       atualizar();
     }
 
@@ -328,13 +298,20 @@
       var meu = ++pedidoDia;
       carregandoDia = true;
       RosterWork.escalasDados.lerDistribuicaoDia(uid, dia).then(function (d) {
-        if (meu !== pedidoDia || !el.combo.isConnected) return;
+        if (meu !== pedidoDia || !tela.isConnected) return;
         carregandoDia = false;
-        if (!d) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); desenharCalendario(); return; }
-        dadosNovo[dia] = d;
-        desenharCalendario();
+        if (!d) RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar });
+        else dadosNovo[dia] = d;
         atualizar();
       });
+    }
+
+    /* embaixo do campo, a situação dele no dia novo: a folga em volta (ou as horas seguidas, sem ela) e as vagas sem
+       ninguém no dia */
+    function textoDoDia(d) {
+      if (!d) return '';
+      var t = d.estado === 'seguidas' ? M().diaSeguidas(d.horas) : M().diaPode;
+      return d.faltas > 0 ? t + ' ' + M().diaVagas(d.faltas) : t;
     }
 
     /* ---------- desenho ---------- */
@@ -348,13 +325,19 @@
     }
 
     /* redesenha com as respostas de agora (também quando chega uma leitura ou a conferência do banco: as listas abertas
-       ficam abertas) */
+       ficam abertas). Escolhido o dia novo, a resposta pela metade (o horário fora do serviço ou o Onde fica sem a
+       escolha) e a recusa do banco desligam o Salvar */
     function atualizar() {
-      if (!el.combo || !el.combo.isConnected) return;
-      ['janelas','dia', 'horario', 'parte', 'como', 'papel', 'minimo', 'erro'].forEach(function (k) { mostra(el[k], false); });
+      if (!tela.isConnected) return;
+      ['janelas', 'dia', 'situacao', 'horario', 'parte', 'conferindo', 'papel', 'minimo', 'erro'].forEach(function (k) { mostra(el[k], false); });
+      [el.horario, ondeCaixa].forEach(function (c) { c.classList.remove('grupo-caixa--erro'); });
       mostra(ondeCaixa, false);
       mostra(el.ajuda, !est.item);
       mostra(el.servico, !!est.item);
+      mostra(el.carregando, carregandoDias || carregandoDia);
+      el.campoDia.disabled = !dias;
+      metade = false;
+      recusa = false;
       /* falta resposta (true) até o Onde fica */
       var falta = (function () {
         if (!est.item) return true;
@@ -362,30 +345,55 @@
         if (est.item.janelas.length > 1) { mostra(el.janelas, true); if (!est.janela) return true; }
         mostra(el.dia, true);
         if (!est.para) return true;
+        el.situacao.textContent = textoDoDia(respostaDoDia(est.para));
+        mostra(el.situacao, !!el.situacao.textContent);
         mostra(el.horario, true);
         var periodo = periodoQueMuda();
-        if (!periodo) return true;
-        if (!est.horario.total) {
+        if (!periodo) { metade = true; return true; }
+        /* a frase da parte: só quando muda menos que o serviço (o serviço todo, como no Serviço inteiro, não tem frase) */
+        if (H.faixa(periodo).join() !== H.faixa(est.janela).join()) {
           el.parte.textContent = M().parte(diaMes(est.para), H.textoPeriodos([periodo]), data, textoResto(periodo));
           mostra(el.parte, true);
         }
         if (!dadosNovo[est.para]) return true;
         mostra(ondeCaixa, true);
-        onde.dia(diaMes(est.para));
         onde.atualizar();
-        return onde.falta();
+        metade = onde.falta();
+        return metade;
       })();
-      if (falta) { api.aoVivo(null, !!est.item); return; }
+      if (falta) { api.aoVivo(null, metade); return; }
       var item = { cpf: est.item.cpf, para: est.para, periodos: [periodoQueMuda()], onde: onde.paraBanco() };
       var chave = JSON.stringify(item);
       var c = conf.resultado(chave);
-      api.aoVivo(function () { api.mudarDia(item); }, !!c && !!c.erro);
-      conf.comoFica(item, c);
+      recusa = metade = !!c && !!c.erro;
+      api.aoVivo(function () { api.mudarDia(item); }, recusa);
+      conf.mostrar(item, c);
       if (!c) conf.agendar(item, chave);
     }
 
-    api.abrir(montar);
+    /* o clique fora com a resposta pela metade (a caixa da célula): a pergunta que falta fica marcada (o horário fora do
+       serviço ou o Onde fica sem a escolha) e, sem a recusa do banco na tela, a frase de responder ou fechar embaixo; a
+       próxima resposta tira as duas */
+    function marcarFalta() {
+      if (!metade || !tela.isConnected) return;
+      var falta = !periodoQueMuda() ? el.horario : onde.falta() ? ondeCaixa : null;
+      if (falta) falta.classList.add('grupo-caixa--erro');
+      if (recusa) return;
+      el.erro.querySelector('.nota-texto').textContent = msg().responderOuDesistir;
+      mostra(el.erro, true);
+    }
+
+    /* ---------- começo ---------- */
+
+    pendurar(tela);
+    var itens = itensQuem(dados);
+    combo.preencher(itens);
+    var pedidoCpf = opcoes && opcoes.cpf;
+    var ja = pedidoCpf ? itens.filter(function (i) { return i.cpf === pedidoCpf && !i.inativo && !i.titulo; })[0] : null;
+    if (ja) { escolher(ja); combo.mostrarAtual(); }
+    else atualizar();
+    return { pelaMetade: function () { return metade; }, marcarFalta: marcarFalta };
   }
 
-  window.RosterWork.escalasPainelMudarDia = { abrir: abrir, podeMudar: podeMudar };
+  window.RosterWork.escalasPainelMudarDia = { abrir: abrir, criar: criar, podeMudar: podeMudar };
 })();

@@ -819,7 +819,7 @@
     ctx.sugestao = null;
     ctx.ultima = null;
     if (antes && antes !== dados) {
-      /* com o Mudar de unidade que acabou de entrar no rascunho, a outra unidade também (a conta do Como fica) */
+      /* com o Mudar de unidade que acabou de entrar no rascunho, a outra unidade também (a conta que o banco conferiu) */
       var o = outraNaPrevia();
       if (o) o.usada = true;
       var mudou = o && o.depois ? diferenca([antes, o.antes], [dados, o.depois]) : diferenca(antes, dados);
@@ -863,7 +863,7 @@
     }).filter(function (m) { return marca(m.antes) !== marca(m.depois); });
   }
 
-  /* a conta da outra unidade do Mudar de unidade (o Como fica, escalas-painel-remanejar-como.js): { iso, unidadeId (a do
+  /* a conta da outra unidade do Mudar de unidade (a conferência, escalas-painel-remanejar-conferir.js): { iso, unidadeId (a do
      painel), antes, depois (as leituras do dia dela, a gravada e a prévia), marca (o rascunho da conta), usada (a nota O que
      mudou da lista já a mostrou) }. A nota da lista e a do Salvar acham nela os postos dela */
   var outra = null;
@@ -1423,7 +1423,7 @@
     return po ? funcaoNoPosto(x.funcao, po) : [pecas().nomeSemNumero(x.funcao), x.posto].filter(Boolean).join(' ');
   }
 
-  /* a frase de um militar no O que mudou (a nota da lista e o Como fica do Mudar de unidade): x = { cpf, nome, antes,
+  /* a frase de um militar no O que mudou (a nota da lista): x = { cpf, nome, antes,
      depois, sem_funcao } (diferenca ou o banco); leituras = onde achar os postos; semFuncao = { cpf: true } de quem ficou
      sem função. Só o que mudou: as funções que ele deixou e as que ganhou (as que continuam ficam de fora); null quando,
      juntando as horas, nada mudou para ele */
@@ -1599,26 +1599,21 @@
   /* o menu abre depois do clique que o pediu: o clique no item ainda chega ao document, e o geral-dropdown fecharia o
      menu recém-aberto */
   function abrirMenuPedido() {
-    var cpf = ctx.abrirMenuDe, corpo = ctx.corpo, acao = ctx.fazerAcao, adicionar = ctx.adicionar, trazer = ctx.trazer;
+    var cpf = ctx.abrirMenuDe, corpo = ctx.corpo, acao = ctx.fazerAcao, adicionar = ctx.adicionar;
     ctx.abrirMenuDe = null;
     ctx.fazerAcao = null;
     ctx.adicionar = null;
-    ctx.trazer = false;
     /* o dia vazio da grade dos estagiários: o Adicionar estagiário, já com ele (quem administra) */
     if (adicionar && ctx.admin && RosterWork.escalasPainelAdicionar) {
       setTimeout(function () { RosterWork.escalasPainelAdicionar.abrir({ cpf: adicionar, estagiario: true }); }, 0);
-      return;
-    }
-    /* o Trazer de outra unidade do pelotão na célula da grade: as perguntas dele, já no Trazer */
-    if (trazer && ctx.admin) {
-      setTimeout(function () { abrirRemanejar({ fazer: 'trazer' }); }, 0);
       return;
     }
     if (!cpf || !RosterWork.escalasPainelLinhaMenu) return;
     setTimeout(function () {
       var linha = corpo.querySelector('.escala-edicao-linha--menu[data-cpf="' + cpf + '"]');
       if (!linha) return;
-      /* o item pedido pela célula da grade (o Mudar o dia, o Mudar de unidade e o Devolver): a sub-tela dele, já com ele */
+      /* o item pedido pela célula da grade (o Devolver, o Remover deste dia e o que não cabe na caixa): a sub-tela dele, já
+         com ele */
       if (acao) RosterWork.escalasPainelLinhaMenu.fazer(linha, acao);
       else RosterWork.escalasPainelLinhaMenu.abrir(linha);
     }, 0);
@@ -1783,7 +1778,7 @@
       comparar: !!opcoes.comparar, consulta: !!opcoes.consulta, visao: visao,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false,
       sugestao: null, ultima: null, abrirMenuDe: opcoes.abrirMenuDe || null, fazerAcao: opcoes.fazerAcao || null,
-      adicionar: opcoes.adicionar || null, trazer: !!opcoes.trazer,
+      adicionar: opcoes.adicionar || null,
       semLista: !!opcoes.semLista, aoMostrar: opcoes.aoMostrar || null };
     /* voltou de outra aba ao mesmo dia: o rascunho continua; outro dia: o de agora vai para a gaveta e o novo começa do
        que estava guardado nela ou do dia gravado (quem só lê, sempre do gravado) */
@@ -1994,10 +1989,7 @@
       acharPosto: acharPosto,
       papeis: papeis,
       funcaoNoPosto: funcaoNoPosto,
-      /* o O que mudou: quem mudou entre duas leituras (ou dois grupos delas) e a frase de cada um; o Como fica do Mudar
-         de unidade usa os dois e entrega a conta da outra unidade (outraUnidade(antes, depois, marcaDaPrevia())) */
-      diferenca: diferenca,
-      fraseMudou: fraseMudou,
+      /* a conferência do Mudar de unidade entrega a conta da outra unidade (outraUnidade(antes, depois, marcaDaPrevia())) */
       outraUnidade: outraUnidade,
       marcaDaPrevia: marcaDaPrevia,
       noLocal: noLocal,

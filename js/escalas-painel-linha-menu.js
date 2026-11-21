@@ -37,7 +37,9 @@
    Registrar troca de serviço (o formulário da troca no painel, já com
    ele e o dia; na célula, com o ícone do painel, porque o painel abre), Mudar a
    extrajornada (quem está de extra: abre a
-   aba Extrajornada do painel, onde a extra muda), Dar folga neste dia
+   aba Extrajornada do painel, onde a extra muda; na célula, a caixa da
+   extra dele, a mesma do clique na linha da extra, também com o painel
+   fechado), Dar folga neste dia
    (quem está no dia pela guarnição ou por troca: sair do dia é a folga,
    na cor normal; na troca, ela continua valendo) e Remover deste dia
    (o resto, em vermelho; na troca, as perguntas dela no painel) e,
@@ -134,6 +136,11 @@
       var c = itens(Object.assign({}, cfg, { visao: 'militares' }));
       delete c['ver-funcoes'];
       c['abrir-painel'] = true;
+      /* o Mudar a extrajornada também com o painel fechado (sem a aba Extrajornada), quando a caixa da extra dele abre aqui
+         (escalas-celula-extra.js) */
+      var X = RosterWork.escalasCelulaExtra, m = cfg.militar;
+      if (cfg.tipo === 'militar' && m && X && ed().mudancaNoRascunho(m.cpf) !== 'vem'
+          && X.podeAbrir({ unidadeId: ed().unidadeId(), iso: ed().iso() }, m.cpf)) c['mudar-extra'] = true;
       return c;
     }
     var r = {}, m = cfg.militar, militares = cfg.visao === 'militares';

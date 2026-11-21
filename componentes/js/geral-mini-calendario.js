@@ -11,8 +11,11 @@
    até fechar a semana, com a marca --fora (o número no cinza do texto
    fraco); quem usa lê os dados do período inteiro (periodo). Sem ela,
    só os dias do mês (Solicitar extra).
+   Opção molde (Trocas › Calendário): o id do molde do dia, quando o dia
+   não é um botão (uma caixa com botões dentro); o molde tem o
+   .mini-calendario-numero. Sem ela, o dia é o botão de sempre.
    Clona os moldes do index.html (#tpl-mini-calendario, -dia, -vazio).
-   API: RosterWork.miniCalendario.renderizar(alvo, { dataRef, aoDia(botao, iso, data, doMes), comDiasDeFora })
+   API: RosterWork.miniCalendario.renderizar(alvo, { dataRef, aoDia(botao, iso, data, doMes), comDiasDeFora, molde })
         RosterWork.miniCalendario.periodo(dataRef) -> { inicio, fim } (o domingo da 1ª semana e o sábado da última)
    ============================================================ */
 (function () {
@@ -52,7 +55,7 @@
         continue;
       }
       var data = new Date(dia);
-      var botao = RosterWork.tpl('tpl-mini-calendario-dia');
+      var botao = RosterWork.tpl(opcoes.molde || 'tpl-mini-calendario-dia');
       if (!botao) continue;
       botao.querySelector('.mini-calendario-numero').textContent = String(data.getDate());
       botao.dataset.iso = iso(data);

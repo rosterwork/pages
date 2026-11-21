@@ -62,6 +62,6 @@
     });
   }
 
-  window.RosterWork.escalasPainelRemanejarListas = { lerUnidades: lerUnidades, unidadesLidas: function () { return !!unidades; },
-    outrasDe: outrasDe, deServico: deServico, temExtra: temExtra, cortarNaOrigem: cortarNaOrigem };
+  window.RosterWork.escalasPainelRemanejarListas = { lerUnidades: lerUnidades, outrasDe: outrasDe, deServico: deServico,
+    temExtra: temExtra, cortarNaOrigem: cortarNaOrigem };
 })();

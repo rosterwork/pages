@@ -31,7 +31,9 @@
      fica e fecha; o Cancelar volta); o pontual sai na hora, ou com a
      pergunta das horas que ele tem no banco; o resto abre a sub-tela. O
      que fazer vem do analisarDoDia(m), que a célula da grade
-     (escalas-celula-editar.js) também usa.
+     (escalas-celula-editar.js) também usa; o remanejado, na célula, vem
+     do analisarRemanejado(cpf): onde ele está, Devolver ou Tirar do dia
+     (com as perguntas de sempre, as mesmas do analisarDoDia).
    - Na sub-tela, a folga começa no Não descontar (primeiro); o
      pontual, no Tirar as horas (no Corrigir, saindo só uma parte).
    Sem botão próprio: a resposta completa entra no rascunho do Dia ao
@@ -84,6 +86,17 @@
      null: não foi contabilizado */
   function creditoDe(cpf) { var g = ed().pontualGravado(cpf); return g && g.contabilizado ? g.minutos : null; }
 
+  /* o remanejado que saiu daqui (sem serviço aqui): os minutos do serviço dele no dia, pela observação do remanejamento */
+  function minutosRemanejado(mil) {
+    var H = ed().horas, d = ed().dados() || {};
+    var o = (d.observacoes || []).filter(function (x) {
+      return x.classe === 'remanejado' && x.nome === mil.nome && (x.grad || '') === (mil.grad || '');
+    })[0];
+    if (!o || !o.hi || o.hi === o.hf) return 1440;
+    var f = H.faixa({ hi: o.hi, hf: o.hf });
+    return f[1] - f[0];
+  }
+
   /* ---------- a sub-tela ---------- */
 
   /* opcoes = { cpf }: chega com ele escolhido (o Remover do dia que precisa de mais de uma pergunta) */
@@ -110,17 +123,6 @@
       el.motivo.querySelector('input').value = est.motivo;
       montarPartes();
       comecarParte();
-    }
-
-    /* o remanejado que saiu daqui (sem serviço aqui): os minutos do serviço dele no dia, pela observação do remanejamento */
-    function minutosRemanejado() {
-      var mil = est.mil, d = api.dados() || {};
-      var o = (d.observacoes || []).filter(function (x) {
-        return x.classe === 'remanejado' && x.nome === mil.nome && (x.grad || '') === (mil.grad || '');
-      })[0];
-      if (!o || !o.hi || o.hi === o.hf) return 1440;
-      var f = H.faixa({ hi: o.hi, hf: o.hf });
-      return f[1] - f[0];
     }
 
     /* Qual parte sai: só quando ele entrou de mais de um jeito */
@@ -249,7 +251,7 @@
         if (est.remanFazer === 'devolver') { noRascunho(function () { api.devolverRemanejado(cpf); }); return; }
         /* saiu daqui para outra unidade (sem serviço aqui): sai do dia todo, com o banco de horas */
         if (!est.partes.length) {
-          var horasR = H.horasTexto(minutosRemanejado());
+          var horasR = H.horasTexto(minutosRemanejado(mil));
           mostra(el.banco, true);
           mostra(el.motivo, true);
           el.bancoTexto.textContent = L().tirarFolga(nome, data, horasR);
@@ -400,9 +402,15 @@
      dela já no rascunho; o pontual contado no banco, saindo todo, sem resposta de começo; saindo só uma parte, Corrigir
      (de começo) ou Manter. aplicar muda o rascunho (quem chama o põe no mudar ou no aoVivo) */
   function analisarDoDia(m) {
-    var api = ed(), H = api.horas, mil = api.militarDoDia(m.cpf);
+    var mil = ed().militarDoDia(m.cpf);
     if (!mil) return null;
     if (mil.remanejado) return { tipo: 'subtela', cpf: mil.cpf };
+    return analisarPartes(mil, m);
+  }
+
+  /* o analisarDoDia pelas partes do serviço dele aqui (também o Tirar do dia do remanejado, analisarRemanejado) */
+  function analisarPartes(mil, m) {
+    var api = ed(), H = api.horas;
     var nome = nomeDe(mil), cpf = mil.cpf;
     var sem = (m.periodos || []).map(copiar), semF = sem.map(H.faixa);
     var partes = partesDe(mil).filter(function (p) {
@@ -442,6 +450,33 @@
     var hp = H.horasTexto(credito);
     return { tipo: 'pontual', texto: L().tirarPontualTexto(nome, hp), sim: L().tirarPontualSim(hp), nao: L().tirarPontualNao,
       padrao: null, aplicar: function (escolha) { tirarDoPontual(cpf, sem, true, escolha === 'sim'); } };
+  }
+
+  /* o remanejado, sem tela (a caixa da célula: o Devolver de quem saiu daqui e o Remover deste dia de quem veio de outra
+     unidade): onde ele está, o Devolver à unidade de origem e o Tirar do dia, com as perguntas de sempre. Devolve null (ele
+     não está remanejado) ou { texto, devolverTexto, devolver() e tirar }: tirar é o que o analisarDoDia devolveria pelo
+     serviço dele aqui ({ tipo: 'subtela' } na troca e em quem entrou de mais de um jeito) ou, sem serviço aqui (ele saiu
+     daqui), a folga do dia todo; em todos, o aplicar larga também o Devolver do rascunho (a folga desfaz o remanejamento
+     gravado). devolver e aplicar mudam o rascunho (quem chama os põe no aoVivo) */
+  function analisarRemanejado(cpf) {
+    var api = ed(), H = api.horas, mil = api.militarDoDia(cpf), rm = mil && mil.remanejado;
+    if (!rm) return null;
+    var nome = nomeDe(mil), data = diaMes(api.iso()), tirar = null;
+    if (!partesDe(mil).length) {
+      var horas = H.horasTexto(minutosRemanejado(mil));
+      tirar = { tipo: 'folga', texto: L().tirarFolga(nome, data, horas), sim: L().descontar(horas), nao: L().naoDescontar, padrao: 'nao',
+        motivo: R().motivoNoRascunho(cpf), aplicar: function (escolha, motivo) { api.darFolga(cpf, escolha === 'sim', null, motivo); } };
+    } else {
+      tirar = analisarPartes(mil, { cpf: cpf, periodos: (mil.janelas || []).map(copiar) });
+    }
+    if (tirar && tirar.aplicar) {
+      var aplicar = tirar.aplicar;
+      tirar.aplicar = function (escolha, motivo) { api.largarRemanejado(cpf); aplicar(escolha, motivo); };
+    }
+    /* quem fica nas duas e o remanejado pelo sistema: a frase de sempre, que diz isso */
+    var texto = rm.fica || rm.automatico ? L().remanejadoTexto(nome, rm.de_nome, rm.para_nome, rm.fica, rm.automatico)
+      : L().remanejadoEsta(nome, rm.para_nome);
+    return { texto: texto, devolverTexto: L().devolverA(rm.de_nome), devolver: function () { api.devolverRemanejado(cpf); }, tirar: tirar };
   }
 
   /* m = { cpf, periodos }: quem sai e as horas que saem (o dia todo dele, do menu da linha); linha = a linha da lista */
@@ -487,7 +522,8 @@
     pergunta = { el: el, vivo: a.tipo === 'folga' };
   }
 
-  window.RosterWork.escalasPainelRemover = { abrir: abrir, doDia: doDia, analisarDoDia: analisarDoDia, fecharPergunta: fecharPergunta,
+  window.RosterWork.escalasPainelRemover = { abrir: abrir, doDia: doDia, analisarDoDia: analisarDoDia,
+    analisarRemanejado: analisarRemanejado, fecharPergunta: fecharPergunta,
     /* o menu da linha mostra o Remover do dia só com algo que sai por aqui (a extra muda na Extrajornada) */
     podeTirar: function (cpf) { return podeTirar(ed().militarDoDia(cpf)); } };
 })();

@@ -27,7 +27,8 @@
    clique não faz mais nada (no celular, o toque no véu também). A
    caixa 2, no computador, tem o X no alto, que fecha as duas como o
    Esc. O Esc fecha só a caixa (o painel
-   lateral atrás dela fica). Uma caixa por vez. A posição vem do geral-flutuante.js
+   lateral atrás dela fica); com a lista ou o calendário de um campo
+   dela aberto, fecha só ele. Uma caixa por vez. A posição vem do geral-flutuante.js
    (que acompanha a rolagem e o tamanho da peça) e a animação do CSS;
    aqui, só as classes. Não cria HTML (clona os moldes do index.html).
    O dia que não muda: aviso(opcoes) abre a caixa com a nota e o Abrir o
@@ -37,7 +38,8 @@
                    sem ele, o primeiro item no meio da peça), titulo (o da folha), conteudo, esperar (sem o conteúdo no
                    quadro seguinte, a forma), aoFechar() (fechou pelo clique fora, pelo Esc, pelo X ou pela peça que
                    saiu), aoVoltar() (o Voltar da folha), aoClicarFora(alvo) (false: a caixa fica, e o clique não faz
-                   mais nada; o alvo é o que foi clicado, também no rodapé largo) }
+                   mais nada; o alvo é o que foi clicado, também no rodapé largo), preferirEsquerda (a caixa 1 abre à
+                   esquerda da peça quando cabe: booleano ou função, como no geral-flutuante) }
         caixa = { conteudo(el), espera(sim), faltaForma() (quantos ms a forma à vista ainda fica), segunda(item, el,
                   titulo), fecharSegunda(), trocarPeca(peca, junto), fechar(), aberta() }
    ============================================================ */
@@ -118,6 +120,8 @@
 
   function ancorarPeca(c) {
     var opcoes = { aoSair: sair(c), lado: 'direita' };
+    /* a página pode pedir a esquerda (cabendo): a do calendário das Trocas, para não cobrir os outros dias da troca */
+    if (c.opcoes.preferirEsquerda) opcoes.preferirEsquerda = c.opcoes.preferirEsquerda;
     /* o bloco: o topo da caixa a opcoes.topo do topo dele; o nome: o meio do primeiro item no meio dele */
     opcoes.deslocar = c.opcoes.topo != null ? function () { return c.opcoes.topo; } : function (ref) {
       var linha = primeiraLinha(c.c1);

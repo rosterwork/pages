@@ -29,6 +29,7 @@
   var registro = null;     // o registro lido do banco (os dias e o saldo)
   var btnAprovar = null;   // travado até a análise chegar
   var comEditar = false;   // o Editar só na página Trocas, onde está o molde da aba Várias trocas
+  function temEditar() { return !!RW.trocasVariasEditar && !!document.getElementById('tpl-troca-varias'); }
 
   function P() { return RW.trocasPainel.pecas; }
   function m() { return RW.mensagens.trocas; }
@@ -161,12 +162,11 @@
       RW.decisao.cancelar(partes, function (motivo, botao) { executar(d.variasCancelar(reg, false, motivo), botao, ctx, null, true, { chave: 'trocaCancelar' }); }, { titulo: m().cancelarMotivo.tituloVarias });
     }
   }
-  function montarAcoes(t, ctx) {
-    var rodape = RW.painel.rodape();
-    var frag = document.getElementById('tpl-troca-varias-registro-acoes').content.cloneNode(true);
+  /* quem faz o quê no registro: { acao: true } (o rodapé do painel e a caixa do calendário da página Trocas usam a mesma
+     regra) */
+  function acoesDe(t, ctx) {
     var usar = {}, ehAdmin = admin(t, ctx), eu = ctx.cpf, pediu = !!eu && quemPediu(t) === eu;
     var cancelarPedido = alteracao(t) ? 'cancelar-alteracao' : 'cancelar-pedido';   // quem propôs a alteração cancela só ela
-    btnAprovar = null;
     if (t.status === 'pendente_confirmacao') {
       if (aceitePendente(t, eu)) { usar.aceitar = true; usar.recusar = true; }
       if (pediu) usar[cancelarPedido] = true;
@@ -180,8 +180,15 @@
     }
     usar['imprimir-registro'] = !!RW.trocasRegistroPdf && (participa(t, eu) || ehAdmin);
     /* o Editar: uma alteração por vez (com uma esperando, fica fechado) */
-    usar.editar = comEditar && ['pendente_confirmacao', 'pendente_aprovacao', 'aprovada'].indexOf(t.status) >= 0
+    usar.editar = temEditar() && ['pendente_confirmacao', 'pendente_aprovacao', 'aprovada'].indexOf(t.status) >= 0
       && !t.alteracao_pendente_id && (participa(t, eu) || ehAdmin);
+    return usar;
+  }
+  function montarAcoes(t, ctx) {
+    var rodape = RW.painel.rodape();
+    var frag = document.getElementById('tpl-troca-varias-registro-acoes').content.cloneNode(true);
+    btnAprovar = null;
+    var usar = acoesDe(t, ctx);
     var espacador = frag.querySelector('[data-espacador]');
     if (espacador && !usar['imprimir-registro']) espacador.parentNode.removeChild(espacador);
     Array.prototype.forEach.call(frag.querySelectorAll('[data-acao]'), function (btn) {
@@ -237,7 +244,7 @@
     var situacao = RW.trocasFormato.situacao(t.status, alteracao(t)).texto;
     var subtitulo = ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao;
     /* o Editar só na página Trocas, onde está o molde da aba Várias trocas (o JS da Trocas fica carregado depois de sair dela) */
-    comEditar = !!RW.trocasVariasEditar && !!document.getElementById('tpl-troca-varias');
+    comEditar = temEditar();
     RW.painel.abrir({
       titulo: mv().painelTitulo,
       tituloExtra: RW.mensagens.decisao.tituloPelotao(t.pelotoes),
@@ -269,5 +276,5 @@
     });
   }
 
-  RW.trocasPainelVarias = { abrir: abrir, acao: despachar };
+  RW.trocasPainelVarias = { abrir: abrir, acao: despachar, acoesDe: acoesDe };
 })();

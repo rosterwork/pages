@@ -1,22 +1,20 @@
 /* ============================================================
-   ESCALAS — Mudar o dia do serviço › o Como fica e a conferência do
-   banco (as perguntas ficam em escalas-painel-mudar-dia.js). Com a
-   resposta completa, meio segundo depois da última, o banco roda a
-   mudança num ensaio (escala_previa): a prévia do dia de antes, com a
-   recusa, e a do dia novo. O Como fica diz o que acontece nos dois
-   dias; a recusa fica em vermelho (quem chama desliga o Salvar), e o
-   dia de antes abaixo do mínimo e quem assume o Chefe de Socorro ou o
-   Oficial de Área avisam e deixam salvar.
+   ESCALAS — Mudar o dia do serviço › a conferência do banco (as
+   perguntas ficam em escalas-painel-mudar-dia.js). Com a resposta
+   completa, meio segundo depois da última, o banco roda a mudança
+   num ensaio (escala_previa): a prévia do dia de antes, com a
+   recusa, e a do dia novo. Enquanto confere, a linha Conferindo a
+   mudança; a recusa fica em vermelho (quem chama desliga o Salvar),
+   e o dia de antes abaixo do mínimo e quem assume o Chefe de Socorro
+   ou o Oficial de Área avisam e deixam salvar.
    API: RosterWork.escalasPainelMudarDiaConferir.criar(cfg) devolve
      { resultado(chave) (o que o banco conferiu desta resposta, ou null),
-       limpar(), comoFica(item, c), agendar(item, chave) };
-   cfg = { el ({ como, comoLista, conferindo, erro, papel, minimo }),
-     dados (a leitura do dia de antes), uid, data ("12/11", o dia de
-     antes), item() (quem muda: o item da lista Quem), total() (o
-     serviço inteiro), dadosNovo(dia) (a leitura do dia novo),
-     respostaDoDia(dia) (o calendário), onde() (o Onde fica),
-     textoResto(periodo) (o que fica no dia de antes), vivo() (a
-     sub-tela na tela), aoConferir() (redesenha) }
+       limpar(), mostrar(item, c) (o que o banco conferiu; c nulo, a
+       espera), agendar(item, chave) };
+   cfg = { el ({ conferindo, erro, papel, minimo }), dados (a leitura
+     do dia de antes), uid, data ("12/11", o dia de antes), item()
+     (quem muda: o item da lista Quem), dadosNovo(dia) (a leitura do
+     dia novo), vivo() (a sub-tela na tela), aoConferir() (redesenha) }
    ============================================================ */
 (function () {
   'use strict';
@@ -29,58 +27,22 @@
   function M() { return RosterWork.mensagens.escala.mudarDia; }
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
   function mostra(no, sim) { no.classList.toggle('oculto', !sim); }
-  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
-  function dataDeIso(s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function diaMes(s) { var p = String(s || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
-  function somarDias(s, n) { var d = dataDeIso(s); d.setDate(d.getDate() + n); return iso(d); }
 
   function criar(cfg) {
-    var api = ed(), H = api.horas, el = cfg.el, dados = cfg.dados, data = cfg.data;
+    var api = ed(), el = cfg.el, dados = cfg.dados, data = cfg.data;
     var conferido = null;    // o que o banco conferiu da resposta de agora: { chave, erro, dA, dB }
     var pedido = 0, espera = null;
 
-    /* ---------- o Como fica ---------- */
+    /* ---------- o que o banco conferiu ---------- */
 
-    function comoFica(item, c) {
-      var nome = nomeDe(cfg.item()), para = diaMes(item.para), periodo = item.periodos[0];
-      var horas = H.textoPeriodos([periodo]), resto = cfg.textoResto(periodo), linhas = [];
-      linhas.push(resto ? M().comoSaiParte(data, nome, horas, resto) : M().comoSai(data, nome));
-      linhas.push(entra(nome, para, horas, c));
-      /* a folga em volta do dia novo: só no serviço inteiro (o calendário conta a janela toda) */
-      var d = cfg.respostaDoDia(item.para);
-      if (cfg.total() && d && (d.antes || d.depois)) {
-        var dur = H.faixa(periodo)[1] - H.faixa(periodo)[0];
-        var proximo = d.depois ? diaMes(somarDias(item.para, Math.floor((H.emMin(periodo.hi) + dur + d.depois * 60) / 1440))) : '';
-        linhas.push(M().comoFolga(d.antes, d.depois, proximo));
-      }
-      linhas.push(M().comoBanco);
-      el.comoLista.textContent = '';
-      linhas.forEach(function (t) {
-        var li = RosterWork.tpl('tpl-escala-mudar-dia-item');
-        if (li) { li.textContent = t; el.comoLista.appendChild(li); }
-      });
-      mostra(el.como, true);
+    /* c nulo: a conta ainda vem (fica o Conferindo a mudança); com a recusa, a nota vermelha; sem ela, os avisos */
+    function mostrar(item, c) {
       mostra(el.conferindo, !c);
       if (!c) return;
       if (c.erro) { el.erro.querySelector('.nota-texto').textContent = c.erro; mostra(el.erro, true); return; }
       avisoPapeis(item, c);
       avisoMinimo(c);
-    }
-
-    /* o dia novo no Como fica: onde ele entra (no "O sistema distribui", depois que o banco confere, onde o sistema o pôs) */
-    function entra(nome, para, horas, c) {
-      var e = cfg.onde().estado();
-      if (e.onde === 'vaga' && e.vaga) return M().comoEntraVaga(para, nome, horas, api.funcaoNoPosto(e.vaga.funcao, e.vaga.posto));
-      if (e.onde === 'funcao' && e.posto && e.funcao) return M().comoEntraFuncao(para, nome, horas, api.funcaoNoPosto(e.funcao, e.posto));
-      if (e.onde === 'lugar' && e.sai) return M().comoEntraLugar(para, nome, horas, nomeDe(e.sai.s.m));
-      var lugares = [];
-      if (c && c.dB) {
-        api.funcoesDoMilitar(cfg.item().cpf, c.dB).forEach(function (f) {
-          var t = api.funcaoNoPosto(f.funcao, f.posto);
-          if (lugares.indexOf(t) < 0) lugares.push(t);
-        });
-      }
-      return lugares.length ? M().comoEntraSistemaLugar(para, nome, horas, lugares) : M().comoEntraSistema(para, nome, horas);
     }
 
     /* quem assume o Chefe de Socorro ou o Oficial de Área nos dois dias (só quando muda por causa dele) */
@@ -163,7 +125,7 @@
     return {
       resultado: function (chave) { return conferido && conferido.chave === chave ? conferido : null; },
       limpar: function () { conferido = null; },
-      comoFica: comoFica,
+      mostrar: mostrar,
       agendar: agendar
     };
   }

@@ -1,0 +1,151 @@
+/* ============================================================
+   TROCAS — a aba Calendário (trocas-calendario.js)
+   O mês do período e, com uma troca escolhida, os meses dela ao lado.
+   Cada mês tem a largura das listas (--leitura-largura), à esquerda;
+   quando dois não cabem, diminuem até 468px (dias de 60px) e, se nem
+   assim couberem, o mês desce (flex-wrap com a base mínima e a largura
+   máxima, como o painel de blocos); no celular, um embaixo do outro.
+   Cada mês é um bloco cinza com o mês em miniatura (geral-mini-calendario;
+   o dia é uma caixa, sem clique). Em cada dia, as trocas: quem trabalha
+   em cima e quem folga embaixo, riscado (as classes do calendário do
+   formulário da troca, trocas-formulario.css); verde = aprovada,
+   amarelo = aguardando, cinza = não vale mais. Com uma troca escolhida,
+   as do registro dela ficam com a moldura escura e as outras apagadas.
+   A caixa da troca escolhida é a caixa flutuante da Escala
+   (geral-caixa-flutuante.css); aqui, só o cabeçalho dela.
+   ============================================================ */
+
+.trocas-cal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.trocas-cal-mes {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 468px;
+  gap: 8px;
+  max-width: var(--leitura-largura);
+  padding: 12px;
+  border-radius: var(--raio-medio);
+  background-color: var(--fundo-pagina);
+}
+
+.trocas-cal-mes-nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+/* o dia: uma caixa, sem clique; cresce com a altura da tela (as seis semanas do mês), de 76 a 96px */
+.trocas-cal .mini-calendario-dia {
+  gap: 4px;
+  min-height: max(76px, min(96px, calc((100vh - 400px) / 6)));
+  cursor: default;
+}
+
+.trocas-cal .mini-calendario-dia:hover {
+  border-color: var(--borda);
+}
+
+/* uma troca no dia: o botão que escolhe o registro dela */
+.trocas-cal-par {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 2px 4px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-superficie);
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: left;
+  color: var(--texto);
+  cursor: pointer;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.trocas-cal-par--aprovada {
+  border-color: var(--sucesso-fundo-forte);
+  background-color: var(--sucesso-fundo);
+}
+
+.trocas-cal-par--aguardando {
+  border-color: var(--alerta-fundo-forte);
+  background-color: var(--alerta-fundo);
+}
+
+/* a que não vale mais (cancelada, recusada, expirada, substituída), só com o Filtros */
+.trocas-cal-par--nao-vale {
+  border-color: var(--fundo-medio);
+  background-color: var(--fundo-suave);
+}
+
+.trocas-cal-par--nao-vale .trocas-dia-trabalha {
+  color: var(--texto-fraco);
+}
+
+.trocas-cal-par:hover {
+  border-color: var(--foco);
+}
+
+/* a troca escolhida: as do registro dela com a moldura escura; as outras, apagadas */
+.trocas-cal--escolha .trocas-cal-par {
+  opacity: 0.3;
+}
+
+.trocas-cal--escolha .trocas-cal-par--escolhido {
+  opacity: 1;
+  outline: 2px solid var(--texto-forte);
+  outline-offset: 1px;
+}
+
+/* a busca (Marcar): o nome achado invertido, como na Escala */
+.trocas-cal-par .trocas-cal-nome--busca {
+  padding: 0 2px;
+  border-radius: var(--raio-pequeno);
+  background-color: var(--fundo-contraste);
+  color: var(--texto-invertido);
+}
+
+/* a caixa da troca escolhida: em cima, o RW nº e os selos (a situação e, na troca aguardando, a análise); embaixo, os
+   itens do menu (as ações), no desenho da caixa flutuante */
+.trocas-cal-caixa {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
+
+.trocas-cal-caixa-cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 8px 4px;
+}
+
+.trocas-cal-caixa-rw {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.trocas-cal-caixa-selos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ============================================================
+   CELULAR (até 767px; liga só com a marca data-celular no <html>)
+   A caixa vira a folha de baixo (geral-caixa-flutuante), com o RW nº
+   no título da folha: no cabeçalho ficam só os selos. Os meses ficam
+   um embaixo do outro sozinhos (a quebra do flex-wrap).
+   ============================================================ */
+@media (max-width: 767px) {
+  html[data-celular] .trocas-cal-caixa-rw {
+    display: none;
+  }
+}

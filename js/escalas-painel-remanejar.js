@@ -1,7 +1,10 @@
 /* ============================================================
-   ESCALAS — Mudar de unidade neste dia (o remanejamento: o lápis da
-   aba Militares e o Trazer de outra unidade do Editar o dia; só
-   admin).
+   ESCALAS — Mudar de unidade neste dia (o remanejamento; só admin): o
+   Enviar (o lápis da aba Militares e o nome na célula da grade) e o
+   Trazer de outra unidade (o Editar o dia e o pelotão na célula), na
+   sub-tela do painel do dia e na caixa 2 da célula
+   (escalas-celula-editar-acoes.js), com as mesmas perguntas e o mesmo
+   código.
    Remanejar é levar o serviço do dia de um militar de uma unidade
    da companhia para outra, só naquele dia: Trazer para esta unidade
    (de outra que você administra) ou Enviar daqui para outra. O
@@ -9,28 +12,35 @@
    pontual ou extra): não é folga nem mexe no banco de horas; a
    extra muda de lugar pela Extrajornada (o relatório de ajustes).
    Em troca, alguém da outra unidade faz o caminho contrário.
-   Sub-tela em caixas de pergunta, uma depois da outra (Guia visual
-   › Ações e perguntas): O que fazer, Quem (com o ícone de origem e
-   o serviço dele), Em troca, Na unidade de origem (só no Enviar,
-   sem troca e sem extra), Motivo (opcional) e um Onde fica para cada militar
-   que entra numa unidade (escalas-painel-onde.js, sem a nota do que
-   acontece com quem está em volta: o dia é refeito ao salvar); embaixo,
-   o Como fica e a recusa (escalas-painel-remanejar-como.js: o banco
-   confere numa prévia das duas unidades). O dia da outra unidade vem
-   da mesma leitura do painel (ler_distribuicao_dia). As listas ficam em
+   Caixas de pergunta, uma depois da outra (Guia visual › Ações e
+   perguntas), só as que valem e sem o que o sistema já sabe (o Enviar
+   ou o Trazer vem de onde ela foi aberta): no Enviar, Quem (o Militar,
+   com o ícone de origem e o serviço dele; na caixa da célula ele já vem
+   escolhido e a caixa não aparece) e Para qual unidade (as outras
+   unidades da companhia que você administra; com uma só, ela já vem
+   escolhida); no Trazer, Quem vem (quem está de serviço nas outras
+   unidades, um grupo por unidade, com o serviço dele). Depois, Em
+   troca, Na unidade de origem (sem troca e sem extra: sai ou fica nas
+   duas), Motivo (opcional) e um Onde fica para cada militar que entra
+   numa unidade (escalas-painel-onde.js, sem a nota do que acontece com
+   quem está em volta: o dia é refeito ao salvar); embaixo, a linha
+   Conferindo a mudança e a recusa (escalas-painel-remanejar-conferir.js:
+   o banco confere numa prévia das duas unidades). O dia da outra
+   unidade vem da mesma
+   leitura do painel (ler_distribuicao_dia). As listas ficam em
    escalas-painel-remanejar-listas.js. Sem botão próprio: com tudo
    respondido, o remanejamento entra no rascunho do Dia ao vivo
    (escalas-painel-editar.js › aoVivo; o motivo, quando escrito, vai
-   junto; com a recusa, o Salvar fica desligado) e as telas mostram
-   como fica. Depois de salvo, desfaz-se pelo Devolver (o lápis de
-   quem foi para outra unidade, na aba Militares) ou pelo Remover do
-   dia.
-   API: RosterWork.escalasPainelRemanejar.abrir(opcoes) (opcoes = { cpf }:
-   o Mudar de unidade neste dia do menu da linha, que chega no Enviar com
-   ele escolhido; com uma unidade só para onde enviar, ela já vem
-   escolhida; { fazer: 'trazer' }: o Trazer de outra unidade, que chega
-   no Trazer),
-   podeEnviar(cpf) (ele vai daqui para outra unidade:
+   junto); depois da primeira resposta, a resposta pela metade e a
+   recusa desligam o Salvar. Depois de salvo, desfaz-se pelo Devolver
+   (o lápis de quem foi para outra unidade, na aba Militares) ou pelo
+   Remover do dia.
+   API: RosterWork.escalasPainelRemanejar.abrir(opcoes) (a sub-tela do
+   painel; opcoes = { cpf }: o Enviar, com ele escolhido, o menu da
+   linha; { fazer: 'trazer' }: o Trazer, o Editar o dia), criar(opcoes,
+   pendurar) (as mesmas perguntas em outro lugar, a caixa 2 da célula:
+   pendurar(tela) põe a tela na página; devolve { pelaMetade(),
+   marcarFalta() }), podeEnviar(cpf) (ele vai daqui para outra unidade:
    está de serviço aqui, sem estar remanejado, e você administra outra
    unidade da companhia), podeTrazer() (você administra outra unidade
    da companhia: o Trazer do pelotão na célula), prepararUnidades() e
@@ -88,163 +98,201 @@
     return R().deServico(ed().dados()).some(function (i) { return i.cpf === cpf; });
   }
 
-  /* opcoes = { cpf }: chega no Enviar, com ele escolhido (o menu da linha); { fazer: 'trazer' }: chega no Trazer (o Trazer
-     de outra unidade do Editar o dia) */
+  /* a sub-tela do painel. opcoes = { cpf }: o Enviar, com ele escolhido (o menu da linha); { fazer: 'trazer' }: o Trazer (o
+     Trazer de outra unidade do Editar o dia) */
   function abrir(opcoes) {
+    if (!ed().dados()) return;
+    ed().abrir(function (corpo) { criar(opcoes, function (tela) { corpo.appendChild(tela); }); });
+  }
+
+  /* as perguntas numa tela (opcoes como no abrir); pendurar(tela) põe a tela na página (a sub-tela do painel ou a caixa 2
+     da célula), antes da primeira resposta. Devolve o que a caixa da célula usa: pelaMetade() (depois da primeira
+     resposta, falta uma ou o banco recusa: a caixa segura o clique fora) e marcarFalta() */
+  function criar(opcoes, pendurar) {
     var api = ed(), H = api.horas;
     var dados = api.dados();
-    if (!dados) return;
+    if (!dados) return null;
     var uid = api.unidadeId(), iso = api.iso(), companhia = dados.contexto_id;
-    var pedidoCpf = (opcoes && opcoes.cpf) || null;   // quem vem escolhido no Quem, quando a lista dele chega
-    /* fazer: 'trazer' | 'enviar'; destino: a unidade do Enviar; origem: a do Trazer; outraDados: a leitura do dia da
-       outra unidade; item: quem vem ou vai; troca: 'sim' | 'nao'; itemTroca: quem faz o caminho contrário; sai: 'sai' |
-       'fica' */
-    var est = { fazer: null, destino: null, origem: null, outraDados: null, item: null, troca: null, itemTroca: null, sai: null };
-    var el = {}, combo = null, comboTroca = null, ondes = {}, pedido = 0, aquiNome = '', outras = [], como = null;
+    var pedidoCpf = (opcoes && opcoes.cpf) || null;   // quem vem escolhido no Quem do Enviar
+    /* fazer: 'enviar' | 'trazer' (de onde ela foi aberta); destino: a unidade do Enviar; origem: a de quem vem no Trazer;
+       outraDados: a leitura do dia da outra unidade; item: quem vai ou vem; troca: 'sim' | 'nao'; itemTroca: quem faz o
+       caminho contrário; sai: 'sai' | 'fica' */
+    var est = { fazer: opcoes && opcoes.fazer === 'trazer' ? 'trazer' : 'enviar', destino: null, origem: null, outraDados: null,
+      item: null, troca: null, itemTroca: null, sai: null };
+    var diasOutras = {};       // o Trazer: a leitura do dia de cada outra unidade (unidade_id -> dados), para o Quem vem
+    var respondeu = false;     // a pessoa já respondeu alguma pergunta (antes disso, nada fica pela metade)
+    var metade = false, recusa = false;   // a resposta de agora: depois da primeira resposta, falta uma; o banco recusa
+    var tela = null, el = {}, combo = null, comboTroca = null, ondes = {}, pedido = 0, aquiNome = '', outras = [], conf = null;
+    var unidadesChegaram = false;   // as unidades da companhia já chegaram (antes disso, nem o Para qual unidade nem o aviso)
 
-    function outra() { return est.fazer === 'enviar' ? est.destino : est.fazer === 'trazer' ? est.origem : null; }
-    /* a lista de Quem e a de Em troca: no Trazer, quem vem é da outra unidade; no Enviar, daqui */
-    function dadosDeQuem() { return est.fazer === 'trazer' ? est.outraDados : dados; }
-    function dadosDaTroca() { return est.fazer === 'trazer' ? dados : est.outraDados; }
+    function trazer() { return est.fazer === 'trazer'; }
+    function outra() { return trazer() ? est.origem : est.destino; }
+    /* a lista do Em troca: no Trazer, quem faz o caminho contrário sai daqui; no Enviar, vem da outra unidade */
+    function dadosDaTroca() { return trazer() ? dados : est.outraDados; }
 
     /* ---------- leitura ---------- */
 
-    /* a outra unidade mudou: lê o dia dela, e quem dependia dela recomeça */
-    function lerOutra() {
-      var u = outra(), meu = ++pedido;
-      est.outraDados = null; est.item = null; est.troca = null; est.itemTroca = null; est.sai = null;
-      el.marcarTroca(null); el.marcarSai(null);
-      preencherListas();
+    /* o Enviar: a unidade de destino mudou; lê o dia dela, e quem dependia dela recomeça */
+    function lerDestino() {
+      var u = est.destino, meu = ++pedido;
+      est.outraDados = null;
+      recomecarTroca();
+      preencherTroca();
       atualizar();
       if (!u) return;
       RosterWork.escalasDados.lerDistribuicaoDia(u.unidade_id, iso).then(function (d) {
-        if (meu !== pedido || !el.combo.isConnected) return;
+        if (meu !== pedido || !tela.isConnected) return;
         if (!d) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); return; }
         est.outraDados = d;
-        preencherListas();
+        preencherTroca();
         atualizar();
       });
     }
 
-    function preencherListas() {
-      var dq = dadosDeQuem(), dt = dadosDaTroca();
-      if (!outra()) { combo.esvaziar(); combo.habilitar(false); combo.definir(L().escolhaUnidade, true); }
-      else if (!dq) { combo.esvaziar(); combo.habilitar(false); combo.definir(L().carregando, true); }
-      else {
-        var itens = R().deServico(dq);
-        combo.preencher(itens);
-        var ja = pedidoCpf && est.fazer === 'enviar' ? itens.filter(function (i) { return i.cpf === pedidoCpf; })[0] : null;
-        if (ja) { pedidoCpf = null; est.item = ja; combo.mostrarAtual(); }
-      }
+    /* o Trazer: o dia de cada outra unidade, lidos juntos, para o Quem vem (quem está de serviço lá, um grupo por unidade) */
+    function lerOutras() {
+      var meu = ++pedido;
+      combo.esvaziar();
+      combo.habilitar(false);
+      combo.definir(L().carregando, true);
+      Promise.all(outras.map(function (u) { return RosterWork.escalasDados.lerDistribuicaoDia(u.unidade_id, iso); })).then(function (ds) {
+        if (meu !== pedido || !tela.isConnected) return;
+        if (ds.some(function (d) { return !d; })) {
+          RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar });
+          combo.definir(msg().falhaCarregar, true);
+          return;
+        }
+        var lista = [];
+        outras.forEach(function (u, i) {
+          diasOutras[u.unidade_id] = ds[i];
+          var itens = R().deServico(ds[i]).map(function (it) { it.unidade = u; return it; });
+          if (itens.length) lista = lista.concat([{ titulo: u.nome }], itens);
+        });
+        combo.preencher(lista);
+        atualizar();
+      });
+    }
+
+    function recomecarTroca() {
+      est.troca = null; est.itemTroca = null; est.sai = null;
+      el.marcarTroca(null);
+      el.marcarSai(null);
+    }
+
+    /* a lista do Em troca, fora quem vai */
+    function preencherTroca() {
+      var dt = dadosDaTroca();
       if (dt && outra()) comboTroca.preencher(R().deServico(dt).filter(function (i) { return !est.item || i.cpf !== est.item.cpf; }));
       else comboTroca.esvaziar();
     }
 
     /* ---------- montagem ---------- */
 
-    function criarCombo(caixa, opcoes) {
+    function criarCombo(caixa, cfg) {
       var inp = caixa.querySelector('input');
       inp.id = 'escala-remanejar-campo-' + (++conta);
-      return RosterWork.comboMilitar.criar(inp, caixa.querySelector('.dropdown-menu'), opcoes);
+      return RosterWork.comboMilitar.criar(inp, caixa.querySelector('.dropdown-menu'), cfg);
     }
 
-    /* uma lista de unidades (o Enviar para e a Unidade do Trazer): escolher põe o nome no campo */
-    function montarUnidades(dropdown, aoEscolher) {
-      var menu = dropdown.querySelector('.dropdown-menu');
-      menu.textContent = '';
-      outras.forEach(function (u) {
-        var it = RosterWork.tpl('tpl-escala-unidade-item');
-        if (!it) return;
-        it.textContent = u.nome;
-        it.addEventListener('click', function () { aoEscolher(u); });
-        menu.appendChild(it);
-      });
-    }
-    function textoUnidade(dropdown, u) {
-      var t = dropdown.querySelector('.campo-selecao-texto');
-      if (!t.hasAttribute('data-vazio')) t.setAttribute('data-vazio', t.textContent);
-      t.textContent = u ? u.nome : t.getAttribute('data-vazio');
-      t.classList.toggle('campo-selecao-texto--vazio', !u);
-    }
-
-    function montar(corpo) {
-      var tela = RosterWork.tpl('tpl-escala-remanejar');
-      if (!tela) return;
-      var q = function (s) { return tela.querySelector(s); };
-      el = {
-        fazer: q('.escala-remanejar-fazer'), aqui: q('.escala-remanejar-aqui'), destino: q('.escala-remanejar-destino'),
-        vazio: q('.escala-remanejar-vazio'), quem: q('.escala-remanejar-quem'), origemCampo: q('.escala-remanejar-origem-campo'),
-        origem: q('.escala-remanejar-origem'), combo: q('.escala-remanejar-combo'), servico: q('.escala-remanejar-servico'),
-        troca: q('.escala-remanejar-troca'), trocaPergunta: q('.escala-remanejar-troca-pergunta'),
-        trocaCampo: q('.escala-remanejar-troca-campo'), trocaCombo: q('.escala-remanejar-troca-combo'),
-        sai: q('.escala-remanejar-sai'), saiPergunta: q('.escala-remanejar-sai-pergunta'),
-        saiSim: q('.escala-remanejar-sai-sim'), saiNao: q('.escala-remanejar-sai-nao'),
-        motivo: q('.escala-remanejar-motivo'), ondes: q('.escala-remanejar-ondes'), como: q('.escala-remanejar-como'),
-        comoLista: q('.escala-remanejar-como-lista'), conferindo: q('.escala-remanejar-conferindo'), erro: q('.escala-remanejar-erro')
-      };
-      el.campoMotivo = el.motivo.querySelector('textarea');
-      /* o Como fica e o banco confere (escalas-painel-remanejar-como.js) */
-      como = RosterWork.escalasPainelRemanejarComo.criar({
-        el: el, dados: dados, iso: iso, outra: outra,
-        outraDados: function () { return est.outraDados; },
-        vivo: function () { return el.como.isConnected; },
-        aoConferir: function () { atualizar(true); }
-      });
-      el.radiosFazer = el.fazer.querySelectorAll('input[type="radio"]');
-      /* o que fazer: trocar limpa o que dependia dele (o Enviar guarda a unidade escolhida ao lado) */
-      el.marcarFazer = ligarRadios(el.fazer, function (v) { est.fazer = v; est.origem = null; textoUnidade(el.origem, null); lerOutra(); });
-      el.marcarTroca = ligarRadios(el.troca, function (v) {
-        est.troca = v;
-        if (v === 'nao') est.itemTroca = null;
-        if (v === 'sim') est.sai = null;
-        atualizar();
-      });
-      el.marcarSai = ligarRadios(el.sai, function (v) { est.sai = v; atualizar(); });
-      combo = criarCombo(el.combo, {
-        atual: function () { return est.item; },
-        aoEscolher: function (item) { est.item = item; est.itemTroca = null; est.sai = null; el.marcarSai(null); preencherListas(); atualizar(); },
-        aoPerder: function () { est.item = null; },
-        textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemNaUnidade, filtroVazio: msg().ninguemEncontrado }
-      });
-      comboTroca = criarCombo(el.trocaCombo, {
-        atual: function () { return est.itemTroca; },
-        aoEscolher: function (item) { est.itemTroca = item; atualizar(); },
-        aoPerder: function () { est.itemTroca = null; },
-        textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemNaUnidade, filtroVazio: msg().ninguemEncontrado }
-      });
-      el.campoMotivo.addEventListener('input', function () { if (RosterWork.campos) RosterWork.campos.limparErro(el.campoMotivo); atualizar(); });
-      /* o motivo escrito e não salvo: o navegador avisa antes de sair */
-      if (cancelarGuarda) cancelarGuarda();
-      var campo = el.campoMotivo;
-      cancelarGuarda = RosterWork.guardaSaida ? RosterWork.guardaSaida.registrar(function () {
-        return document.contains(campo) && campo.value.trim() !== '';
-      }) : null;
-      corpo.appendChild(tela);
-      /* do menu da linha: já no Enviar (a unidade escolhe-se ao lado); do Trazer de outra unidade, já no Trazer */
-      if (pedidoCpf) { est.fazer = 'enviar'; el.marcarFazer('enviar'); }
-      else if (opcoes && opcoes.fazer === 'trazer') { est.fazer = 'trazer'; el.marcarFazer('trazer'); }
-      preencherListas();
+    tela = RosterWork.tpl('tpl-escala-remanejar');
+    if (!tela) return null;
+    var q = function (s) { return tela.querySelector(s); };
+    el = {
+      vazio: q('.escala-remanejar-vazio'), quem: q('.escala-remanejar-quem'), quemEnviar: q('.escala-remanejar-quem-enviar'),
+      quemTrazer: q('.escala-remanejar-quem-trazer'), combo: q('.escala-remanejar-combo'), servico: q('.escala-remanejar-servico'),
+      unidade: q('.escala-remanejar-unidade'), unidades: q('.escala-remanejar-unidades'),
+      troca: q('.escala-remanejar-troca'), trocaPergunta: q('.escala-remanejar-troca-pergunta'),
+      trocaCampo: q('.escala-remanejar-troca-campo'), trocaCombo: q('.escala-remanejar-troca-combo'),
+      sai: q('.escala-remanejar-sai'), saiPergunta: q('.escala-remanejar-sai-pergunta'),
+      saiSim: q('.escala-remanejar-sai-sim'), saiNao: q('.escala-remanejar-sai-nao'),
+      motivo: q('.escala-remanejar-motivo'), ondes: q('.escala-remanejar-ondes'),
+      conferindo: q('.escala-remanejar-conferindo'), erro: q('.escala-remanejar-erro')
+    };
+    el.campoMotivo = el.motivo.querySelector('textarea');
+    /* o Enviar ou o Trazer, para o desenho (na caixa da célula, o Quem do Enviar não aparece) */
+    tela.classList.add(trazer() ? 'escala-remanejar--trazer' : 'escala-remanejar--enviar');
+    /* o banco confere (escalas-painel-remanejar-conferir.js) */
+    conf = RosterWork.escalasPainelRemanejarConferir.criar({
+      el: el, iso: iso, outra: outra,
+      outraDados: function () { return est.outraDados; },
+      vivo: function () { return tela.isConnected; },
+      aoConferir: function () { atualizar(true); }
+    });
+    el.marcarTroca = ligarRadios(el.troca, function (v) {
+      respondeu = true;
+      est.troca = v;
+      if (v === 'nao') est.itemTroca = null;
+      if (v === 'sim') est.sai = null;
       atualizar();
-      /* as unidades da companhia chegam depois: até lá, o O que fazer fica sem escolha */
-      R().lerUnidades().then(function (lista) {
-        if (!el.fazer || !el.fazer.isConnected) return;
-        if (!lista) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); return; }
-        var aqui = lista.filter(function (u) { return String(u.unidade_id) === String(uid); })[0];
-        aquiNome = aqui ? aqui.nome : '';
-        el.aqui.textContent = L().comArtigo(aquiNome);
-        outras = R().outrasDe(lista, companhia, uid);
-        function enviarPara(u) {
-          est.destino = u;
-          textoUnidade(el.destino, u);
-          est.fazer = 'enviar';
-          el.marcarFazer('enviar');
-          lerOutra();
-        }
-        montarUnidades(el.destino, enviarPara);
-        montarUnidades(el.origem, function (u) { est.origem = u; textoUnidade(el.origem, u); lerOutra(); });
-        /* do menu da linha, com uma unidade só para onde enviar: ela já vem escolhida */
-        if (pedidoCpf && outras.length === 1) { enviarPara(outras[0]); return; }
-        atualizar();
+    });
+    el.marcarSai = ligarRadios(el.sai, function (v) { respondeu = true; est.sai = v; atualizar(); });
+    combo = criarCombo(el.combo, {
+      atual: function () { return est.item; },
+      aoEscolher: escolherQuem,
+      aoPerder: function () { est.item = null; },
+      textos: { selecione: L().digiteOuEscolha, semNinguem: trazer() ? L().ninguemDisponivel : L().ninguemNaUnidade,
+        filtroVazio: msg().ninguemEncontrado }
+    });
+    comboTroca = criarCombo(el.trocaCombo, {
+      atual: function () { return est.itemTroca; },
+      aoEscolher: function (item) { respondeu = true; est.itemTroca = item; atualizar(); },
+      aoPerder: function () { est.itemTroca = null; },
+      textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemNaUnidade, filtroVazio: msg().ninguemEncontrado }
+    });
+    el.campoMotivo.addEventListener('input', function () {
+      respondeu = true;
+      if (RosterWork.campos) RosterWork.campos.limparErro(el.campoMotivo);
+      atualizar();
+    });
+    /* o motivo escrito e não salvo: o navegador avisa antes de sair */
+    if (cancelarGuarda) cancelarGuarda();
+    var campo = el.campoMotivo;
+    cancelarGuarda = RosterWork.guardaSaida ? RosterWork.guardaSaida.registrar(function () {
+      return document.contains(campo) && campo.value.trim() !== '';
+    }) : null;
+
+    /* ---------- as respostas ---------- */
+
+    /* o Quem do Enviar: quem está de serviço aqui, com ele já escolhido (o menu da linha e a célula) */
+    function preencherQuem() {
+      var itens = R().deServico(dados);
+      combo.preencher(itens);
+      var ja = pedidoCpf ? itens.filter(function (i) { return i.cpf === pedidoCpf; })[0] : null;
+      if (ja) { est.item = ja; combo.mostrarAtual(); }
+    }
+
+    /* quem vai (o Enviar: daqui) ou vem (o Trazer: de outra unidade, que passa a ser a origem); o que dependia dele
+       recomeça */
+    function escolherQuem(item) {
+      respondeu = true;
+      est.item = item;
+      est.itemTroca = null;
+      est.sai = null;
+      el.marcarSai(null);
+      if (trazer()) {
+        var outraUnidade = !est.origem || String(est.origem.unidade_id) !== String(item.unidade.unidade_id);
+        est.origem = item.unidade;
+        est.outraDados = diasOutras[item.unidade.unidade_id] || null;
+        if (outraUnidade) { est.troca = null; el.marcarTroca(null); }
+      }
+      preencherTroca();
+      atualizar();
+    }
+
+    /* Para qual unidade (o Enviar): uma bolinha por outra unidade da companhia que você administra */
+    function montarUnidades() {
+      el.unidades.textContent = '';
+      outras.forEach(function (u) {
+        var op = RosterWork.tpl('tpl-escala-remanejar-unidade');
+        if (!op) return;
+        op.querySelector('input').value = String(u.unidade_id);
+        op.querySelector('.escala-remanejar-unidade-nome').textContent = u.nome;
+        el.unidades.appendChild(op);
+      });
+      el.marcarUnidade = ligarRadios(el.unidades, function (v) {
+        respondeu = true;
+        est.destino = outras.filter(function (u) { return String(u.unidade_id) === v; })[0] || null;
+        lerDestino();
       });
     }
 
@@ -253,7 +301,7 @@
     /* quem entra em cada unidade, cada um com o seu Onde fica: [{ chave, item, dados, unidade }] */
     function entradas() {
       var lista = [], outraNome = outra() ? outra().nome : '';
-      var quemEntra = est.fazer === 'trazer'
+      var quemEntra = trazer()
         ? [[est.item, dados, aquiNome], [est.troca === 'sim' ? est.itemTroca : null, est.outraDados, outraNome]]
         : [[est.item, est.outraDados, outraNome], [est.troca === 'sim' ? est.itemTroca : null, dados, aquiNome]];
       quemEntra.forEach(function (x) {
@@ -277,7 +325,7 @@
             dados: function () { return o.e.dados; },
             periodos: function () { return o.e.item.janelas.map(function (j) { return { hi: j.hi, hf: j.hf }; }); },
             cpf: function () { return o.e.item.cpf; },
-            refaz: true,   // o dia é refeito ao salvar: o que acontece com quem está em volta fica no Como fica
+            refaz: true,   // o dia é refeito ao salvar: quem está em volta aparece na nota O que mudou da lista
             aoMudar: atualizar
           });
         }
@@ -289,43 +337,56 @@
       });
     }
 
-    /* redesenha com as respostas de agora; manter: a conta do banco chegou (as listas abertas ficam abertas) */
+    /* o primeiro Onde fica à vista que está pela metade (a caixa), ou null */
+    function ondeQueFalta() {
+      var k = Object.keys(ondes).filter(function (x) { return ondes[x].caixa.isConnected && ondes[x].comp.falta(); })[0];
+      return k ? ondes[k].caixa : null;
+    }
+
+    /* redesenha com as respostas de agora; manter: a conta do banco chegou (as listas abertas ficam abertas). Depois da
+       primeira resposta, a resposta pela metade e a recusa do banco desligam o Salvar */
     function atualizar(manter) {
+      if (!tela.isConnected) return;
       if (manter !== true && RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
-      ['quem', 'servico', 'troca', 'trocaCampo', 'sai', 'motivo', 'como', 'erro'].forEach(function (k) { mostra(el[k], false); });
-      var semOutras = R().unidadesLidas() && !outras.length;
+      ['quem', 'servico', 'unidade', 'troca', 'trocaCampo', 'sai', 'motivo', 'conferindo', 'erro'].forEach(function (k) { mostra(el[k], false); });
+      [el.unidade, el.troca, el.sai].forEach(function (c) { c.classList.remove('grupo-caixa--erro'); });
+      Object.keys(ondes).forEach(function (k) { ondes[k].caixa.classList.remove('grupo-caixa--erro'); });
+      var semOutras = unidadesChegaram && !outras.length;
       mostra(el.vazio, semOutras);
-      [].forEach.call(el.radiosFazer, function (r) { r.disabled = semOutras; });
-      el.destino.querySelector('.campo-selecao').disabled = semOutras;
+      mostra(el.quemEnviar, !trazer());
+      mostra(el.quemTrazer, trazer());
+      metade = false;
+      recusa = false;
       var lista = [];
       /* falta resposta (true) até o Onde fica; o motivo é à parte */
       var falta = (function () {
-        if (!est.fazer) return true;
-        if (est.fazer === 'enviar' && !est.destino) return true;
+        if (semOutras) return true;
         mostra(el.quem, true);
-        mostra(el.origemCampo, est.fazer === 'trazer');
-        if (!outra() || !est.item) return true;
-        var deOnde = est.fazer === 'trazer' ? outra().nome : aquiNome;
+        if (!trazer() && unidadesChegaram) mostra(el.unidade, true);
+        if (!est.item) return true;
+        var deOnde = trazer() ? (est.origem ? est.origem.nome : '') : aquiNome;
         var servico = est.item.janelas.map(function (j) { return { hi: H.curta(j.hi), hf: H.curta(j.hf), origem: j.origem }; });
         el.servico.textContent = L().remanejarServico(servico, deOnde) + (R().temExtra(est.item) ? ' ' + L().remanejarExtraContinua : '');
         mostra(el.servico, true);
+        if (!outra()) { metade = respondeu; return true; }
+        if (!est.outraDados) return true;   // a leitura do dia da outra unidade ainda vem
         /* em troca: alguém da outra unidade faz o caminho contrário */
         mostra(el.troca, true);
-        el.trocaPergunta.textContent = est.fazer === 'trazer'
+        el.trocaPergunta.textContent = trazer()
           ? L().remanejarTrocaTrazer(aquiNome, outra().nome) : L().remanejarTrocaEnviar(outra().nome, aquiNome);
         el.marcarTroca(est.troca);
-        if (!est.troca) return true;
+        if (!est.troca) { metade = respondeu; return true; }
         mostra(el.trocaCampo, est.troca === 'sim');
-        if (est.troca === 'sim' && !est.itemTroca) return true;
-        /* na unidade de origem: só no Enviar, sem troca e sem extra */
-        if (est.fazer === 'enviar' && est.troca === 'nao' && !R().temExtra(est.item)) {
-          var nome = nomeDe(est.item);
+        if (est.troca === 'sim' && !est.itemTroca) { metade = respondeu; return true; }
+        /* na unidade de origem: sem troca e sem extra (a de quem vem, no Trazer; esta, no Enviar) */
+        if (est.troca === 'nao' && !R().temExtra(est.item)) {
+          var nome = nomeDe(est.item), de = trazer() ? outra().nome : aquiNome, para = trazer() ? aquiNome : outra().nome;
           mostra(el.sai, true);
-          el.saiPergunta.textContent = L().remanejarSai(nome, aquiNome);
-          el.saiSim.textContent = L().remanejarSoNa(outra().nome);
-          el.saiNao.textContent = L().remanejarNasDuas(aquiNome, outra().nome);
+          el.saiPergunta.textContent = L().remanejarSai(nome, de);
+          el.saiSim.textContent = L().remanejarSoNa(para);
+          el.saiNao.textContent = L().remanejarNasDuas(de, para);
           el.marcarSai(est.sai);
-          if (!est.sai) return true;
+          if (!est.sai) { metade = respondeu; return true; }
         }
         mostra(el.motivo, true);
         lista = entradas();
@@ -333,17 +394,32 @@
       })();
       desenharOndes(lista);
       /* o Onde fica de cada um (a caixa nova já entra com a falta dela) */
-      if (!falta) lista.forEach(function (e) { falta = falta || (ondes[e.chave] ? ondes[e.chave].comp.falta() : false); });
-      if (falta) { api.aoVivo(null, !!est.fazer); return; }
-      /* tudo respondido: o remanejamento entra no rascunho (o motivo é opcional e não muda a prévia), e o Como fica mostra
-         a conta do banco desta resposta (a recusa desliga o Salvar); sem ela, a conta vem meio segundo depois */
-      var chave = chaveDaResposta(lista), c = como.resultado(chave);
-      api.aoVivo(function () { noRascunho(lista); }, !!c && !!c.erro);
-      como.mostrar(c);
-      if (!c) como.agendar(chave);
+      if (!falta && ondeQueFalta()) { falta = true; metade = respondeu; }
+      if (falta) { api.aoVivo(null, metade); return; }
+      /* tudo respondido: o remanejamento entra no rascunho (o motivo é opcional e não muda a prévia) e o banco confere
+         esta resposta (a recusa desliga o Salvar); a conta vem meio segundo depois, e até lá fica o Conferindo a mudança */
+      var chave = chaveDaResposta(lista), c = conf.resultado(chave);
+      recusa = metade = !!c && !!c.erro;
+      api.aoVivo(function () { noRascunho(lista); }, recusa);
+      conf.mostrar(c);
+      if (!c) conf.agendar(chave);
     }
 
-    /* a resposta de agora, sem o motivo (que não muda a escala): a conta do Como fica vale enquanto ela não muda */
+    /* o clique fora com a resposta pela metade (a caixa da célula): a pergunta que falta fica marcada e, sem a recusa do
+       banco na tela, a frase de responder ou fechar embaixo; a próxima resposta tira as duas */
+    function marcarFalta() {
+      if (!metade || !tela.isConnected) return;
+      var falta = !outra() ? el.unidade
+        : !est.troca || (est.troca === 'sim' && !est.itemTroca) ? el.troca
+        : !el.sai.classList.contains('oculto') && !est.sai ? el.sai
+        : ondeQueFalta();
+      if (falta) falta.classList.add('grupo-caixa--erro');
+      if (recusa) return;
+      el.erro.querySelector('.nota-texto').textContent = msg().responderOuDesistir;
+      mostra(el.erro, true);
+    }
+
+    /* a resposta de agora, sem o motivo (que não muda a escala): a conta do banco vale enquanto ela não muda */
     function chaveDaResposta(lista) {
       var u = outra();
       return JSON.stringify([est.fazer, u && u.unidade_id, est.item && est.item.cpf, est.troca, est.itemTroca && est.itemTroca.cpf, est.sai,
@@ -353,17 +429,18 @@
     /* ---------- no rascunho ---------- */
 
     /* os remanejamentos (quem vai ou vem e, em troca, quem faz o caminho contrário, com o motivo); quem sai perde as
-       colocações manuais de onde saiu, e cada um que entra fica onde foi escolhido */
+       colocações manuais de onde saiu (quem fica nas duas, não), e cada um que entra fica onde foi escolhido */
     function noRascunho(ent) {
       var u = outra(), motivo = el.campoMotivo.value.trim(), itens = [];
-      function item(i, origem, destino, dadosOrigem, fica) {
-        itens.push({ cpf: i.cpf, origem: Number(origem), destino: Number(destino), fica: fica, dadosOrigem: dadosOrigem });
+      var fica = est.troca === 'nao' && !R().temExtra(est.item) && est.sai === 'fica';
+      function item(i, origem, destino, dadosOrigem, ficaNasDuas) {
+        itens.push({ cpf: i.cpf, origem: Number(origem), destino: Number(destino), fica: ficaNasDuas, dadosOrigem: dadosOrigem });
       }
-      if (est.fazer === 'trazer') {
-        item(est.item, u.unidade_id, uid, est.outraDados, false);
+      if (trazer()) {
+        item(est.item, u.unidade_id, uid, est.outraDados, fica);
         if (est.troca === 'sim') item(est.itemTroca, uid, u.unidade_id, dados, false);
       } else {
-        item(est.item, uid, u.unidade_id, dados, est.troca === 'nao' && !R().temExtra(est.item) && est.sai === 'fica');
+        item(est.item, uid, u.unidade_id, dados, fica);
         if (est.troca === 'sim') item(est.itemTroca, u.unidade_id, uid, est.outraDados, false);
       }
       itens.forEach(function (i) { if (!i.fica) R().cortarNaOrigem(api.rascunho(), i.cpf, i.dadosOrigem); });
@@ -371,9 +448,28 @@
       api.remanejar(itens.map(function (i) { return { cpf: i.cpf, origem: i.origem, destino: i.destino, fica: i.fica, motivo: motivo }; }));
     }
 
-    api.abrir(montar);
+    /* ---------- começo ---------- */
+
+    pendurar(tela);
+    if (!trazer()) preencherQuem();
+    atualizar();
+    /* as unidades da companhia (lidas uma vez): no Enviar, as bolinhas do Para qual unidade (com uma só, ela já vem
+       escolhida); no Trazer, o dia de cada uma, para o Quem vem */
+    R().lerUnidades().then(function (lista) {
+      if (!tela.isConnected) return;
+      if (!lista) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); return; }
+      var aqui = lista.filter(function (u) { return String(u.unidade_id) === String(uid); })[0];
+      aquiNome = aqui ? aqui.nome : '';
+      outras = R().outrasDe(lista, companhia, uid);
+      unidadesChegaram = true;
+      if (trazer()) { lerOutras(); atualizar(); return; }
+      montarUnidades();
+      if (outras.length === 1) { est.destino = outras[0]; el.marcarUnidade(String(outras[0].unidade_id)); lerDestino(); return; }
+      atualizar();
+    });
+    return { pelaMetade: function () { return metade; }, marcarFalta: marcarFalta };
   }
 
-  window.RosterWork.escalasPainelRemanejar = { abrir: abrir, podeEnviar: podeEnviar, podeTrazer: podeTrazer,
+  window.RosterWork.escalasPainelRemanejar = { abrir: abrir, criar: criar, podeEnviar: podeEnviar, podeTrazer: podeTrazer,
     prepararUnidades: prepararUnidades, unidadesProntas: function () { return !!unidadesLidas; } };
 })();

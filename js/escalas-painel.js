@@ -918,19 +918,17 @@
       /* o dia é de quem tem a unidade na área do papel; as abas Funções, Militares e Estagiários são o mesmo dia, por posto
          e por pessoa (os estagiários na aba deles).
          O menu pedido na abertura (o Oficial de Área, vindo do pelotão) abre quando a lista chegar, uma vez só */
-      var menuDe = pCtx.abrirMenuDe || null, fazerDe = pCtx.fazerAcao || null, adicionarDe = pCtx.adicionar || null, trazerDe = !!pCtx.trazer;
+      var menuDe = pCtx.abrirMenuDe || null, fazerDe = pCtx.fazerAcao || null, adicionarDe = pCtx.adicionar || null;
       pCtx.abrirMenuDe = null;
       pCtx.fazerAcao = null;
       pCtx.adicionar = null;
-      pCtx.trazer = false;
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
         admin: !naFila && RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId),
         consulta: naFila,
         visao: secao === 'militares' || secao === 'estagiarios' ? secao : 'funcoes',
         abrirMenuDe: menuDe,
         fazerAcao: fazerDe,
-        adicionar: adicionarDe,
-        trazer: trazerDe
+        adicionar: adicionarDe
       });
     } else if (secao === 'continuos' && RosterWork.escalasPainelGuarnicoes) {
       RosterWork.escalasPainelGuarnicoes.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso);
@@ -962,8 +960,7 @@
   /* o dia de uma unidade sem a célula (a companhia do Oficial de Área, que pode não estar na tela; o lápis dele no
      pelotão), como abrir outra célula (só o formulário da troca preenchido pergunta). opcoes.abrirMenuDe: o cpf de quem fica
      com o menu aberto quando a lista chegar; opcoes.fazerAcao: em vez do menu, o item dele já feito (a célula da grade);
-     opcoes.adicionar: o cpf de quem já vem escolhido no Adicionar estagiário (o dia vazio da grade dos estagiários); opcoes.trazer:
-     já no Trazer de outra unidade (o pelotão na célula da grade) */
+     opcoes.adicionar: o cpf de quem já vem escolhido no Adicionar estagiário (o dia vazio da grade dos estagiários) */
   function abrirDia(dia, secao, opcoes) {
     if (trocaSuja()) { confirmarDescarte(function () { abrirDiaAgora(dia, secao, null, opcoes); }, 0); return; }
     abrirDiaAgora(dia, secao, null, opcoes);
@@ -997,7 +994,7 @@
         || (inicial === 'estagiarios' && !comEstagio)) inicial = 'distribuicao';
     pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial, unidadeNome: dia.unidadeNome, semCelula: !marcada,
       abrirMenuDe: (opcoes && opcoes.abrirMenuDe) || null, fazerAcao: (opcoes && opcoes.fazerAcao) || null,
-      adicionar: (opcoes && opcoes.adicionar) || null, trazer: !!(opcoes && opcoes.trazer) };
+      adicionar: (opcoes && opcoes.adicionar) || null };
     /* o dia já refeito abre na hora: o painel lê o dado real, e a célula fica igual a ele */
     if (RosterWork.escalaAtualizando && RosterWork.escalaAtualizando.soCopia(unidadeId, iso)) RosterWork.escalaAtualizando.corrigir(unidadeId, iso);
     RosterWork.painel.abrir({

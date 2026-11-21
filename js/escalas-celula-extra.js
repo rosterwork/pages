@@ -7,6 +7,7 @@
      extrajornada, Pôr outro no lugar dele, Remover da extrajornada
      neste dia, Abrir na Extrajornada (os Ajustes do mês, com o painel
      daquele dia aberto) e Abrir o painel do dia (na aba Extrajornada).
+     O Mudar a extrajornada do menu do nome abre a mesma caixa.
    - A caixa do pelotão (escalas-celula-editar-acoes.js) ganha o
      Adicionar extra neste dia: na caixa 2, o campo de militar (os
      grupos do painel do dia da Extrajornada) e, escolhido o nome, a
@@ -106,6 +107,22 @@
     return true;
   }
 
+  /* a linha da extra dele na célula do dia, à vista, ou null */
+  function linhaDaExtra(d, cpf) {
+    var cel = d && celula(d.unidadeId, d.iso);
+    var linha = cel && cel.querySelector('.linha-escalado[data-situacao="extra"][data-cpf="' + cpf + '"]');
+    return linha && linha.getClientRects().length ? linha : null;
+  }
+
+  /* o Mudar a extrajornada do menu do nome (escalas-celula-editar-acoes.js): a caixa da extra dele, a mesma do clique na
+     linha dela. podeAbrir diz antes (o sinal do item: a seta ou o ícone do painel); abrirDe abre (false: o painel do dia,
+     na aba Extrajornada) */
+  function podeAbrir(d, cpf) { return !!d && daCompanhia(d.unidadeId) && !!linhaDaExtra(d, cpf); }
+  function abrirDe(d, cpf) {
+    var linha = podeAbrir(d, cpf) ? linhaDaExtra(d, cpf) : null;
+    return !!linha && clique(linha.closest('.escala-mes-celula'), linha);
+  }
+
   /* o item Adicionar extra neste dia da caixa do pelotão: já vem certo, pelo que se sabe do mês (na 1ª vez no mês, a
      caixa espera a leitura dele, escalas-celula-editar.js). Quando o mês chega, o dia fica para o rodapé, e o item só
      muda se o mês mudou entre uma leitura e outra */
@@ -157,5 +174,6 @@
   }
   C().aoRedesenhar(desenharNova);
 
-  RW.escalasCelulaExtra = { clique: clique, prepararItem: prepararItem, adicionar: adicionar, adiantar: adiantar, falta: falta };
+  RW.escalasCelulaExtra = { clique: clique, prepararItem: prepararItem, adicionar: adicionar, adiantar: adiantar, falta: falta,
+    podeAbrir: podeAbrir, abrirDe: abrirDe };
 })();

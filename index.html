@@ -3824,8 +3824,8 @@
        alguém por último, em vermelho; na Militares, embaixo do traço, o Ver as funções, que troca de aba já com ele. O JS mostra só
        os itens que valem para a linha e põe o nome no rótulo do lápis ("Editar Sd. Lima"). A linha inteira também abre o
        menu. A célula da grade usa o mesmo menu na caixa flutuante (escalas-celula-editar.js): lá aparecem a setinha dos
-       itens que abrem a caixa 2, o ícone do painel dos que abrem o painel do dia (com a dica; no Remover deste dia, o JS
-       escolhe entre os dois) e o Abrir o painel do dia, e somem o lápis e os títulos -->
+       itens que abrem a caixa 2, o ícone do painel dos que abrem o painel do dia (com a dica; no Remover deste dia e no
+       Mudar a extrajornada, o JS escolhe entre os dois) e o Abrir o painel do dia, e somem o lápis e os títulos -->
   <template id="tpl-escala-edicao-opcoes">
     <div class="dropdown escala-edicao-opcoes">
       <button type="button" class="botao-discreto escala-edicao-lapis" aria-label="Editar esta linha">
@@ -3847,12 +3847,12 @@
           <div class="dropdown-titulo escala-edicao-opcoes-titulo"></div>
           <button type="button" class="dropdown-item" data-acao="horario-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span>Mudar o horário do serviço</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="onde-estagio"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mover-funcao"/></svg><span>Mudar onde fica</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
-          <button type="button" class="dropdown-item" data-acao="mudar-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg><span>Mudar o dia do serviço</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
-          <button type="button" class="dropdown-item" data-acao="mudar-unidade"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Mudar de unidade neste dia</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+          <button type="button" class="dropdown-item" data-acao="mudar-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg><span>Mudar o dia do serviço</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+          <button type="button" class="dropdown-item" data-acao="mudar-unidade"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Mudar de unidade neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="oficial-area"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Pôr como Oficial de Área</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="registrar-troca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg><span>Registrar troca de serviço</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
-          <button type="button" class="dropdown-item" data-acao="mudar-extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Mudar a extrajornada</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
-          <button type="button" class="dropdown-item" data-acao="devolver"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span class="escala-edicao-opcoes-devolver"></span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+          <button type="button" class="dropdown-item" data-acao="mudar-extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Mudar a extrajornada</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg><span class="escala-edicao-opcoes-painel oculto" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+          <button type="button" class="dropdown-item" data-acao="devolver"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span class="escala-edicao-opcoes-devolver"></span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="cancelar-folga"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg><span>Cancelar a folga</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="desfazer-mudanca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg><span>Desfazer a mudança</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="cancelar-saida"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span>Cancelar a saída da guarnição</span></button>
@@ -4201,14 +4201,14 @@
     <li class="escala-ciclo-efeito-item"><span class="nota-titulo"></span> <span class="escala-ciclo-efeito-texto"></span></li>
   </template>
 
-  <!-- o Onde fica (escalas-painel-onde.js; o Adicionar, o Mudar de unidade neste dia e o Mudar o dia do serviço): o dia (só no
-       Mudar o dia), de quem é a caixa (só no Remanejar), as vagas sem ninguém no horário (só no Mudar o dia, a primeira
-       recomendada; molde tpl-escala-onde-fica-vaga), o sistema distribui, a função escolhida ou no lugar de outro militar
-       (quem sai e de quais funções) e o que acontece com quem está em volta. Uma caixa por militar que entra numa
-       unidade -->
+  <!-- o Onde fica, com o título Em qual função fica (escalas-painel-onde.js; o Adicionar, o Mudar de unidade neste dia e
+       o Mudar o dia do serviço): de quem é a caixa (só no Remanejar), as vagas sem ninguém no horário (só no Mudar o
+       dia, a primeira recomendada; molde tpl-escala-onde-fica-vaga), o sistema distribui, a função escolhida ou no
+       lugar de outro militar (quem sai e de quais funções) e o que acontece com quem está em volta. Uma caixa por
+       militar que entra numa unidade -->
   <template id="tpl-escala-onde-fica">
     <div class="grupo-caixa subtela-pergunta escala-onde-fica oculto">
-      <span class="rotulo-secao">Onde fica<span class="escala-onde-fica-em oculto"> em <span class="escala-onde-fica-dia"></span></span></span>
+      <span class="rotulo-secao">Em qual função fica</span>
       <span class="subtela-ajuda escala-onde-fica-quem oculto"></span>
       <div class="escala-onde-fica-opcoes">
         <div class="escala-onde-fica-vagas"></div>
@@ -4380,58 +4380,35 @@
     <label class="geral-opcao"><input type="radio" value="" /><span class="escala-remover-parte-texto"></span></label>
   </template>
 
-  <!-- ===== Mudar de unidade neste dia (sub-tela; escalas-painel-remanejar.js): as caixas de pergunta (o número vem do CSS), uma
-       depois da outra e só as que valem. O que fazer (Trazer para esta unidade, ou Enviar para outra unidade da companhia,
-       escolhida ali mesmo); Quem (no Trazer, a Unidade de onde ele vem e o Militar na mesma linha; no Enviar, só o
-       Militar), com o serviço dele no dia; Em troca (alguém vai no lugar dele); Na unidade de origem (só no Enviar, sem
-       troca e sem extra: sai ou fica nas duas); o Motivo; e o Onde fica (molde tpl-escala-onde-fica), uma caixa para cada
-       militar que entra numa unidade. Embaixo, o Como fica (uma linha por militar que muda de lugar nas duas unidades,
-       molde tpl-escala-remanejar-como-item; escalas-painel-remanejar-como.js) e a recusa (o Salvar fica desligado). A
-       resposta completa entra no rascunho ao vivo (o motivo vai junto, no Salvar do rodapé largo). Só naquele dia ===== -->
+  <!-- ===== Mudar de unidade neste dia (escalas-painel-remanejar.js; a sub-tela do painel e a caixa 2 da célula da grade,
+       que esconde o título e, no Enviar, o Quem, porque ele já vem escolhido): as caixas de pergunta (o número vem do CSS),
+       uma depois da outra e só as que valem; o Enviar ou o Trazer vem de onde ela foi aberta. No Enviar: Quem (o Militar,
+       com o serviço dele no dia) e Para qual unidade (uma bolinha por outra unidade da companhia que você administra, molde
+       tpl-escala-remanejar-unidade). No Trazer: Quem vem (quem está de serviço nas outras unidades, um grupo por unidade),
+       com o serviço dele. Depois: Em troca (alguém faz o caminho contrário); Na unidade de origem (sem troca e sem extra:
+       sai ou fica nas duas); o Motivo; e o Onde fica (molde tpl-escala-onde-fica), uma caixa para cada militar que entra
+       numa unidade. Embaixo, a linha Conferindo a mudança enquanto o banco confere e a recusa (o Salvar fica desligado;
+       escalas-painel-remanejar-conferir.js). A resposta completa entra no rascunho ao vivo (o motivo vai junto, no
+       Salvar do rodapé largo). Só naquele dia ===== -->
   <template id="tpl-escala-remanejar">
     <div class="subtela escala-remanejar">
       <div class="subtela-cab">
         <span class="subtela-titulo">Mudar de unidade neste dia</span>
       </div>
-      <div class="grupo-caixa subtela-pergunta escala-remanejar-fazer">
-        <span class="rotulo-secao">O que fazer</span>
-        <label class="geral-opcao"><input type="radio" value="trazer" /><span>Trazer para <span class="escala-remanejar-aqui"></span></span></label>
-        <div class="escala-remanejar-enviar">
-          <label class="geral-opcao"><input type="radio" value="enviar" /><span>Enviar para</span></label>
-          <div class="dropdown escala-remanejar-destino">
-            <button type="button" class="campo-entrada campo-selecao" aria-label="Unidade de destino">
-              <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-              <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-            </button>
-            <div class="dropdown-menu"></div>
-          </div>
-        </div>
-        <span class="subtela-ajuda escala-remanejar-vazio oculto">Você não administra outra unidade desta companhia.</span>
-      </div>
+      <span class="subtela-ajuda escala-remanejar-vazio oculto">Você não administra outra unidade desta companhia.</span>
       <div class="grupo-caixa subtela-pergunta escala-remanejar-quem oculto">
-        <span class="rotulo-secao">Quem</span>
-        <div class="campo-unidade-militar">
-          <div class="campo escala-remanejar-origem-campo">
-            <span class="campo-rotulo">Unidade</span>
-            <div class="dropdown escala-remanejar-origem">
-              <button type="button" class="campo-entrada campo-selecao" aria-label="Unidade de onde ele vem">
-                <span class="campo-selecao-texto campo-selecao-texto--vazio">Selecione</span>
-                <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-              </button>
-              <div class="dropdown-menu"></div>
-            </div>
-          </div>
-          <div class="campo">
-            <span class="campo-rotulo">Militar</span>
-            <div class="dropdown campo-combo escala-remanejar-combo">
-              <svg class="icone campo-combo-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
-              <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Militar" />
-              <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-              <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
-            </div>
-          </div>
+        <span class="rotulo-secao"><span class="escala-remanejar-quem-enviar">Quem</span><span class="escala-remanejar-quem-trazer oculto">Quem vem</span></span>
+        <div class="dropdown campo-combo escala-remanejar-combo">
+          <svg class="icone campo-combo-icone oculto" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
+          <input class="campo-entrada" type="text" maxlength="100" autocomplete="off" role="combobox" aria-autocomplete="list" aria-label="Militar" />
+          <svg class="icone seletor-seta campo-combo-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
+          <div class="dropdown-menu combo-militar-menu" role="listbox" aria-label="Militares de serviço"></div>
         </div>
         <span class="subtela-ajuda escala-remanejar-servico oculto"></span>
+      </div>
+      <div class="grupo-caixa subtela-pergunta escala-remanejar-unidade oculto">
+        <span class="rotulo-secao">Para qual unidade</span>
+        <div class="escala-remanejar-unidades"></div>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-remanejar-troca oculto">
         <span class="rotulo-secao">Em troca</span>
@@ -4462,14 +4439,8 @@
       </div>
       <!-- as caixas Onde fica, uma por militar que entra numa unidade -->
       <div class="escala-remanejar-ondes"></div>
-      <div class="nota escala-remanejar-como oculto">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg>
-        <div class="escala-remanejar-como-corpo">
-          <span class="nota-titulo">Como fica</span>
-          <ul class="escala-remanejar-como-lista"></ul>
-          <span class="etapas-linha escala-remanejar-conferindo oculto" role="status"><span class="cobertura-viva" aria-hidden="true"></span><span class="etapas-linha-texto">Conferindo a mudança</span></span>
-        </div>
-      </div>
+      <!-- enquanto o banco confere a mudança -->
+      <span class="etapas-linha escala-remanejar-conferindo oculto" role="status"><span class="cobertura-viva" aria-hidden="true"></span><span class="etapas-linha-texto">Conferindo a mudança</span></span>
       <!-- o que o banco recusaria (o Salvar fica desligado) -->
       <div class="nota nota--erro escala-remanejar-erro oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
@@ -4478,9 +4449,9 @@
     </div>
   </template>
 
-  <!-- uma linha do Como fica do Mudar de unidade neste dia (o texto vem do JS) -->
-  <template id="tpl-escala-remanejar-como-item">
-    <li class="escala-remanejar-como-item"></li>
+  <!-- uma unidade do Para qual unidade do Mudar de unidade neste dia: a bolinha e o nome (o nome vem do JS) -->
+  <template id="tpl-escala-remanejar-unidade">
+    <label class="geral-opcao"><input type="radio" value="" /><span class="escala-remanejar-unidade-nome"></span></label>
   </template>
 
   <!-- ===== Mudar o horário do serviço (sub-tela; escalas-painel-horario-dia.js): o Horário do serviço (o serviço dele no dia,
@@ -4519,13 +4490,15 @@
     </div>
   </template>
 
-  <!-- ===== Mudar o dia do serviço (sub-tela; escalas-painel-mudar-dia.js): as caixas de pergunta (o número vem do CSS),
-       uma depois da outra e só as que valem. Quem (só o serviço pelo ciclo muda por aqui; os outros ficam apagados, com o
-       caminho certo); Qual parte muda (só com o serviço dividido no dia); Para qual dia (o mês em miniatura, com as
-       setas, a legenda e o aviso das horas seguidas); Horário (o serviço inteiro ou uma parte, no mesmo horário, molde
-       tpl-periodo-servico); Onde fica no dia novo (molde tpl-escala-onde-fica); o Como fica (uma linha por item, molde
-       tpl-escala-mudar-dia-item) e os avisos do que o banco conferiu: quem assume o Chefe de Socorro ou o Oficial de
-       Área, o dia de antes abaixo do mínimo e a recusa (o Salvar fica desligado) ===== -->
+  <!-- ===== Mudar o dia do serviço (escalas-painel-mudar-dia.js; a sub-tela do painel e a caixa 2 da célula da grade, que
+       esconde o título e o campo de quem, porque ele já vem escolhido): as caixas de pergunta (o número vem do CSS), uma
+       depois da outra e só as que valem. Quem (só o serviço pela guarnição ou por troca muda por aqui; os outros ficam
+       apagados, com o caminho certo); Qual parte muda (só com o serviço dividido no dia); Para qual dia (o campo de data
+       padrão: o calendário abre por cima, com a barra curta no rótulo enquanto os dias chegam, e embaixo a situação do
+       dia escolhido); Horário (o serviço inteiro ou uma parte, no mesmo horário, molde tpl-periodo-servico); Onde fica no
+       dia novo (molde tpl-escala-onde-fica); a linha Conferindo a mudança enquanto o banco confere e os avisos do que
+       ele conferiu: quem assume o Chefe de Socorro ou o Oficial de Área, o dia de antes abaixo do mínimo e a recusa (o
+       Salvar fica desligado) ===== -->
   <template id="tpl-escala-mudar-dia">
     <div class="subtela escala-mudar-dia">
       <div class="subtela-cab">
@@ -4548,22 +4521,11 @@
         <div class="escala-marcar-lista escala-mudar-dia-janelas-lista"></div>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-mudar-dia-dia oculto">
-        <span class="rotulo-secao">Para qual dia</span>
-        <div class="mini-calendario-mes">
-          <button type="button" class="botao botao--quadrado escala-mudar-dia-anterior" aria-label="Mês anterior">
-            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-esquerda"/></svg>
-          </button>
-          <span class="mini-calendario-mes-nome"><span class="escala-mudar-dia-mes"></span><span class="cobertura-viva cobertura-viva--curta escala-mudar-dia-carregando oculto" aria-hidden="true"></span></span>
-          <button type="button" class="botao botao--quadrado escala-mudar-dia-proximo" aria-label="Próximo mês">
-            <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg>
-          </button>
-        </div>
-        <div class="escala-mudar-dia-calendario"></div>
-        <div class="mini-calendario-legenda">
-          <span class="mini-calendario-legenda-item"><span class="mini-calendario-legenda-cor"></span>Pode, com folga antes e depois</span>
-          <span class="mini-calendario-legenda-item"><span class="mini-calendario-legenda-cor mini-calendario-legenda-cor--ocupado"></span>Já está de serviço</span>
-          <span class="mini-calendario-legenda-item"><span class="mini-calendario-legenda-numero">2</span>vagas sem ninguém no dia</span>
-        </div>
+        <span class="rotulo-secao">Para qual dia<span class="cobertura-viva cobertura-viva--curta escala-mudar-dia-carregando oculto" aria-hidden="true"></span></span>
+        <label class="campo">
+          <input type="text" class="campo-entrada escala-mudar-dia-campo-dia" readonly placeholder="Escolher dia" aria-label="Dia novo" />
+        </label>
+        <span class="subtela-ajuda escala-mudar-dia-situacao oculto"></span>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-mudar-dia-horario oculto">
         <span class="rotulo-secao">Horário</span>
@@ -4572,14 +4534,8 @@
       </div>
       <!-- o Onde fica do dia novo (molde tpl-escala-onde-fica) entra aqui -->
       <div class="escala-mudar-dia-onde"></div>
-      <div class="nota escala-mudar-dia-como oculto">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg>
-        <div class="escala-mudar-dia-como-corpo">
-          <span class="nota-titulo">Como fica</span>
-          <ul class="escala-mudar-dia-como-lista"></ul>
-          <span class="etapas-linha escala-mudar-dia-conferindo oculto" role="status"><span class="cobertura-viva" aria-hidden="true"></span><span class="etapas-linha-texto">Conferindo a mudança</span></span>
-        </div>
-      </div>
+      <!-- enquanto o banco confere a mudança -->
+      <span class="etapas-linha escala-mudar-dia-conferindo oculto" role="status"><span class="cobertura-viva" aria-hidden="true"></span><span class="etapas-linha-texto">Conferindo a mudança</span></span>
       <div class="nota escala-mudar-dia-papel oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
@@ -4588,17 +4544,12 @@
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
       </div>
-      <!-- o que o banco recusaria (o Salvar fica desligado) -->
+      <!-- o que o banco recusaria (o Salvar fica desligado) ou, na caixa da célula, a frase de responder ou fechar -->
       <div class="nota nota--erro escala-mudar-dia-erro oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
         <span class="nota-texto"></span>
       </div>
     </div>
-  </template>
-
-  <!-- uma linha do Como fica do Mudar o dia do serviço (o texto vem do JS) -->
-  <template id="tpl-escala-mudar-dia-item">
-    <li class="escala-mudar-dia-como-item"></li>
   </template>
 
   <!-- uma unidade das listas de unidade do painel do dia (o Remanejar e o Adicionar militar): o nome vem do JS -->
@@ -5799,8 +5750,9 @@
     </div>
   </template>
 
-  <!-- período dentro de um serviço (Folgas e Trocas): Serviço inteiro ou Parte do serviço; na parte, os campos;
-       embaixo, a barra de horário com o serviço e o trecho escolhido (o JS dá o nome dos rádios e põe a barra) -->
+  <!-- período dentro de um serviço (Folgas, Trocas e o Mudar o dia da Escala): Serviço inteiro ou Parte do serviço; só na
+       parte, os campos e, embaixo, a barra de horário com o serviço e o trecho escolhido (o JS dá o nome dos rádios e
+       põe a barra) -->
   <template id="tpl-periodo-servico">
     <div class="periodo-servico">
       <label class="geral-opcao"><input type="radio" value="inteiro" checked disabled /><span>Serviço inteiro</span></label>

@@ -12,6 +12,7 @@
    ============================================================ */
 
 .regua-barra-caixa {
+  --regua-alca: 10px;   /* o tamanho das bolinhas de arrastar */
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -35,6 +36,13 @@
   --regua-linha: 6px;
   --regua-risco: 4px;
   --regua-tracos: 1;
+}
+
+/* abaixo dos campos, a barra fica na largura deles e dos textos: encolhe meia bolinha de cada lado, para as bolinhas
+   das pontas não passarem da margem */
+.regua-barra-caixa--afastada .regua-barra {
+  width: calc(100% - var(--regua-alca));
+  align-self: center;
 }
 
 .regua-barra-trilho {
@@ -136,9 +144,9 @@
 }
 
 /* as bolinhas de arrastar (o começo e o fim da faixa), no meio do risco; a posição vem de --regua-pos, em horas desde
-   as 08h. Desenham 10px e pegam o mouse numa área invisível de --regua-alca-area em volta do centro */
+   as 08h. Desenham --regua-alca (o tamanho, na caixa) e pegam o mouse numa área invisível de --regua-alca-area em
+   volta do centro */
 .regua-barra-alca {
-  --regua-alca: 10px;
   --regua-alca-area: 24px;
   position: absolute;
   top: var(--regua-linha);
@@ -196,6 +204,15 @@
 .regua-barra-horas .regua-barra-horas-24 {
   left: 100%;
   transform: translateX(-100%);
+}
+
+/* abaixo dos campos (a barra encolhida): as horas do meio seguem os risquinhos; as das pontas ficam na margem */
+.regua-barra-caixa--afastada .regua-barra-horas .regua-barra-horas-6 {
+  left: calc(var(--regua-alca) / 2 + (100% - var(--regua-alca)) / 4);
+}
+
+.regua-barra-caixa--afastada .regua-barra-horas .regua-barra-horas-18 {
+  left: calc(var(--regua-alca) / 2 + (100% - var(--regua-alca)) * 3 / 4);
 }
 
 /* ============================================================

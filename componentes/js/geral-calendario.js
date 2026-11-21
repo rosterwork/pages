@@ -30,9 +30,14 @@
     instanciaAberta.fechar();
   });
 
+  /* o Esc fecha só o calendário: o painel, a caixa flutuante ou o modal em volta dele ficam (como no geral-dropdown). Com a
+     lista do mês ou do ano aberta, o Esc é dela; o calendário que já saiu da página só se desliga */
   document.addEventListener('keydown', function (evento) {
-    if (evento.key === 'Escape' && instanciaAberta) instanciaAberta.fechar();
-  });
+    if (evento.key !== 'Escape' || !instanciaAberta || document.querySelector('.dropdown--aberto')) return;
+    var naPagina = instanciaAberta.painel.isConnected;
+    instanciaAberta.fechar();
+    if (naPagina) evento.stopImmediatePropagation();
+  }, true);
 
   /* prepara um gatilho para abrir o calendário ao ser clicado.
      opcoes.obterData()  → Date a destacar ao abrir (padrão: hoje)

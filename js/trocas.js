@@ -1,7 +1,8 @@
 /* ============================================================
    TROCAS — orquestrador da página
-   Quatro visões: Todas (árvore de unidades — a troca fica na unidade
-   de quem solicitou), Minhas (as trocas em que eu entro), Saldos
+   Cinco visões: Todas (árvore de unidades — a troca fica na unidade
+   de quem solicitou), Minhas (as trocas em que eu entro), Calendário
+   (as trocas em cada dia do mês; trocas-calendario.js), Saldos
    (as dívidas de horas) e Pendências (a fila do que espera decisão:
    a troca que pediram a você e, para o administrador, as trocas para
    aprovar; componente geral-fila, a mesma da página Pendências).
@@ -196,16 +197,19 @@
   }
 
   /* ---------- troca de vista ---------- */
+  /* mostra o que é da aba (o corpo e, no Calendário, as peças da barra); saindo do Calendário, a escolha se desfaz */
   function mostrarVista(nome) {
     var paineis = conteudo.querySelectorAll('[data-aba-painel]');
     for (var i = 0; i < paineis.length; i++) {
       paineis[i].classList.toggle('oculto', nome !== paineis[i].getAttribute('data-aba-painel'));
     }
+    if (nome !== 'calendario' && RW.trocasCalendario) RW.trocasCalendario.sair();
   }
 
   function carregarAba(nome) {
     if (nome === 'todas') { if (arvoreMontada && RW.arvoreUnidades) RW.arvoreUnidades.recarregar(); else montarArvoreTodas(); }
     else if (nome === 'minhas') carregarMinhas();
+    else if (nome === 'calendario') { if (RW.trocasCalendario) RW.trocasCalendario.carregar(); }
     else if (nome === 'saldos') carregarPendentes();
     else if (nome === 'pendencias') carregarPendencias();
   }
@@ -304,6 +308,9 @@
     });
 
     if (!ouvindoUnidades) { window.addEventListener('rosterwork_units_changed', recarregar); ouvindoUnidades = true; }
+
+    /* a aba Calendário: o mês, o Filtros, a busca e a Legenda (o painel da troca usa o mesmo contexto das listas) */
+    if (RW.trocasCalendario) RW.trocasCalendario.iniciar(conteudo, { contexto: contexto, unidades: unidades });
 
     mostrarVista('todas');
     montarArvoreTodas();

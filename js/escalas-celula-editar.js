@@ -260,13 +260,13 @@
   /* ---------- o painel ---------- */
 
   /* o painel do dia (cpf: na aba Militares, com o menu dele, ou, com opcoes.fazerAcao, já na tela do item; opcoes.secao: a
-     aba; opcoes.trazer: já no Trazer de outra unidade); no mesmo dia, ele continua o que a célula mexeu */
+     aba); no mesmo dia, ele continua o que a célula mexeu */
   function abrirPainel(cpf, opcoes) {
     var d = dia;
     opcoes = opcoes || {};
     if (!d) return;
     RW.escalasPainel.abrirDia(d, opcoes.secao || (cpf ? 'militares' : null),
-      cpf ? { abrirMenuDe: cpf, fazerAcao: opcoes.fazerAcao || null } : opcoes.trazer ? { trazer: true } : null);
+      cpf ? { abrirMenuDe: cpf, fazerAcao: opcoes.fazerAcao || null } : null);
   }
 
   /* ---------- o clique ---------- */

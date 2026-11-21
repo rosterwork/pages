@@ -1227,6 +1227,8 @@
           return 'O ' + militar + ' foi remanejado d' + artigo(origem) + ' ' + origem + ' para ' + artigo(destino) + ' ' + destino + ' neste dia.';
         },
         remanejadoPara: function (destino) { return 'Remanejado para ' + artigo(destino) + ' ' + destino; },
+        /* a caixa da célula do remanejado (o Devolver e o Remover deste dia): onde ele está */
+        remanejadoEsta: function (militar, destino) { return 'O ' + militar + ' está n' + artigo(destino) + ' ' + destino + ' neste dia.'; },
         devolverA: function (origem) { return 'Devolver ' + (artigo(origem) === 'a' ? 'à ' : 'ao ') + origem; },
         /* o Oficial de Área que vem de um pelotão (escalas-celula-oficial.js): o motivo do remanejamento (a pergunta se ele
            sai de lá ou fica nas duas usa as frases remanejarSai, remanejarSoNa e remanejarNasDuas) */
@@ -1236,10 +1238,8 @@
         devolverPara: function (de) { return 'Devolver para ' + de; },
         devolverParaAjuda: function (de, para) { return 'O serviço volta para ' + de + ' e sai de ' + para + '. O banco de horas não muda.'; },
         tirarMudancaAjuda: function (de) { return 'Ele sai deste dia e fica de folga em ' + de + '.'; },
-        /* Mudar de unidade neste dia: Trazer para esta unidade ou Enviar para outra; a lista de militares antes da unidade, as
-           perguntas, o serviço de quem vai ("Pela guarnição, das 08h às 08h.") e a nota da distribuição */
-        comArtigo: function (unidade) { return artigo(unidade) + ' ' + unidade; },
-        escolhaUnidade: 'Escolha a unidade',
+        /* Mudar de unidade neste dia: Trazer para esta unidade ou Enviar para outra; as perguntas, o serviço de quem vai
+           ("Pela guarnição, das 08h às 08h.") e a nota da distribuição */
         ninguemNaUnidade: 'Ninguém de serviço nessa unidade',
         remanejarServico: function (lista, unidade) {
           var nomes = { pontual: 'Pontual', troca: 'Por troca', extra: 'De extra n' + artigo(unidade) + ' ' + unidade };
@@ -1285,7 +1285,7 @@
         erroRemover: 'O horário que sai precisa ficar dentro do serviço que ele tem no dia.'
       },
       /* Mudar o dia do serviço (o menu Editar o dia; escalas-painel-mudar-dia.js): a lista Quem, o mês em miniatura, o
-         horário, o Onde fica, o Como fica e os avisos */
+         horário, o Onde fica e os avisos */
       mudarDia: {
         /* o dia novo com alteração não salva (o rascunho de vários dias): ela é gravada antes */
         salveAntes: function (dia) { return 'Salve as alterações de ' + dia + ' antes de mudar o serviço para esse dia.'; },
@@ -1301,37 +1301,16 @@
         naoOutraUnidade: 'É de outra unidade neste dia.',
         servico: function (data, periodos, troca) { return 'De serviço em ' + data + (troca ? ' por troca, ' : ' pela guarnição, ') + periodos + '.'; },
         mes: function (mes, ano) { return mes + ' de ' + ano; },
-        /* o texto embaixo do número de cada dia */
-        dia: { origem: 'Sai deste', pode: 'Pode', servico: 'De serviço', extra: 'De extra', outra_unidade: 'Outra unidade',
-          ferias: 'Férias', licenca: 'Licença', dispensa: 'Dispensa' },
+        /* embaixo do campo do Para qual dia: a situação dele no dia escolhido (a folga em volta, ou as horas seguidas sem
+           ela) e as vagas sem ninguém no dia */
+        diaPode: 'Pode, com folga antes e depois.',
+        diaSeguidas: function (horas) { return 'Emenda com outro serviço: ' + horas + ' horas seguidas.'; },
+        diaVagas: function (n) { return n === 1 ? '1 vaga sem ninguém no dia.' : n + ' vagas sem ninguém no dia.'; },
         parte: function (para, horas, de, resto) {
           return 'Em ' + para + ', ele entra no mesmo horário, ' + horas + '.' + (resto ? ' Em ' + de + ', continua de serviço ' + resto + '.' : '');
         },
         /* o Onde fica do dia novo: a vaga sem ninguém no horário */
         vaga: function (lugar) { return 'No ' + lugar + ', que está sem ninguém'; },
-        /* Como fica: o dia de antes, o dia novo, a folga e o banco de horas */
-        comoSai: function (de, militar) { return de + ': o ' + militar + ' sai, e o sistema refaz o dia.'; },
-        comoSaiParte: function (de, militar, horas, resto) { return de + ': o ' + militar + ' sai ' + horas + ' e continua de serviço ' + resto + '.'; },
-        comoEntraVaga: function (para, militar, horas, lugar) {
-          return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ' no ' + lugar + ', que estava sem ninguém.';
-        },
-        comoEntraFuncao: function (para, militar, horas, lugar) { return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ' no ' + lugar + '.'; },
-        comoEntraLugar: function (para, militar, horas, outro) {
-          return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ' no lugar do ' + outro + '.';
-        },
-        comoEntraSistema: function (para, militar, horas) {
-          return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ', e o sistema distribui o dia.';
-        },
-        comoEntraSistemaLugar: function (para, militar, horas, lugares) {
-          return para + ': o ' + militar + ' entra' + (horas ? ' ' + horas : '') + ', e o sistema o põe ' + lista('no', lugares) + '.';
-        },
-        comoFolga: function (antes, depois, proximo) {
-          var partes = [];
-          if (antes) partes.push(antes + ' h antes');
-          if (depois) partes.push(depois + ' h depois' + (proximo ? ', até o serviço de ' + proximo : ''));
-          return 'Folga: ' + partes.join(' e ') + '.';
-        },
-        comoBanco: 'Banco de horas: não muda. É o mesmo serviço, em outro dia.',
         /* o que o banco conferiu: o dia de antes abaixo do mínimo ("o 2ºPEL", "a ABT-01") e quem assume o Chefe de Socorro
            ou o Oficial de Área */
         quemUnidade: function (unidade) { return artigo(unidade) + ' ' + unidade; },
@@ -2229,6 +2208,12 @@
         'todas': 'Nenhuma troca registrada nesta unidade.',
         'pendentes': 'Nenhum saldo de horas.'
       },
+      /* a aba Calendário: as opções do Filtros (Situação); a última fica à parte, desmarcada */
+      calendario: {
+        aprovadas: 'Aprovadas',
+        aguardando: 'Aguardando',
+        naoValem: 'Incluir as que não valem mais'
+      },
       /* selo de situação (por status da troca) */
       situacao: {
         pendente_confirmacao: 'Aguardando confirmação',
@@ -2760,6 +2745,7 @@
       },
       usuariosAbrir: { titulo: 'Buscando o efetivo', passos: ['Buscando os militares das unidades marcadas', 'Separando por unidade'] },
       trocasAbrir: { titulo: 'Buscando as trocas', passos: ['Buscando as trocas das unidades marcadas', 'Separando por unidade'] },
+      trocasCalendario: { titulo: 'Buscando as trocas', passos: ['Buscando as trocas das unidades marcadas', 'Pondo as trocas nos dias'] },
       folgasAbrir: { titulo: 'Buscando as suas folgas', passos: ['Buscando o seu saldo e o seu extrato', 'Montando a lista'] },
       historicoAbrir: { titulo: 'Buscando o histórico', passos: ['Buscando as alterações do período', 'Separando por unidade'] },
       pendenciasAbrir: { titulo: 'Buscando as pendências', passos: ['Buscando o que espera por você', 'Organizando pelo prazo'] },

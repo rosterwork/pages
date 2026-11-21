@@ -6,9 +6,10 @@
    (geral-dropdown-numeros) com o ✕ e o Adicionar horário;
    criarRegua() e regua() desenham a régua do dia com os pedaços,
    só para ler (painel de decisão); periodoServico() junta tudo no
-   "Serviço inteiro / Parte do serviço" (Folgas e Trocas), com a
-   barra de horário (geral-regua); leitura() é o "08h → 08h" só para
-   ler (painel de decisão). Clona os moldes do index.html
+   "Serviço inteiro / Parte do serviço" (Folgas, Trocas e o Mudar o
+   dia da Escala), com os campos e a barra de horário (geral-regua)
+   só na parte; leitura() é o "08h → 08h" só para ler (painel de
+   decisão). Clona os moldes do index.html
    (#tpl-horario, -fixo, -leitura, #tpl-regua, -pedaco, #tpl-periodo-servico).
    RosterWork.horario.
    ============================================================ */
@@ -176,7 +177,7 @@
 
   var contaPeriodos = 0;   // nome único para os rádios de cada período na tela
 
-  /* monta em container o molde #tpl-periodo-servico (as opções, os campos da parte e a barra de horário).
+  /* monta em container o molde #tpl-periodo-servico (as opções e, só na parte, os campos e a barra de horário).
      opcoes = { aoMudar(valor) }, chamado só quando a pessoa mexe.
      Devolve { definirServico(servico|null), definirParte(hi, hf), valor(), limpar() };
      valor() = null sem serviço, senão { hi, hf, minutos, total, valido } (total = o serviço inteiro) */
@@ -214,16 +215,18 @@
     }
     function desenhar() {
       [].forEach.call(radios, function (r) { r.disabled = !st.servico; r.checked = (r.value === 'parte') === st.parte; });
+      var parte = !!(st.servico && st.parte);
       caixaHorario.textContent = '';
-      caixaHorario.classList.toggle('oculto', !(st.servico && st.parte));
-      if (st.servico && st.parte) {
+      caixaHorario.classList.toggle('oculto', !parte);
+      if (parte) {
         var l = linha({ hi: st.hi, hf: st.hf, opcoes: opcoesHoras([periodo(janela())]), semAcoes: true,
           aoInicio: function (h) { st.hi = h; mudou(); },
           aoFim: function (h) { st.hf = h; mudou(); } });
         if (l) caixaHorario.appendChild(l);
       }
-      /* a barra: o serviço em cinza e, escura, a parte escolhida (ou o serviço inteiro) */
+      /* a barra, só na parte: o serviço em cinza e, escura, a parte escolhida */
       if (!barra) return;
+      barra.el.classList.toggle('oculto', !parte);
       var w = st.servico ? janela() : null, v = valor();
       barra.desenhar({
         janela: w ? [w[0] / 60, w[1] / 60] : null,

@@ -617,6 +617,24 @@
   </div>
 </template>
 
+<!-- a caixa 2 do remanejado (o Devolver de quem saiu daqui e o Remover deste dia de quem veio de outra unidade): onde ele
+     está, Devolver (o texto, com a unidade de origem, vem do JS) ou Tirar do dia e, no Tirar, embaixo, a pergunta de
+     sempre (a do banco de horas: a frase e as duas respostas, com os textos e a ordem do JS) -->
+<template id="tpl-escala-celula-remanejado">
+  <div class="escala-celula-cartao">
+    <div class="escala-celula-pergunta escala-celula-remanejado">
+      <span class="escala-celula-pergunta-texto"></span>
+      <label class="geral-opcao"><input type="radio" value="devolver" /><span class="escala-celula-remanejado-devolver"></span></label>
+      <label class="geral-opcao"><input type="radio" value="tirar" /><span>Tirar do dia</span></label>
+    </div>
+    <div class="escala-celula-pergunta escala-celula-remanejado-tirar oculto">
+      <span class="escala-celula-pergunta-texto"></span>
+      <label class="geral-opcao"><input type="radio" value="nao" /><span class="escala-celula-pergunta-nao"></span></label>
+      <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-celula-pergunta-sim"></span></label>
+    </div>
+  </div>
+</template>
+
 <!-- a caixa 2 do Mudar onde fica (o estagiário): uma caixa de marcar por posto do estágio dele (as do tpl-escala-marcar,
      o texto vem do JS); todas marcadas, o sistema distribui -->
 <template id="tpl-escala-celula-onde">
@@ -644,8 +662,8 @@
   <div class="escala-celula-perguntas"></div>
 </template>
 
-<!-- a caixa 1 do pelotão (o clique fora dos nomes): os Adicionar, com a setinha da caixa 2; o Trazer de outra unidade,
-     com o ícone do painel (abre o painel já no Trazer; para quem administra outra unidade da companhia); o Voltar o dia ao
+<!-- a caixa 1 do pelotão (o clique fora dos nomes): os Adicionar e o Trazer de outra unidade (este, para quem administra
+     outra unidade da companhia), com a setinha da caixa 2; o Voltar o dia ao
      automático, sem sinal (a confirmação e na hora; só com ajuste manual no dia); e o Abrir o painel do dia. A letra é a
      da guarnição do dia (sem ela, "do dia"). O Adicionar estagiário aparece quando a unidade tem estágio no dia. O Adicionar
      extra neste dia aparece para o administrador da companhia, no mês lançado (escalas-celula-extra.js) -->
@@ -655,7 +673,7 @@
     <button type="button" class="dropdown-item" data-acao="guarnicao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg><span>Adicionar à guarnição <span class="escala-celula-letra"></span><span class="escala-celula-sem-letra oculto">do dia</span></span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="estagiario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-estagio"/></svg><span>Adicionar estagiário</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Adicionar extra neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
-    <button type="button" class="dropdown-item oculto" data-acao="trazer"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Trazer de outra unidade</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+    <button type="button" class="dropdown-item oculto" data-acao="trazer"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Trazer de outra unidade</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="automatico"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span>Voltar o dia ao automático</span></button>
     <div class="dropdown-divisor"></div>
     <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>

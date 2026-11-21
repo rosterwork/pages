@@ -442,15 +442,9 @@
 }
 
 /* ---------- Remanejar militar ---------- */
-/* o Enviar para: a bolinha e, ao lado, a lista das unidades */
-.escala-remanejar-enviar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.escala-remanejar-destino {
-  width: 160px;
+/* as bolinhas do Para qual unidade entram na caixa como as outras respostas */
+.escala-remanejar-unidades {
+  display: contents;
 }
 
 /* o militar da troca, embaixo do Sim */
@@ -469,26 +463,11 @@
   display: contents;
 }
 
-/* o Como fica (o Mudar o dia do serviço e o Mudar de unidade neste dia): o título e a lista com as bolinhas, um item
-   por linha; embaixo, os pontos enquanto o banco confere */
-.escala-mudar-dia-como-corpo,
-.escala-remanejar-como-corpo {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.escala-mudar-dia-como-lista,
-.escala-remanejar-como-lista {
-  margin: 0;
-  padding: 0 0 0 16px;
-  list-style: disc;
-}
-
-.escala-mudar-dia-como-item + .escala-mudar-dia-como-item,
-.escala-remanejar-como-item + .escala-remanejar-como-item {
-  margin-top: 4px;
+/* a barra curta (geral-etapas.css) ao lado do Para qual dia, enquanto os dias dele ou a leitura do dia novo chegam */
+.rotulo-secao > .escala-mudar-dia-carregando {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
 }
 
 /* ---------- Remover militar › por troca ---------- */
@@ -556,8 +535,7 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   O topo e o X da edição da linha ficam com a altura do dedo; no
-   Remanejar, a lista do Enviar para ocupa o resto da linha
+   O topo e o X da edição da linha ficam com a altura do dedo
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] .escala-linha-topo {
@@ -577,13 +555,6 @@
   html[data-celular] .escala-edicao-opcoes .escala-edicao-lapis {
     min-width: var(--toque-altura-celular);
     min-height: var(--toque-altura-celular);
-  }
-
-  /* Remanejar › Enviar para: a lista das unidades ocupa o resto da linha */
-  html[data-celular] .escala-remanejar-destino {
-    flex: 1;
-    width: auto;
-    min-width: 0;
   }
 
   /* o Dia da folga do cartão: o dia com menos recuo, para "Serviço" caber (como a Minha escala) */

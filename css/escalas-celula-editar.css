@@ -6,7 +6,9 @@
    menu do lápis (o mesmo do painel, sem o lápis e os títulos, com a
    setinha dos itens que abrem a caixa 2), o horário nos campos (na
    altura das linhas do menu, pelo componente) e a pergunta do banco de
-   horas, e as perguntas do painel sem a moldura delas.
+   horas, e as perguntas do painel sem a moldura delas (as do Mudar o
+   dia do serviço e as do Mudar de unidade separadas pelo traço do
+   menu).
    ============================================================ */
 
 /* o menu do lápis dentro da caixa: ele mesmo, sem a moldura do menu suspenso */
@@ -82,7 +84,8 @@
   font-size: 12px;
 }
 
-/* a pergunta do banco de horas: a frase e as duas respostas */
+/* a pergunta do banco de horas: a frase e as duas respostas (e a do remanejado, onde ele está, Devolver ou Tirar do dia:
+   a primeira da caixa, sem o traço de cima) */
 .escala-celula-pergunta {
   display: flex;
   flex-direction: column;
@@ -91,7 +94,8 @@
   border-top: 1px solid var(--borda);
 }
 
-.escala-celula-cartao-horario.oculto + .escala-celula-pergunta {
+.escala-celula-cartao-horario.oculto + .escala-celula-pergunta,
+.escala-celula-remanejado {
   padding-top: 0;
   border-top: 0;
 }
@@ -144,6 +148,47 @@
 /* uma pergunta só por caixa: sem o número das sub-telas */
 .caixa-flutuante .subtela-pergunta > .rotulo-secao::before {
   content: none;
+}
+
+/* a caixa 2 do Mudar o dia do serviço e do Mudar de unidade (as perguntas do painel, escalas-painel-mudar-dia.js e
+   escalas-painel-remanejar.js): sem o título e sem o campo de quem, porque ele já vem escolhido (no Mudar o dia fica a
+   frase do serviço dele, na cor das frases da caixa; o Trazer pergunta Quem vem), e cada pergunta separada da de cima
+   pelo traço do menu (a primeira, sem ele). A pergunta que falta (o clique fora com a resposta pela metade) ganha a
+   borda e o fundo de erro, como a .escala-celula-pergunta--falta */
+.caixa-flutuante .escala-mudar-dia,
+.caixa-flutuante .escala-remanejar {
+  gap: 8px;
+  padding: 4px 4px 8px;
+}
+
+.caixa-flutuante .escala-mudar-dia .subtela-cab,
+.caixa-flutuante .escala-mudar-dia-quem > :not(.escala-mudar-dia-servico),
+.caixa-flutuante .escala-remanejar .subtela-cab,
+.caixa-flutuante .escala-remanejar--enviar .escala-remanejar-quem {
+  display: none;
+}
+
+.caixa-flutuante .escala-mudar-dia-servico {
+  color: var(--texto-suave);
+}
+
+.caixa-flutuante .escala-mudar-dia > .grupo-caixa:not(.escala-mudar-dia-quem),
+.caixa-flutuante .escala-mudar-dia-onde > .grupo-caixa,
+.caixa-flutuante .escala-remanejar-troca,
+.caixa-flutuante .escala-remanejar-sai,
+.caixa-flutuante .escala-remanejar-motivo,
+.caixa-flutuante .escala-remanejar-ondes > .grupo-caixa {
+  padding-top: 8px;
+  border-top: 1px solid var(--borda);
+  border-radius: 0;
+}
+
+.caixa-flutuante .escala-mudar-dia .grupo-caixa.grupo-caixa--erro,
+.caixa-flutuante .escala-remanejar .grupo-caixa.grupo-caixa--erro {
+  padding: 8px;
+  background-color: var(--erro-fundo);
+  border: 1px solid var(--erro);
+  border-radius: var(--raio-medio);
 }
 
 .escala-celula-adicionar .combo-militar-menu { width: 280px; }
