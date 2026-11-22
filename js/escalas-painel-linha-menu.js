@@ -60,7 +60,11 @@
    também o Mudar o dia do serviço (a mudança vai para outra data, o
    Mudar o dia com ela, sem outra folga dele no dia) e o Dar folga
    neste dia (ele não trabalha em nenhum dos dois dias, a pergunta do
-   banco de horas embaixo da linha).
+   banco de horas embaixo da linha). Na linha riscada da célula de quem
+   saiu numa troca: o Cancelar a troca (no painel, o Remover deste dia
+   de quem entrou no lugar dele, já nessa troca) e este dia como o
+   último serviço dele: o Remover da guarnição ou, com a saída marcada
+   depois dele, o Mudar e o Cancelar a saída.
    Na Estagiários, embaixo do traço, o Ver as funções troca de aba já
    com o menu da linha dele aberto.
    A mudança de dia ainda não salva (só no rascunho, sem número no
@@ -79,7 +83,7 @@
    (e do De folga, da saída e do remanejado), sem o Ver as funções, e
    o Abrir o painel do dia em todos; quem faz cada item é a célula.
    API: RosterWork.escalasPainelLinhaMenu.na(linha, cfg) põe o lápis e o
-   menu na linha; fazer(linha, acao) faz um item por código (o lugar
+   menu na linha; fazer(linha, acao, opcoes) faz um item por código (o lugar
    novo do posto abre o cartão sozinho); abrir(linha) abre o menu dela
    (o Ver as funções, na outra aba); menuDaCelula(cfg,
    escolher) devolve o menu pronto para a caixa; largarMudanca(cpf,
@@ -90,7 +94,8 @@
    só exibe: sem lápis) | 'vaga' | 'sem' | 'folga' | 'militar'
    (a linha da aba Estagiários) | 'fora' (remanejado daqui para outra
    unidade) | 'saida' (quem saiu da guarnição; saida = a data da saída; ultimo e dias = o último serviço e os dias do
-   Mudar a saída, só na saída à mão) | 'companhia' (o Oficial de Área da companhia na Central do
+   Mudar a saída, só na saída à mão) | 'trocado' (quem saiu numa troca, na célula; trocas = as trocas dele no dia, a lista
+   trocados da leitura do dia) | 'companhia' (o Oficial de Área da companhia na Central do
    pelotão), visao: 'funcoes' | 'militares' (a aba Estagiários: só o dia
    da pessoa), exibida (no papel: a linha das
    Funções especiais), levado (no papel: a linha do papel que foi junto com
@@ -146,6 +151,24 @@
     var dd = ed().dados() || {};
     r['onde-estagio'] = !!(dd.estagios && dd.estagios[cpf]);
     if (r['onde-estagio']) { r['registrar-troca'] = false; r['mudar-unidade'] = false; }
+  }
+
+  /* a linha riscada de quem saiu numa troca (cfg.trocas, da leitura do dia): o Cancelar a troca, com uma troca só e quem
+     entrou no lugar dele de serviço aqui por ela (no painel, o Remover deste dia dele, já nessa troca); e este dia como o
+     último serviço dele na guarnição, quando o dia era da guarnição: o Remover da guarnição ou, com a saída já marcada
+     depois dele, o Mudar e o Cancelar a saída. Até 7 dias atrás, como toda mudança */
+  function itensDaTroca(cfg, r) {
+    var RW = RosterWork, cpf = cfg.militar.cpf, trocas = cfg.trocas || [];
+    var t = trocas.length === 1 ? trocas[0] : null, entra = t && t.entra ? ed().militarDoDia(t.entra) : null;
+    r['cancelar-troca'] = !!entra && entra.daUnidade && RW.escalasPainelRemoverListas.partesDe(entra).some(function (p) {
+      return p.origem === 'troca' && p.trocaId === t.troca_id;
+    });
+    var C = RW.escalasPainelCiclo;
+    if (!C || ed().iso() < C.limite()) return;
+    var marcada = C.saidaMarcada(cpf);
+    r['remover-guarnicao'] = !marcada && trocas.some(function (x) { return x.guarnicao; });
+    r['mudar-saida'] = !!marcada && (marcada.dias || []).length > 1;
+    r['cancelar-saida'] = !!marcada;
   }
 
   /* os itens que valem para a linha: { acao: true }. Na aba Funções, o que é do lugar e o dia da pessoa; na Estagiários
@@ -216,6 +239,8 @@
     } else if (cfg.tipo === 'saida') {
       r['mudar-saida'] = (cfg.dias || []).length > 1;
       r['cancelar-saida'] = true;
+    } else if (cfg.tipo === 'trocado' && m) {
+      itensDaTroca(cfg, r);
     } else if (cfg.tipo === 'fora') {
       r.devolver = true;
     } else if (cfg.tipo === 'companhia') {
@@ -268,11 +293,12 @@
   }
 
   /* Remover do dia e Dar folga: o caminho da tela do Remover do dia para o serviço dele no dia todo (pelo ciclo e no Dar
-     folga de quem está por troca, a pergunta do banco de horas embaixo da linha; com mais perguntas, a sub-tela já com ele) */
-  function removerDoDia(cfg, folga) {
+     folga de quem está por troca, a pergunta do banco de horas embaixo da linha; com mais perguntas, a sub-tela já com ele;
+     trocaId: a sub-tela já na parte dessa troca, o Cancelar a troca da linha riscada da célula) */
+  function removerDoDia(cfg, folga, trocaId) {
     var api = ed(), mil = api.militarDoDia(cfg.militar.cpf);
     if (!mil || !RosterWork.escalasPainelRemover) return;
-    RosterWork.escalasPainelRemover.doDia({ cpf: mil.cpf, periodos: mil.janelas.map(copiar), folga: !!folga }, cfg.linha);
+    RosterWork.escalasPainelRemover.doDia({ cpf: mil.cpf, periodos: mil.janelas.map(copiar), folga: !!folga, trocaId: trocaId || null }, cfg.linha);
   }
 
   /* a mudança de dia ainda no rascunho ('vem' ou 'sai'): sair dela é largá-la, na hora, com o Desfazer */
@@ -339,7 +365,9 @@
     'oficial-area': function (cfg) { RosterWork.escalasCelulaOficial.perguntarNaLinha(cfg.militar.cpf, cfg.linha); },
     'registrar-troca': function (cfg) { ed().registrarTroca(cfg.militar.cpf); },
     'mudar-extra': function () { RosterWork.escalasPainel.abrirAba('extra'); },
-    'remover-dia': function (cfg) { largarMudanca(cfg.militar.cpf, 'vem', function () { removerDoDia(cfg); }); },
+    'remover-dia': function (cfg, opcoes) {
+      largarMudanca(cfg.militar.cpf, 'vem', function () { removerDoDia(cfg, false, opcoes && opcoes.trocaId); });
+    },
     'folga-dia': function (cfg) { removerDoDia(cfg, true); },
     /* o Remover da guarnição, o Mudar a saída e o Cancelar a saída: as guarnições do painel (escalas-painel-ciclo.js) */
     'remover-guarnicao': function (cfg) { RosterWork.escalasPainelCiclo.perguntarSaida(cfg.militar, cfg.linha); },
@@ -368,15 +396,16 @@
     }
   };
 
-  /* um item da linha (o clique no menu, ou por código) */
-  function fazer(linha, acao) {
+  /* um item da linha (o clique no menu, ou por código; opcoes: { trocaId } no Remover deste dia pedido pelo Cancelar a
+     troca da célula) */
+  function fazer(linha, acao, opcoes) {
     var cfg = cfgs.get(linha);
     if (!cfg || !linha.isConnected || !ACOES[acao] || !ed().livre()) return;
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
     /* a pergunta do Remover da guarnição aberta em outra linha fica respondida; a do Pôr como Oficial de Área fecha */
     if (RosterWork.escalasPainelCiclo && RosterWork.escalasPainelCiclo.fecharPergunta) RosterWork.escalasPainelCiclo.fecharPergunta('guardar');
     if (RosterWork.escalasCelulaOficial) RosterWork.escalasCelulaOficial.fecharPergunta();
-    ACOES[acao](cfg);
+    ACOES[acao](cfg, opcoes || null);
   }
 
   /* ---------- a linha ---------- */

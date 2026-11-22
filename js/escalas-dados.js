@@ -38,7 +38,9 @@
   function chaveMes(ids, inicio, fim) { return 'ler_escala_mes|' + ids.join(',') + '|' + inicio + '|' + fim; }
 
   function buscarMes(ids, inicio, fim, daTela, semAviso) {
-    esquecerGuardados();   // a grade lida de novo: as leituras guardadas saem (as leituras guardadas, abaixo)
+    /* a grade lida de novo: as leituras guardadas saem (as leituras guardadas, abaixo); na releitura sozinha dos dias que
+       ficaram prontos (semAviso), não: só esses dias mudaram, e as deles já saíram (esquecerDias) */
+    if (!semAviso) esquecerGuardados();
     var corpo = { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim };
     /* no treino, o exemplo roda num ensaio do banco e tem de aparecer: sempre o dado real */
     if (daTela && !(RosterWork.treino && RosterWork.treino.ligado())) corpo.p_aceita_copia = true;
@@ -138,8 +140,9 @@
      guarnição) ficam guardados por pouco tempo: o mouse parado na célula da grade começa a leitura do dia antes do clique
      (adiantarDia, escalas-celula-adiantar.js), a caixa 1 do pelotão a das listas (adiantarListas), e quem pede a mesma
      leitura depois (a caixa, o painel) usa a que está em curso ou a que já chegou, cada um com a sua cópia. Saem com 1
-     minuto, em qualquer Salvar e quando a grade é lida de novo (a entrada, o mês, o Salvar, o Cancelar, o recálculo); a
-     falha não fica. No treino, nada fica guardado */
+     minuto, em qualquer Salvar e quando a grade é lida de novo (a entrada, o mês, o Salvar, o Cancelar); quando a grade se
+     atualiza sozinha ("Atualizando a escala"), saem só as do dia que mudou (esquecerDias, escalas-atualizando.js); a falha
+     não fica. No treino, nada fica guardado */
   var GUARDA_MS = 60000;
   var guardados = {};          // 'leitura|unidade|dia...' -> { em (quando começou), texto (a Promise do texto) }
   var adiantando = false;      // a leitura do dia pelo mouse em curso: uma por vez
@@ -152,6 +155,13 @@
     return g && performance.now() - g.em < GUARDA_MS ? g : null;
   }
   function esquecerGuardados() { guardados = {}; adiantarDepois = null; junta = null; }
+  /* os dias que mudaram sozinhos (alguém mudou, saíram da fila do recálculo ou a cópia ficou pronta): as leituras guardadas
+     deles saem, em todas as unidades (a conta do dia é da companhia inteira). chaves = ['unidade|dia'] */
+  function esquecerDias(chaves) {
+    var datas = {};
+    (chaves || []).forEach(function (k) { datas[String(k).split('|')[1]] = true; });
+    Object.keys(guardados).forEach(function (g) { if (datas[g.split('|')[2]]) delete guardados[g]; });
+  }
 
   function textoGuardado(chave, rpc, corpo) {
     var g = guardado(chave);
@@ -359,9 +369,11 @@
     previaNoAr = null;
     proximaPrevia();
   }
-  /* o corpo do pedido da prévia (null sem mudança): para quem chama a RPC por conta própria (a árvore do modo Dia) */
+  /* o corpo do pedido da prévia (null sem mudança): para quem chama a RPC por conta própria (a árvore do modo Dia). Vai só o
+     que mexe no que se lê: até o último dia da grade pedida, ou até o dia aberto (o painel, a célula, a árvore) */
   function corpoPrevia(leitura, args) {
-    var S = RosterWork.escalasPainelSalvar, p = S && S.paraPrevia();
+    var ate = leitura === 'ler_escala_mes' && args && args.p_fim ? args.p_fim : null;
+    var S = RosterWork.escalasPainelSalvar, p = S && S.paraPrevia(ate);
     if (!p) return null;
     var corpo = { p_unidade_id: Number(p.unidadeId), p_data: p.iso, p_dia: p.dia, p_ciclo: p.ciclo,
       p_leitura: leitura, p_args: args || {} };
@@ -526,7 +538,7 @@
     carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     motivos: motivos,
     lerDiasAtualizando: lerDiasAtualizando, lerDistribuicaoDia: lerDistribuicaoDia, adiantarDia: adiantarDia, adiantarListas: adiantarListas, lerAlteracoesDia: lerAlteracoesDia, lerPrevia: lerPrevia, corpoPrevia: corpoPrevia, painelSalvar: painelSalvar, painelSalvarDias: painelSalvarDias,
-    marcaDoSalvar: marcaDoSalvar, depoisDoSalvar: depoisDoSalvar, lerCerto: lerCerto, esquecerCertos: esquecerCertos,
+    marcaDoSalvar: marcaDoSalvar, depoisDoSalvar: depoisDoSalvar, lerCerto: lerCerto, esquecerCertos: esquecerCertos, esquecerDias: esquecerDias,
     lerImpressao: lerImpressao, lerImpressaoErros: lerImpressaoErros, lerSysbm: lerSysbm,
     sysbmTermo: sysbmTermo, sysbmDarCiencia: sysbmDarCiencia,
     continuosListar: continuosListar, guarnicoesListar: guarnicoesListar, cicloRetirarAnalisar: cicloRetirarAnalisar,

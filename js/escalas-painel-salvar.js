@@ -21,13 +21,13 @@
    escala_painel_salvar_dias (o cartão das etapas, o período lido de
    novo e um resumo só, cada bloco com o dia dele). O dia que mudou no
    banco depois da leitura tira só o rascunho daquele dia, e o aviso
-   diz qual foi. Só o Dia que não muda a escala
-   (as observações): as etapas no rodapé, e só aquele dia é lido de
-   novo na grade (escalas-dia-na-grade.js); com o Ciclo ou a
-   Extrajornada, e com o Dia que muda a escala (o banco refaz também
-   os dias seguintes, porque o rodízio conta o que cada um fez no dia),
-   o cartão das etapas sobre a tela (geral-etapas.js), e o período é
-   lido de novo, com a grade na tela; nessa leitura, o dia salvo (e o
+   diz qual foi. Só o Dia: as etapas no rodapé; o que não muda a
+   escala (as observações) lê de novo só aquele dia na grade
+   (escalas-dia-na-grade.js), e o que muda (o banco põe os dias
+   seguintes na fila, porque o rodízio conta o que cada um fez no dia,
+   sem refazer na hora) lê o período de novo. Com o Ciclo ou a
+   Extrajornada, o cartão das etapas sobre a tela (geral-etapas.js), e
+   o período é lido de novo, com a grade na tela; nessa leitura, o dia salvo (e o
    outro dia da mudança de dia, e o dia da extra mexida na célula) vem
    com o dado real, nunca com a cópia guardada velha, e sem a borda
    amarela, em todas as unidades dele na tela (os dias certos,
@@ -54,8 +54,9 @@
    mudanças de todos os dias e da Extrajornada; .pendente() diz se há
    mudança em algum dia; .descartar() tira o rascunho carregado em cada
    parte; .descartarTudo() tira também o dos dias guardados;
-   .paraPrevia() dá o rascunho para a prévia das
-   telas (null sem mudança); .marcado(unidade, dia) diz se o dia leva a
+   .paraPrevia(ate) dá o rascunho para a prévia das
+   telas, só o que mexe nos dias até ate (sem ele, até o dia aberto;
+   null sem mudança); .marcado(unidade, dia) diz se o dia leva a
    borda; .tocaODia(dia) diz se uma mudança pendente toca o dia (a caixa
    da célula só espera a prévia nele); .mostrarRelendo(sim) diz no rodapé que a escala está sendo
    lida com o rascunho.
@@ -128,11 +129,14 @@
   /* o rascunho para a prévia das telas: { unidadeId, iso, dia, ciclo, extra, outros, dias } (cada parte nula sem mudança),
      ou null. O dia aberto (o do painel ou o da célula; sem ele, o primeiro com mudança) vai com o dia e o ciclo dele;
      outros = os outros dias que o Dia dele muda (a mudança de dia); dias = os outros dias com mudança, no formato do
-     escala_painel_salvar_dias. Quem passou da cota fica fora: o banco recusaria */
-  function paraPrevia() {
+     escala_painel_salvar_dias, só os que mexem no que se lê, até ate (o último dia da grade pedida; sem ele, o dia
+     aberto): a mudança de um dia depois não muda o que se lê e fica para a prévia dele e para o Salvar. Quem passou da
+     cota fica fora: o banco recusaria */
+  function paraPrevia(ate) {
     var lista = dias(), c = contexto() || lista[0];
     var extra = X() ? X().paraPrevia() : null;
     if (!c || (!lista.length && !extra)) return null;
+    var limite = ate || c.iso;
     var dia = null, ciclo = null, outros = [], resto = [];
     lista.forEach(function (d) {
       var esteDia = d.dia ? previaDe(d.dia) : null, esteCiclo = d.ciclo ? C().envio(listaCiclo(d.ciclo)) : null;
@@ -140,12 +144,19 @@
         dia = esteDia;
         ciclo = esteCiclo;
         outros = d.dia ? noDia(d.dia, E().outrosDias) : [];
-      } else if (esteDia || esteCiclo) {
+      } else if ((esteDia || esteCiclo) && mexeAte(d, limite)) {
         resto.push({ unidade_id: Number(d.unidadeId), data: d.iso, dia: esteDia, ciclo: esteCiclo });
       }
     });
     if (!dia && !ciclo && !extra && !resto.length) return null;
     return { unidadeId: c.unidadeId, iso: c.iso, dia: dia, ciclo: ciclo, extra: extra, outros: outros, dias: resto };
+  }
+  /* a mudança de outro dia mexe no que se lê até limite? O dia dela, ou o outro dia da mudança de dia, até ele, ou as
+     guarnições com data até ele (o rodízio conta os dias de antes; os de depois não mudam o dia lido) */
+  function mexeAte(d, limite) {
+    if (d.iso <= limite) return true;
+    if (d.dia && noDia(d.dia, E().outrosDias).some(function (iso) { return iso <= limite; })) return true;
+    return !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return C().desde(x, d.iso) <= limite; });
   }
   /* a borda tracejada: cada dia com mudança, o outro dia da mudança de dia, os dias da unidade que o rascunho das
      guarnições muda (da primeira data dele em diante) e os dias do rascunho da Extrajornada; sem a unidade (null), em
@@ -375,20 +386,17 @@
   /* o nome da unidade nas etapas: "1ªCIBM / 2ºPEL" vira "2ºPEL" */
   function nomeCurto(c) { return (c.unidadeNome || '').split('/').pop().trim(); }
 
-  /* o que aparece enquanto grava: só o Dia, as etapas no rodapé, com o dia sendo refeito na grade ("Refazendo a
-     distribuição" só quando o banco refaz); com o Ciclo ou a Extrajornada, que mudam muitos dias, e com o Dia que refaz
-     os dias seguintes, o cartão sobre a tela. refaz = o Dia refaz a distribuição do dia */
-  function mostrarEtapas(c, ciclo, soDoDia, extra, seguintes, refaz) {
+  /* o que aparece enquanto grava: só o Dia (também o que muda os dias seguintes, que o banco põe na fila sem refazer na
+     hora), as etapas no rodapé, com o dia sendo refeito na grade ("Refazendo a distribuição" só quando o banco refaz); com
+     o Ciclo ou a Extrajornada, que mudam muitos dias, o cartão sobre a tela. naLinha = só o Dia; refaz = o Dia refaz a
+     distribuição do dia */
+  function mostrarEtapas(c, ciclo, naLinha, extra, refaz) {
     if (linhaNoRodape) linhaNoRodape.parar();
     linhaNoRodape = null;
     if (ciclo) return RW.etapas.acao('salvarCiclo', { unidade: nomeCurto(c) }, { doServidor: 2 });
-    if (!soDoDia && extra) return RW.etapas.acao('salvarExtra', null, { doServidor: 2 });
-    if (seguintes) {
-      return RW.etapas.acao('salvarDiaSeguintes', { dia: RW.data.isoParaBR(c.iso).slice(0, 5), unidade: nomeCurto(c), refaz: refaz },
-        { doServidor: refaz ? 3 : 2 });
-    }
+    if (!naLinha && extra) return RW.etapas.acao('salvarExtra', null, { doServidor: 2 });
     /* o sobreaviso refaz a fila dos dias seguintes: o período é lido de novo */
-    if (!soDoDia) return RW.etapas.acao('salvarSobreaviso', null, { doServidor: 2 });
+    if (!naLinha) return RW.etapas.acao('salvarSobreaviso', null, { doServidor: 2 });
     linhaNoRodape = linhaDasEtapas(rodapePagina(), 'salvarDia',
       { dia: RW.data.isoParaBR(c.iso).slice(0, 5), unidade: nomeCurto(c), refaz: refaz },
       { doServidor: refaz ? 2 : 1, atraso: refaz ? 0 : 300 });
@@ -495,15 +503,17 @@
     var umDia = lista.length <= 1, e = lista[0] || null, d = ds[0] || null;
     var alvo = e ? diaDoItem(e, c) : c;
     var dia = e && e.dia, ciclo = e && e.ciclo, sobreaviso = e && e.sobreaviso;
-    /* o Dia que muda a escala: o banco refaz também os dias seguintes (o rodízio conta o que cada um fez no dia); como o
-       Ciclo, o cartão na hora e o período lido de novo */
+    /* o Dia que muda a escala: o banco põe também os dias seguintes na fila (o rodízio conta o que cada um fez no dia),
+       sem refazer na hora; as etapas no rodapé, como o Dia sozinho, e o período lido de novo (os dias seguintes com a borda
+       amarela até ficarem prontos) */
     var seguintes = umDia && !ciclo && !extra && !sobreaviso && !!dia && noDia(d.dia, E().refazDiasSeguintes);
     var soDoDia = umDia && !ciclo && !extra && !sobreaviso && !seguintes;
+    var naLinha = soDoDia || seguintes;
     /* a mudança de dia (a gravação muda outro dia também) e vários dias: o período é lido de novo */
     var doisDias = !umDia || (!!dia && noDia(d.dia, E().outrosDias).length > 0);
     var salvos = diasSalvos(ds, extra);   // antes de o rascunho sair
     salvando = true;
-    var etapas = umDia ? mostrarEtapas(alvo, !!ciclo, soDoDia, extra, seguintes, !!dia && noDia(d.dia, E().refazDistribuicao))
+    var etapas = umDia ? mostrarEtapas(alvo, !!ciclo, naLinha, extra, !!dia && noDia(d.dia, E().refazDistribuicao))
       : mostrarEtapasDias(ds, lista.some(function (x) { return x.ciclo || x.sobreaviso; })
           || ds.some(function (x) { return x.dia && noDia(x.dia, E().refazDiasSeguintes); }));
     atualizar();
@@ -512,7 +522,7 @@
     function terminar() {
       salvando = false;
       etapas.parar();
-      if (soDoDia) {
+      if (naLinha) {
         linhaNoRodape = null;
         RW.escalasDiaNaGrade.parou(alvo.unidadeId, alvo.iso);
         RW.marcarRecalculoPendente();

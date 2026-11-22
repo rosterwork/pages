@@ -1634,8 +1634,9 @@
       var linha = corpo.querySelector('.escala-edicao-linha--menu[data-cpf="' + cpf + '"]');
       if (!linha) return;
       /* o item pedido pela célula da grade (o Devolver, o Remover deste dia e o que não cabe na caixa): a sub-tela dele, já
-         com ele */
-      if (acao) RosterWork.escalasPainelLinhaMenu.fazer(linha, acao);
+         com ele; { acao, trocaId }: o Remover deste dia já na parte da troca (o Cancelar a troca da linha riscada) */
+      if (acao && acao.acao) RosterWork.escalasPainelLinhaMenu.fazer(linha, acao.acao, { trocaId: acao.trocaId });
+      else if (acao) RosterWork.escalasPainelLinhaMenu.fazer(linha, acao);
       else RosterWork.escalasPainelLinhaMenu.abrir(linha);
     }, 0);
   }

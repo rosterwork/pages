@@ -101,7 +101,8 @@
 
   /* ---------- a sub-tela ---------- */
 
-  /* opcoes = { cpf }: chega com ele escolhido (o Remover do dia que precisa de mais de uma pergunta) */
+  /* opcoes = { cpf, trocaId }: chega com ele escolhido (o Remover do dia que precisa de mais de uma pergunta) e, com
+     trocaId, já na parte dessa troca (o Cancelar a troca da linha riscada da célula) */
   function abrir(opcoes) {
     fecharPergunta('guardar');
     var api = ed(), H = api.horas, C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
@@ -115,13 +116,16 @@
     var ultimo = null;   // a última resposta posta no rascunho (o Motivo da folga a refaz com o texto novo)
     var outra = null;    // as perguntas do Mudar o dia do Muda para outra data (a mudança de dia), enquanto ela está marcada
     var analise = { chave: '', aviso: null, pedido: 0 };   // o que acontece no ciclo de quem sai do ciclo (lido uma vez)
+    var trocaPedida = (opcoes && opcoes.trocaId) || null;   // a parte da troca pedida, só na primeira escolha
 
     function escolher(item) {
       est.item = item; est.mil = item.mil;
       est.reman = item.mil.remanejado || null;
       est.remanFazer = null;
       est.partes = partesDe(item.mil);
-      est.parte = est.partes.length === 1 ? est.partes[0] : null;
+      var pedida = trocaPedida && est.partes.filter(function (p) { return p.origem === 'troca' && p.trocaId === trocaPedida; })[0];
+      trocaPedida = null;
+      est.parte = est.partes.length === 1 ? est.partes[0] : pedida || null;
       est.motivo = R().motivoNoRascunho(item.mil.cpf);
       el.motivo.querySelector('input').value = est.motivo;
       montarPartes();
@@ -139,6 +143,7 @@
         var r = op.querySelector('input');
         r.name = nome;
         r.value = String(i);
+        r.checked = est.parte === p;
         r.addEventListener('change', function () { if (r.checked) { est.parte = est.partes[i]; comecarParte(); } });
         op.querySelector('.escala-remover-parte-texto').textContent = L().parte(p.origem, H.textoPeriodos(p.periodos));
         el.partesLista.appendChild(op);
@@ -546,13 +551,14 @@
       aplicar: function (escolha) { api.tirarMudanca(mud.id, escolha === 'sim', String(mud.para_iso || '').slice(0, 10)); } };
   }
 
-  /* m = { cpf, periodos }: quem sai e as horas que saem (o dia todo dele, do menu da linha); linha = a linha da lista;
-     pronta: a pergunta já pronta (o Dar folga da linha da mudança, analisarFolgaDaMudanca) */
+  /* m = { cpf, periodos, trocaId }: quem sai e as horas que saem (o dia todo dele, do menu da linha) e, na sub-tela, a
+     parte da troca que já vem escolhida (o Cancelar a troca da célula); linha = a linha da lista; pronta: a pergunta já
+     pronta (o Dar folga da linha da mudança, analisarFolgaDaMudanca) */
   function doDia(m, linha, pronta) {
     fecharPergunta('guardar');
     var api = ed(), a = linha ? (pronta || analisarDoDia(m)) : null;
     if (!a) return;
-    if (a.tipo === 'subtela') { abrir({ cpf: a.cpf }); return; }
+    if (a.tipo === 'subtela') { abrir({ cpf: a.cpf, trocaId: (m && m.trocaId) || null }); return; }
     /* o pontual sem pergunta: sai na hora, com o Desfazer */
     if (a.tipo === 'sai') { api.mudar(a.aplicar); return; }
     var el = RosterWork.tpl('tpl-escala-remover-dia');

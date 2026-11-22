@@ -157,6 +157,12 @@
     var agora = {};
     lista.forEach(function (d) { agora[chave(d.unidade, d.data)] = !!d.fila; });
     var prontos = Object.keys(dias).filter(function (k) { return !(k in agora); });
+    /* as leituras guardadas (a caixa da célula abre com elas) dos dias que mudaram sozinhos saem: os que entraram (alguém
+       mudou o dia) e os que saíram da fila do recálculo (refeitos). A cópia que fica pronta não muda o dado real que a
+       caixa lê, e as leituras dos outros dias ficam (escalas-dados.js) */
+    var mudaram = Object.keys(agora).filter(function (k) { return !(k in dias); })
+      .concat(Object.keys(dias).filter(function (k) { return dias[k] && agora[k] !== true; }));
+    if (mudaram.length && RosterWork.escalasDados && RosterWork.escalasDados.esquecerDias) RosterWork.escalasDados.esquecerDias(mudaram);
     var tinhaFila = temFila();
     dias = agora;
     Object.keys(corrigidos).forEach(function (k) { if (!(k in agora)) delete corrigidos[k]; });

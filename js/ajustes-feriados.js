@@ -366,9 +366,9 @@
   }
 
   function falhou(etapas) {
-    return function (e) {
+    return function () {
       etapas.parar();
-      RW.avisar({ tipo: 'erro', mensagem: (e && e.message) || RW.mensagens.geral.semConexao });
+      RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     };
   }
 

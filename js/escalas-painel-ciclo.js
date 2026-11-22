@@ -259,10 +259,12 @@
   }
 
   /* o Remover da guarnição de quem está no dia (m; linha = a linha dele na aba Funções): a pergunta Último serviço
-     embaixo da linha, sem nada marcado: neste dia (ele faz o serviço e sai da guarnição depois dele) ou ele não trabalha
-     mais a partir deste dia. A resposta põe a saída no rascunho das guarnições e mostra embaixo o que acontece com as
-     trocas, folgas e extras dele; o Cancelar volta ao que era. Ela fica aberta até a próxima ação. Na caixa flutuante da
-     célula da grade (escalas-celula-editar.js): opcoes = { dentro (a caixa 2, no lugar da linha), aoCancelar() } */
+     embaixo da linha, sem nada marcado, com três dias (a chave servicos_vizinhos da leitura do dia): o serviço anterior
+     (ele não trabalha mais a partir deste dia: a saída neste dia), este dia e o próximo (a saída no dia seguinte a ele).
+     Sem o anterior (ele entrou na guarnição neste dia) ou sem o próximo, a opção dele não aparece. A resposta põe a
+     saída no rascunho das guarnições e mostra embaixo o que acontece com as trocas, folgas e extras dele; o Cancelar
+     volta ao que era. Ela fica aberta até a próxima ação. Na caixa flutuante da célula da grade
+     (escalas-celula-editar.js): opcoes = { dentro (a caixa 2, no lugar da linha), aoCancelar() } */
   function perguntarSaida(m, linha, opcoes) {
     opcoes = opcoes || {};
     if (RosterWork.escalasPainelRemover) RosterWork.escalasPainelRemover.fecharPergunta('guardar');
@@ -270,16 +272,19 @@
     var el = RosterWork.tpl('tpl-escala-remover-guarnicao');
     if (!el || !(linha || opcoes.dentro)) return;
     var api = ed(), uid = api.unidadeId(), iso = api.iso(), cpf = m.cpf, antes = marcado(uid, iso, cpf);
-    var amanha = diaSeguinte(iso);
-    var p = { el: el, pedido: 0, passos: 0 };
-    [].forEach.call(el.querySelectorAll('.escala-remover-guarnicao-data'), function (s) { s.textContent = diaMes(iso); });
-    var ver = efeito(el.querySelector('.escala-remover-guarnicao-efeito'));
-    var nome = 'escala-remover-guarnicao-' + (++conta);
-    [].forEach.call(el.querySelectorAll('input[type="radio"]'), function (r) {
+    var vizinhos = ((api.dados() || {}).servicos_vizinhos || {})[cpf] || {};
+    var p = { el: el, pedido: 0, passos: 0 }, ver = null;
+    var marcador = el.querySelector('.escala-remover-guarnicao-efeito'), nome = 'escala-remover-guarnicao-' + (++conta);
+    [vizinhos.antes, iso, vizinhos.depois].filter(Boolean).forEach(function (dia) {
+      var op = RosterWork.tpl('tpl-escala-mudar-saida-opcao');
+      if (!op) return;
+      var r = op.querySelector('input');
       r.name = nome;
+      r.value = dia;
+      op.querySelector('.escala-mudar-saida-data').textContent = diaMes(dia);
       r.addEventListener('change', function () {
         if (!r.checked) return;
-        var data = r.value === 'neste' ? amanha : iso, meu = ++p.pedido;
+        var data = dia < iso ? iso : diaSeguinte(dia), meu = ++p.pedido;
         ver.esconder();
         marcarPasso(uid, iso, { cpf: cpf, acao: 'tirar', tipo: 'sair', data: data, itens: [] });
         p.passos++;
@@ -291,7 +296,9 @@
           if (atual && atual.acao === 'tirar' && atual.data === data) atual.itens = aviso.itens || [];
         });
       });
+      el.insertBefore(op, marcador);
     });
+    ver = efeito(marcador);
     el.querySelector('.escala-remover-guarnicao-cancelar').addEventListener('click', function () {
       if (p.passos) {
         pilha.splice(pilha.length - p.passos, p.passos);

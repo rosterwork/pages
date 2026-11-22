@@ -6,8 +6,10 @@
    mesmo Salvar do rodapé largo). O nome abre ao lado o menu dele no
    dia (a parte do dia do lápis da aba Funções, escalas-painel-linha-menu.js ›
    menuDaCelula, com o Abrir o painel do dia); as linhas riscadas têm
-   o menu delas, a troca, o afastamento e a autorização de viagem só o
-   Abrir o painel, e a da
+   o menu delas (a de quem saiu numa troca: Cancelar a troca, que abre
+   no painel o Remover deste dia de quem entrou, e Remover da guarnição,
+   ou Mudar e Cancelar a saída, com este dia como o último serviço), o
+   afastamento e a autorização de viagem só o Abrir o painel, e a da
    extra, para o administrador da companhia, a caixa da extra
    (escalas-celula-extra.js). O pelotão abre Adicionar neste dia,
    Adicionar à guarnição (a letra do dia) e Abrir o painel do dia; o
@@ -26,10 +28,11 @@
    (painelNoDia); no dia do painel, a caixa trabalha no rascunho dele
    (sub.ouvir), e o que muda numa aparece na outra. O dia de
    mais de 7 dias atrás abre a caixa com o aviso (o painel só por
-   ela; com o painel aberto, ele vai para o dia); quem só lê, o dia na
-   fila do recálculo e o Calendário do celular abrem o painel (no
-   celular, o painel aberto também). Não cria HTML nem escreve
-   estilo.
+   ela; com o painel aberto, ele vai para o dia); o dia na fila do
+   recálculo também, e a caixa vira o menu do que foi clicado quando
+   ele fica pronto; quem só lê e o Calendário do celular abrem o
+   painel (no celular, o painel aberto também). Não cria HTML nem
+   escreve estilo.
    RosterWork.escalasCelulaEditar.
    ============================================================ */
 (function () {
@@ -44,7 +47,8 @@
     ['.linha-escalado--saiu', 'saida'],
     ['.linha-escalado--remanejado', 'fora'],
     ['.linha-escalado--fora-vermelho, .linha-escalado--fora-aviso', 'fora-escala'],
-    ['.linha-escalado--trocado, .linha-escalado--afastamento, .linha-escalado--viagem, .linha-escalado--fora', 'nada']
+    ['.linha-escalado--trocado', 'trocado'],
+    ['.linha-escalado--afastamento, .linha-escalado--viagem, .linha-escalado--fora', 'nada']
   ];
   var RISCADAS = '.linha-escalado--folga, .linha-escalado--trocado, .linha-escalado--remanejado, .linha-escalado--mudou-dia, .linha-escalado--saiu, .linha-escalado--afastamento, .linha-escalado--viagem, .linha-escalado--fora';
   /* a caixa do pelotão abre ao lado dele, com o topo 8px abaixo do topo do pelotão (na altura do nome e da faixa) */
@@ -80,16 +84,17 @@
 
   function painelAberto() { return !!(RW.painel && RW.painel.estaAberto()); }
 
-  /* a célula edita este dia? 'antigo': o de mais de 7 dias atrás (a caixa do aviso); false: o painel abre (ou vai para o
-     dia), como sempre */
+  /* a célula edita este dia? 'antigo': o de mais de 7 dias atrás (a caixa do aviso); 'atualizando': o que a fila do
+     recálculo ainda vai refazer (a caixa do aviso, que vira o menu quando o dia fica pronto); false: o painel abre (ou vai
+     para o dia), como sempre */
   function podeNaCelula(cel) {
     if (!naEscala(cel) || !cel.classList.contains('escala-mes-celula')) return false;
     if (painelAberto() && RW.celular && RW.celular()) return false;   // no celular, o painel cobre a tela
     var uid = cel.dataset.unidadeId, iso = cel.dataset.iso;
     if (!RW.sessao || !RW.sessao.podeAdministrar('pelotao', uid)) return false;
-    if (RW.escalaAtualizando && RW.escalaAtualizando.pendente(uid, iso)) return false;
     if (RW.celular && RW.celular() && cel.closest('.escala-calendario-unidade')) return false;
     if (iso < limite()) return painelAberto() ? false : 'antigo';
+    if (RW.escalaAtualizando && RW.escalaAtualizando.pendente(uid, iso)) return painelAberto() ? false : 'atualizando';
     return true;
   }
 
@@ -251,6 +256,10 @@
         (u.militares || []).forEach(function (x) { if (!pm && x.cpf === cpf && x.remanejado && String(x.remanejado.de) === String(a.unidadeId)) pm = x; });
       });
       if (pm) return Object.assign(base, { tipo: 'fora', militar: { cpf: cpf, grad: pm.grad, nome: pm.nome, periodos: [] }, origem: pm.remanejado.de_nome || '' });
+    } else if (a.linha === 'trocado') {
+      /* quem saiu numa troca: as trocas dele no dia (a leitura do dia, trocados) */
+      var t = (dados.trocados || []).filter(de);
+      if (t.length) return Object.assign(base, { tipo: 'trocado', militar: { cpf: cpf, grad: t[0].grad, nome: t[0].nome, periodos: [] }, trocas: t });
     } else if (a.linha === 'militar') {
       var mil = api().militarDoDia(cpf);
       if (mil) {
@@ -336,6 +345,7 @@
     var sob = RW.escalasCelulaSobreavisoCaixa ? RW.escalasCelulaSobreavisoCaixa.alvo(ev, cel) : null;
     if (sob && !sob.pode) return false;
     if (pode === 'antigo') { avisoAntigo(cel); return true; }
+    if (pode === 'atualizando') { avisoAtualizando(cel, ev.target.closest('.linha-escalado[data-cpf]')); return true; }
     if (sob) { cliqueNoSobreaviso(cel, sob); return true; }
     var linha = ev.target.closest('.linha-escalado[data-cpf]');
     if (!linha || linha.closest('.escala-mes-celula') !== cel) cliqueNoBloco(cel);
@@ -349,6 +359,26 @@
     fecharTudo();
     RW.caixaFlutuante.aviso({ peca: pecaDoPelotao(cel), topo: TOPO_PELOTAO, texto: msg().diaAntigo,
       titulo: L().noDia(d.unidadeNome, diaMes(d.iso)), aoPainel: function () { RW.escalasPainel.abrirDia(d, null); } });
+  }
+
+  /* o dia que a fila do recálculo ainda vai refazer: a caixa do pelotão com o aviso (ninguém mexe num dia que vai mudar);
+     o painel abre só pelo item dela. Quando o dia fica pronto, com a caixa ainda aberta, o clique segue para o menu do
+     nome clicado (o mesmo militar no dia refeito) ou, sem ele, para o do pelotão */
+  function avisoAtualizando(cel, linha) {
+    var d = diaDe(cel), cpf = linha ? linha.getAttribute('data-cpf') : null;
+    fecharTudo();
+    var caixa = RW.caixaFlutuante.aviso({ peca: pecaDoPelotao(cel), topo: TOPO_PELOTAO, texto: msg().diaAtualizandoCaixa,
+      titulo: L().noDia(d.unidadeNome, diaMes(d.iso)), aoPainel: function () { RW.escalasPainel.abrirDia(d, null); } });
+    if (!caixa) return;
+    RW.escalaAtualizando.esperar(d.unidadeId, d.iso).then(function () {
+      if (!caixa.aberta()) return;   // a caixa fechou antes: nada a seguir
+      var agora = document.querySelector('.escala-mes-celula[data-unidade-id="' + d.unidadeId + '"][data-iso="' + d.iso + '"]');
+      if (!agora) { caixa.fechar(); return; }
+      var nome = cpf ? agora.querySelector('.linha-escalado[data-cpf="' + cpf + '"]') : null;
+      caixa.fechar();
+      if (nome) cliqueNoNome(agora, nome);
+      else cliqueNoBloco(agora);
+    });
   }
 
   /* o Oficial de Área do título do dia (escalas-celula-oficial.js): a caixa dele, no dia da companhia (d); cpf: o do título */

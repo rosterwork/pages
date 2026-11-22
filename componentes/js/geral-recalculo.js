@@ -1,11 +1,12 @@
 /* ============================================================
    RECÁLCULO EM BLOCOS — esvazia a fila do recálculo da escala.
    Quando um salvamento muda um influenciador (viatura, modelo,
-   regra, ritmo, atestado, etc.), o banco recalcula só o 1º bloco
-   na hora e enfileira o resto. Aqui chamamos `recalculo_fila_processar`
-   em laço (blocos rápidos, ~meio segundo cada) até a fila esvaziar.
-   Assim nenhuma requisição carrega a escala inteira (some o risco de
-   estouro de tempo/503).
+   regra, ritmo, atestado, etc.), o banco põe os dias seguintes na
+   fila sem refazer nada na hora (a Extrajornada refaz na hora só os
+   dias dela). Aqui chamamos `recalculo_fila_processar` em laço
+   (blocos de 5 dias) até a fila esvaziar. É trabalho de fundo: a
+   gravação de alguém na escala o interrompe, e o bloco cedido espera
+   um pouco antes do próximo.
    - Ao SALVAR: o `esconderVeuGlobal` marca pendência e esvazia em 2º plano.
    - Com a Escala aberta: ela mostra na hora, com a borda amarela nos dias
      que ainda podem mudar, e ajuda a esvaziar (escalas-atualizando.js).
@@ -20,12 +21,21 @@
   var promessa = null;    /* laço em andamento (chamadores concorrentes esperam a MESMA conclusão) */
   var pendente = false;   /* pode haver recálculo a completar; some quando a fila zera */
 
+  /* blocos de 5 dias: cada pedaço prende os dias por pouco tempo. O bloco que cedeu a vez (alguém gravou na escala e o
+     banco o interrompeu) espera ESPERA_CEDEU_MS antes do próximo, para não disputar com a gravação. Com outro trabalho de
+     fundo rodando (ocupado), o banco responde sem pendência: o laço para, e a conferência da Escala pede de novo depois */
+  var DIAS_POR_BLOCO = 5;
+  var ESPERA_CEDEU_MS = 3000;
+
   function umBloco() {
     return RosterWork.apiFetch('/rest/v1/rpc/recalculo_fila_processar', {
-      metodo: 'POST', corpo: { p_limite_dias: 15 }
+      metodo: 'POST', corpo: { p_limite_dias: DIAS_POR_BLOCO }
     }).then(function (resp) {
       if (!resp.ok) return false;   /* falhou: deixa o resto p/ a próxima vez */
-      return resp.json().then(function (r) { return !!(r && r.pendente); });
+      return resp.json().then(function (r) {
+        if (r && r.cedeu) return new Promise(function (seguir) { setTimeout(function () { seguir(true); }, ESPERA_CEDEU_MS); });
+        return !!(r && r.pendente);
+      });
     });
   }
 

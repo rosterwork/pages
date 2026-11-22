@@ -976,7 +976,8 @@
 
   /* o dia de uma unidade sem a célula (a companhia do Oficial de Área, que pode não estar na tela; o lápis dele no
      pelotão), como abrir outra célula (só o formulário da troca preenchido pergunta). opcoes.abrirMenuDe: o cpf de quem fica
-     com o menu aberto quando a lista chegar; opcoes.fazerAcao: em vez do menu, o item dele já feito (a célula da grade);
+     com o menu aberto quando a lista chegar; opcoes.fazerAcao: em vez do menu, o item dele já feito (a célula da grade;
+     { acao, trocaId } no Cancelar a troca da linha riscada, o Remover deste dia já na parte da troca);
      opcoes.adicionar: o cpf de quem já vem escolhido no Adicionar estagiário (o dia vazio da grade dos estagiários) */
   function abrirDia(dia, secao, opcoes) {
     if (trocaSuja()) { confirmarDescarte(function () { abrirDiaAgora(dia, secao, null, opcoes); }, 0); return; }

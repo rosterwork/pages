@@ -240,9 +240,9 @@
       RW.painel.fechar();
       if (RW.extrajornadaOrg) RW.extrajornadaOrg.resumo(r);
       aoSalvar();
-    }, function (e) {
+    }, function () {
       espera.parar();
-      RW.avisar({ tipo: 'erro', mensagem: (e && e.message) || RW.mensagens.geral.semConexao });
+      RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
   }
 

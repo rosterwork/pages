@@ -235,9 +235,9 @@
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       resumo(r);
       RW.extrajornada.recarregar();
-    }, function (e) {
+    }, function () {
       espera.parar();
-      RW.avisar({ tipo: 'erro', mensagem: (e && e.message) || RW.mensagens.geral.semConexao });
+      RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
     });
   }
 

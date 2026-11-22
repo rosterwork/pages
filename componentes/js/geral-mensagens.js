@@ -864,6 +864,9 @@
       erroComNomes: function (texto, nomes) { return texto + ': ' + juntarComE(nomes); },
       /* a caixa da célula no dia de mais de 7 dias atrás, para quem administra (escalas-celula-editar.js) */
       diaAntigo: 'Este dia é de mais de 7 dias atrás e não pode mais mudar.',
+      /* a caixa da célula no dia que a fila do recálculo ainda vai refazer (escalas-celula-editar.js): vira o menu quando o
+         dia fica pronto */
+      diaAtualizandoCaixa: 'Atualizando este dia. O menu abre sozinho assim que ficar pronto.',
       /* o título do dia nas grades: o dia com escala e ninguém na função de Oficial de Área (escalas-celula.js); o horário de
          cada Oficial (e de cada pedaço sem ninguém) quando não é o dia todo, como o do Oficial de Praia ("08h às 20h") */
       semOficial: 'Sem Oficial de Área',
@@ -2824,79 +2827,71 @@
         passos.push('Atualizando o dia na grade');
         return { passos: passos };
       },
-      /* o Dia que muda a escala: o banco refaz também os dias seguintes (o rodízio conta o que cada um fez no dia) */
-      salvarDiaSeguintes: function (v) {
-        var passos = ['Gravando as alterações de ' + v.dia];
-        if (v.refaz) passos.push('Refazendo a distribuição do dia');
-        passos.push('Refazendo os próximos 7 dias do ' + v.unidade, 'Atualizando os dias na grade');
-        return { titulo: 'Salvando a escala de ' + v.dia, passos: passos,
-          pe: 'O resto do período continua sozinho, e você pode seguir trabalhando.' };
-      },
-      /* o rascunho de vários dias (v.dias: as datas, 'DD/MM'; v.refaz: algum deles refaz os dias seguintes) */
+      /* o rascunho de vários dias (v.dias: as datas, 'DD/MM'; v.refaz: algum deles muda os dias seguintes, que vão para a fila) */
       salvarDias: function (v) {
         var um = v.dias.length === 1;
         var passos = ['Gravando as alterações de ' + (um ? v.dias[0] : 'cada dia')];
-        if (v.refaz) passos.push('Refazendo os dias seguintes');
+        if (v.refaz) passos.push('Pondo os dias seguintes na fila');
         passos.push('Atualizando os dias na grade');
         return { titulo: 'Salvando a escala de ' + (um ? v.dias[0] : v.dias.length + ' dias'), passos: passos,
-          pe: v.refaz ? 'O resto do período continua sozinho, e você pode seguir trabalhando.' : '' };
+          pe: v.refaz ? 'Os dias seguintes se ajustam sozinhos em seguida, com a borda amarela, e você pode seguir trabalhando.' : '' };
       },
       salvarCiclo: function (v) {
-        return { titulo: 'Salvando a mudança nas guarnições', passos: ['Gravando a mudança nas guarnições', 'Refazendo os próximos 7 dias do ' + v.unidade, 'Atualizando os dias na grade'],
-          pe: 'O resto do período continua sozinho, e você pode seguir trabalhando.' };
+        return { titulo: 'Salvando a mudança nas guarnições', passos: ['Gravando a mudança nas guarnições', 'Pondo os dias seguintes do ' + v.unidade + ' na fila', 'Atualizando os dias na grade'],
+          pe: 'Os dias seguintes se ajustam sozinhos em seguida, com a borda amarela, e você pode seguir trabalhando.' };
       },
-      salvarExtra: { titulo: 'Salvando a extrajornada', passos: ['Gravando a mudança na extrajornada', 'Refazendo os próximos 7 dias da escala', 'Atualizando os dias na grade'],
-        pe: 'O resto do período continua sozinho, e você pode seguir trabalhando.' },
+      salvarExtra: { titulo: 'Salvando a extrajornada', passos: ['Gravando a mudança na extrajornada', 'Refazendo os dias da extra', 'Atualizando os dias na grade'],
+        pe: 'Os dias seguintes se ajustam sozinhos em seguida, com a borda amarela, e você pode seguir trabalhando.' },
       salvarSobreaviso: { titulo: 'Salvando o sobreaviso', passos: ['Gravando o sobreaviso', 'Refazendo a fila dos dias seguintes', 'Atualizando os dias na grade'] },
-      removerTroca: { titulo: 'Salvando a mudança na troca', passos: ['Gravando a mudança', 'Refazendo os dias da troca e os próximos 7 dias', 'Atualizando a grade'],
-        pe: 'O resto do período continua sozinho.' },
+      removerTroca: { titulo: 'Salvando a mudança na troca', passos: ['Gravando a mudança', 'Refazendo os dias da troca', 'Atualizando a grade'],
+        pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
       /* folgas */
       folgaAprovar: function (v) {
-        return { titulo: 'Aprovando a folga do ' + v.militar, passos: ['Gravando a aprovação', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo o dia e os próximos 7 dias'],
-          pe: 'O resto do período continua sozinho.' };
+        return { titulo: 'Aprovando a folga do ' + v.militar, passos: ['Gravando a aprovação', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo o dia'],
+          pe: 'Os dias seguintes se ajustam sozinhos em seguida.' };
       },
       folgaDar: function (v) {
-        return { titulo: 'Dando a folga ao ' + v.militar, passos: ['Gravando a folga', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo o dia e os próximos 7 dias'],
-          pe: 'O resto do período continua sozinho.' };
+        return { titulo: 'Dando a folga ao ' + v.militar, passos: ['Gravando a folga', 'Tirando o militar do serviço de ' + v.dia, 'Refazendo o dia'],
+          pe: 'Os dias seguintes se ajustam sozinhos em seguida.' };
       },
       folgaCancelar: function (v) {
-        return { titulo: 'Cancelando a folga', passos: ['Gravando o cancelamento', 'Devolvendo o militar ao serviço de ' + v.dia, 'Refazendo o dia e os próximos 7 dias'],
-          pe: 'O resto do período continua sozinho.' };
+        return { titulo: 'Cancelando a folga', passos: ['Gravando o cancelamento', 'Devolvendo o militar ao serviço de ' + v.dia, 'Refazendo o dia'],
+          pe: 'Os dias seguintes se ajustam sozinhos em seguida.' };
       },
       folgaAnalisar: { passos: ['Buscando o serviço do militar', 'Testando a folga na escala, sem gravar', 'Comparando o antes e o depois'] },
       /* trocas */
       trocaAnalisar: { passos: ['Buscando os serviços dos dois militares', 'Testando a troca na escala, sem gravar', 'Comparando o antes e o depois'] },
-      trocaAprovar: { titulo: 'Aprovando a troca', passos: ['Gravando a aprovação', 'Refazendo os dias da troca e os próximos 7 dias', 'Atualizando a lista'],
-        pe: 'O resto do período continua sozinho.' },
-      trocaCancelar: { titulo: 'Cancelando a troca', passos: ['Gravando o cancelamento', 'Refazendo os dias da troca e os próximos 7 dias', 'Atualizando a lista'],
-        pe: 'O resto do período continua sozinho.' },
-      trocaRegistrar: { titulo: 'Registrando as trocas', passos: ['Gravando as trocas', 'Refazendo os dias das trocas e os próximos 7 dias', 'Atualizando a lista'],
-        pe: 'O resto do período continua sozinho.' },
-      trocaEditar: { titulo: 'Salvando a alteração da troca', passos: ['Gravando a alteração', 'Refazendo os dias da troca e os próximos 7 dias', 'Atualizando a lista'],
-        pe: 'O resto do período continua sozinho.' },
+      trocaAprovar: { titulo: 'Aprovando a troca', passos: ['Gravando a aprovação', 'Refazendo os dias da troca', 'Atualizando a lista'],
+        pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
+      trocaCancelar: { titulo: 'Cancelando a troca', passos: ['Gravando o cancelamento', 'Refazendo os dias da troca', 'Atualizando a lista'],
+        pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
+      trocaRegistrar: { titulo: 'Registrando as trocas', passos: ['Gravando as trocas', 'Refazendo os dias das trocas', 'Atualizando a lista'],
+        pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
+      trocaEditar: { titulo: 'Salvando a alteração da troca', passos: ['Gravando a alteração', 'Refazendo os dias da troca', 'Atualizando a lista'],
+        pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
       /* usuários */
       afastamento: function (v) {
-        return { titulo: 'Salvando ' + v.oQue + ' do ' + v.militar, passos: ['Gravando ' + v.oQue, 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' };
+        return { titulo: 'Salvando ' + v.oQue + ' do ' + v.militar, passos: ['Gravando ' + v.oQue, 'Pondo os dias da escala na fila', 'Atualizando a ficha'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' };
       },
       /* a página Afastamentos: o Refazendo só quando mudam os dias de quem está na escala (v.refaz) */
       afastamentosSalvar: function (v) {
         return v.refaz
-          ? { titulo: 'Salvando os afastamentos', passos: ['Gravando os afastamentos', 'Refazendo os próximos 7 dias da escala', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' }
+          ? { titulo: 'Salvando os afastamentos', passos: ['Gravando os afastamentos', 'Pondo os dias da escala na fila', 'Atualizando a tela'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' }
           : { titulo: 'Salvando os afastamentos', passos: ['Gravando os afastamentos', 'Atualizando a tela'] };
       },
-      promover: { titulo: 'Salvando a promoção', passos: ['Gravando a promoção', 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' },
-      transferir: { titulo: 'Salvando a transferência', passos: ['Gravando a transferência', 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' },
-      dadosMilitar: { titulo: 'Salvando os dados', passos: ['Gravando os dados', 'Refazendo os próximos 7 dias da escala', 'Atualizando a ficha'], pe: 'O resto do período continua sozinho.' },
-      correcao: { titulo: 'Aprovando a correção', passos: ['Gravando a aprovação', 'Refazendo os próximos 7 dias da escala', 'Atualizando a lista'], pe: 'O resto do período continua sozinho.' },
-      antiguidade: { titulo: 'Salvando a antiguidade', passos: ['Gravando a nova ordem', 'Refazendo os próximos 7 dias da escala', 'Atualizando a lista'], pe: 'O resto do período continua sozinho.' },
+      promover: { titulo: 'Salvando a promoção', passos: ['Gravando a promoção', 'Pondo os dias da escala na fila', 'Atualizando a ficha'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
+      transferir: { titulo: 'Salvando a transferência', passos: ['Gravando a transferência', 'Pondo os dias da escala na fila', 'Atualizando a ficha'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
+      dadosMilitar: { titulo: 'Salvando os dados', passos: ['Gravando os dados', 'Pondo os dias da escala na fila', 'Atualizando a ficha'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
+      correcao: { titulo: 'Aprovando a correção', passos: ['Gravando a aprovação', 'Pondo os dias da escala na fila', 'Atualizando a lista'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
+      antiguidade: { titulo: 'Salvando a antiguidade', passos: ['Gravando a nova ordem', 'Pondo os dias da escala na fila', 'Atualizando a lista'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
       /* ajustes, extrajornada e impressão */
       ajustesSalvar: function (v) {
-        return { titulo: 'Salvando a distribuição do ' + v.unidade, passos: ['Gravando a distribuição', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' };
+        return { titulo: 'Salvando a distribuição do ' + v.unidade, passos: ['Gravando a distribuição', 'Pondo os dias da escala na fila', 'Atualizando a tela'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' };
       },
-      ajustesAgendadaData: { titulo: 'Mudando a data da mudança agendada', passos: ['Gravando a nova data', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' },
-      ajustesAgendadaCancelar: { titulo: 'Cancelando a mudança agendada', passos: ['Gravando o cancelamento', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' },
+      ajustesAgendadaData: { titulo: 'Mudando a data da mudança agendada', passos: ['Gravando a nova data', 'Pondo os dias da escala na fila', 'Atualizando a tela'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
+      ajustesAgendadaCancelar: { titulo: 'Cancelando a mudança agendada', passos: ['Gravando o cancelamento', 'Pondo os dias da escala na fila', 'Atualizando a tela'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
       estagiosSalvar: function (v) {
-        return { titulo: 'Salvando os estágios do ' + v.unidade, passos: ['Gravando os estágios', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' };
+        return { titulo: 'Salvando os estágios do ' + v.unidade, passos: ['Gravando os estágios', 'Pondo os dias da escala na fila', 'Atualizando a tela'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' };
       },
       /* soOnde: só o Onde aparece mudou (a fila não é refeita) */
       ajustesSobreaviso: function (v) {
@@ -2905,7 +2900,7 @@
       },
       ajustesOpVerao: { titulo: 'Salvando a Operação Verão', passos: ['Gravando as respostas', 'Atualizando a tela'] },
       ajustesExtrajornada: { titulo: 'Salvando as regras da extrajornada', passos: ['Gravando as regras', 'Atualizando a tela'] },
-      ajustesPontuacao: { titulo: 'Salvando a pontuação', passos: ['Gravando os pesos', 'Refazendo os próximos 7 dias', 'Atualizando a tela'], pe: 'O resto do período continua sozinho.' },
+      ajustesPontuacao: { titulo: 'Salvando a pontuação', passos: ['Gravando os pesos', 'Pondo os dias da escala na fila', 'Atualizando a tela'], pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
       /* a prévia da Pontuação: as duas contas de cada unidade (com os pesos que valem e com os da tela) */
       pontuacaoPrevia: function (v) {
         return { passos: v.unidades.map(function (u) { return 'Refazendo os próximos 14 dias ' + (/ª/.test(u) ? 'da ' : 'do ') + u; }) };
@@ -2965,12 +2960,12 @@
       /* com o mês lançado, as extras mudadas vão para a escala, que é refeita do primeiro dia mudado em diante */
       extraDistribuicao: function (v) {
         return v.refaz
-          ? { titulo: 'Salvando a distribuição da extrajornada', passos: ['Gravando as extras', 'Refazendo os próximos 7 dias da escala'],
-              pe: 'O resto do período continua sozinho.' }
+          ? { titulo: 'Salvando a distribuição da extrajornada', passos: ['Gravando as extras', 'Refazendo os dias das extras'],
+              pe: 'Os dias seguintes se ajustam sozinhos em seguida.' }
           : { titulo: 'Salvando a distribuição da extrajornada', passos: ['Gravando as extras'] };
       },
-      extraLancar: { titulo: 'Lançando a extrajornada', passos: ['Gravando o lançamento', 'Refazendo os próximos 7 dias da escala'],
-        pe: 'O resto do período continua sozinho.' },
+      extraLancar: { titulo: 'Lançando a extrajornada', passos: ['Gravando o lançamento', 'Refazendo os dias das extras'],
+        pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
       sysbmPreparar: function (v) { return { titulo: 'Preparando o envio ao SYSBM', passos: [v.termo ? 'Conferindo o termo' : 'Buscando a escala do dia'] }; },
       bugLigar: { titulo: 'Ligando a mensagem ao bug', passos: ['Gravando a ligação'] },
       bugSituacao: { titulo: 'Salvando o bug', passos: ['Gravando a situação'] },
