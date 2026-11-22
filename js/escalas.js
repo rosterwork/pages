@@ -158,8 +158,9 @@
   }
 
   /* mostra os subgrupos do modo ativo (Minha escala, Dia e Militares não têm subgrupo); a Minha escala não
-     tem o Imprimir nem o traço (sem busca e filtros antes dele, a Legenda fica sozinha à direita) */
-  function aplicarModo() {
+     tem o Imprimir nem o traço (sem busca e filtros antes dele, a Legenda fica sozinha à direita). Com semDesenhar, quem
+     chamou desenha logo depois (um desenho só) */
+  function aplicarModo(semDesenhar) {
     var modo = modoAtual();
     mostrar('#escala-sub-mes', modo === 'mes');
     mostrar('#escala-sub-colunas', modo === 'colunas');
@@ -178,7 +179,7 @@
       mostrar('#escala-sub-unidades', false);
       atualizarPeriodo();
     }
-    renderizarCorpo();
+    if (!semDesenhar) renderizarCorpo();
   }
 
   /* ---------- abas de unidade (multi-seleção pelo geral-abas: trilho com data-abas-multi) ---------- */
@@ -825,7 +826,9 @@
         irPara: irParaDia
       });
     }
-    aplicarModo();        // estado inicial (a última visão usada, ou o Dia do HTML) + preenche o período
+    /* estado inicial (a última visão usada, ou o Dia do HTML) + preenche o período; com as unidades já lidas, quem
+       desenha é o carregarUnidades logo abaixo (montarUnidades), para a grade ser lida uma vez só */
+    aplicarModo(!!unidades);
     carregarUnidades();   // popula as abas de unidade em segundo plano
   }
 

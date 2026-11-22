@@ -3887,11 +3887,14 @@
           <button type="button" class="dropdown-item" data-acao="mudar-mudanca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg><span>Mudar o dia do serviço</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="folga-mudanca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg><span>Dar folga neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="desfazer-mudanca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-desfazer"/></svg><span>Desfazer a mudança</span></button>
-          <button type="button" class="dropdown-item" data-acao="mudar-saida"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg><span>Mudar a saída</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+          <button type="button" class="dropdown-item" data-acao="mudar-entrada"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg><span>Mudar a entrada na guarnição</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+          <button type="button" class="dropdown-item" data-acao="mudar-saida"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg><span>Mudar a saída da guarnição</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="cancelar-saida"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span>Cancelar a saída da guarnição</span></button>
           <button type="button" class="dropdown-item" data-acao="folga-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg><span>Dar folga neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-sair"/></svg><span>Remover deste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg><span class="escala-edicao-opcoes-painel oculto" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+          <button type="button" class="dropdown-item" data-acao="mudar-guarnicao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-mudanca"/></svg><span>Mudar de guarnição</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover-guarnicao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg><span>Remover da guarnição</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+          <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="cancelar-entrada"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg><span>Cancelar a entrada na guarnição</span></button>
         </div>
         <div class="dropdown-divisor escala-edicao-opcoes-traco"></div>
         <div class="escala-edicao-opcoes-parte" data-parte="ver">
@@ -4122,6 +4125,64 @@
     <label class="geral-opcao"><input type="radio" /><span>O último serviço é em <span class="escala-mudar-saida-data"></span></span></label>
   </template>
 
+  <!-- o Mudar de guarnição do menu da linha (escalas-painel-mudar-guarnicao.js): a pergunta embaixo da linha (na célula, na
+       caixa 2), em duas caixas. A primeira, o Último serviço na guarnição de agora (a letra vem do JS): os três dias do
+       Remover da guarnição (molde tpl-escala-mudar-saida-opcao). A segunda abre com a resposta dela, e o Cancelar vai junto:
+       o Quando entra, no campo de data padrão (digitar ou escolher no calendário, acesos só os dias de outra guarnição
+       depois do último serviço), e embaixo a folga até a entrada (cinza; menor que a de sempre, amarela; os textos vêm do
+       JS) e o que acontece com as trocas e folgas dele (molde tpl-escala-ciclo-efeito). O Cancelar fecha e volta tudo -->
+  <template id="tpl-escala-mudar-guarnicao">
+    <div class="escala-mudar-guarnicao">
+      <div class="grupo-caixa pergunta-linha">
+        <span class="rotulo-secao">Último serviço na guarnição <span class="escala-mudar-guarnicao-letra"></span></span>
+        <div class="escala-mudar-guarnicao-dias"></div>
+        <div class="pergunta-linha-acoes">
+          <button type="button" class="botao escala-mudar-guarnicao-cancelar">Cancelar</button>
+        </div>
+      </div>
+      <div class="grupo-caixa pergunta-linha escala-mudar-guarnicao-entra oculto">
+        <span class="rotulo-secao">Quando entra</span>
+        <label class="campo">
+          <input type="text" class="campo-entrada campo-entrada--pequeno escala-mudar-guarnicao-data" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off" aria-label="Quando entra" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <div class="nota escala-mudar-guarnicao-folga oculto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
+          <span class="nota-texto"></span>
+        </div>
+        <div class="nota nota--alerta escala-mudar-guarnicao-folga-menor oculto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+          <span class="nota-texto"></span>
+        </div>
+        <div class="escala-mudar-guarnicao-efeito"></div>
+      </div>
+    </div>
+  </template>
+  <!-- o Mudar a entrada na guarnição do menu do primeiro serviço (escalas-painel-mudar-entrada.js): a pergunta embaixo da
+       linha (na célula, na caixa 2). O Quando entra, no campo de data padrão já com a entrada de agora (digitar ou
+       escolher no calendário, acesos só os dias que a entrada pode ir), a nota da guarnição nova (só quando ela muda; o
+       texto vem do JS), o que acontece com as trocas e folgas dele (molde tpl-escala-ciclo-efeito) e o Cancelar, que
+       fecha e volta tudo -->
+  <template id="tpl-escala-mudar-entrada">
+    <div class="escala-mudar-entrada">
+      <div class="grupo-caixa pergunta-linha">
+        <span class="rotulo-secao">Quando entra</span>
+        <label class="campo">
+          <input type="text" class="campo-entrada campo-entrada--pequeno escala-mudar-entrada-data" inputmode="numeric" maxlength="10" placeholder="DD/MM/AAAA" autocomplete="off" aria-label="Quando entra" />
+          <span class="campo-erro-texto"></span>
+        </label>
+        <div class="nota escala-mudar-entrada-guarnicao oculto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg>
+          <span class="nota-texto"></span>
+        </div>
+        <div class="escala-mudar-entrada-efeito"></div>
+        <div class="pergunta-linha-acoes">
+          <button type="button" class="botao escala-mudar-entrada-cancelar">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <!-- o Onde (escalas-painel-quem.js): o posto e a função, cada um numa lista -->
   <template id="tpl-escala-onde">
     <div class="escala-onde">
@@ -4153,8 +4214,8 @@
   <!-- ===== Adicionar militar (sub-tela; escalas-painel-adicionar.js): as caixas de pergunta (o número vem do CSS), uma
        depois da outra e só as que valem. Como entra; Quem entra (o campo de militar, geral-combo-militar, com a lista do
        como; no dia, a Unidade e o Militar na mesma linha). No dia: o horário, onde fica (o molde comum tpl-escala-onde-fica)
-       e o banco de horas. Na guarnição do dia (a letra vem do JS; sem ela, "do dia"): o que acontece com as trocas, folgas
-       e extras de quem muda de guarnição (o molde comum tpl-escala-ciclo-efeito). O Adicionar estagiário usa o mesmo molde,
+       e o banco de horas. Na guarnição do dia (a letra vem do JS; sem ela, "do dia"): só quem está fora da escala, com a
+       nota de quando ele entra (quem já está numa guarnição muda pelo Mudar de guarnição). O Adicionar estagiário usa o mesmo molde,
        com o título dele, sem o Como entra e sem a Unidade. A resposta completa entra no rascunho ao vivo ===== -->
   <template id="tpl-escala-adicionar">
     <div class="subtela escala-adicionar">
@@ -4189,7 +4250,7 @@
           </div>
         </div>
         <span class="subtela-ajuda escala-adicionar-ajuda" data-como="dia">Quem tem horas livres no dia, de folga, no pelotão escolhido.</span>
-        <span class="subtela-ajuda escala-adicionar-ajuda" data-como="ciclo">Quem está fora da escala e quem é de outra guarnição, para mudar de guarnição.</span>
+        <span class="subtela-ajuda escala-adicionar-ajuda" data-como="ciclo">Quem está fora da escala. Quem já está numa guarnição muda pelo nome dele, no Mudar de guarnição.</span>
         <span class="subtela-ajuda escala-adicionar-ajuda" data-como="estagiario">Quem participa de um estágio deste pelotão e tem horas livres no dia.</span>
         <div class="nota escala-adicionar-assume oculto">
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
@@ -4200,14 +4261,6 @@
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span class="nota-texto"></span>
         </div>
-      </div>
-      <!-- quem muda de guarnição com o descanso menor que o de sempre: a data com o descanso de sempre (a sugestão) ou o
-           dia aberto (escalas-painel-adicionar.js › quandoEntra; as datas vêm do JS) -->
-      <div class="grupo-caixa subtela-pergunta escala-guarnicao-quando escala-adicionar-quando oculto">
-        <span class="rotulo-secao">Quando entra</span>
-        <span class="subtela-ajuda">O último serviço dele na guarnição <span class="escala-guarnicao-quando-de"></span> é em <span class="escala-guarnicao-quando-ultimo"></span>.</span>
-        <label class="geral-opcao"><input type="radio" value="sempre" /><span>Em <span class="escala-guarnicao-quando-sempre"></span>, com o descanso de sempre</span></label>
-        <label class="geral-opcao"><input type="radio" value="menor" /><span>Em <span class="escala-guarnicao-quando-menor"></span>, com o descanso menor</span></label>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-adicionar-horario oculto">
         <span class="rotulo-secao">Horário</span>
@@ -4228,16 +4281,10 @@
         <label class="geral-opcao"><input type="radio" value="sim" /><span class="escala-adicionar-contabilizar"></span></label>
         <label class="geral-opcao"><input type="radio" value="nao" /><span>Não contabilizar</span></label>
       </div>
-      <div class="nota nota--alerta escala-adicionar-mudar oculto">
-        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-        <span class="nota-texto"></span>
-      </div>
       <div class="nota escala-adicionar-ciclo-info oculto">
         <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
         <span class="nota-texto"></span>
       </div>
-      <!-- o que acontece com quem muda de guarnição (molde tpl-escala-ciclo-efeito) entra aqui -->
-      <div class="escala-adicionar-efeito"></div>
     </div>
   </template>
 

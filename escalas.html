@@ -864,7 +864,7 @@
 </template>
 
 <!-- a caixa 2 do Adicionar à guarnição (a peça do Adicionar militar do painel, escalas-painel-adicionar.js): o campo de quem
-     pode entrar, a frase de quem entra ou muda e, para quem muda, o que acontece com as trocas, folgas e extras dele -->
+     está fora da escala e a frase de quando ele entra (quem já está numa guarnição muda pelo Mudar de guarnição) -->
 <template id="tpl-escala-celula-guarnicao">
   <div class="escala-celula-guarnicao">
     <div class="dropdown campo-combo escala-celula-adicionar">
@@ -877,23 +877,10 @@
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
       <span class="nota-texto"></span>
     </div>
-    <!-- quem muda com o descanso menor que o de sempre: a mesma pergunta do Adicionar militar do painel -->
-    <div class="campo escala-guarnicao-quando escala-celula-guarnicao-quando oculto">
-      <span class="campo-rotulo">Quando entra</span>
-      <span class="campo-ajuda">O último serviço dele na guarnição <span class="escala-guarnicao-quando-de"></span> é em <span class="escala-guarnicao-quando-ultimo"></span>.</span>
-      <label class="geral-opcao"><input type="radio" value="sempre" /><span>Em <span class="escala-guarnicao-quando-sempre"></span>, com o descanso de sempre</span></label>
-      <label class="geral-opcao"><input type="radio" value="menor" /><span>Em <span class="escala-guarnicao-quando-menor"></span>, com o descanso menor</span></label>
-    </div>
-    <div class="nota nota--alerta escala-celula-guarnicao-mudar oculto">
-      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
-      <span class="nota-texto"></span>
-    </div>
     <div class="nota escala-celula-guarnicao-info oculto">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-historico"/></svg>
       <span class="nota-texto"></span>
     </div>
-    <!-- o que acontece com quem muda de guarnição (molde tpl-escala-ciclo-efeito) entra aqui -->
-    <div class="escala-celula-guarnicao-efeito"></div>
   </div>
 </template>
 

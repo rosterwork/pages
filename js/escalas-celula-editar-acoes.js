@@ -14,10 +14,13 @@
      folga, Muda para outra data ou Volta ao serviço), na linha riscada
      da mudança (pelo dia de antes) o Mudar o dia do serviço
      (escalas-painel-mudar-dia › criar com mudancaDaFolga) e o Dar folga
-     neste dia (escalas-painel-remover › analisarFolgaDaMudanca), Remover
-     da guarnição (escalas-painel-ciclo › perguntarSaida) e Mudar a saída
-     (escalas-painel-linha-menu › mudarSaida);
+     neste dia (escalas-painel-remover › analisarFolgaDaMudanca), Mudar
+     de guarnição (escalas-painel-mudar-guarnicao › perguntar), Remover
+     da guarnição (escalas-painel-ciclo › perguntarSaida), Mudar a saída
+     (escalas-painel-linha-menu › mudarSaida) e Mudar a entrada
+     (escalas-painel-mudar-entrada › perguntar);
    - na hora, com o Desfazer: Cancelar a saída da guarnição, Cancelar a
+     entrada na guarnição (escalas-painel-mudar-entrada › cancelar), Cancelar a
      folga e Desfazer a mudança (escalas-painel-linha-menu, os mesmos do
      painel; uma linha riscada por folga e por mudança de dia), o
      pontual que sai sem pergunta e a mudança de dia ainda no rascunho;
@@ -88,7 +91,7 @@
      'desistir' (o X e o Esc da caixa): o que o item fez sai, e o dia e as guarnições voltam a como estavam antes dele */
   function terminar(a, modo) {
     var acao = a.acao, tinha = a.vivo, desistir = modo === 'desistir';
-    if (acao === 'remover-guarnicao' || acao === 'mudar-saida') {
+    if (acao === 'remover-guarnicao' || acao === 'mudar-saida' || acao === 'mudar-guarnicao' || acao === 'mudar-entrada') {
       RW.escalasPainelCiclo.fecharPergunta(modo === 'largar' || desistir ? modo : 'guardar');
     }
     var metade = tinha && (desistir || ((acao === 'horario' || acao === 'remanejado' || acao === 'mudanca' || !!a.perguntas
@@ -429,8 +432,9 @@
 
   /* ---------- a caixa 2 das perguntas do painel (a guarnição, a folga e a mudança) ---------- */
 
-  /* Remover da guarnição e Mudar a saída: a pergunta Último serviço do painel, dentro da caixa 2 (o Cancelar dela volta e
-     fecha a caixa 2) */
+  /* Remover da guarnição, Mudar a saída, Mudar de guarnição e Mudar a entrada: a pergunta do painel (o Último serviço e,
+     no Mudar de guarnição e no Mudar a entrada, o Quando entra), dentro da caixa 2 (o Cancelar dela volta e fecha a
+     caixa 2) */
   function ultimoServico(botao, c, acao) {
     var a = c.a, caixa = RW.tpl('tpl-escala-celula-perguntas');
     if (!caixa) return;
@@ -438,6 +442,8 @@
     a.botao = botao;
     var opcoes = { dentro: caixa, aoCancelar: function () { if (c.a === a) { a.acao = null; a.caixa.fecharSegunda(); } } };
     if (acao === 'mudar-saida') RW.escalasPainelLinhaMenu.mudarSaida(a.cfg, opcoes);
+    else if (acao === 'mudar-guarnicao') RW.escalasPainelMudarGuarnicao.perguntar(a.cfg.militar, null, opcoes);
+    else if (acao === 'mudar-entrada') RW.escalasPainelMudarEntrada.perguntar(a.cfg.militar, null, opcoes);
     else RW.escalasPainelCiclo.perguntarSaida(a.cfg.militar, null, opcoes);
     a.caixa.segunda(botao, caixa, textoDo(botao));
   }
@@ -529,6 +535,7 @@
     'remover-dia': function (botao, c) { remover(botao, c, false); },
     'folga-dia': function (botao, c) { remover(botao, c, true); },
     'remover-guarnicao': function (botao, c) { ultimoServico(botao, c, 'remover-guarnicao'); },
+    'mudar-guarnicao': function (botao, c) { ultimoServico(botao, c, 'mudar-guarnicao'); },
     'mudar-saida': function (botao, c) { ultimoServico(botao, c, 'mudar-saida'); },
     /* a folga e a mudança de dia da linha riscada, na hora (o Desfazer volta): os mesmos do painel */
     'cancelar-folga': function (botao, c) {
@@ -544,6 +551,11 @@
     /* a saída marcada sai do rascunho, na hora (o Desfazer volta): o mesmo do painel */
     'cancelar-saida': function (botao, c) {
       RW.escalasPainelLinhaMenu.cancelarSaida(c.a.cfg);
+      c.fecharTudo();
+    },
+    'mudar-entrada': function (botao, c) { ultimoServico(botao, c, 'mudar-entrada'); },
+    'cancelar-entrada': function (botao, c) {
+      RW.escalasPainelMudarEntrada.cancelar(c.a.cfg.militar);
       c.fecharTudo();
     },
     'mudar-dia': mudarDia,
@@ -924,8 +936,8 @@
     c.abrirNovo(item.cpf);
   }
 
-  /* Adicionar à guarnição: o campo de quem pode entrar na guarnição do dia e, escolhido, a peça do Adicionar militar do
-     painel (a frase e, para quem muda de guarnição, o que acontece), no rascunho das guarnições, ao vivo */
+  /* Adicionar à guarnição: o campo de quem está fora da escala e, escolhido, a peça do Adicionar militar do painel (a frase
+     de quando ele entra), no rascunho das guarnições, ao vivo */
   function naGuarnicao(botao, c, cpf) {
     var a = c.a, el = RW.tpl('tpl-escala-celula-guarnicao');
     if (!el) return;
@@ -935,20 +947,12 @@
     a.acao = 'guarnicao';
     a.botao = botao;
     var escolhido = null;
-    var g = {
-      uid: a.unidadeId, iso: a.iso, letra: letra,
-      mudar: q('.escala-celula-guarnicao-mudar'), info: q('.escala-celula-guarnicao-info'), quando: q('.escala-celula-guarnicao-quando'),
-      viagem: q('.escala-celula-guarnicao-viagem'),
-      efeito: RW.escalasPainelCiclo.efeito(q('.escala-celula-guarnicao-efeito')),
-      analise: { chave: '', aviso: null, pedido: 0 },
-      vale: function () { return el.isConnected; },
-      aoLer: function (m) { if (escolhido && escolhido.m === m) P.desenharGuarnicao(m, g); }
-    };
+    var g = { uid: a.unidadeId, iso: a.iso, letra: letra, info: q('.escala-celula-guarnicao-info'), viagem: q('.escala-celula-guarnicao-viagem') };
     var inp = el.querySelector('input'), menu = el.querySelector('.dropdown-menu');
     inp.id = 'escala-celula-guarnicao-campo-' + (++conta);
     var combo = RW.comboMilitar.criar(inp, menu, {
       atual: function () { return escolhido; },
-      aoEscolher: function (item) { escolhido = item; g.efeito.esconder(); P.desenharGuarnicao(item.m, g); },
+      aoEscolher: function (item) { escolhido = item; P.desenharGuarnicao(item.m, g); },
       textos: { selecione: L().digiteOuEscolha, semNinguem: L().ninguemDisponivel, filtroVazio: msg().ninguemEncontrado }
     });
     a.caixa.segunda(botao, el, textoDo(botao));

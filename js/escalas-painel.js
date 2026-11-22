@@ -519,6 +519,26 @@
       });
     }
 
+    /* militar duas vezes no mesmo horário (vermelho): uma linha por militar e par de origens ("pela guarnição e pela
+       extra"), juntando as faixas */
+    function linhasDuasVezes(def) {
+      if (!def || !tem('duas_vezes')) return;
+      var nomes = RosterWork.mensagens.escala.entradasDuasVezes || {}, curta = RosterWork.horario.curta;
+      var ordem = [], porMilitar = {};
+      por.duas_vezes.forEach(function (p) {
+        var k = p.cpf + '|' + (p.funcao || '');
+        if (!porMilitar[k]) { porMilitar[k] = []; ordem.push(k); }
+        porMilitar[k].push(p);
+      });
+      ordem.forEach(function (k) {
+        var itens = porMilitar[k];
+        var diaTodo = itens.length === 1 && itens[0].hi === '08:00' && itens[0].hf === '08:00';
+        var faixas = (diaTodo || semFaixas) ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: curta(p.hi), hf: curta(p.hf) }); }).join(' e ');
+        var entradas = String(itens[0].funcao || '').split('+').map(function (t) { return nomes[t] || t; }).join(' e ');
+        linha(def, preencher(def.texto, { militar: militar(itens[0]), entradas: entradas, faixas: faixas }));
+      });
+    }
+
     /* modelo com erro ou faltando: uma linha por trecho, com a composição do trecho */
     function linhasModelo(codigo, def, trechos) {
       if (!def || !tem(codigo)) return;
@@ -565,6 +585,7 @@
     porOcorrencia('cnh_incompativel', cat.cnhIncompativel, function (p) { return p.cpf + '|' + p.posto_id; },
       function (p) { return { militar: militar(p), posto: p.posto || '' }; });
     linhasDuasUnidades(cat.duasUnidades);   // o mesmo militar em duas unidades ao mesmo tempo não pode
+    linhasDuasVezes(cat.duasVezes);         // nem duas vezes no mesmo horário
     /* de serviço num dia em que tem autorização de viagem (não impede nada), um por militar, com os destinos */
     porOcorrencia('viagem', cat.viagem, function (p) { return p.cpf; },
       function (p) { return { militar: militar(p), destinos: RosterWork.mensagens.escala.listaDestinos(p.destinos) }; });

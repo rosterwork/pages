@@ -448,9 +448,9 @@
       .catch(function () { return { _falha: 'conexao' }; });
   }
   /* só leitura: o que quebra (trocas e folgas; as extras ficam) se o militar sair do ciclo na data, só no período
-     do dia (o da próxima entrada fica) — para o aviso do modal */
-  function cicloRetirarAnalisar(unidadeId, cpf, iso) {
-    return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso, { p_so_periodo: true });
+     do dia (o da próxima entrada fica) — para o aviso do modal; ate: só até a véspera dele (o Mudar a entrada) */
+  function cicloRetirarAnalisar(unidadeId, cpf, iso, ate) {
+    return cicloAcao('escala_ciclo_retirar_analisar', unidadeId, cpf, iso, ate ? { p_so_periodo: true, p_ate: ate } : { p_so_periodo: true });
   }
 
   /* quem pode entrar no dia como pontual (RPC escala_dia_disponiveis): de folga na área da unidade buscada

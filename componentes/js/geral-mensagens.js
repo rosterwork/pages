@@ -947,9 +947,15 @@
         /* o mesmo militar em funções de duas unidades no mesmo horário; {unidades} = "2ºPEL e 1ºPEL" (a dele primeiro);
            {faixas} = ", das 08:00 às 20:00" quando é só parte do dia */
         duasUnidades:        { texto: '{militar} está em duas unidades diferentes ao mesmo tempo ({unidades}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
+        /* o mesmo militar duas vezes no mesmo horário (duas linhas de serviço dele que se cruzam); {entradas} = "pela
+           guarnição e pela extra" (as palavras em entradasDuasVezes); {faixas} = ", das 08h às 20h" quando é só parte do dia */
+        duasVezes:           { texto: '{militar} está duas vezes no mesmo horário, {entradas}{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
         /* de serviço num dia em que tem autorização de viagem (não impede nada); {destinos} = "Curitiba e Joinville" */
         viagem:              { texto: '{militar} de serviço com autorização de viagem ({destinos})', icone: 'icone-alerta', nivel: 'erro' }
       },
+      /* de onde vem cada linha do militar que está duas vezes no mesmo horário (o erro duasVezes; o banco manda
+         "guarnicao+extra") */
+      entradasDuasVezes: { guarnicao: 'pela guarnição', troca: 'por troca', mudanca: 'pela mudança de dia', pontual: 'como pontual', extra: 'pela extra' },
       /* detalhe por militar dos avisos amarelos (expansível sob cada linha do aviso):
          {pessoa} = grad + nome · {funcao} = nome da vaga · {motivo} = a razão (abaixo) */
       avisoDetalhe: {
@@ -1131,13 +1137,10 @@
         grupoFolga: 'De folga',
         grupoNaoPodem: 'Não podem',
         grupoFora: 'Fora da escala',
-        grupoNasGuarnicoes: 'Já estão numa guarnição',
         infoSemFuncao: 'Sem função',
         infoLivre: 'Livre o dia todo',
         infoFora: 'Fora da escala',
-        infoUltimo: function (data) { return 'Último serviço em ' + data; },
         infoEntraEm: function (data) { return 'Entra na escala em ' + data; },
-        infoServeHoje: function (letra) { return 'Já é da guarnição ' + (letra || 'deste dia'); },
         infoAfastado: function (motivo, data) { return motivo + ' até ' + data; },
         /* o Pôr um militar aqui da vaga sem ninguém (o Quem cobre): o grupo de quem já está de serviço no dia, os dias do
            Dia da folga, a nota do que acontece e o motivo do remanejamento, que o sistema escreve */
@@ -1203,22 +1206,23 @@
           return 'Voltar o dia ' + data + ' ao automático? Os ajustes manuais desta unidade no dia saem e o sistema distribui de novo.';
         },
         automaticoBotao: 'Voltar ao automático',
-        /* Adicionar militar: somente no dia ou na guarnição do dia, a partir dele (letra = a guarnição do dia; sem ela, a
-           companhia ainda não tem o dia da guarnição A) */
-        guarnicaoServeHoje: function (militar, letra, data) {
-          return 'O ' + militar + ' já é da guarnição ' + (letra || 'deste dia') + ', de serviço em ' + data + '. Nada muda.';
-        },
-        guarnicaoMudar: function (militar, letra, data) {
-          return 'O ' + militar + ' muda para a guarnição ' + (letra || 'deste dia') + ' a partir de ' + data + '.';
-        },
-        /* a mesma mudança com o descanso menor que o de sempre (de = a guarnição do último serviço, ultimo em DD/MM) */
-        guarnicaoMudarDescansoMenor: function (militar, letra, data, de, ultimo) {
-          return 'O ' + militar + ' muda para a guarnição ' + (letra || 'deste dia') + ' a partir de ' + data
-            + ', com o descanso menor que o de sempre: o último serviço dele na ' + de + ' é em ' + ultimo + '.';
-        },
+        /* Adicionar militar na guarnição do dia, a partir dele (letra = a guarnição do dia; sem ela, a companhia ainda não
+           tem o dia da guarnição A) */
         guarnicaoEntrar: function (letra, data) {
           return 'Ele entra na guarnição ' + (letra || 'deste dia') + ' a partir de ' + data + ' e segue nos serviços dela.';
         },
+        /* o Mudar de guarnição (escalas-painel-mudar-guarnicao.js): a folga entre o último serviço na guarnição de agora e
+           a entrada na nova (horas = "72 horas"; sem folga, a frase dela), e o dia digitado que não pode */
+        mudarGuarnicaoFolga: function (horas, letra, sempre) {
+          return (horas ? 'Folga de ' + horas + ' antes de entrar na ' : 'Sem folga antes de entrar na ') + letra
+            + '. A de sempre é de ' + sempre + '.';
+        },
+        mudarGuarnicaoDiaErrado: 'Escolha um dia aceso no calendário: de outra guarnição, depois do último serviço.',
+        /* o Mudar a entrada na guarnição (escalas-painel-mudar-entrada.js): o dia digitado que não pode, a nota da
+           guarnição nova e o item Escala da lista do que acontece (a data em DD/MM) */
+        mudarEntradaDiaErrado: 'Escolha um dia aceso no calendário.',
+        entraNaGuarnicao: function (letra) { return 'Entra na guarnição ' + letra + '.'; },
+        entradaEscalaMudar: function (letra, data) { return 'Entra na guarnição ' + (letra || 'do dia') + ' em ' + data + '.'; },
         /* o item Escala da lista do que acontece com quem muda de guarnição (a data em DD/MM) */
         guarnicaoEscalaMudar: function (letra, data) { return 'Passa para a guarnição ' + (letra || 'deste dia') + ' a partir de ' + data + '.'; },
         ninguemDeServico: 'Ninguém de serviço nesse horário',

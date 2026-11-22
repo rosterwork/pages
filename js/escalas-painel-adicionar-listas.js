@@ -43,28 +43,22 @@
     return lista;
   }
 
-  /* na guarnição do dia (letra): fora da escala, já numa guarnição (todos clicáveis) e, apagados, o afastado e quem já
-     tem a entrada marcada */
-  function guarnicao(militares, letra) {
-    var fora = [], nasGuarnicoes = [], naoPodem = [];
+  /* na guarnição do dia: só quem está fora da escala (clicável) e, apagados, o afastado e quem já tem a entrada marcada.
+     Quem já está numa guarnição não entra: muda pelo nome dele, no Mudar de guarnição */
+  function guarnicao(militares) {
+    var fora = [], naoPodem = [];
     (militares || []).forEach(function (m) {
+      if (m.estado !== 'fora') return;
       var item = { cpf: m.cpf, grad: m.grad, nome: m.nome, m: m };
       if (m.afastamento) { item.inativo = true; item.info = L().infoAfastado(m.afastamento.motivo, diaMes(m.afastamento.ate)); naoPodem.push(item); return; }
-      if (m.estado === 'fora') {
-        if (m.entra_em) { item.inativo = true; item.info = L().infoEntraEm(diaMes(m.entra_em)); naoPodem.push(item); return; }
-        item.info = L().infoFora;
-        if (!m.serve_hoje) item.situacao = 'fora';
-        fora.push(item);
-        return;
-      }
-      item.info = m.serve_hoje ? L().infoServeHoje(letra) : m.ultimo_servico ? L().infoUltimo(diaMes(m.ultimo_servico)) : '';
-      if (!m.serve_hoje && m.ultimo_servico) item.situacao = 'outra-guarnicao';
-      nasGuarnicoes.push(item);
+      if (m.entra_em) { item.inativo = true; item.info = L().infoEntraEm(diaMes(m.entra_em)); naoPodem.push(item); return; }
+      item.info = L().infoFora;
+      if (!m.serve_hoje) item.situacao = 'fora';
+      fora.push(item);
     });
     var lista = [];
     function grupo(titulo, itens) { if (itens.length) lista = lista.concat([{ titulo: titulo }], itens); }
     grupo(L().grupoFora, fora);
-    grupo(L().grupoNasGuarnicoes, nasGuarnicoes);
     grupo(L().grupoNaoPodem, naoPodem);
     return lista;
   }

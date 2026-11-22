@@ -28,7 +28,10 @@
      e quem faz no dia o último serviço antes dela, a lista
      ultimo_servico do ler_distribuicao_dia): a pergunta Último
      serviço com os dias de serviço dele, e a saída nova no rascunho
-     (mudar_saida).
+     (mudar_saida);
+   - a pergunta aberta embaixo da linha é uma só: a do Mudar de
+     guarnição (escalas-painel-mudar-guarnicao.js) entra por
+     abrirPergunta e usa o mesmo fechar e o mesmo voltar.
    ============================================================ */
 (function () {
   'use strict';
@@ -36,10 +39,12 @@
   window.RosterWork = window.RosterWork || {};
 
   /* o rascunho do dia aberto (chave = unidade|dia), uma mudança por militar: [{ cpf, acao, data?, letra?, ultimo_servico?,
-     saida?, ultimo?, tipo, itens, de? }]; acao = adicionar (pôr numa guarnição ou mudar de guarnição), tirar,
-     cancelar_saida ou mudar_saida (a saída marcada, saida, passa para a data; ultimo = o último serviço novo, a resposta da
-     pergunta); tipo = entrar, mudar, sair, cancelar_saida ou mudar_saida; itens = o que acontece com as trocas e folgas (a
-     lista da pergunta); de = a guarnição de antes (quem muda pela aba Guarnições) */
+     saida?, ultimo?, entra?, entrada?, tipo, itens, de? }]; acao = adicionar (pôr numa guarnição ou mudar de guarnição),
+     tirar, cancelar_saida, mudar_saida (a saída marcada, saida, passa para a data; ultimo = o último serviço novo, a
+     resposta da pergunta) ou mudar_entrada (a entrada marcada, entrada, passa para a data); no Mudar de guarnição, ultimo
+     e entra = o último serviço na de agora e o primeiro dia na nova; tipo = entrar, mudar, sair, cancelar_saida,
+     mudar_saida, mudar_entrada ou cancelar_entrada (o tirar na data da entrada); itens = o que acontece com as trocas e folgas (a lista da
+     pergunta); de = a guarnição de antes (quem muda pela aba Guarnições) */
   var rascunho = { chave: '', lista: [] };
   var pilha = [];      // os passos, { cpf, antes, depois } ou, de vários, { lista: [...] } (o Desfazer volta o último)
   var refeitos = [];   // os passos desfeitos (o Refazer)
@@ -90,14 +95,17 @@
       if (x.letra) m.letra = x.letra;
       if (x.ultimo_servico) m.ultimo_servico = x.ultimo_servico;
       if (x.saida) m.saida = x.saida;
+      if (x.entra) { m.entra = x.entra; m.ultimo = x.ultimo; }
+      if (x.entrada) m.entrada = x.entrada;
       return m;
     });
   }
-  /* o primeiro dia que a mudança mexe (iso = o dia dela): a data dela ou, na saída que muda de dia, a que vem antes, a de
-     agora ou a nova */
+  /* o primeiro dia que a mudança mexe (iso = o dia dela): a data dela ou, na saída e na entrada que mudam de dia, a que
+     vem antes, a de agora ou a nova */
   function desde(x, iso) {
     var d = x.data || iso;
-    return x.saida && x.saida < d ? x.saida : d;
+    if (x.saida && x.saida < d) d = x.saida;
+    return x.entrada && x.entrada < d ? x.entrada : d;
   }
   function limpar() {
     pilha = []; refeitos = [];
@@ -187,10 +195,10 @@
 
   /* ---------- o que acontece ---------- */
 
-  /* o que acontece com as trocas, folgas e extras dele a partir de desde (escala = o texto do item da escala): uma
-     Promise de { itens, nota } ou { erro } */
-  function analisar(unidadeId, cpf, desde, escala) {
-    return RosterWork.escalasDados.cicloRetirarAnalisar(unidadeId, cpf, desde).then(function (a) {
+  /* o que acontece com as trocas, folgas e extras dele a partir de desde (escala = o texto do item da escala; ate = só
+     até a véspera dele, o Mudar a entrada): uma Promise de { itens, nota } ou { erro } */
+  function analisar(unidadeId, cpf, desde, escala, ate) {
+    return RosterWork.escalasDados.cicloRetirarAnalisar(unidadeId, cpf, desde, ate).then(function (a) {
       if (!a || !a.success) return { erro: (a && a.error) || RosterWork.mensagens.saida.falhaLista };
       return RosterWork.avisoSaida(a.pendencias, { tipo: 'tirar', escala: escala });
     });
@@ -233,13 +241,6 @@
   function entrar(unidadeId, iso, m, letra) {
     var mudanca = { cpf: m.cpf, acao: 'adicionar', tipo: 'entrar', itens: [] };
     if (letra) { mudanca.letra = letra; mudanca.data = iso; }
-    marcar(unidadeId, iso, mudanca);
-  }
-  /* quem já está numa guarnição passa para a do dia (itens = o que acontece; data = a da mudança, sem ela o dia: com o
-     descanso de sempre, o dia seguinte, e ele entra na nova um intervalo do ritmo depois) */
-  function marcarMudar(unidadeId, iso, m, itens, letra, data) {
-    var mudanca = { cpf: m.cpf, acao: 'adicionar', tipo: 'mudar', itens: itens || [] };
-    if (letra) { mudanca.letra = letra; mudanca.data = data || iso; }
     marcar(unidadeId, iso, mudanca);
   }
   /* quem sai da escala no dia (a sub-tela já mostrou a lista; itens = o que acontece) */
@@ -285,6 +286,13 @@
     if (p.el.parentNode) p.el.remove();
     if (!modo) ed().redesenhar();
   }
+  /* a pergunta de outra peça (o Mudar de guarnição; p = { el, pedido, passos, cpf, antes }): a de agora fica respondida e
+     ela passa a ser a aberta (o fecharPergunta, o voltarDa e o X da caixa da célula valem para ela) */
+  function abrirPergunta(p) {
+    fecharPergunta('guardar');
+    pergunta = p;
+  }
+  function perguntaAberta(p) { return pergunta === p; }
   /* o rascunho volta a como estava antes da pergunta: os passos dela saem (também da ordem do rodapé) e ele volta à
      mudança de antes */
   function voltarDa(p) {
@@ -421,10 +429,12 @@
     marcarPasso: marcarPasso, desmarcarPasso: desmarcarPasso, podeDesfazer: podeDesfazer, podeRefazer: podeRefazer,
     desfazer: desfazer, refazer: refazer, porVarias: porVarias, passoVarios: passoVarios,
     analisar: analisar, analisarSair: analisarSair, analisarMudar: analisarMudar, efeito: efeito,
-    entrar: entrar, marcarMudar: marcarMudar, marcarSair: marcarSair,
+    entrar: entrar, marcarSair: marcarSair,
     /* a aba Funções (o menu da linha): o Remover da guarnição, o Mudar a saída e o Cancelar a saída */
     podeSair: podeSair, perguntarSaida: perguntarSaida, cancelarSaida: cancelarSaida, fecharPergunta: fecharPergunta,
     saidaMarcada: saidaMarcada, perguntarMudarSaida: perguntarMudarSaida,
+    /* a pergunta do Mudar de guarnição (escalas-painel-mudar-guarnicao.js) */
+    abrirPergunta: abrirPergunta, perguntaAberta: perguntaAberta, voltarDa: voltarDa,
     /* o dia mais antigo que se mexe (o Cancelar a saída da caixa do Fora da escala, escalas-celula-fora.js) */
     limite: limite,
     abrirDia: abrirDia,

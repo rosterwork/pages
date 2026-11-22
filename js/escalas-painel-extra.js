@@ -9,7 +9,8 @@
    (escalas-painel-salvar.js, p_extra do escala_painel_salvar). A
    célula da grade, com o painel fechado, usa o mesmo mês e o mesmo
    rascunho (escalas-celula-extra.js: carregar, pronto, lido, sabido,
-   usarNaCelula).
+   usarNaCelula). O mês vem da cópia guardada, como a grade, com o dia
+   aberto e os vizinhos feitos na hora se mudaram há pouco.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.escalasPainelExtra.
    ============================================================ */
@@ -19,6 +20,7 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var mes = null;      // a resposta do extrajornada_mes do mês aberto
+  var naHora = null;   // os dias que o mês lido trouxe feitos na hora (o resto veio da cópia guardada); null: todos
   var ctx = null;      // a aba aberta: { corpo, uid, iso }
   var pedido = 0;      // latest-wins
   var lendo = null;    // a leitura da célula em curso: { comp, promessa }
@@ -62,9 +64,32 @@
     window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho'));
   }
 
+  /* o dia e os vizinhos (AAAA-MM-DD) */
+  function vizinhos(iso) {
+    var p = iso.split('-');
+    return [-1, 0, 1].map(function (n) { return RW.data.paraIsoDeData(new Date(+p[0], +p[1] - 1, +p[2] + n)); });
+  }
+
+  /* o que a leitura do mês pede: a cópia guardada, como a grade, com o dia e os vizinhos feitos na hora se mudaram há
+     pouco. O modo treino não pede a cópia (escalas-dados.js › carregar) */
+  function corpoDoMes(comp, iso) {
+    var corpo = { p_competencia: comp };
+    if (!(RW.treino && RW.treino.ligado())) { corpo.p_aceita_copia = true; corpo.p_na_hora = vizinhos(iso); }
+    return corpo;
+  }
+
+  /* o mês lido serve para o dia? Serve quando o dia veio feito na hora ou quando a cópia dele está em dia: sem a borda
+     amarela da cópia que ainda vai mudar e sem o Salvar de há pouco (escalas-atualizando.js) */
+  function serve(iso) {
+    var at = RW.escalaAtualizando;
+    if (!naHora || naHora.indexOf(iso) >= 0 || !at) return true;
+    return !(mes.unidades || []).some(function (un) { return at.soCopia(un.id, iso) || at.certo(un.id, iso); });
+  }
+
   /* o mês lido: o rascunho dele começa vazio, e o que decide a extra do pelotão nele fica guardado */
-  function usarMes(r) {
+  function usarMes(r, dias) {
     mes = r;
+    naHora = dias || null;
     sabidos[r.competencia] = { lancada: lancada(), admin: r.admin !== false,
       unidades: (r.unidades || []).map(function (un) { return un.id; }) };
     RW.extrajornadaUtil.usar(r);
@@ -74,20 +99,24 @@
     G().calcularPicos(G().efetivas());
   }
 
-  /* a célula da grade (o painel fechado): o mês do dia, lido uma vez (o já lido fica, com ou sem mudança). A Promise diz
-     se ele está aqui (false: a leitura falhou, ou há mudança não salva em outro mês) */
+  /* a célula da grade (o painel fechado): o mês do dia, lido uma vez (o já lido fica, com ou sem mudança; sem mudança, é
+     lido de novo só quando a cópia do dia está atrasada). A Promise diz se ele está aqui (false: a leitura falhou, ou há
+     mudança não salva em outro mês) */
   function carregar(iso) {
     var comp = iso.slice(0, 8) + '01';
-    if (mes && mes.competencia === comp) return Promise.resolve(true);
+    if (mes && mes.competencia === comp && (sujo() || serve(iso))) return Promise.resolve(true);
     if (sujo()) return Promise.resolve(false);
-    if (lendo && lendo.comp === comp) return lendo.promessa;
-    var p = RW.extrajornadaUtil.chamar('extrajornada_mes', { p_competencia: comp }).then(function (r) {
+    if (lendo && lendo.comp === comp) {
+      return !lendo.dias || lendo.dias.indexOf(iso) >= 0 ? lendo.promessa : lendo.promessa.then(function () { return carregar(iso); });
+    }
+    var corpo = corpoDoMes(comp, iso);
+    var p = RW.extrajornadaUtil.chamar('extrajornada_mes', corpo).then(function (r) {
       if (lendo && lendo.promessa === p) lendo = null;
       if (!r || !r.ok || sujo()) return false;
-      usarMes(r);
+      usarMes(r, corpo.p_na_hora);
       return true;
     }, function () { if (lendo && lendo.promessa === p) lendo = null; return false; });
-    lendo = { comp: comp, promessa: p };
+    lendo = { comp: comp, dias: corpo.p_na_hora || null, promessa: p };
     return p;
   }
 
@@ -105,11 +134,12 @@
     var c = RW.painel.criarCarregando();
     if (c) corpo.appendChild(c);
     var meu = ++pedido;
-    RW.painel.segurar(RW.extrajornadaUtil.chamar('extrajornada_mes', { p_competencia: comp })).then(function (r) {
+    var pede = corpoDoMes(comp, iso);
+    RW.painel.segurar(RW.extrajornadaUtil.chamar('extrajornada_mes', pede)).then(function (r) {
       if (meu !== pedido || !ctx) return;
       if (r && r.error) { frase(corpo, r.error); return; }
       if (!r || !r.ok) { falhou(); return; }
-      usarMes(r);
+      usarMes(r, pede.p_na_hora);
       mostrar();
     }, function () { if (meu === pedido && ctx) falhou(); });
     /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js), que lê o mês de novo */
@@ -133,6 +163,7 @@
   function descartar() {
     if (mes) G().limpar();
     mes = null;
+    naHora = null;
     onde = null;
     if (RW.extrajornadaDia) RW.extrajornadaDia.reorganizar();
   }
