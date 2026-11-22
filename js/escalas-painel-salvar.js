@@ -1,9 +1,9 @@
 /* ============================================================
-   ESCALAS — o Salvar do painel do dia (as abas Funções, Militares,
+   ESCALAS — o Salvar do painel do dia (as abas Funções, Estagiários,
    Ciclo e Extrajornada) e da célula da grade, com o painel fechado
    (escalas-celula-editar.js, no rascunho do Dia; o dia do rodapé é o
    dela). As mudanças de cada aba ficam no rascunho dela
-   (as Funções e a Militares, um rascunho só, em
+   (as Funções e a Estagiários, um rascunho só, em
    escalas-painel-editar.js, o Ciclo em escalas-painel-ciclo.js, a
    Extrajornada no rascunho do mês, escalas-painel-extra.js, e o
    sobreaviso da companhia, no bloco dele da aba Funções,
@@ -12,7 +12,7 @@
    (escalas-rascunho-dias.js). O rodapé largo da página
    (.escala-rodape-salvar) mostra "N alterações não
    salvas" (com mais de um dia, "em M dias"), o Desfazer e o Refazer
-   (nas Funções, na Militares e na célula, os passos do Dia e do
+   (nas Funções, na Estagiários e na célula, os passos do Dia e do
    Sobreaviso de todos os dias numa ordem só; nas Guarnições e na
    Extrajornada, os delas; também o Ctrl+Z e o
    Ctrl+Y; o rodapé fica enquanto há o que refazer), o Cancelar (descarta
@@ -180,7 +180,7 @@
     el.classList.add('oculto');
   }
 
-  /* o Desfazer e o Refazer da aba aberta: nas Funções e na Militares (e na célula da grade), os passos do Dia e do
+  /* o Desfazer e o Refazer da aba aberta: nas Funções e na Estagiários (e na célula da grade), os passos do Dia e do
      Sobreaviso de todos os dias, numa ordem só (escalas-rascunho-dias.js; com uma sub-tela aberta, esperam); as Guarnições
      e a Extrajornada, os delas. Devolve { podeDesfazer(), podeRefazer(), desfazer(), refazer() }, ou null */
   function daAba() {
@@ -190,7 +190,7 @@
     /* com o painel fechado (a célula da grade, a extra mexida nela, ou nada aberto, com o rascunho esperando o Salvar), os
        passos dos dias; sem nada a desfazer neles, a extra */
     if (!RW.painel.estaAberto()) return dosDias && (dosDias.podeDesfazer() || dosDias.podeRefazer()) ? dosDias : x;
-    if (s === 'distribuicao' || s === 'militares') return dosDias;
+    if (s === 'distribuicao' || s === 'estagiarios') return dosDias;
     if ((s === 'continuos' || s === 'volta') && C()) {
       return { podeDesfazer: function () { return C().podeDesfazer(c.unidadeId, c.iso); }, podeRefazer: function () { return C().podeRefazer(c.unidadeId, c.iso); },
         desfazer: C().desfazer, refazer: C().refazer };

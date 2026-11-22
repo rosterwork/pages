@@ -91,8 +91,17 @@
     function carregarComunicados() {
       RW.apiFetch('/rest/v1/rpc/fn_avisos_listar', { metodo: 'POST', corpo: {} })
         .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (a) { montarComunicados(listaComunicados, Array.isArray(a) ? a : [], carregarComunicados); })
-        .catch(function () { vazio(listaComunicados, RW.mensagens.avisos.falhaCarregar); });
+        .then(function (a) {
+          if (!Array.isArray(a)) { falhaComunicados(); return; }
+          montarComunicados(listaComunicados, a, carregarComunicados);
+        })
+        .catch(falhaComunicados);
+    }
+    /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js) */
+    function falhaComunicados() {
+      listaComunicados.textContent = '';
+      var aviso = RW.falha.bloco(RW.mensagens.avisos.falhaCarregar, carregarComunicados);
+      if (aviso) listaComunicados.appendChild(aviso);
     }
 
     /* segurar (opcional): a 1ª leitura espera a forma que apareceu cumprir o mínimo na tela */

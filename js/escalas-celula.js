@@ -50,6 +50,8 @@
     sobreaviso: 'icone-sobreaviso',
     /* o operacional sem guarnição, no Fora da escala (escalas-celula-fora.js) */
     fora: 'icone-remover-usuario',
+    /* quem tem autorização de viagem no dia, no grupo dela (escalas-celula-fora.js) */
+    viagem: 'icone-mapa-pin',
     /* o guarda-vidas da página Op. Verão (op-verao-celula.js) */
     'op-verao': 'icone-boia',
     /* quem inseriu a extra, no PDF da grade da Extrajornada (a escala nunca traz estas origens) */
@@ -75,6 +77,8 @@
     sobreaviso: 'sobreaviso',
     /* o operacional da unidade sem guarnição (o grupo Fora da escala, escalas-celula-fora.js) */
     fora: 'fora',
+    /* a autorização de viagem (o grupo dela; só com o Incluir autorizações de viagem) */
+    viagem: 'viagem',
     /* o guarda-vidas da página Op. Verão (op-verao-celula.js) */
     'op-verao': 'op-verao'
   };
@@ -193,15 +197,32 @@
   /* hora exibida no gráfico (a janela começa às 08h) */
   function rotuloHora(h) { return ((8 + h) % 24) + 'h'; }
 
+  /* os erros da hora na dica (escalas-celula-erros.js): uma linha por erro, o ícone na cor dele */
+  function preencherErros(dica, erros) {
+    var lugar = dica.querySelector('.escala-mes-dica-erros');
+    if (!lugar) return;
+    lugar.textContent = '';
+    erros.forEach(function (x) {
+      var l = RosterWork.tpl('tpl-escala-mes-dica-erro');
+      if (!l) return;
+      l.classList.add('escala-mes-dica-erro--' + x.nivel);
+      l.querySelector('.escala-mes-dica-erro-texto').textContent = x.texto;
+      lugar.appendChild(l);
+    });
+    lugar.classList.toggle('oculto', !erros.length);
+  }
+
   /* hover do gráfico: repinta o canvas sob o mouse com a barra da hora apontada em destaque e move a
-     dica "Nh · X militares", com "Y estagiários" embaixo na hora que tem (segue o ponteiro; posição via custom
-     property — exceção REGRAS §4) */
+     dica "Nh · X militares", com "Y estagiários" embaixo na hora que tem e, embaixo, os erros que pintam a hora
+     (segue o ponteiro e não sai da tela; posição via custom property — exceção REGRAS §4) */
   function ligarHover(escalaEl) {
     var dica = document.getElementById('escala-mes-dica');
     var ativo = null;
+    var erroDe = null, erroHora = -1, erroPronto = false;   // os erros na dica: de qual gráfico e hora (refeitos só ao mudar)
 
     function esconder() {
       if (ativo) { pintarGrafico(ativo, null); ativo = null; }
+      erroDe = null;
       if (dica) dica.classList.add('oculto');
     }
 
@@ -227,9 +248,17 @@
         dica.querySelector('.escala-mes-dica-militares').textContent = t.militares(rotuloHora(hora), n);
         linhaEstagiarios.textContent = estagiarios > 0 ? t.estagiarios(estagiarios) : '';
         linhaEstagiarios.classList.toggle('oculto', !(estagiarios > 0));
-        dica.style.setProperty('--dica-x', e.clientX + 'px');
+        /* os erros da hora: refeitos quando muda o gráfico ou a hora, ou enquanto a lista não chegou */
+        if (g !== erroDe || hora !== erroHora || !erroPronto) {
+          var erros = RosterWork.escalasCelulaErros ? RosterWork.escalasCelulaErros.daHora(g, hora) : [];
+          erroDe = g; erroHora = hora; erroPronto = erros !== null;
+          preencherErros(dica, erros || []);
+        }
         dica.style.setProperty('--dica-y', e.clientY + 'px');
         dica.classList.remove('oculto');
+        /* perto da borda da tela, a dica encosta nela em vez de ficar cortada */
+        var meia = dica.offsetWidth / 2;
+        dica.style.setProperty('--dica-x', Math.max(meia + 8, Math.min(window.innerWidth - meia - 8, e.clientX)) + 'px');
       }
     });
 
@@ -320,6 +349,13 @@
       horaWrap.textContent = RosterWork.mensagens.geral.afastadoAte(p.afastamento || '', RosterWork.data.isoParaBR(p.ate).slice(0, 5));
       return linha;
     }
+    /* autorização de viagem: vem escondida (só aparece com o Incluir autorizações de viagem), sem riscar, e no lugar do
+       horário "Viagem até DD/MM" */
+    if (p.origem === 'viagem') {
+      linha.classList.add('linha-escalado--viagem', 'oculto');
+      horaWrap.textContent = RosterWork.mensagens.escala.viagemAte(RosterWork.data.isoParaBR(p.ate).slice(0, 5));
+      return linha;
+    }
     /* um par início→fim por período (disponibilidade quebrada = vários, empilhados em coluna) */
     (p.periodos || []).forEach(function (per) {
       if (!per.inicio) return;
@@ -360,7 +396,10 @@
     /* a Falta de gente (a última opção dos Filtros, só na Escala): as extras do dia e a linha embaixo do gráfico
        (escalas-falta.js) */
     if (RosterWork.escalasFalta) RosterWork.escalasFalta.decorar(celula, pessoas);
-    var D = RosterWork.escalasCelulaDica && RosterWork.escalasCelulaDica.ligada() ? RosterWork.escalasCelulaDica : null;
+    /* os erros da hora na dica do gráfico (escalas-celula-erros.js): a Extrajornada entrega a lista (opcoes.erros); na
+       Escala, eles vêm do banco */
+    if (RosterWork.escalasCelulaErros) RosterWork.escalasCelulaErros.decorar(celula, opcoes ? opcoes.erros : undefined);
+    var D =RosterWork.escalasCelulaDica && RosterWork.escalasCelulaDica.ligada() ? RosterWork.escalasCelulaDica : null;
     /* quem está no dia, nos grupos da Escala (escalas-celula-grupos.js); embaixo, o sobreaviso da companhia, no lugar em
        que ele aparece (escalas-celula-sobreaviso.js), e o Fora da escala (escalas-celula-fora.js) */
     RosterWork.escalasCelulaGrupos.preencher(celula, pessoas, curto, D);

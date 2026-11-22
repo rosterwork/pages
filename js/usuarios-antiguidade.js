@@ -67,11 +67,12 @@
     return linha;
   }
 
-  /* sem dados: a área nunca fica em branco; na falha de leitura o texto é o do erro, não o de lista vazia */
+  /* sem dados: a área nunca fica em branco; na falha de leitura, o aviso com o Tentar de novo (geral-falha.js), não o
+     de lista vazia */
   function desenharVazio(falhou) {
-    var vazio = RW.tpl('tpl-antiguidade-vazio');
-    if (falhou) vazio.textContent = RW.mensagens.geral.falhaCarregar;
-    lista.appendChild(vazio);
+    var vazio = falhou ? RW.falha.bloco(RW.mensagens.geral.falhaCarregar, function () { carregar(); })
+      : RW.tpl('tpl-antiguidade-vazio');
+    if (vazio) lista.appendChild(vazio);
   }
 
   function desenhar(dados) {
@@ -127,14 +128,12 @@
     return RW.etapas.segurarDesde(performance.now(), leitura)
       .then(function (dados) {
         if (meu !== token) return;
-        if (!dados && RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaCarregar });
         carregado = !!dados;
-        desenhar(dados);
+        desenhar(dados);   // a falha: o aviso com o Tentar de novo no lugar da lista (desenharVazio)
         if (manter && pessoas[manter]) escolher(manter);
       })
       .catch(function () {
         if (meu !== token) return;
-        if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
         desenhar(null);
       });
   }

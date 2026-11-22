@@ -193,7 +193,7 @@
     }
     function falhou() {
       menu.textContent = '';
-      var item = aviso(M().relatorFalha);
+      var item = aviso(RosterWork.falha.frase(M().relatorFalha));
       if (item) menu.appendChild(item);
     }
 

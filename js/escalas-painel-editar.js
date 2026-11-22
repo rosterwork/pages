@@ -1,16 +1,18 @@
 /* ============================================================
-   ESCALAS — o Dia do painel (abas Funções e Militares): a lista do
+   ESCALAS — o Dia do painel (abas Funções e Estagiários): a lista do
    dia, a mesma para todos, só de leitura; na aba Funções, por posto e
-   função; na Militares, por pessoa (escalas-painel-militares.js, com
-   as peças daqui, .sub.lista). As duas usam o mesmo dia lido, o mesmo
-   rascunho e o mesmo desfazer: trocar de uma para a outra só refaz a
+   função; na Estagiários, só os estagiários, por pessoa
+   (escalas-painel-militares.js, com as peças daqui, .sub.lista, que
+   também monta as caixas Em outra unidade e Saiu da guarnição da
+   Funções). As duas usam o mesmo dia lido, o mesmo rascunho e o mesmo
+   desfazer: trocar de uma para a outra só refaz a
    lista (opcoes.visao). O admin edita a partir dela: o menu Editar o
    dia (só o que é do dia todo: Adicionar militar, Trazer de outra
    unidade, Registrar troca de serviço e Voltar o dia ao automático, à
    esquerda) e o desfazer/refazer (à direita) ficam no subcabeçalho;
    cada linha que ele edita tem o lápis, que abre o menu da linha
-   (escalas-painel-linha-menu.js: na Funções, o que é do lugar; na
-   Militares, o dia da pessoa), e a linha inteira também abre; quem o
+   (escalas-painel-linha-menu.js: na Funções, o que é do lugar e o dia
+   da pessoa; na Estagiários, o dia da pessoa), e a linha inteira também abre; quem o
    admin fixou ganha o selo Fixado; as observações também se editam
    aqui.
    Quem não é admin só lê (os postos mudam na Distribuição). Na
@@ -686,13 +688,14 @@
     var no = RosterWork.painel.criarCarregando();
     if (no) ctx.corpo.appendChild(no);
   }
-  function mostrarFalha() {
+  /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js); tentar = o que lê de novo */
+  function mostrarFalha(tentar) {
     pronta();
     if (ctx.semLista) { avisarCelula(null); return; }
     ctx.listaNaTela = false;
     ctx.corpo.textContent = '';
-    var no = RosterWork.tpl('tpl-escala-distribuicao-estado');
-    if (no) { no.textContent = msg().falhaCarregar; ctx.corpo.appendChild(no); }
+    var no = RosterWork.falha.bloco(msg().falhaCarregar, tentar, { rascunho: !!(RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.paraPrevia()) });
+    if (no) ctx.corpo.appendChild(no);
     avisarCelula(null);   // a caixa da célula aberta no mesmo dia, sobre a lista do painel (sub.ouvir)
   }
 
@@ -748,7 +751,7 @@
     var previa = editavel() && precisaPrevia() ? pedirPrevia() : null;
     RosterWork.painel.segurar(RosterWork.escalasDados.lerDistribuicaoDia(ctx.unidadeId, ctx.iso)).then(function (dados) {
       if (ctx !== c || meu !== pedido) return;
-      if (!dados) { mostrarFalha(); return; }
+      if (!dados) { mostrarFalha(desenhar); return; }
       comecar(dados, previa);
     });
   }
@@ -808,7 +811,7 @@
         });
         return;
       }
-      if (!dados) { mostrarFalha(); return; }
+      if (!dados) { mostrarFalha(function () { mostrarPrevia(); }); return; }
       if (dados.erro_simulacao) {
         RosterWork.avisar({ tipo: 'erro', mensagem: dados.erro_simulacao });
         if (dados.erro_parte === 'dia' && pilhaDesfazer.length) { rasc = pilhaDesfazer.pop(); desenhar(); return; }
@@ -956,7 +959,7 @@
     if (ctx.emSub || (!editar && !imprimir && !como && !solicitar)) { sub.classList.add('oculto'); return; }
     /* o menu Editar o dia, só com o que é do dia todo: Adicionar militar e Trazer de outra unidade abrem as perguntas;
        Registrar troca de serviço abre o formulário da troca ali mesmo; Voltar o dia ao automático (só com ajuste manual)
-       confirma. O que é de um militar fica no lápis dele, na aba Militares */
+       confirma. O que é de um militar fica no lápis dele, na parte do dia */
     var menu = editar ? RosterWork.tpl('tpl-escala-edicao-acoes') : null;
     if (menu) {
       var botaoMenu = menu.querySelector('.botao'), itemAutomatico = menu.querySelector('[data-acao="automatico"]');
@@ -1300,7 +1303,7 @@
   /* uma função de um bloco só para ver (o Oficial de Área, o Chefe de Socorro, o Cabo de Dia, a Extrajornada, o
      estagiário): a pessoa está no posto dela, então o Chefe de Socorro e o Oficial de Área de quem serve nesta unidade
      no dia têm o lápis só com a parte do dia do menu (os outros, sem lápis); o Oficial de Área da companhia, para quem
-     administra a companhia, traz o Ver o dia na companhia (o dia dele mora lá; a aba Militares de lá abre com o menu
+     administra a companhia, traz o Ver o dia na companhia (o dia dele mora lá; a aba Funções de lá abre com o menu
      dele); o Cabo de Dia sem ninguém, só para quem administra, em amarelo */
   function linhasExibida(caixa, f) {
     var grupo = novoGrupo([f.nome], f.semNinguem.length ? 'alerta' : null);
@@ -1360,10 +1363,10 @@
 
   /* De folga: nome riscado, ícone de folga e o período; para o admin, o lápis abre o menu da folga (Cancelar a folga, ou
      Desfazer a mudança). A folga que veio da mudança de dia leva o ícone da mudança e, no lugar do período, o dia para
-     onde o serviço passou. titulo = o da aba Militares, com quantos ("De folga (5)"); sem ele, "De folga" */
-  function caixaFolgas(folgas, titulo) {
+     onde o serviço passou */
+  function caixaFolgas(folgas) {
     if (!folgas.length) return null;
-    var caixa = RosterWork.painel.criarCaixa(titulo || msg().deFolga);
+    var caixa = RosterWork.painel.criarCaixa(msg().deFolga);
     if (!caixa) return null;
     caixa.classList.add('escala-edicao-folgas');   // nomeia a caixa para o passo a passo
     var grupo = novoGrupo([], null);
@@ -1548,12 +1551,13 @@
     corpo.textContent = '';
     p.anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (do banco)
     if (editavel()) notaMudou(corpo);
-    /* as abas Militares e Estagiários: o mesmo dia, por pessoa (escalas-painel-militares.js) */
-    if ((ctx.visao === 'militares' || ctx.visao === 'estagiarios') && RosterWork.escalasPainelMilitares) {
+    /* a aba Estagiários: o mesmo dia, só os estagiários, por pessoa (escalas-painel-militares.js) */
+    var M = RosterWork.escalasPainelMilitares;
+    if (ctx.visao === 'estagiarios' && M) {
       ctx.lugarNovo = null;
-      /* a aba Estagiários: o Editar o dia depende dos estágios do dia, que chegam com a leitura */
-      if (ctx.visao === 'estagiarios' && !ctx.emSub) montarSubcabecalho();
-      RosterWork.escalasPainelMilitares.montar(corpo, dados, { estagiarios: ctx.visao === 'estagiarios' });
+      /* o Editar o dia depende dos estágios do dia, que chegam com a leitura */
+      if (!ctx.emSub) montarSubcabecalho();
+      M.estagiarios(corpo, dados);
       ctx.listaNaTela = true;
       abrirMenuPedido();
       return;
@@ -1570,7 +1574,7 @@
       else por(caixa);
     }
     /* a ordem: Funções especiais, as instalações (Central, Rancho, Almoxarifado e as outras), Extrajornada,
-       Estagiários, Sobreaviso, as viaturas, Sem função e De folga */
+       Estagiários, Sobreaviso, as viaturas, Sem função, De folga, Em outra unidade e Saiu da guarnição */
     var blocos = p.blocosDoDia(dados.postos, ctx.admin);
     por(caixaExibida(msg().blocoEspeciais, blocos.especiais));
     blocos.instalacoes.forEach(porPosto);
@@ -1582,6 +1586,11 @@
     blocos.viaturas.forEach(porPosto);
     por(caixaSemFuncao(dados.sem_funcao || []));
     por(caixaFolgas(dados.folgas || []));
+    /* quem foi remanejado daqui e quem saiu da guarnição (escalas-painel-militares.js), com o lápis de cada um */
+    if (M) {
+      por(M.caixaOutraUnidade(dados));
+      por(M.caixaSaidas(dados));
+    }
     /* dia sem ninguém: o estado vazio, nunca a tela em branco */
     if (!alguem) {
       var vazio = RosterWork.tpl('tpl-escala-distribuicao-estado');
@@ -1602,15 +1611,11 @@
     abrirMenuPedido();
   }
 
-  /* o Ver o dia (da aba Funções) e o Ver as funções (da aba Militares): a outra aba abre e, quando a lista dela chega, o
-     menu da primeira linha dele */
-  function verMilitar(cpf, visao) {
+  /* o Ver as funções (da aba Estagiários): a aba Funções abre e, quando a lista dela chega, o menu da primeira linha dele */
+  function verMilitar(cpf) {
     if (!ctx || !cpf) return;
     ctx.abrirMenuDe = cpf;
-    /* o estagiário fica na aba Estagiários */
-    var estagiario = visao === 'militares' && ctx.dados && ctx.dados.estagios && ctx.dados.estagios[cpf]
-      && RosterWork.escalasPainel.temAba('estagiarios');
-    RosterWork.escalasPainel.abrirAba(estagiario ? 'estagiarios' : visao === 'militares' ? 'militares' : 'distribuicao');
+    RosterWork.escalasPainel.abrirAba('distribuicao');
   }
   /* o menu abre depois do clique que o pediu: o clique no item ainda chega ao document, e o geral-dropdown fecharia o
      menu recém-aberto */
@@ -1773,12 +1778,12 @@
 
   /* ---------- ciclo de vida ---------- */
 
-  /* opcoes = { admin, comparar, consulta, visao: 'funcoes' | 'militares', semLista, aoMostrar(dados) }: o admin edita o
+  /* opcoes = { admin, comparar, consulta, visao: 'funcoes' | 'estagiarios', semLista, aoMostrar(dados) }: o admin edita o
      dia; os outros só leem. Sem rodape, o rodapé não é usado. semLista: o dia da célula (corpo nulo), sem a lista */
   function montar(corpo, rodape, unidadeId, iso, opcoes) {
     opcoes = opcoes || {};
-    var visao = opcoes.visao === 'militares' || opcoes.visao === 'estagiarios' ? opcoes.visao : 'funcoes';
-    /* a outra aba do mesmo dia (Funções e Militares): só a lista se refaz, com o dia que já está na tela; o rascunho e o
+    var visao = opcoes.visao === 'estagiarios' ? opcoes.visao : 'funcoes';
+    /* a outra aba do mesmo dia (Funções e Estagiários): só a lista se refaz, com o dia que já está na tela; o rascunho e o
        desfazer ficam. Com a prévia para refazer (ou uma sub-tela aberta), o caminho de sempre */
     if (corpo && ctx && ctx.corpo === corpo && ctx.unidadeId === unidadeId && ctx.iso === iso && !ctx.comparar && !opcoes.comparar
         && ctx.admin === !!opcoes.admin && ctx.consulta === !!opcoes.consulta && base && ctx.dados) {
@@ -1894,7 +1899,7 @@
   window.RosterWork.escalasPainelEditar = {
     montar: montar,
     reset: reset,
-    /* o Salvar do rodapé do painel (escalas-painel-salvar.js), com o Desfazer e o Refazer das Funções e da Militares */
+    /* o Salvar do rodapé do painel (escalas-painel-salvar.js), com o Desfazer e o Refazer das Funções e da Estagiários */
     pendentes: pendentes,
     travado: travado,
     podeDesfazer: podeDesfazer,
@@ -2011,8 +2016,9 @@
       marcaDaPrevia: marcaDaPrevia,
       noLocal: noLocal,
       verMilitar: verMilitar,
-      /* as peças da lista, para a aba Militares (escalas-painel-militares.js) */
-      lista: { linhaMilitar: linhaMilitar, novoGrupo: novoGrupo, menuNaLinha: menuNaLinha, caixaFolgas: caixaFolgas, editavel: function () { return !!ctx && editavel(); } },
+      /* as peças da lista, para a aba Estagiários e as caixas Em outra unidade e Saiu da guarnição
+         (escalas-painel-militares.js) */
+      lista: { linhaMilitar: linhaMilitar, novoGrupo: novoGrupo, menuNaLinha: menuNaLinha, editavel: function () { return !!ctx && editavel(); } },
       horas: { emMin: emMin, faixa: faixa, hhmm: hhmm, periodo: periodo, curta: curta, cruza: cruza, menos: menos,
         uniao: uniao, regua: regua, opcoesHoras: opcoesHoras, horasTexto: horasTexto, textoPeriodos: textoPeriodos }
     }

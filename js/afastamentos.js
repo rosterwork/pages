@@ -193,6 +193,8 @@
       (pessoas || []).forEach(function (p) { doPeriodo(p).forEach(function (af) { tem[chaveFiltro(af)] = true; }); });
       var opcoes = M().padroes.filter(function (x) { return tem[x.valor]; }).map(function (x) { return { rotulo: x.rotulo, valor: x.valor }; });
       if (tem.outros) opcoes.push({ rotulo: M().outros, valor: 'outros' });
+      /* a autorização de viagem (não é afastamento): a opção dela no fim */
+      if (tem.viagem) opcoes.push({ rotulo: M().viagem.rotulo, valor: 'viagem' });
       filtros.definir('afastamento', opcoes);
     }
     var unidades = naPassada;
@@ -292,7 +294,7 @@
       RW.etapas.segurarDesde(performance.now(), RW.afastamentosDados.listarAno(esse)).then(function (lista) {
         if (meu !== token || !naTela()) return;
         if (lista == null) {
-          if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: M().falhaCarregar });
+          if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(M().falhaCarregar) });
           return;
         }
         R().conhecer(lista);

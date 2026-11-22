@@ -109,7 +109,7 @@
       chamar().then(function (r) {
         if (meu !== pedido || !raiz.isConnected) return;
         el.dias.textContent = '';
-        if (!r || !r.ok) { mostrarErro((r && r.erro) || RW.mensagens.escala.falhaCarregar); return; }
+        if (!r || !r.ok) { mostrarErro((r && r.erro) || RW.falha.frase(RW.mensagens.escala.falhaCarregar)); return; }
         est.plano = r;
         montarDocumento();
         montarPerguntas();
@@ -218,7 +218,7 @@
       RW.etapas.frase(el.efeito.querySelector('.nota-texto'), 'trocaOQueMuda');
       chamar({ acao: qual, junto: qual === 'troca' ? est.junto : null, ensaio: true }).then(function (r) {
         if (meu !== pedido || !raiz.isConnected) return;
-        est.previa = r && r.ok ? r.previa : { erro: (r && r.erro) || RW.mensagens.escala.falhaCarregar };
+        est.previa = r && r.ok ? r.previa : { erro: (r && r.erro) || RW.falha.frase(RW.mensagens.escala.falhaCarregar) };
         desenhar();
       }, function () {
         if (meu !== pedido) return;

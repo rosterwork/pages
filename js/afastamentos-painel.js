@@ -8,8 +8,10 @@
    da página), o Resumo do ano (os dias de cada nome e o total) e os
    afastamentos que tocam o ano. Quem administra o militar (ativo)
    edita aqui: uma caixa por afastamento, com a situação (Em curso,
-   Marcado, Encerrado ou Novo afastamento), a lixeira e os campos
-   (afastamentos-campos.js), e o Adicionar afastamento no fim; as
+   Marcado, Encerrado ou Novo afastamento; na autorização de viagem, o
+   nome dela com a situação), a lixeira e os campos
+   (afastamentos-campos.js), e no fim o Adicionar afastamento e o
+   Adicionar autorização de viagem; as
    respostas entram no mesmo rascunho das abas (o rodapé largo da
    página salva). Quem só lê vê um afastamento por linha. O bloco e a
    linha de leitura são os da ficha de Usuários
@@ -38,12 +40,13 @@
     return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
   }
 
-  /* "Em curso" | "Marcado" | "Encerrado", pelo dia de hoje */
-  function situacao(inicio, fim) {
+  /* "Em curso" | "Marcado" | "Encerrado", pelo dia de hoje; na autorização de viagem, o título com a situação dela
+     ("Autorização de viagem (marcada)") */
+  function situacao(inicio, fim, viagem) {
     var hoje = isoHoje();
-    if (String(fim) < hoje) return M().encerrado;
-    if (String(inicio) > hoje) return M().marcado;
-    return M().emCurso;
+    var s = viagem ? M().viagem.situacao : M();
+    var t = String(fim) < hoje ? s.encerrado : String(inicio) > hoje ? s.marcado : s.emCurso;
+    return viagem ? M().viagem.titulo(t) : t;
   }
 
   /* os afastamentos do militar que tocam o ano (e os novos ainda sem data) */
@@ -88,14 +91,20 @@
     return !!(g && g.inicio < R().isoLimite());
   }
 
-  /* quem administra: uma caixa por afastamento, com os campos, e o Adicionar */
+  /* quem administra: uma caixa por afastamento (e por autorização de viagem), com os campos, e os dois Adicionar */
   function montarCaixas(a, cpf, afs) {
     afs.forEach(function (af) {
       var caixa = RW.tpl('tpl-ficha-afastamento');
       if (!caixa) return;
-      caixa.querySelector('[data-af-situacao]').textContent = af.novo ? M().novo : situacao(af.inicio, af.fim);
+      var viagem = af.padrao === 'viagem';
+      caixa.querySelector('[data-af-situacao]').textContent = af.novo ? (viagem ? M().viagem.novo : M().novo)
+        : situacao(af.inicio, af.fim, viagem);
       if (af.mudou) caixa.classList.add('ficha-periodo--mudou');
       var lixeira = caixa.querySelector('[data-af-remover]');
+      if (viagem) {
+        lixeira.setAttribute('aria-label', M().viagem.remover);
+        lixeira.setAttribute('data-dica', M().viagem.remover);
+      }
       if (!comecouAntes(af)) {
         lixeira.classList.remove('oculto');
         lixeira.addEventListener('click', function () { R().remover(cpf, af.chave, null); });
@@ -107,25 +116,31 @@
     });
     var adicionar = RW.tpl('tpl-ficha-afastamento-adicionar');
     if (!adicionar) return;
-    adicionar.querySelector('[data-af-adicionar]').addEventListener('click', function () {
-      var chave = R().criar(cpf);
+    /* o novo entra no fim da lista (sem datas ainda) e o primeiro campo dele ganha o foco */
+    function novo(tipo) {
+      var chave = R().criar(cpf, null, tipo);
       desenhar();
       var nova = a.corpo.querySelectorAll('.ficha-periodo');
       var ultima = nova.length ? nova[nova.length - 1] : null;
       var campo = ultima ? ultima.querySelector('button:not([disabled]), input:not([disabled])') : null;
       if (campo && chave) campo.focus();
-    });
+    }
+    adicionar.querySelector('[data-af-adicionar]').addEventListener('click', function () { novo(null); });
+    adicionar.querySelector('[data-af-adicionar-viagem]').addEventListener('click', function () { novo('viagem'); });
     a.corpo.appendChild(adicionar);
   }
 
-  /* quem só lê: um afastamento por linha (a situação; o nome e as datas; os dias e se sai da guarnição) */
+  /* quem só lê: um afastamento por linha (a situação; o nome e as datas; os dias e se sai da guarnição); a autorização
+     de viagem, com os destinos */
   function montarLeitura(a, afs) {
     var L = RW.usuariosPainelLeitura;
     var b = L.bloco(M().doAno(ano), null, null);
     if (!b) return;
     afs.forEach(function (af) {
-      var extra = M().dias(RW.afastamentosCampos.dias(af)) + (af.gua ? ' · ' + M().extraFora : '');
-      L.linha(b, situacao(af.inicio, af.fim), af.nome + ' · ' + G().textoDatas(af.inicio, af.fim, ano), extra);
+      var viagem = af.padrao === 'viagem';
+      var extra = M().dias(RW.afastamentosCampos.dias(af)) +
+        (viagem ? ' · ' + M().viagem.destinos(af.destinos) : af.gua ? ' · ' + M().extraFora : '');
+      L.linha(b, situacao(af.inicio, af.fim, viagem), af.nome + ' · ' + G().textoDatas(af.inicio, af.fim, ano), extra);
     });
     a.corpo.appendChild(b);
   }
@@ -181,7 +196,7 @@
       if (meu !== token || atual !== a) return;
       if (lista == null) {
         a.corpo.textContent = '';
-        var erro = RW.painel.criarEstado(M().falhaCarregar);
+        var erro = RW.falha.bloco(M().falhaCarregar, function () { ler(cpf); });
         if (erro) a.corpo.appendChild(erro);
         return;
       }

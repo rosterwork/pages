@@ -1,7 +1,9 @@
 /* ============================================================
    EXTRAJORNADA — o painel do dia (uma unidade num dia)
    O mesmo na Distribuição, nos Ajustes e na aba Extrajornada do painel
-   do dia da Escala: a Cobertura do dia (as barras sem extra e com
+   do dia da Escala (na Distribuição e nos Ajustes, com as abas
+   Extrajornada · Funções, extrajornada-dia-funcoes.js): a Cobertura do
+   dia (as barras sem extra e com
    extra, sempre à vista, e, aberta, o relatório do dia: quem foi
    colocado, o que ainda falta e quem ainda pode), a busca e a lista em
    grupos (Neste dia, Querem este dia, Sem preferência, Não querem e
@@ -26,13 +28,16 @@
   var caixas = {};         // as caixas abertas do dia aberto { caixa: true }
   var fixos = {};          // o grupo de cada militar no dia aberto: cpf -> { nome, motivo }
   var buscaTermo = '', buscaModo = 'marcar';   // a busca do painel
+  var comAbas = false;     // o painel da Extrajornada, com as abas Extrajornada · Funções (o da Escala não tem)
 
-  /* como as caixas começam ao abrir um dia, pela cor dele: com o que resolver (vermelho ou amarelo), a Cobertura aberta,
-     com o relatório; sem (verde ou sem cor), fechada, só com os gráficos. O Neste dia aberto quando tem alguém e fechado
-     quando está vazio (até ser aberto ou fechado no clique); Querem este dia aberto; os outros grupos, fechados */
+  /* como as caixas começam ao abrir um dia, pela cor dele: com o que resolver (vermelho ou amarelo, da falta ou de outro
+     erro da escala), a Cobertura aberta, com o relatório; sem (verde ou sem cor), fechada, só com os gráficos. O Neste
+     dia aberto quando tem alguém e fechado quando está vazio (até ser aberto ou fechado no clique); Querem este dia
+     aberto; os outros grupos, fechados */
   function caixasDoInicio(uid, k) {
     var cor = G().corDe(G().faltaDoDia(uid, k, G().efetivas()));
-    return { cobertura: cor === 'erro' || cor === 'alerta', querem: true, disp: false, naoQuerem: false, indisp: false };
+    return { cobertura: cor === 'erro' || cor === 'alerta' || G().errosSemFalta(uid, k).length > 0,
+             querem: true, disp: false, naoQuerem: false, indisp: false };
   }
 
   function msg() { return RW.mensagens.extrajornada.org; }
@@ -63,22 +68,38 @@
      (extrajornada-lista.js); sem espaço, a lista recolhe e volta ao fechar o painel */
   function abrir(uid, k) {
     RW.extrajornadaLista.sairDoFoco();
-    RW.painel.abrir({ titulo: G().dataLonga(k), subtitulo: (u().unidade(uid) || {}).nome || '', aoFechar: function () { aberto = null; RW.extrajornadaPorDia.marcarAberto(); RW.extrajornadaLista.devolverLista(); } });
+    RW.painel.abrir({ titulo: G().dataLonga(k), subtitulo: (u().unidade(uid) || {}).nome || '', aoFechar: function () {
+      aberto = null;
+      if (RW.extrajornadaDiaFuncoes) RW.extrajornadaDiaFuncoes.soltar();
+      RW.extrajornadaPorDia.marcarAberto();
+      RW.extrajornadaLista.devolverLista();
+    } });
     entrarNoDia(uid, k);
     RW.extrajornadaLista.recolherSeApertado();
     RW.extrajornadaPorDia.marcarAberto();
-    montarBusca();
-    desenhar();
+    /* as abas Extrajornada · Funções embaixo do título (extrajornada-dia-funcoes.js), na aba que estava aberta */
+    comAbas = !!RW.extrajornadaDiaFuncoes;
+    if (comAbas) RW.extrajornadaDiaFuncoes.ligar(uid, k, mostrarExtra);
+    else mostrarExtra();
     /* o painel abriu e o calendário ficou mais estreito: o bloco do pelotão aberto vai à vista inteira */
     requestAnimationFrame(function () { requestAnimationFrame(function () { if (RW.extrajornadaPorDia) RW.extrajornadaPorDia.mostrarAberto(true); }); });
   }
 
-  /* no painel do dia da Escala, que já está aberto (a aba Extrajornada) */
-  function mostrarEm(uid, k) {
-    entrarNoDia(uid, k);
+  /* a Extrajornada do dia no corpo do painel: a busca e os grupos */
+  function mostrarExtra() {
     montarBusca();
     desenhar();
   }
+
+  /* no painel do dia da Escala, que já está aberto (a aba Extrajornada) */
+  function mostrarEm(uid, k) {
+    comAbas = false;
+    entrarNoDia(uid, k);
+    mostrarExtra();
+  }
+
+  /* a aba Funções do painel da Extrajornada está aberta: a Extrajornada do dia não desenha por cima dela */
+  function naFuncoes() { return comAbas && RW.extrajornadaDiaFuncoes.naFuncoes(); }
 
   /* a busca do painel, no subcabeçalho */
   function montarBusca() {
@@ -109,7 +130,7 @@
   }
 
   function desenhar() {
-    if (!aberto) return;
+    if (!aberto || naFuncoes()) return;
     var uid = aberto.uid, k = aberto.data, alocs = G().efetivas();
     var corpo = RW.painel.corpo();
     corpo.textContent = '';
@@ -216,9 +237,9 @@
     var antes = G().antesDe(uid, k);
     if (antes) {
       var cob = RW.tpl('tpl-extrajornada-painel-cobertura');
-      var gA = G().grafico(antes, uid, G().erroAntes(uid, k), G().estagiariosAntes(uid, k));
+      var gA = G().grafico(antes, uid, G().erroAntes(uid, k), G().estagiariosAntes(uid, k), G().errosAntes(uid, k));
       var dep = G().depoisDe(uid, k, alocs, falta);
-      var gD = G().grafico(dep.cobertura, uid, dep.erro, dep.estagiarios);
+      var gD = G().grafico(dep.cobertura, uid, dep.erro, dep.estagiarios, dep.erros);
       if (gA) cob.querySelector('.extrajornada-painel-cob-sem').appendChild(gA);
       if (gD) cob.querySelector('.extrajornada-painel-cob-com').appendChild(gD);
       caixa.querySelector('.extrajornada-cobertura-graficos').appendChild(cob);
@@ -233,7 +254,8 @@
   }
 
   /* o relatório do dia, no lugar dentro (devolve quantas linhas pôs): quem o sistema e o administrador colocaram, por
-     quê e o que o militar marcou no pedido; depois, o que ainda falta e quem ainda pode (ou por que ninguém mais pode) */
+     quê e o que o militar marcou no pedido; depois, o que ainda falta, os erros da escala que a extra não resolve e quem
+     ainda pode (ou por que ninguém mais pode) */
   function relatorio(dentro, uid, k, alocs, grupos, falta) {
     var linhas = 0;
     var aqui = alocs.filter(function (a) { return +a.unidade === uid && a.data === k; })
@@ -260,17 +282,24 @@
       if (falta.atotal[b] - falta.acond[b] > 0) ideal.push(b);
       if (falta.acond[b] > 0) chefe.push(b);
     });
+    /* [frase, cor, é falta]: a falta e, depois dela, os erros da escala que a extra não resolve (alguém sem função, falta
+       de modelo, CNH, regra), com os textos do painel do dia e os nomes; os vermelhos antes dos amarelos */
     var frases = [];
-    if (gente.length) frases.push([msg().faltaGenteHoras(u().horas(gente)), 'erro']);
-    if (cond.length) frases.push([msg().faltaCondutorHoras(u().horas(cond), falta.cnh.join(', ')), 'erro']);
-    if (chefe.length) frases.push([msg().chefeDirigeHoras(u().horas(chefe), falta.acnh.join(', ')), 'alerta']);
-    if (ideal.length) frases.push([msg().faltaIdealHoras(u().horas(ideal)), 'alerta']);
-    frases.forEach(function (f, i) {
+    var daEscala = RW.escalasCelulaErros ? RW.escalasCelulaErros.textos(G().errosSemFalta(uid, k), false) : [];
+    function daEscalaNa(cor) { daEscala.forEach(function (x) { if (x.nivel === cor) frases.push([x.texto + '.', cor, false]); }); }
+    if (gente.length) frases.push([msg().faltaGenteHoras(u().horas(gente)), 'erro', true]);
+    if (cond.length) frases.push([msg().faltaCondutorHoras(u().horas(cond), falta.cnh.join(', ')), 'erro', true]);
+    daEscalaNa('erro');
+    if (chefe.length) frases.push([msg().chefeDirigeHoras(u().horas(chefe), falta.acnh.join(', ')), 'alerta', true]);
+    if (ideal.length) frases.push([msg().faltaIdealHoras(u().horas(ideal)), 'alerta', true]);
+    daEscalaNa('alerta');
+    var primeiraFalta = frases.filter(function (f) { return f[2]; })[0] || null;
+    frases.forEach(function (f) {
       var lin = RW.tpl('tpl-extrajornada-rd-falta');
       lin.classList.add('extrajornada-rd-linha--' + f[1]);
       lin.querySelector('.extrajornada-rd-fim').textContent = f[0];
-      /* na primeira, quem ainda pode tirar extra no dia (ou por que ninguém mais pode) */
-      if (i === 0) {
+      /* na primeira falta, quem ainda pode tirar extra no dia (ou por que ninguém mais pode) */
+      if (f === primeiraFalta) {
         var pode = lin.querySelector('.extrajornada-rd-mais');
         pode.textContent = quemPode(grupos);
         pode.classList.remove('oculto');
@@ -279,7 +308,7 @@
       linhas++;
     });
     var tinha = [1, 2, 3, 4].some(function (b) { return falta.base[b] + falta.abase[b] > 0; });
-    if (tinha && !frases.length) {
+    if (tinha && !primeiraFalta) {
       var ok = RW.tpl('tpl-extrajornada-rd-ok');
       ok.querySelector('.extrajornada-rd-fim').textContent = msg().faltaCoberta;
       dentro.appendChild(ok);

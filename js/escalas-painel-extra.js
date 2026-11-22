@@ -107,10 +107,17 @@
     var meu = ++pedido;
     RW.painel.segurar(RW.extrajornadaUtil.chamar('extrajornada_mes', { p_competencia: comp })).then(function (r) {
       if (meu !== pedido || !ctx) return;
-      if (!r || !r.ok) { frase(corpo, (r && r.error) || msg().falhaMes); return; }
+      if (r && r.error) { frase(corpo, r.error); return; }
+      if (!r || !r.ok) { falhou(); return; }
       usarMes(r);
       mostrar();
-    }, function () { if (meu === pedido && ctx) frase(corpo, msg().falhaMes); });
+    }, function () { if (meu === pedido && ctx) falhou(); });
+    /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js), que lê o mês de novo */
+    function falhou() {
+      corpo.textContent = '';
+      var aviso = RW.falha.bloco(msg().falhaMes, function () { montar(corpo, rodape, unidadeId, iso); });
+      if (aviso) corpo.appendChild(aviso);
+    }
   }
 
   /* a aba saiu da tela (o rascunho fica até o Salvar). Com mudança, o dia dela fica para o rodapé largo, como o da célula

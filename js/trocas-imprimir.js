@@ -332,20 +332,26 @@
     });
     if (!form.lista) return;
 
-    /* as trocas das unidades da tela, uma vez; o mês filtra aqui */
+    /* as trocas das unidades da tela, uma vez; o mês filtra aqui. A falha: o aviso com o Tentar de novo (geral-falha.js) */
     var ref = form;
-    mostrarNaLista('tpl-troca-vazio', '', 'trocasMes');
-    RW.trocasDados.listar(unidades()).then(function (todas) {
-      if (form !== ref) return;
-      if (!Array.isArray(todas)) throw new Error('lista');
-      form.todas = todas;
-      montarMes();
-    }).catch(function () {
-      if (form !== ref) return;
-      form.falhou = true;
-      mostrarNaLista('tpl-troca-vazio', msg().falhaLista);
-      form.atualizar();
-    });
+    function lerTrocas() {
+      form.falhou = false;
+      mostrarNaLista('tpl-troca-vazio', '', 'trocasMes');
+      RW.trocasDados.listar(unidades()).then(function (todas) {
+        if (form !== ref) return;
+        if (!Array.isArray(todas)) throw new Error('lista');
+        form.todas = todas;
+        montarMes();
+      }).catch(function () {
+        if (form !== ref) return;
+        form.falhou = true;
+        form.lista.textContent = '';
+        var aviso = RW.falha.bloco(RW.mensagens.trocas.falhaCarregar, lerTrocas);
+        if (aviso) form.lista.appendChild(aviso);
+        form.atualizar();
+      });
+    }
+    lerTrocas();
   }
 
   RW.trocasImprimir = { abrir: abrir };

@@ -1,6 +1,6 @@
 /* ============================================================
    ESCALAS — as guarnições pelo painel do dia (o ciclo automático; as
-   abas Funções, Militares e Guarnições)
+   abas Funções e Guarnições)
    - o rascunho das guarnições: as mudanças do dia aberto que ainda
      não foram salvas (as de outro dia ficam guardadas na gaveta,
      escalas-rascunho-dias.js, e voltam com o dia, abrirDia); marcar e
@@ -19,7 +19,7 @@
      ficam), que o Adicionar militar, o Remover do dia e o Remover da
      guarnição mostram (o efeito, molde tpl-escala-ciclo-efeito);
    - o Remover da guarnição e o Cancelar a saída do menu da linha, na
-     aba Militares: a pergunta Último serviço embaixo da linha e a
+     aba Funções: a pergunta Último serviço embaixo da linha e a
      saída que sai do rascunho (ou o cancelamento da gravada);
    - o Mudar a saída de quem tem a saída marcada à mão (a linha riscada
      e quem faz no dia o último serviço antes dela, a lista
@@ -219,7 +219,7 @@
   /* quem sai da escala no dia (a sub-tela já mostrou a lista; itens = o que acontece) */
   function marcarSair(unidadeId, iso, m, itens) { marcar(unidadeId, iso, { cpf: m.cpf, acao: 'tirar', tipo: 'sair', itens: itens }); }
 
-  /* ---------- a aba Militares: o Remover da guarnição, o Mudar a saída e o Cancelar a saída (o menu da linha) ---------- */
+  /* ---------- a aba Funções: o Remover da guarnição, o Mudar a saída e o Cancelar a saída (o menu da linha) ---------- */
 
   var pergunta = null;   // a pergunta Último serviço aberta embaixo de uma linha: { el, pedido, passos }
   var conta = 0;         // nome único para os rádios de cada pergunta
@@ -258,7 +258,7 @@
     if (!modo) ed().redesenhar();
   }
 
-  /* o Remover da guarnição de quem está no dia (m; linha = a linha dele na aba Militares): a pergunta Último serviço
+  /* o Remover da guarnição de quem está no dia (m; linha = a linha dele na aba Funções): a pergunta Último serviço
      embaixo da linha, sem nada marcado: neste dia (ele faz o serviço e sai da guarnição depois dele) ou ele não trabalha
      mais a partir deste dia. A resposta põe a saída no rascunho das guarnições e mostra embaixo o que acontece com as
      trocas, folgas e extras dele; o Cancelar volta ao que era. Ela fica aberta até a próxima ação. Na caixa flutuante da
@@ -307,7 +307,7 @@
   }
 
   /* o Mudar a saída de quem tem a saída marcada à mão (m; s = { saida, ultimo, dias }, a da linha riscada ou a de quem faz
-     no dia o último serviço antes dela; linha = a linha dele na aba Militares): a pergunta Último serviço embaixo da linha,
+     no dia o último serviço antes dela; linha = a linha dele na aba Funções): a pergunta Último serviço embaixo da linha,
      com os dias de serviço dele que dá para escolher e o de agora marcado. Outro dia põe no rascunho a saída no dia
      seguinte a ele e, quando ela vem para antes, mostra embaixo o que acontece com as trocas e folgas dele; o dia da saída
      gravada tira a mudança. A saída que só está no rascunho (o Remover da guarnição) muda nele. O Cancelar volta ao que
@@ -385,7 +385,7 @@
     desfazer: desfazer, refazer: refazer, porVarias: porVarias, passoVarios: passoVarios,
     analisar: analisar, analisarSair: analisarSair, analisarMudar: analisarMudar, efeito: efeito,
     entrar: entrar, marcarMudar: marcarMudar, marcarSair: marcarSair,
-    /* a aba Militares (o menu da linha): o Remover da guarnição, o Mudar a saída e o Cancelar a saída */
+    /* a aba Funções (o menu da linha): o Remover da guarnição, o Mudar a saída e o Cancelar a saída */
     podeSair: podeSair, perguntarSaida: perguntarSaida, cancelarSaida: cancelarSaida, fecharPergunta: fecharPergunta,
     saidaMarcada: saidaMarcada, perguntarMudarSaida: perguntarMudarSaida,
     /* o dia mais antigo que se mexe (o Cancelar a saída da caixa do Fora da escala, escalas-celula-fora.js) */

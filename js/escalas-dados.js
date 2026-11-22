@@ -73,7 +73,8 @@
       Object.keys(dias).forEach(function (iso) {
         var c = dias[iso] || {};
         militares[uid][iso] = c.militares || [];
-        fora[uid][iso] = c.fora || [];
+        /* quem tem autorização de viagem no dia (a chave "viagens") vai com o Fora da escala: a célula põe no grupo dela */
+        fora[uid][iso] = (c.fora || []).concat(c.viagens || []);
         cobertura[uid][iso] = c.cobertura || [];
         erro[uid][iso] = c.erro || [];
         if (c.atualizando) atualizando.push(uid + '|' + iso);
@@ -294,8 +295,9 @@
      Uma prévia por vez: cada uma segura a escala da companhia no banco até terminar, e duas juntas fariam fila lá dentro,
      gastando o tempo-limite de cada pedido. A próxima espera aqui; o pedido igual que ainda espera dá lugar ao mais novo e
      recebe a resposta dele. soAMaisNova: a grade da tela, em que só vale o último período pedido (quem pediu antes já
-     desistiu, pelo latest-wins). Sem resposta em LIMITE_PREVIA_MS, a fila anda */
-  var LIMITE_PREVIA_MS = 30000;
+     desistiu, pelo latest-wins). Sem resposta em LIMITE_PREVIA_MS (um pouco mais que os 60 s que a escala_previa tem no
+     banco), a fila anda */
+  var LIMITE_PREVIA_MS = 65000;
   var previaNoAr = null;
   var previasEsperando = [];   // { chave, corpo, avisar: [o resolver de cada pedido] }
 
@@ -504,7 +506,22 @@
       .then(function (grade) { return grade || {}; });
   }
 
+  /* a leitura da grade (ou do dia) que falhou, mesmo depois de o sistema tentar de novo sozinho: o aviso com o Tentar de
+     novo no meio do lugar (geral-falha.js). titulo: o da tela (sem ele, "Não foi possível carregar a escala."); tentar:
+     o que lê de novo (sem ele, a Escala inteira lê de novo). Com mudança esperando o Salvar, o aviso diz que ela continua */
+  function mostrarFalha(lugar, titulo, tentar) {
+    lugar.textContent = '';
+    var estado = RosterWork.tpl('tpl-escala-estado'), S = RosterWork.escalasPainelSalvar;
+    var aviso = RosterWork.falha.bloco(titulo || RosterWork.mensagens.escala.falhaCarregarMes, tentar || recarregarEscala,
+      { rascunho: !!(S && S.paraPrevia()) });
+    if (!estado || !aviso) return;
+    estado.appendChild(aviso);
+    lugar.appendChild(estado);
+  }
+  function recarregarEscala() { window.dispatchEvent(new CustomEvent('rosterwork_escala_recarregar')); }
+
   window.RosterWork.escalasDados = {
+    mostrarFalha: mostrarFalha,
     sobreavisoCandidatos: sobreavisoCandidatos, sobreavisoMilitares: sobreavisoMilitares,
     carregar: carregar, antecipar: antecipar, reorganizar: reorganizar, carregarMilitares: carregarMilitares, lerMilitarDia: lerMilitarDia,
     motivos: motivos,

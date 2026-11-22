@@ -4,8 +4,8 @@
    linha da dica (a guarnição, a troca com quem, a Parte e o RW, a
    folga e o motivo dela, o pontual, a extrajornada, o remanejado, a
    mudança de dia, a saída da guarnição, o serviço e a extra no mesmo
-   horário, o afastamento e, no Fora da escala, o motivo de estar fora
-   e a entrada marcada).
+   horário, o afastamento, a autorização de viagem com os destinos e,
+   no Fora da escala, o motivo de estar fora e a entrada marcada).
    A grade (ler_escala_mes) traz a origem de cada linha; o resto vem
    da leitura escala_motivos (a letra da guarnição, as trocas, o
    motivo da folga e a unidade do remanejado), feita depois que as
@@ -67,8 +67,15 @@
       case 'saida_guarnicao': frases.push(t.saiuDaGuarnicao(diaMes(p.saida))); break;
       /* o sobreaviso da companhia; no dia em que ele não está livre, o porquê; no fixado, quem o pôs */
       case 'sobreaviso': frases.push(RW.escalasCelulaSobreaviso.dica(p)); break;
-      /* o nome do afastamento até a data */
-      case 'afastamento': frases.push(RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5))); break;
+      /* o nome do afastamento até a data e, embaixo, o que ele deixa nesses dias (as marcas que o banco manda) */
+      case 'afastamento':
+        frases.push(RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5)));
+        if (p.marcas) frases.push(RW.mensagens.afastamentos.marcas(Object.assign({ escala: true }, p.marcas)));
+        break;
+      /* a autorização de viagem: até quando, os destinos e que só sai do sobreaviso */
+      case 'viagem':
+        frases.push(t.dicaViagem(RW.data.isoParaBR(p.ate).slice(0, 5), p.destinos));
+        break;
       /* o operacional da unidade sem guarnição (o grupo Fora da escala): o motivo e, embaixo, a entrada marcada */
       case 'fora':
         frases.push(motivoFora(p, d));

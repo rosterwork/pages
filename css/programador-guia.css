@@ -636,6 +636,7 @@
 .guia-amostra[data-cor="fundo-contraste-hover"] { background-color: var(--fundo-contraste-hover); }
 .guia-amostra[data-cor="fundo-flutuante"] { background-color: var(--fundo-flutuante); }
 .guia-amostra[data-cor="fundo-dia-fora"] { background-color: var(--fundo-dia-fora); }
+.guia-amostra[data-cor="fundo-caixa-fora"] { background-color: var(--fundo-caixa-fora); }
 .guia-amostra[data-cor="texto-forte"] { background-color: var(--texto-forte); }
 .guia-amostra[data-cor="texto"] { background-color: var(--texto); }
 .guia-amostra[data-cor="texto-suave"] { background-color: var(--texto-suave); }

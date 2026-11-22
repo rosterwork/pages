@@ -78,7 +78,7 @@
     var seteDias = est.registrar || !!(est.editar && est.editar.admin), registroId = est.editar ? est.editar.registroId : null;
     RW.trocasDados.variasDias(est.militares.map(function (m) { return m.cpf; }), iso(ini), iso(fim), seteDias, registroId).then(function (r) {
       if (meu !== req || !est) return;
-      if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.trocas.varias.falhaDias }); }
+      if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.falha.frase(RW.mensagens.trocas.varias.falhaDias) }); }
       else (r.dias || []).forEach(function (d) { disp[String(d.data).slice(0, 10)] = d; });
       marcarEscolhido();
       desenhar();

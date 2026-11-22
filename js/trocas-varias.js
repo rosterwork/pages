@@ -102,6 +102,7 @@
       if (!est || est.unidadeSel !== unidade) return;
       combo.habilitar(false);
       combo.definir(RW.mensagens.trocas.modalCarregarFalha, true);
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(RW.mensagens.geral.falhaCarregar) });
     });
   }
   /* cobrança: o devedor entra sozinho assim que aparece na unidade escolhida (uma vez só) */

@@ -188,7 +188,7 @@
     var secao = o.secao();
     RW.fila.ler().then(function (r) {
       if (!o.aberta()) return;
-      if (!r) { RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaCarregar }); return; }
+      if (!r) { RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(RW.mensagens.geral.falhaCarregar) }); return; }
       var pedido = pedidoDe(r, pessoa.usuario_id);
       /* outro administrador já decidiu: a nota some */
       if (!pedido) { pessoa.correcao_pendente = false; o.redesenhar(); return; }

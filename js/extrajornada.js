@@ -157,8 +157,9 @@
       /* passando de 0,5 s, a forma e, de 1,5 s, as etapas (geral-etapas.js) */
       espera = RW.etapas.area(el.estado, { forma: 'tpl-esqueleto-cartoes', etapas: 'extraAbrir', valores: { mes: nomeMes(comp) } });
     } else if (!pronta) {
-      var no = RW.tpl('tpl-escala-estado');
-      if (no) { no.textContent = l.texto; el.estado.appendChild(no); }
+      /* a falha: o aviso com o Tentar de novo (geral-falha.js), que lê o mês de novo */
+      var no = RW.tpl('tpl-escala-estado'), aviso = RW.falha.bloco(l.texto, carregar);
+      if (no && aviso) { no.appendChild(aviso); el.estado.appendChild(no); }
     }
     el.acoes.disabled = leituras.mes.situacao !== 'ok';
   }

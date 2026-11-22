@@ -147,7 +147,7 @@
     }, function () {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;
       Esqueleto.parar();
-      mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      RosterWork.escalasDados.mostrarFalha(corpo);
     });
   }
 

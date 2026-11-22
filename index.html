@@ -1168,6 +1168,17 @@
     </div>
   </template>
 
+  <!-- MOLDES: a leitura que falhou (geral-falha.js), no lugar dos dados da área ou do painel: o título da tela, o que
+       fazer (pelo motivo da falha) e o Tentar de novo, que refaz a mesma leitura -->
+  <template id="tpl-falha-leitura">
+    <div class="falha-leitura" role="alert">
+      <svg class="icone" width="24" height="24" aria-hidden="true"><use href="icones/todos.svg#icone-alerta" /></svg>
+      <p class="falha-leitura-titulo"></p>
+      <p class="falha-leitura-texto"></p>
+      <button type="button" class="botao botao--primario falha-leitura-tentar">Tentar de novo</button>
+    </div>
+  </template>
+
   <!-- MOLDES: filtros da barra de controles (componente geral-filtros). A página escreve um lugar por filtro
        (<div data-filtro="..." data-filtro-nome data-filtro-titulo>) dentro da caixa .filtros; o componente põe
        ali o botão Filtros (com o número de filtros ligados) e leva cada lugar para o menu, como uma coluna
@@ -3466,7 +3477,16 @@
   <div class="escala-mes-dica oculto" id="escala-mes-dica">
     <span class="escala-mes-dica-militares"></span>
     <span class="escala-mes-dica-estagiarios oculto"></span>
+    <span class="escala-mes-dica-erros oculto"></span>
   </div>
+
+  <!-- a linha de um erro da hora na dica do gráfico (escalas-celula.js; a cor pelo --erro ou --alerta) -->
+  <template id="tpl-escala-mes-dica-erro">
+    <span class="escala-mes-dica-erro">
+      <svg class="icone" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+      <span class="escala-mes-dica-erro-texto"></span>
+    </span>
+  </template>
 
   <template id="tpl-escala-mes-celula">
     <div class="escala-mes-celula"></div>
@@ -4173,6 +4193,11 @@
           <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
           <span class="nota-texto"></span>
         </div>
+        <!-- quem tem autorização de viagem no dia (não impede: o dia fica com o erro vermelho) -->
+        <div class="nota nota--erro escala-adicionar-viagem oculto">
+          <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+          <span class="nota-texto"></span>
+        </div>
       </div>
       <!-- quem muda de guarnição com o descanso menor que o de sempre: a data com o descanso de sempre (a sugestão) ou o
            dia aberto (escalas-painel-adicionar.js › quandoEntra; as datas vêm do JS) -->
@@ -4478,9 +4503,10 @@
     </div>
   </template>
 
-  <!-- uma unidade do Para qual unidade do Mudar de unidade neste dia: a bolinha e o nome (o nome vem do JS) -->
+  <!-- uma unidade do Para qual unidade do Mudar de unidade neste dia: a bolinha, o nome e a cidade, mais apagada (os dois vêm
+       do JS) -->
   <template id="tpl-escala-remanejar-unidade">
-    <label class="geral-opcao"><input type="radio" value="" /><span class="escala-remanejar-unidade-nome"></span></label>
+    <label class="geral-opcao"><input type="radio" value="" /><span class="escala-remanejar-unidade-nome"></span><span class="escala-remanejar-unidade-cidade"></span></label>
   </template>
 
   <!-- ===== Mudar o horário do serviço (sub-tela; escalas-painel-horario-dia.js): o Horário do serviço (o serviço dele no dia,
@@ -4602,12 +4628,11 @@
 
   <!-- ===== moldes do PAINEL DO DIA no modo EDITAR + seções (compartilhados Escala + Extrajornada) ===== -->
   <!-- abas de seção do painel do dia (clonadas para a linha das abas da gaveta): Funções (a lista do dia por posto e
-       função, que o admin edita), Militares (a mesma lista do dia, por pessoa: só quem está no dia), Guarnições (os
-       períodos das guarnições, a seção continuos) e Extrajornada; data-so-admin = a aba some para quem não é administrador -->
+       função, que o admin edita), Estagiários (os estagiários do dia, por pessoa), Guarnições (os períodos das
+       guarnições, a seção continuos) e Extrajornada; data-so-admin = a aba some para quem não é administrador -->
   <template id="tpl-escala-painel-secoes">
     <div class="abas">
       <button type="button" class="aba aba--ativa" data-secao="distribuicao">Funções</button>
-      <button type="button" class="aba" data-secao="militares">Militares</button>
       <button type="button" class="aba" data-secao="estagiarios" data-so-admin data-so-estagio>Estagiários</button>
       <button type="button" class="aba" data-secao="continuos" data-so-admin>Guarnições</button>
       <button type="button" class="aba" data-secao="extra">Extrajornada</button>

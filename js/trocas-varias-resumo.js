@@ -64,7 +64,7 @@
       if (!est || meu !== req) return;
       if (!r || r.erro) {
         if (tudo) desenhar(null);
-        if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || M().falhaResumo });
+        if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.falha.frase(M().falhaResumo) });
         return;
       }
       if (aplicarCobranca(r)) { montar(tudo); return; }   // as horas da dívida entraram: monta de novo
@@ -72,7 +72,7 @@
     }).catch(function () {
       if (!est || meu !== req) return;
       if (tudo) desenhar(null);
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: M().falhaResumo });
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(M().falhaResumo) });
     });
   }
 

@@ -60,6 +60,13 @@
   function diasNoAno(afs, ano) { return diasNoPeriodo(afs, ano + '-01-01', ano + '-12-31'); }
   /* a Autorização de viagem não é afastamento: fica fora dos dias afastado (o selo cinza e o Resumo do ano) */
   function afastado(af) { return af.padrao !== 'viagem'; }
+  /* a dica de um afastamento: o nome e as datas inteiras e, embaixo, o que ele deixa nesses dias (as marcas); a da
+     autorização de viagem, com os destinos e "Só sai do sobreaviso" */
+  function dica(af) {
+    if (!afastado(af)) return M().viagem.dica(D().isoParaBR(af.inicio), D().isoParaBR(af.fim), af.destinos);
+    return M().dicaSelo(af.nome, D().isoParaBR(af.inicio), D().isoParaBR(af.fim)) + '\n'
+      + M().marcas({ escala: true, gua: af.gua, tro: af.tro, ext: af.ext, sob: af.sob });
+  }
 
   /* o mês de hoje no ano da tela (-1 em outro ano) */
   function mesAtual(ano) {
@@ -67,13 +74,18 @@
     return hoje.getFullYear() === ano ? hoje.getMonth() : -1;
   }
 
-  /* um selo: o nome, os dias no mês e a dica com as datas inteiras */
+  /* um selo: o nome, os dias no mês e a dica com as datas inteiras e as marcas; a autorização de viagem sem o listrado,
+     com o ícone do mapa */
   function selo(af, de, ate) {
     var s = RW.tpl('tpl-afastamentos-selo');
     if (!s) return null;
-    s.querySelector('.afastamentos-selo-nome').textContent = af.nome;
+    s.querySelector('.afastamentos-selo-texto').textContent = af.nome;
+    if (!afastado(af)) {
+      s.classList.add('afastamentos-selo--viagem');
+      s.querySelector('.afastamentos-selo-icone').classList.remove('oculto');
+    }
     s.querySelector('.afastamentos-selo-dias').textContent = M().diasDoMes(de.slice(8, 10), ate.slice(8, 10));
-    s.setAttribute('data-dica', M().dicaSelo(af.nome, D().isoParaBR(af.inicio), D().isoParaBR(af.fim)));
+    s.setAttribute('data-dica', dica(af));
     s.setAttribute('data-af', af.chave);
     if (af.mudou) s.classList.add('afastamentos-selo--rascunho');
     return s;
@@ -265,6 +277,7 @@
         if (!l) return;
         l.querySelector('.afastamentos-item-texto').textContent = af.nome + ' · ' + textoDatas(af.inicio, af.fim, c.ano);
         l.querySelector('.afastamentos-item-dias').textContent = M().dias(diasNoPeriodo([af], c.periodo.inicio, c.periodo.fim));
+        l.setAttribute('data-dica', dica(af));   // segurando o dedo na linha
         pilha.appendChild(l);
       });
       if (c.lendo()) pilha.appendChild(RW.tpl('tpl-esqueleto-afastamento'));
@@ -285,6 +298,6 @@
 
   window.RosterWork.afastamentosGrade = {
     desenhar: desenhar, desenharMes: desenharMes, desenharLista: desenharLista, textoDatas: textoDatas,
-    diasNoAno: diasNoAno, diasNoPeriodo: diasNoPeriodo, afastado: afastado
+    diasNoAno: diasNoAno, diasNoPeriodo: diasNoPeriodo, afastado: afastado, dica: dica
   };
 })();

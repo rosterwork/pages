@@ -29,16 +29,18 @@
   function nomeDe(m) { return ((m.grad || '') + ' ' + (m.nome || '')).trim(); }
   function textoDo(botao) { var s = botao && botao.querySelector('span'); return s ? (s.innerText || s.textContent).trim() : ''; }
 
-  /* o clique é do sobreaviso? { cpf (o nome clicado; null: o dia), linha (a peça do nome), pode (ele mexe no sobreaviso
-     deste dia) }; null: não é (a célula segue como sempre; a linha tracejada de cima do grupo é do dia) */
+  /* o clique é do sobreaviso? { cpf (o nome clicado; null: o dia), linha (a peça do nome), falta (a linha do que falta: a
+     peça do dia), pode (ele mexe no sobreaviso deste dia) }; null: não é (a célula segue como sempre; a linha tracejada
+     de cima do grupo é do dia) */
   function alvo(evento, cel) {
     var campo = evento.target.closest && !evento.target.closest('.escala-grupo-linha') ? evento.target.closest('.escala-sobreaviso') : null;
     var naPagina = !!(RW.paginaSobreaviso && RW.paginaSobreaviso.ativa());
     if (!campo && !naPagina) return null;
     var linha = campo ? evento.target.closest('.linha-escalado--sobreaviso[data-cpf]') : null;
+    var falta = campo && !linha ? evento.target.closest('.linha-escalado--sobreaviso-falta') : null;
     var s = RW.escalasCelulaSobreaviso.doDia(cel.dataset.unidadeId, cel.dataset.iso);
     var quem = s ? (s.unidade_id ? ['pelotao', s.unidade_id] : ['companhia', s.companhia_id]) : null;
-    return { cpf: linha ? linha.getAttribute('data-cpf') : null, linha: linha,
+    return { cpf: linha ? linha.getAttribute('data-cpf') : null, linha: linha, falta: falta,
       pode: !!quem && !!RW.sessao && RW.sessao.podeAdministrar(quem[0], quem[1]) };
   }
 

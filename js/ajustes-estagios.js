@@ -54,11 +54,12 @@
     }
     return RW.rpc('estagios_listar', { p_unidade: unidadeId }).then(function (r) {
       if (meu !== pedido || !el.corpo.isConnected) return;
-      if (!r || !r.ok) {
+      if (r && r.error) {
         el.corpo.textContent = '';
-        RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor });
+        RW.avisar({ tipo: 'erro', mensagem: r.error });
         return;
       }
+      if (!r || !r.ok) { falhou(); return; }
       dados = r;
       unidadeId = r.unidade.id;
       rascunho = copia(r.estagios || []).map(function (e) { e._chave = e.id; return e; });
@@ -74,9 +75,14 @@
       desenhar();
     }, function () {
       if (meu !== pedido) return;
-      el.corpo.textContent = '';
-      RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
+      falhou();
     });
+    /* a leitura que não veio: o aviso com o Tentar de novo no corpo (geral-falha.js) */
+    function falhou() {
+      el.corpo.textContent = '';
+      var aviso = RW.falha.bloco(RW.mensagens.geral.falhaCarregar, function () { carregar(reescolher); });
+      if (aviso) el.corpo.appendChild(aviso);
+    }
   }
 
   /* o seletor da barra: as unidades que o administrador muda, com a da tela marcada (o molde dos Feriados) */

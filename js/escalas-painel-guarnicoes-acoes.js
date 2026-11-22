@@ -2,7 +2,7 @@
    ESCALA — painel do dia › aba Guarnições: o lápis de quem tem a
    saída marcada (a lista é do escalas-painel-guarnicoes.js). A aba é
    para ver: entrar, mudar de guarnição e sair são feitos pela aba
-   Militares (o Adicionar militar, na guarnição do dia, e o Remover da
+   Funções (o Adicionar militar, na guarnição do dia, e o Remover da
    guarnição do lápis de cada um). O lápis (e a linha inteira) só
    aparece em quem saiu à mão e abre o menu com o título ("Cb. André
    sai da escala em 20/11") e o Cancelar a saída: na hora, como um

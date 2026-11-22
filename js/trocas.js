@@ -95,6 +95,13 @@
     el.textContent = msg || '';
     lista.appendChild(el);
   }
+
+  /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js); tentar = o que lê a lista de novo */
+  function falhaEm(lista, tentar) {
+    lista.textContent = '';
+    var aviso = RW.falha.bloco(RW.mensagens.trocas.falhaCarregar, tentar);
+    if (aviso) lista.appendChild(aviso);
+  }
   /* a leitura de uma lista: o que está nela fica até a nova chegar; vazia, passando de 0,3 s, a forma dos cartões e, de 1 s,
      as etapas (geral-etapas.js). Uma por vez */
   function esperarLista(lista) {
@@ -140,7 +147,7 @@
     espera.segurar(RW.trocasDados.listar(unidades())).then(function (todas) {
       if (!document.contains(lista) || req !== reqSeq) return;
       pararLista();
-      if (!Array.isArray(todas)) { mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar); return; }   // null = falha (Postgres devolve [] p/ vazio)
+      if (!Array.isArray(todas)) { falhaEm(lista, carregarMinhas); return; }   // null = falha (Postgres devolve [] p/ vazio)
       var cpf = RosterWork.sessao.cpf();
       /* as trocas em que eu entro e, nas várias trocas, os registros de que participo (uma linha por registro) */
       var minhas = agruparRegistros(todas.filter(function (t) {
@@ -153,7 +160,7 @@
     }).catch(function () {
       if (!document.contains(lista) || req !== reqSeq) return;
       pararLista();
-      mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar);
+      falhaEm(lista, carregarMinhas);
     });
   }
 
@@ -185,14 +192,14 @@
     espera.segurar(RW.trocasDados.pendencias()).then(function (linhas) {
       if (!document.contains(lista) || req !== reqSeq) return;
       pararLista();
-      if (!Array.isArray(linhas)) { mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar); return; }   // null = falha
+      if (!Array.isArray(linhas)) { falhaEm(lista, carregarPendentes); return; }   // null = falha
       if (!linhas.length) { mostrarVazio(lista, RW.mensagens.trocas.vazio.pendentes); return; }
       lista.textContent = '';
       linhas.forEach(function (p) { var el = montarPendente(p); if (el) lista.appendChild(el); });
     }).catch(function () {
       if (!document.contains(lista) || req !== reqSeq) return;
       pararLista();
-      mostrarVazio(lista, RW.mensagens.trocas.falhaCarregar);
+      falhaEm(lista, carregarPendentes);
     });
   }
 

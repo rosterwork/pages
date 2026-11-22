@@ -28,6 +28,19 @@
     extrato.botaoMais.classList.add('oculto');
   }
 
+  /* a página do extrato que não veio: o aviso com o Tentar de novo (geral-falha.js), que lê o extrato de novo, do
+     começo (a lista foi limpa) */
+  function falhou() {
+    if (!extrato) return;
+    extrato.lista.textContent = '';
+    var aviso = RW.falha.bloco(txt('extratoFalha'), function () {
+      if (extrato) extrato.carregados = 0;
+      carregarPagina(true);
+    });
+    if (aviso) extrato.lista.appendChild(aviso);
+    extrato.botaoMais.classList.add('oculto');
+  }
+
   /* uma linha do extrato: data + horas em cima; quem folgou -> quem trabalhou embaixo */
   function montarLinha(l) {
     var tpl = document.getElementById('tpl-troca-extrato-linha');
@@ -72,7 +85,7 @@
     espera.segurar(RW.trocasDados.historicoPar(est.aCpf, est.bCpf, PAGINA, est.carregados)).then(function (linhas) {
       if (pendenciaAtual !== pend || extrato !== est) return;   // painel trocou no meio
       terminar();
-      if (!Array.isArray(linhas)) { mostrarEstado(txt('extratoFalha')); return; }
+      if (!Array.isArray(linhas)) { falhou(); return; }
       if (primeira) {
         est.lista.textContent = '';
         if (linhas.length === 0) { mostrarEstado(txt('extratoVazio')); return; }
@@ -84,7 +97,7 @@
     }).catch(function () {
       if (pendenciaAtual !== pend || extrato !== est) return;
       terminar();
-      mostrarEstado(txt('extratoFalha'));
+      falhou();
     });
   }
 

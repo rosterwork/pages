@@ -225,8 +225,10 @@
       if (falha) {
         pararEsperaDaEscala();
         alvo.textContent = '';
+        /* o aviso com o Tentar de novo (geral-falha.js): lê a escala do mês de novo, com a forma da grade */
         var no = RW.tpl('tpl-escala-estado');
-        if (no) { no.textContent = msg().falhaEscala; alvo.appendChild(no); }
+        var aviso = RW.falha.bloco(msg().falhaEscala, function () { escalaFalhou = null; redesenhar(); });
+        if (no && aviso) { no.appendChild(aviso); alvo.appendChild(no); }
       } else if (!esperaDaEscala) {
         /* passando de 0,5 s, a forma da grade, com os dias e os pelotões de verdade (escalas-esqueleto.js) */
         var unidades = u().doCalendario(alocs), mesDaGrade = new Date(+d.competencia.slice(0, 4), +d.competencia.slice(5, 7) - 1, 1);

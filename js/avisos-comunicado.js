@@ -84,7 +84,7 @@
         });
         revisar();
       })
-      .catch(function () { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.erroConexao }); });
+      .catch(function () { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(RW.mensagens.geral.falhaCarregar) }); });
   }
 
   /* ---------- seletor de unidades (árvore, escolha múltipla) ---------- */

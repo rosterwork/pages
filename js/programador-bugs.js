@@ -75,7 +75,7 @@
   /* relê os bugs; com `idMostrar`, abre esse bug já na situação em que ele está */
   function carregar(idMostrar) {
     carga = RosterWork.rpc('bugs_listar').then(function (r) {
-      if (!Array.isArray(r)) { bugs = []; renderLista(M().falhaCarregar); avisarSubtitulo(); return; }
+      if (!Array.isArray(r)) { bugs = []; falhaNaLista(); avisarSubtitulo(); return; }
       bugs = r;
       avisarSubtitulo();
       var bug = idMostrar ? bugPorId(idMostrar) : null;
@@ -87,7 +87,7 @@
       }
     }).catch(function () {
       bugs = [];
-      renderLista(M().falhaCarregar);
+      falhaNaLista();
     });
     return carga;
   }
@@ -171,6 +171,15 @@
     var no = RosterWork.tpl('tpl-programador-vazio');
     if (no) no.querySelector('span').textContent = texto;
     return no;
+  }
+
+  /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js) */
+  function falhaNaLista() {
+    var lista = q('#bugs-lista');
+    if (!lista) return;
+    lista.textContent = '';
+    var aviso = RosterWork.falha.bloco(M().falhaCarregar, function () { carregar(null); });
+    if (aviso) lista.appendChild(aviso);
   }
 
   function renderLista(textoVazio) {

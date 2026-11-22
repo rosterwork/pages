@@ -24,9 +24,10 @@
   position: relative;
 }
 
-/* no dia de outro mês (geral-calendario-mes › comDiasDeFora), o bloquinho no mesmo cinza mais escuro do dia */
+/* no dia de outro mês (geral-calendario-mes › comDiasDeFora), o bloquinho na cor da caixa de fora: um tom acima do
+   fundo do dia, como nos dias do mês, e a caixa do pelotão continua desenhada */
 .geral-calendario-mes-dia--fora .escala-calendario-unidade {
-  background-color: var(--fundo-dia-fora);
+  background-color: var(--fundo-caixa-fora);
 }
 
 /* passar o mouse e a seleção valem para o bloquinho inteiro (escalas-mes.css › a da célula): a borda por dentro, sem

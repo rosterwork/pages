@@ -52,7 +52,7 @@
     return Promise.all([lerMes(0), vizinho(-1), vizinho(1)]).then(function (lidos) {
       var r = lidos[0];
       if (meu !== pedido || !el.calendario.isConnected) return;
-      if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+      if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.falha.frase(RW.mensagens.geral.falhaCarregar) }); return; }
       r.fora = {};
       [lidos[1], lidos[2]].forEach(function (v) {
         if (v && v.ok) Object.keys(v.dias || {}).forEach(function (k) { r.fora[k] = v.dias[k]; });
@@ -61,7 +61,7 @@
       unidadeId = r.unidade.id;
       desenharBarra();
       desenhar();
-    }, function () { if (meu === pedido) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
+    }, function () { if (meu === pedido) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(RW.mensagens.geral.falhaCarregar) }); });
   }
 
   /* o seletor da barra: as unidades que o administrador muda, com a da tela marcada */

@@ -134,7 +134,7 @@
       periodos: cfg.original.map(function (p) { return { hi: p.hi, hf: p.hf }; }), cpf: null };
     RosterWork.escalasDados.disponiveis(uid, dia, uid, vaga).then(function (resp) {
       if (!inp.isConnected) return;
-      if (!resp) { combo.definir(msg().falhaCarregar, true); return; }
+      if (!resp) { combo.definir(msg().falhaCarregar, true); RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(msg().falhaCarregar) }); return; }
       est.resp = resp;
       est.unidades = Q().unidadesCobrir(resp, uid, cfg.unidadeNome);
       if (!est.unidades.some(function (u) { return u.id === est.unidade; }) && est.unidades.length) est.unidade = est.unidades[0].id;
@@ -179,7 +179,7 @@
       RosterWork.escalasDados.lerDistribuicaoDia(est.unidade, dia).then(function (d) {
         if (meu !== pedido || !inp.isConnected || !est.item || est.item.cpf !== cpf) return;
         est.lendoOutra = false;
-        if (!d) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); cfg.aoMudar(); return; }
+        if (!d) { RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(msg().falhaCarregar) }); cfg.aoMudar(); return; }
         est.outra = d;
         est.servicoOutra = R().deServico(d).filter(function (i) { return i.cpf === cpf; })[0] || null;
         cfg.aoMudar();
@@ -211,7 +211,7 @@
       RosterWork.escalasDados.diaDaFolgaDias(uid, est.item.cpf, dia, iso(faixa.inicio), iso(faixa.fim)).then(function (r) {
         if (meu !== pedidoMes || !inp.isConnected) return;
         est.carregandoMes = false;
-        if (!r || r.erro) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.erro) || msg().falhaCarregar }); desenharCalendario(); return; }
+        if (!r || r.erro) { RosterWork.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RosterWork.falha.frase(msg().falhaCarregar) }); desenharCalendario(); return; }
         meses[chave] = r;
         desenharCalendario();
       });

@@ -199,6 +199,14 @@
       nota.querySelector('.nota-texto').textContent = msg().jaEmOutro((u().unidade(v.unidade) || {}).nome || '');
       el.appendChild(nota);
     }
+    /* com autorização de viagem no dia: a nota vermelha (não impede; a Escala marca o dia com o erro vermelho) */
+    var viagem = G().viagemDe(cpf, k);
+    var notaViagem = viagem ? RW.tpl('tpl-escala-nota') : null;
+    if (notaViagem) {
+      notaViagem.classList.add('nota--erro');
+      notaViagem.querySelector('.nota-texto').textContent = RW.mensagens.escala.viagemNoDia(viagem.destinos);
+      el.appendChild(notaViagem);
+    }
     RW.extrajornadaDiaOutros.listar(el, m, k, outro ? 0 : G().usadas(m.cpf) - (m.concedidas || 0), true);
     return el;
   }

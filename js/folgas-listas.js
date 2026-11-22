@@ -58,13 +58,19 @@
     espera.segurar(RW.folgasDados.lancamentos('todos', desdeDoPeriodo())).then(function (lista) {
       if (!document.contains(el) || req !== seqHist) return;
       chegou();
-      if (lista == null) { vazioEm(el, msg().falhaCarregar); return; }   // null = falha
+      if (lista == null) { falhou(); return; }   // null = falha
       renderHistorico(el, Array.isArray(lista) ? lista : []);
     }).catch(function () {
       if (!document.contains(el) || req !== seqHist) return;
       chegou();
-      vazioEm(el, msg().falhaCarregar);
+      falhou();
     });
+    /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js), que lê de novo com a forma dos cartões */
+    function falhou() {
+      limpar(el);
+      var aviso = RW.falha.bloco(msg().falhaCarregar, function () { limpar(el); carregarHistorico(); });
+      if (aviso) el.appendChild(aviso);
+    }
   }
 
   function ligarControles(conteudo) {

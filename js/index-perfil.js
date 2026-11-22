@@ -213,11 +213,11 @@
     })
       .then(function (resposta) { return resposta.ok ? resposta.json() : null; })
       .then(function (ficha) {
-        if (!ficha && RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.falhaCarregar });   // falha: avisa em vez de mostrar "-" em silêncio
+        if (!ficha && RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(RosterWork.mensagens.geral.falhaCarregar) });   // falha: avisa em vez de mostrar "-" em silêncio
         preencherPerfil(usuario, ficha);
         if (RosterWork.perfilDados) RosterWork.perfilDados.iniciar(ficha);
       })
-      .catch(function () { if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.mensagens.geral.erroConexao }); });
+      .catch(function () { if (RosterWork.avisar) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(RosterWork.mensagens.geral.falhaCarregar) }); });
   }
 
   /* o item "Meu perfil" do menu do cabeçalho navega para a página */

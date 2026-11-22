@@ -56,15 +56,6 @@
     if (RW.deslizar) RW.deslizar.antecipar(chaveMes(mes), function () { return buscarMes(mes); });
   }
 
-  /* um estado (carregando ou a falha) no lugar de um conteúdo */
-  function mostrarEstado(alvo, idMolde, texto) {
-    alvo.textContent = '';
-    var no = RW.tpl(idMolde);
-    if (!no) return;
-    if (texto) no.textContent = texto;
-    alvo.appendChild(no);
-  }
-
   /* ---------- calendário ---------- */
 
   function icone(nome) {
@@ -175,7 +166,7 @@
       RW.escalasDia.desenharDistribuicao(el.diaCorpo, (linha && linha.distribuicao) || {});
     }, function () {
       if (meu !== estado.pedidoDia || !el.diaCorpo.isConnected) return;
-      mostrarEstado(el.diaCorpo, 'tpl-escala-estado', RW.mensagens.escala.falhaCarregar);
+      RW.escalasDados.mostrarFalha(el.diaCorpo, RW.mensagens.escala.falhaCarregar, function () { mostrarDia(diaIso); });
     });
   }
 
@@ -269,7 +260,7 @@
     return (esta ? esta.segurar(leitura) : leitura).then(function (r) {
       if (!vigente() || !el.calendario.isConnected) return;
       pararEspera();
-      if (!r || !r.dias) { mostrarEstado(el.calendario, 'tpl-escala-estado', RW.mensagens.escala.falhaCarregarMes); return; }
+      if (!r || !r.dias) { RW.escalasDados.mostrarFalha(el.calendario); return; }
       estado.mes = mes;
       estado.dados = { dias: r.dias, unidades: r.unidades || {}, sobreaviso: r.sobreaviso || [] };
       estado.selecionado = diaPadrao();
@@ -282,7 +273,7 @@
     }, function () {
       if (!vigente() || !el.calendario.isConnected) return;
       pararEspera();
-      mostrarEstado(el.calendario, 'tpl-escala-estado', RW.mensagens.escala.falhaCarregarMes);
+      RW.escalasDados.mostrarFalha(el.calendario);
     });
   }
 

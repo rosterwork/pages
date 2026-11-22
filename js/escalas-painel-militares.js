@@ -1,28 +1,24 @@
 /* ============================================================
-   ESCALAS — a aba Militares do painel do dia: o mesmo dia da aba
-   Funções, por pessoa (só quem está no dia), com as peças da lista
-   do escalas-painel-editar.js (.sub.lista: a linha, o bloco, o lápis
-   e o De folga). Quatro grupos:
-   - De serviço (N): quem serve nesta unidade no dia, na ordem da
-     lista de militares do dia (a unidade e a antiguidade), cada um
-     com o ícone de origem, o horário de serviço e, embaixo do nome,
-     as funções dele no dia e, em vermelho, o horário sem função;
-   - Em outra unidade (N): quem foi remanejado daqui para outra
-     unidade neste dia;
-   - De folga (N): o mesmo De folga da aba Funções;
-   - Saiu da guarnição (N): quem saiu da guarnição e não faz mais o
-     serviço deste dia (a lista saidas do ler_distribuicao_dia), riscado,
-     com o último serviço (a saída à mão; nas outras, a data da saída) e
-     o Mudar a saída e o Cancelar a saída no lápis.
-   O lápis de cada um (só para quem edita o dia) traz só o dia da
-   pessoa e o Ver as funções (escalas-painel-linha-menu.js, visao
-   'militares'); o de quem foi para outra unidade, o Devolver. Os
-   avisos do dia, as Observações, o Lançar no SYSBM e as Alterações
-   manuais ficam na aba Funções. Ninguém no dia: o vazio.
-   Os estagiários (a leitura do dia, estagios) ficam fora dela: na aba
-   Estagiários (opcoes.estagiarios), um grupo por estágio (o nome e
-   quantos), com as mesmas linhas; ninguém, o vazio dela.
-   API: RosterWork.escalasPainelMilitares.montar(corpo, dados, opcoes)
+   ESCALAS — as linhas por pessoa do painel do dia, com as peças da
+   lista do escalas-painel-editar.js (.sub.lista: a linha, o bloco e
+   o lápis):
+   - a aba Estagiários: os estagiários de serviço no dia (a leitura do
+     dia, estagios), um grupo por estágio (o nome e quantos), na ordem
+     da lista de militares do dia (a unidade e a antiguidade), cada um
+     com o ícone de origem, o horário de serviço e, embaixo do nome, as
+     funções dele no dia e, em vermelho, o horário sem função. O lápis
+     (só para quem edita o dia) traz só o dia da pessoa e o Ver as
+     funções (escalas-painel-linha-menu.js, visao 'militares');
+     ninguém, o vazio dela;
+   - na aba Funções, depois do De folga, duas caixas como as dela:
+     Em outra unidade (quem foi remanejado daqui para outra unidade
+     neste dia, com o Devolver no lápis) e Saiu da guarnição (quem saiu
+     da guarnição e não faz mais o serviço deste dia, a lista saidas do
+     ler_distribuicao_dia, riscado, com o último serviço (a saída à
+     mão; nas outras, a data da saída) e o Mudar a saída e o Cancelar a
+     saída no lápis).
+   API: RosterWork.escalasPainelMilitares.estagiarios(corpo, dados),
+   caixaOutraUnidade(dados) e caixaSaidas(dados) (a caixa, ou null)
    ============================================================ */
 (function () {
   'use strict';
@@ -35,11 +31,12 @@
   function Q() { return RosterWork.escalasPainelQuem; }
   function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
 
-  /* um grupo da aba: a caixa com o título e o bloco das linhas, sem a coluna do nome da função */
-  function caixaGrupo(titulo) {
+  /* um grupo: a caixa com o título e o bloco das linhas. Na aba Estagiários, sem a coluna do nome da função; na Funções
+     (comoFuncoes), o bloco das caixas dela, com a coluna vazia, como o De folga */
+  function caixaGrupo(titulo, comoFuncoes) {
     var caixa = RosterWork.painel.criarCaixa(titulo), grupo = ed().lista.novoGrupo([], null);
     if (!caixa || !grupo) return null;
-    grupo.el.classList.add('escala-edicao-grupo--militares');
+    if (!comoFuncoes) grupo.el.classList.add('escala-edicao-grupo--militares');
     caixa.appendChild(grupo.el);
     return { caixa: caixa, linhas: grupo.linhas };
   }
@@ -126,81 +123,48 @@
     }
   }
 
-  function montar(corpo, dados, opcoes) {
-    if (opcoes && opcoes.estagiarios) { montarEstagiarios(corpo, dados); return; }
-    var P = ed().lista, editavel = P.editavel(), alguem = false;
-    var pessoas = pessoasDoDia(dados), estagios = dados.estagios || {};
-    /* os estagiários ficam na aba deles */
-    pessoas.servico = pessoas.servico.filter(function (pm) { return !estagios[pm.cpf]; });
-    var semFuncao = {};
-    (dados.sem_funcao || []).forEach(function (m) { semFuncao[m.cpf] = m; });
-
-    if (pessoas.servico.length) {
-      var g = caixaGrupo(msg().militaresServico(pessoas.servico.length));
-      if (g) {
-        pessoas.servico.forEach(function (pm) { var l = linhaServico(pm, semFuncao); if (l) g.linhas.appendChild(l); });
-        corpo.appendChild(g.caixa);
-        alguem = true;
-      }
-    }
-
-    if (pessoas.fora.length) {
-      var gf = caixaGrupo(msg().militaresFora(pessoas.fora.length));
-      if (gf) {
-        pessoas.fora.forEach(function (pm) {
-          var rm = pm.remanejado, m = { cpf: pm.cpf, grad: pm.grad, nome: pm.nome, periodos: [] };
-          var linha = P.linhaMilitar(m, { icone: 'icone-remanejado' });
-          if (!linha) return;
-          var el = RosterWork.tpl('tpl-escala-militares-funcoes');
-          if (el) { el.querySelector('.escala-militares-funcoes-texto').textContent = L().remanejadoPara(rm.para_nome || ''); linha.appendChild(el); }
-          if (editavel) P.menuNaLinha(linha, { tipo: 'fora', visao: 'militares', militar: m, origem: rm.de_nome || '' });
-          gf.linhas.appendChild(linha);
-        });
-        corpo.appendChild(gf.caixa);
-        alguem = true;
-      }
-    }
-
-    /* o De folga da aba Funções, aqui também na largura toda */
-    var folgas = dados.folgas || [];
-    var caixaFolgas = P.caixaFolgas(folgas, msg().militaresFolga(folgas.length));
-    if (caixaFolgas) {
-      var grupoFolgas = caixaFolgas.querySelector('.escala-edicao-grupo');
-      if (grupoFolgas) grupoFolgas.classList.add('escala-edicao-grupo--militares');
-      corpo.appendChild(caixaFolgas);
-      alguem = true;
-    }
-
-    /* quem saiu da guarnição e não faz mais o serviço deste dia: riscado, com o último serviço (ou a data da saída) embaixo
-       do nome e, no lápis, o Mudar a saída (só na saída à mão) e o Cancelar a saída */
-    var saidas = dados.saidas || [];
-    if (saidas.length) {
-      var gs = caixaGrupo(msg().militaresSaida(saidas.length));
-      if (gs) {
-        saidas.forEach(function (x) {
-          var m = { cpf: x.cpf, grad: x.grad, nome: x.nome, periodos: [{ hi: x.hi, hf: x.hf }] };
-          var linha = P.linhaMilitar(m, { folga: true, icone: 'icone-origem-saida' });
-          if (!linha) return;
-          var el = RosterWork.tpl('tpl-escala-militares-funcoes');
-          /* a saída à mão diz o último serviço (a data da pergunta do Mudar a saída); as outras, o dia da saída */
-          if (el) {
-            el.querySelector('.escala-militares-funcoes-texto').textContent = x.ultimo ? msg().ultimoNaGuarnicao(diaMes(x.ultimo)) : msg().saiuDaGuarnicao(diaMes(x.saida));
-            linha.appendChild(el);
-          }
-          if (editavel) P.menuNaLinha(linha, { tipo: 'saida', visao: 'militares', militar: m, saida: x.saida, ultimo: x.ultimo || null, dias: x.dias || [] });
-          gs.linhas.appendChild(linha);
-        });
-        corpo.appendChild(gs.caixa);
-        alguem = true;
-      }
-    }
-
-    /* ninguém no dia: o vazio, nunca a tela em branco */
-    if (!alguem) {
-      var vazio = RosterWork.tpl('tpl-escala-distribuicao-estado');
-      if (vazio) { vazio.textContent = msg().militaresVazio; corpo.appendChild(vazio); }
-    }
+  /* na aba Funções: quem foi remanejado daqui para outra unidade neste dia, com "Remanejado para o 1ºPEL" embaixo do nome e
+     o Devolver no lápis (só para quem edita o dia); ninguém, sem a caixa */
+  function caixaOutraUnidade(dados) {
+    var fora = pessoasDoDia(dados).fora;
+    if (!fora.length) return null;
+    var P = ed().lista, g = caixaGrupo(msg().blocoOutraUnidade, true);
+    if (!g) return null;
+    fora.forEach(function (pm) {
+      var rm = pm.remanejado, m = { cpf: pm.cpf, grad: pm.grad, nome: pm.nome, periodos: [] };
+      var linha = P.linhaMilitar(m, { icone: 'icone-remanejado' });
+      if (!linha) return;
+      var el = RosterWork.tpl('tpl-escala-militares-funcoes');
+      if (el) { el.querySelector('.escala-militares-funcoes-texto').textContent = L().remanejadoPara(rm.para_nome || ''); linha.appendChild(el); }
+      P.menuNaLinha(linha, { tipo: 'fora', militar: m, origem: rm.de_nome || '' });
+      g.linhas.appendChild(linha);
+    });
+    return g.caixa;
   }
 
-  window.RosterWork.escalasPainelMilitares = { montar: montar };
+  /* na aba Funções: quem saiu da guarnição e não faz mais o serviço deste dia, riscado, com o último serviço (ou a data da
+     saída) embaixo do nome e, no lápis, o Mudar a saída (só na saída à mão) e o Cancelar a saída; ninguém, sem a caixa */
+  function caixaSaidas(dados) {
+    var saidas = dados.saidas || [];
+    if (!saidas.length) return null;
+    var P = ed().lista, g = caixaGrupo(msg().blocoSaiuGuarnicao, true);
+    if (!g) return null;
+    saidas.forEach(function (x) {
+      var m = { cpf: x.cpf, grad: x.grad, nome: x.nome, periodos: [{ hi: x.hi, hf: x.hf }] };
+      var linha = P.linhaMilitar(m, { folga: true, icone: 'icone-origem-saida' });
+      if (!linha) return;
+      var el = RosterWork.tpl('tpl-escala-militares-funcoes');
+      /* a saída à mão diz o último serviço (a data da pergunta do Mudar a saída); as outras, o dia da saída */
+      if (el) {
+        el.querySelector('.escala-militares-funcoes-texto').textContent = x.ultimo ? msg().ultimoNaGuarnicao(diaMes(x.ultimo)) : msg().saiuDaGuarnicao(diaMes(x.saida));
+        linha.appendChild(el);
+      }
+      P.menuNaLinha(linha, { tipo: 'saida', militar: m, saida: x.saida, ultimo: x.ultimo || null, dias: x.dias || [] });
+      g.linhas.appendChild(linha);
+    });
+    return g.caixa;
+  }
+
+  window.RosterWork.escalasPainelMilitares = { estagiarios: montarEstagiarios, caixaOutraUnidade: caixaOutraUnidade,
+    caixaSaidas: caixaSaidas };
 })();

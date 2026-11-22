@@ -9,11 +9,12 @@
    marcar. Escolher um nome da lista preenche as marcas dele (a
    Op. Verão e a F. Tarefa deixam trocar e tirar extra, e a Op. Verão
    também fica no sobreaviso; o Litoral sai de tudo); as Férias
-   perguntam só a guarnição (saem do resto); a Autorização de
-   viagem, que não é afastamento e só tira do sobreaviso, pergunta
-   só o período. Cada resposta
-   entra no rascunho na hora. Na caixa da grade, o nome em branco só
-   aparece quando se tenta fechar (podeFechar). O que é de mais de uma semana atrás fica
+   perguntam só a guarnição (saem do resto). A Autorização de viagem
+   (não é afastamento: só tira do sobreaviso) pergunta o período e os
+   Destinos: um campo por destino, com o X (com dois ou mais, tira o
+   campo; com um só, limpa) e o Adicionar destino. Cada resposta
+   entra no rascunho na hora. Na caixa da grade, o nome ou o destino em
+   branco só aparece quando se tenta fechar (podeFechar). O que é de mais de uma semana atrás fica
    travado (o mesmo limite do banco): o que terminou antes não muda; o
    que começou antes muda só o fim e o nome.
    ============================================================ */
@@ -29,16 +30,13 @@
   function D() { return RW.data; }
   function R() { return RW.afastamentosRascunho; }
 
-  function padraoDe(valor) { return M().padroes.filter(function (x) { return x.valor === valor; })[0]; }
-  /* o texto da lista; o do dia ("nome") só difere na Autorização de viagem */
+  /* o texto da lista (é também o nome do dia) */
   function rotuloDe(padrao) {
-    var p = padraoDe(padrao);
+    var p = M().padroes.filter(function (x) { return x.valor === padrao; })[0];
     return p ? p.rotulo : '';
   }
-  function nomeDe(padrao) {
-    var p = padraoDe(padrao);
-    return p ? (p.nome || p.rotulo) : '';
-  }
+  /* a autorização de viagem tem algum destino escrito? */
+  function temDestino(af) { return (af.destinos || []).some(function (d) { return String(d).trim(); }); }
   function dias(af) {
     if (!af.inicio || !af.fim || af.fim < af.inicio) return 0;
     return Math.round((new Date(af.fim + 'T12:00:00') - new Date(af.inicio + 'T12:00:00')) / 86400000) + 1;
@@ -54,16 +52,18 @@
     return { gua: dias(x) >= 16 };
   }
 
-  /* as perguntas de um afastamento no lugar. opcoes = { cpf, chave, partes ('nome', 'periodo', 'guarnicao', 'marcas';
-     sem elas, todas), origem (quem pergunta: o rascunho não o redesenha), editavel, nomeNaTentativa (o nome em branco
-     só aparece quando se tenta fechar: a caixa da grade) }.
-     Devolve { pintar() (o que muda sem perder o campo que se digita), podeFechar() (com o nome em branco, não: a
-     frase aparece) } ou null */
+  /* as perguntas de um afastamento no lugar. opcoes = { cpf, chave, partes ('nome', 'periodo', 'guarnicao', 'marcas',
+     'destinos'; sem elas, todas as do afastamento, ou o período e os destinos da autorização de viagem), origem (quem
+     pergunta: o rascunho não o redesenha), editavel, nomeNaTentativa (o nome ou o destino em branco só aparece quando
+     se tenta fechar: a caixa da grade) }.
+     Devolve { pintar() (o que muda sem perder o campo que se digita), podeFechar() (com o nome ou o destino em branco,
+     não: a frase aparece) } ou null */
   function montar(lugar, opcoes) {
     var cpf = String(opcoes.cpf), chave = opcoes.chave;
-    var partes = opcoes.partes || ['nome', 'periodo', 'guarnicao', 'marcas'];
     var af = R().achar(cpf, chave);
     if (!af || !lugar) return null;
+    var partes = opcoes.partes ||
+      (af.padrao === 'viagem' ? ['periodo', 'destinos'] : ['nome', 'periodo', 'guarnicao', 'marcas']);
     var g = af.id ? R().gravado(cpf, af.id) : null;
     var lim = R().isoLimite();
     var editavel = opcoes.editavel !== false;
@@ -94,30 +94,21 @@
         entrada.disabled = true;
       } else {
         RW.campos.ligarSelecao(botao, function (valor) {
-          /* quem sai da Autorização de viagem volta às marcas de um afastamento novo e à regra dos 16 dias */
-          var deViagem = !iniTravado && (atual() || {}).padrao === 'viagem';
           if (valor === 'outro') {
             /* o campo à vista antes do rascunho: a grade se redesenha nele e o Nome segue no Outro */
             el.outro.classList.remove('oculto');
-            mudar(Object.assign({ padrao: null, nome: entrada.value.trim() },
-              deViagem ? { tro: true, ext: true, sob: true, escolheu: false } : {}));
+            mudar({ padrao: null, nome: entrada.value.trim() });
             entrada.focus();
             return;
           }
-          var campos = { padrao: valor, nome: nomeDe(valor) };
+          var campos = { padrao: valor, nome: rotuloDe(valor) };
           /* as marcas do item: as férias e o Litoral saem de tudo; a Op. Verão e a F. Tarefa deixam trocar e tirar extra,
-             e a Op. Verão fica também no sobreaviso; a Autorização de viagem só tira do sobreaviso e não mexe na guarnição */
+             e a Op. Verão fica também no sobreaviso */
           if (!iniTravado) {
-            var deixa = MISSOES.indexOf(valor) >= 0 || valor === 'viagem';
+            var deixa = MISSOES.indexOf(valor) >= 0;
             campos.tro = !deixa;
             campos.ext = !deixa;
             campos.sob = valor !== 'op_verao';
-            if (valor === 'viagem') {
-              campos.gua = false;
-              campos.escolheu = true;
-            } else if (deViagem) {
-              campos.escolheu = false;
-            }
           }
           mudar(campos);
           el.outro.classList.add('oculto');
@@ -175,6 +166,20 @@
       lugar.appendChild(el.marcas);
     }
 
+    /* os Destinos da autorização de viagem: um campo por destino; o Adicionar destino põe um em branco embaixo */
+    if (partes.indexOf('destinos') >= 0) {
+      el.destinos = RW.tpl('tpl-afastamento-destinos');
+      var adicionarDestino = el.destinos.querySelector('[data-af-destino-adicionar]');
+      adicionarDestino.disabled = fimTravado;
+      adicionarDestino.addEventListener('click', function () {
+        mudar({ destinos: destinosDe(atual()).concat(['']) });
+        desenharDestinos();
+        focarDestino(destinosDe(atual()).length - 1);
+      });
+      desenharDestinos();
+      lugar.appendChild(el.destinos);
+    }
+
     el.nota = RW.tpl('tpl-afastamento-nota');
     if (el.nota) lugar.appendChild(el.nota);
     if (fimTravado && editavel) {
@@ -182,12 +187,50 @@
       if (travado) lugar.appendChild(travado);
     }
 
+    /* os destinos como estão (sempre pelo menos um campo, mesmo em branco) */
+    function destinosDe(a) {
+      var d = (a && a.destinos) || [];
+      return d.length ? d.slice() : [''];
+    }
+    /* um campo por destino (refeitos quando muda quantos são); o X tira o campo, e com um só, limpa */
+    function desenharDestinos() {
+      var caixa = el.destinos && el.destinos.querySelector('[data-af-destinos]');
+      if (!caixa) return;
+      while (caixa.firstChild) caixa.removeChild(caixa.firstChild);
+      destinosDe(atual()).forEach(function (valor, i) {
+        var linha = RW.tpl('tpl-afastamento-destino');
+        if (!linha) return;
+        var entrada = linha.querySelector('[data-af-destino]');
+        var tirar = linha.querySelector('[data-af-destino-remover]');
+        entrada.value = valor;
+        entrada.disabled = fimTravado;
+        tirar.classList.toggle('oculto', fimTravado);
+        entrada.addEventListener('input', function () {
+          var d = destinosDe(atual());
+          d[i] = entrada.value;
+          mudar({ destinos: d }, 'destino-' + i);
+        });
+        tirar.addEventListener('click', function () {
+          var d = destinosDe(atual());
+          if (d.length > 1) d.splice(i, 1);
+          else d = [''];
+          mudar({ destinos: d });
+          desenharDestinos();
+          focarDestino(Math.min(i, destinosDe(atual()).length - 1));
+        });
+        caixa.appendChild(linha);
+      });
+    }
+    function focarDestino(i) {
+      var campo = el.destinos.querySelectorAll('[data-af-destino]')[i];
+      if (campo) campo.focus();
+    }
+
     /* o que muda com a resposta, sem tocar nos campos que se digitam */
     function pintar() {
       var a = atual();
       if (!a) return;
       var ferias = a.padrao === 'ferias';
-      var viagem = a.padrao === 'viagem';
       if (el.nome) {
         var gatilho = el.nome.querySelector('[data-af-nome]');
         var valor = a.padrao || (a.nome || !el.outro.classList.contains('oculto') ? 'outro' : '');
@@ -201,26 +244,37 @@
         selo.textContent = n ? M().dias(n) : '';
         selo.classList.toggle('oculto', !n);
       }
-      /* as férias perguntam só a guarnição (saem do resto); a Autorização de viagem, só o período */
+      /* as férias perguntam só a guarnição (saem do resto) */
       if (el.guarnicao) {
-        el.guarnicao.classList.toggle('oculto', viagem);
         Array.prototype.forEach.call(el.guarnicao.querySelectorAll('input[type="radio"]'), function (radio) {
           radio.checked = (radio.value === 'sim') === !!a.gua;
         });
       }
       if (el.marcas) {
-        el.marcas.classList.toggle('oculto', ferias || viagem);
+        el.marcas.classList.toggle('oculto', ferias);
         Array.prototype.forEach.call(el.marcas.querySelectorAll('[data-af-marca]'), function (b) {
           var ligado = !!a[b.getAttribute('data-af-marca')];
           b.setAttribute('aria-checked', String(ligado));
           b.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', ligado);
         });
       }
+      /* os destinos que mudaram por fora (o Desfazer, a outra caixa): os campos refeitos quando muda quantos são; os
+         outros só ganham o valor novo, menos o que se digita */
+      if (el.destinos) {
+        var lista = destinosDe(a);
+        var entradas = el.destinos.querySelectorAll('[data-af-destino]');
+        if (entradas.length !== lista.length) desenharDestinos();
+        else Array.prototype.forEach.call(entradas, function (e, i) {
+          if (e !== document.activeElement && e.value !== lista[i]) e.value = lista[i];
+        });
+      }
       if (el.nota) {
         var problema = R().problemaDe(a);
-        /* o nome em branco (o problema do afastamento sem nome): na caixa da grade, só depois de tentar fechar */
-        if (a.nome) tentou = false;
+        /* o nome ou o destino em branco (o problema do que está sem nome ou da viagem sem destino): na caixa da grade, só
+           depois de tentar fechar */
+        if (!falta(a)) tentou = false;
         else if (opcoes.nomeNaTentativa && !tentou) problema = '';
+        if (el.destinos) el.destinos.classList.toggle('campo--erro', problema === M().viagem.semDestino);
         el.nota.querySelector('.nota-texto').textContent = problema;
         el.nota.classList.toggle('oculto', !problema);
         /* junto da frase, a borda vermelha no campo que falta: o Nome no dia (no Outro) ou a lista */
@@ -233,10 +287,13 @@
       }
     }
 
-    /* pode fechar? Com as perguntas à vista e o nome em branco, não: a frase aparece */
+    /* falta o nome (no afastamento) ou o destino (na autorização de viagem)? */
+    function falta(a) { return !a.nome || (a.padrao === 'viagem' && !temDestino(a)); }
+
+    /* pode fechar? Com as perguntas à vista e o nome ou o destino em branco, não: a frase aparece */
     function podeFechar() {
       var a = atual();
-      if (!a || a.nome || !el.nota || !el.nota.isConnected || !R().problemaDe(a)) return true;
+      if (!a || !falta(a) || !el.nota || !el.nota.isConnected || !R().problemaDe(a)) return true;
       tentou = true;
       pintar();
       return false;

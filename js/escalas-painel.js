@@ -7,13 +7,14 @@
    (componente geral-painel): título = unidade (o pelotão mostra a
    companhia acima), complemento = " - cidade", subtítulo = data
    por extenso (com a guarnição de serviço, quando a leitura do dia ou a
-   aba Guarnições a traz), abas Funções/Militares/Guarnições/Extrajornada
-   (só para quem edita o dia ou tem a extra; as Guarnições só para o
-   administrador; por dentro, as seções distribuicao/militares/continuos/
-   extra).
+   aba Guarnições a traz), abas Funções/Estagiários/Guarnições/Extrajornada
+   (só para quem edita o dia ou tem a extra; as Estagiários e as
+   Guarnições só para o administrador; por dentro, as seções
+   distribuicao/estagiarios/continuos/extra).
    A aba Funções (escalas-painel-editar.js) é a mesma lista para
-   todos: o admin já edita nela; quem não é admin só lê. A Militares
-   (escalas-painel-militares.js) é o mesmo dia por pessoa.
+   todos: o admin já edita nela; quem não é admin só lê. A Estagiários
+   (escalas-painel-militares.js) é o mesmo dia, só os estagiários, por
+   pessoa.
    ============================================================ */
 (function () {
   'use strict';
@@ -445,11 +446,21 @@
      militar em situação errada. faltamModelos e modelosComErro trazem a composição de cada trecho.
      O detalhe amarelo expansível (quem + vaga + motivo) segue montado pelos dados dos postos (sem os
      postos, pela própria lista). Devolve as linhas [{ def, texto }] e, no detalhe, [{ def, texto, tipo, itens }];
-     a mesma lista serve à caixa do topo. Com admin, também a Central sem Cabo de Dia (dos postos) */
-  function linhasDoAviso(problemas, postos, faltamModelos, modelosComErro, admin) {
+     a mesma lista serve à caixa do topo. Com admin, também a Central sem Cabo de Dia (dos postos).
+     opcoes (a dica do gráfico e o relatório da Extrajornada): nomes = quem o erro toca nos textos que não dizem (o
+     detalhe amarelo vira uma linha com os nomes); semFaixas = sem os horários (a dica já é de uma hora) */
+  function linhasDoAviso(problemas, postos, faltamModelos, modelosComErro, admin, opcoes) {
     var lista = problemas || [];
     var cat = (RosterWork.mensagens && RosterWork.mensagens.escala && RosterWork.mensagens.escala.erros) || {};
     var linhas = [];
+    var comQuem = !!(opcoes && opcoes.nomes), semFaixas = !!(opcoes && opcoes.semFaixas);
+    /* o texto com quem o erro toca (sem nomes pedidos, ou sem ninguém, o texto do painel) */
+    function comNomes(texto, itens) {
+      if (!comQuem) return texto;
+      var quem = [];
+      (itens || []).forEach(function (p) { var n = militar(p); if (n && quem.indexOf(n) < 0) quem.push(n); });
+      return quem.length ? RosterWork.mensagens.escala.erroComNomes(texto, quem) : texto;
+    }
 
     var por = {}, presentes = {};
     lista.forEach(function (p) {
@@ -487,7 +498,7 @@
         var acima = codigo === 'acima_maximo';
         var pessoas = itens.reduce(function (v, p) { return acima ? Math.max(v, p.quantidade) : Math.min(v, p.quantidade); }, acima ? -Infinity : Infinity);
         var diaTodo = itens.length === 1 && itens[0].hi === '08:00' && itens[0].hf === '08:00';
-        var faixas = (acima || diaTodo) ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: p.hi, hf: p.hf }); }).join(' e ');
+        var faixas = (acima || diaTodo || semFaixas) ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: p.hi, hf: p.hf }); }).join(' e ');
         linha(def, preencher(def.texto, { posto: itens[0].posto || '', pessoas: pessoas, minimo: itens[0].limite, ideal: itens[0].limite, maximo: itens[0].limite, faixas: faixas }));
       });
     }
@@ -503,7 +514,7 @@
       ordem.forEach(function (k) {
         var itens = porMilitar[k];
         var diaTodo = itens.length === 1 && itens[0].hi === '08:00' && itens[0].hf === '08:00';
-        var faixas = diaTodo ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: p.hi, hf: p.hf }); }).join(' e ');
+        var faixas = (diaTodo || semFaixas) ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: p.hi, hf: p.hf }); }).join(' e ');
         linha(def, preencher(def.texto, { militar: militar(itens[0]), unidades: (itens[0].unidades || []).join(' e '), faixas: faixas }));
       });
     }
@@ -522,12 +533,12 @@
     linhasModelo('parcial_com_erro', cat.modeloComErro, modelosComErro);
     linhasModelo('sem_modelo', cat.faltaModelo || { texto: 'Falta modelo de distribuição', icone: 'icone-alerta', nivel: 'erro' }, faltamModelos);
     /* depois quem ficou sem função (quem ficou sem função por falta de modelo já está na linha do modelo) */
-    var semFuncao = {};
+    var semFuncao = {}, quemSemFuncao = [];
     ['sem_funcao', 'resolva_escala'].forEach(function (c) {
-      (por[c] || []).forEach(function (p) { semFuncao[p.cpf] = true; });
+      (por[c] || []).forEach(function (p) { semFuncao[p.cpf] = true; quemSemFuncao.push(p); });
     });
     var qSemFuncao = Object.keys(semFuncao).length;
-    if (qSemFuncao && cat.semFuncao) linha(cat.semFuncao, qSemFuncao === 1 ? cat.semFuncao.texto : preencher(cat.semFuncao.textoPlural, { n: qSemFuncao }));
+    if (qSemFuncao && cat.semFuncao) linha(cat.semFuncao, comNomes(qSemFuncao === 1 ? cat.semFuncao.texto : preencher(cat.semFuncao.textoPlural, { n: qSemFuncao }), quemSemFuncao));
     /* os postos: o travado diz o motivo e o posto; a frase geral fica para quem o banco não liga a um posto travado */
     porOcorrencia('sem_condutor_habilitado', cat.semCondutorHabilitado, function (p) { return p.posto_id; },
       function (p) { return { posto: p.posto || '', cnh: p.cnh || '' }; });
@@ -540,7 +551,7 @@
     if (tem('sem_condutor')) linha(cat.semCondutor);
     /* a companhia sem Oficial de Área: uma linha, com os horários quando não é o dia todo */
     if (tem('sem_oficial') && cat.semOficial) {
-      var so = por.sem_oficial, soTodo = so.length === 1 && so[0].hi === '08:00' && so[0].hf === '08:00';
+      var so = por.sem_oficial, soTodo = semFaixas || (so.length === 1 && so[0].hi === '08:00' && so[0].hf === '08:00');
       linha(cat.semOficial, preencher(cat.semOficial.texto, { faixas: soTodo ? '' : ', ' + so.map(function (p) { return preencher(cat.semOficial.faixa, { hi: p.hi, hf: p.hf }); }).join(' e ') }));
     }
     linhasEfetivoProblemas('unidade_abaixo_minimo', cat.unidadeAbaixoMinimo, 1);
@@ -548,12 +559,15 @@
     linhasEfetivoProblemas('abaixo_minimo', cat.abaixoMinimo);
     linhasEfetivoProblemas('acima_maximo', cat.acimaMaximo);
     /* o militar em situação errada */
-    if (tem('fora_disponibilidade')) linha(cat.foraDisponibilidade);
-    if (tem('sem_servico')) linha(cat.semServico);
-    if (tem('sobreposicao')) linha(cat.sobreposicao);
+    if (tem('fora_disponibilidade') && cat.foraDisponibilidade) linha(cat.foraDisponibilidade, comNomes(cat.foraDisponibilidade.texto, por.fora_disponibilidade));
+    if (tem('sem_servico') && cat.semServico) linha(cat.semServico, comNomes(cat.semServico.texto, por.sem_servico));
+    if (tem('sobreposicao') && cat.sobreposicao) linha(cat.sobreposicao, comNomes(cat.sobreposicao.texto, por.sobreposicao));
     porOcorrencia('cnh_incompativel', cat.cnhIncompativel, function (p) { return p.cpf + '|' + p.posto_id; },
       function (p) { return { militar: militar(p), posto: p.posto || '' }; });
     linhasDuasUnidades(cat.duasUnidades);   // o mesmo militar em duas unidades ao mesmo tempo não pode
+    /* de serviço num dia em que tem autorização de viagem (não impede nada), um por militar, com os destinos */
+    porOcorrencia('viagem', cat.viagem, function (p) { return p.cpf; },
+      function (p) { return { militar: militar(p), destinos: RosterWork.mensagens.escala.listaDestinos(p.destinos) }; });
 
     /* amarelo: funciona, com erro aceitável */
     if (tem('chefe_condutor')) linha(cat.chefeCondutor);
@@ -587,7 +601,10 @@
     [['grau_por_falta', 'grauRebaixado'], ['rodizio_quebrado', 'rodizioRepetido'],
      ['afastado', 'afastadoTroca'], ['regra_graduacao', 'regraGraduacao']].forEach(function (par) {
       var def = cat[par[1]], itens = det[par[1]];
-      if (tem(par[0]) && def && itens.length) linhas.push({ def: def, texto: def.texto + ' (' + itens.length + ')', tipo: par[1], itens: itens });
+      if (!tem(par[0]) || !def || !itens.length) return;
+      /* com os nomes, uma linha só, sem o detalhe expansível */
+      if (comQuem) linha(def, comNomes(def.texto, itens.map(function (it) { return it.m; })));
+      else linhas.push({ def: def, texto: def.texto + ' (' + itens.length + ')', tipo: par[1], itens: itens });
     });
     return linhas;
   }
@@ -872,8 +889,8 @@
     corpo.parentNode.insertBefore(nota, corpo);
   }
 
-  /* troca o conteúdo do corpo e o rodapé conforme a aba de seção: Funções e Militares são a lista do dia que o admin
-     edita (e os outros só leem), por posto e por pessoa; as Guarnições (só admin) são sempre edição e a Extrajornada é a do
+  /* troca o conteúdo do corpo e o rodapé conforme a aba de seção: Funções e Estagiários são a lista do dia que o admin
+     edita (e os outros só leem), por posto e, só os estagiários, por pessoa; as Guarnições (só admin) são sempre edição e a Extrajornada é a do
      mês lançado */
   function mostrarSecao(secao) {
     if (!pCtx) return;
@@ -885,7 +902,7 @@
     var sub = RosterWork.painel.subcabecalho();
     if (sub) { sub.textContent = ''; sub.classList.add('oculto'); }
     /* ao entrar numa seção, as outras param de desenhar (os rascunhos delas ficam até o Salvar do rodapé) */
-    if (secao !== 'distribuicao' && secao !== 'militares' && secao !== 'estagiarios' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
+    if (secao !== 'distribuicao' && secao !== 'estagiarios' && RosterWork.escalasPainelEditar) RosterWork.escalasPainelEditar.reset();
     if (secao !== 'continuos' && RosterWork.escalasPainelGuarnicoes) RosterWork.escalasPainelGuarnicoes.reset();
     if (secao !== 'volta' && RosterWork.escalasPainelVolta) RosterWork.escalasPainelVolta.reset();
     if (secao !== 'extra' && RosterWork.escalasPainelExtra) RosterWork.escalasPainelExtra.reset();
@@ -907,16 +924,16 @@
         if (pCtx === esperado) mostrarSecao(pCtx.secao);
       });
     }
-    if (naFila && !(esperado.consulta && (secao === 'distribuicao' || secao === 'militares' || secao === 'estagiarios'))) {
+    if (naFila && !(esperado.consulta && (secao === 'distribuicao' || secao === 'estagiarios'))) {
       corpo.textContent = '';
       corpo.appendChild(RosterWork.painel.criarAtualizando(RosterWork.mensagens.escala.diaAtualizando));
       if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
       return;
     }
     if (naFila) notaConsulta(true);
-    if ((secao === 'distribuicao' || secao === 'militares' || secao === 'estagiarios') && RosterWork.escalasPainelEditar) {
-      /* o dia é de quem tem a unidade na área do papel; as abas Funções, Militares e Estagiários são o mesmo dia, por posto
-         e por pessoa (os estagiários na aba deles).
+    if ((secao === 'distribuicao' || secao === 'estagiarios') && RosterWork.escalasPainelEditar) {
+      /* o dia é de quem tem a unidade na área do papel; as abas Funções e Estagiários são o mesmo dia, por posto e, só os
+         estagiários, por pessoa.
          O menu pedido na abertura (o Oficial de Área, vindo do pelotão) abre quando a lista chegar, uma vez só */
       var menuDe = pCtx.abrirMenuDe || null, fazerDe = pCtx.fazerAcao || null, adicionarDe = pCtx.adicionar || null;
       pCtx.abrirMenuDe = null;
@@ -925,7 +942,7 @@
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
         admin: !naFila && RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId),
         consulta: naFila,
-        visao: secao === 'militares' || secao === 'estagiarios' ? secao : 'funcoes',
+        visao: secao === 'estagiarios' ? secao : 'funcoes',
         abrirMenuDe: menuDe,
         fazerAcao: fazerDe,
         adicionar: adicionarDe
@@ -990,7 +1007,7 @@
     var inicial = secao || (naExtra ? 'extra' : 'distribuicao');
     /* a aba Estagiários: para quem administra a unidade, quando ela tem estágio */
     var comEstagio = admin && RosterWork.sessao.estagioUnidades().map(String).indexOf(String(unidadeId)) >= 0;
-    if (((inicial === 'continuos' || inicial === 'volta') && !admin) || (inicial === 'extra' && !comExtra) || (inicial === 'militares' && !admin && !comExtra)
+    if (((inicial === 'continuos' || inicial === 'volta') && !admin) || (inicial === 'extra' && !comExtra)
         || (inicial === 'estagiarios' && !comEstagio)) inicial = 'distribuicao';
     pCtx = { unidadeId: unidadeId, iso: iso, secao: inicial, unidadeNome: dia.unidadeNome, semCelula: !marcada,
       abrirMenuDe: (opcoes && opcoes.abrirMenuDe) || null, fazerAcao: (opcoes && opcoes.fazerAcao) || null,
@@ -1266,7 +1283,7 @@
        quantas: quantas alterações saem (sem ela, todas) */
     confirmarDescarte: confirmarDescarte,
     recarregarSecao: function () { if (pCtx) mostrarSecao(pCtx.secao); },
-    /* a aba do painel existe (secao = 'distribuicao' | 'militares' | 'estagiarios' | 'continuos' | 'extra') e a abre como o clique nela (o Mudar a
+    /* a aba do painel existe (secao = 'distribuicao' | 'estagiarios' | 'continuos' | 'extra') e a abre como o clique nela (o Mudar a
        extrajornada do menu da linha; o Ver o dia da aba Guarnições, com opcoes.abrirMenuDe: o cpf de quem fica com o menu
        aberto quando a lista chegar) */
     temAba: function (secao) { var l = RosterWork.painel.linhaAbas(); return !!(l && l.querySelector('.aba[data-secao="' + secao + '"]')); },

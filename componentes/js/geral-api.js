@@ -12,6 +12,10 @@
    saída (logout). Ver js/index-sessao-vigia.js. No modo treino, a
    chamada vai pelo RosterWork.treino.passar (geral-treino.js): só
    passa o que lê, e as leituras ganham os exemplos do treino.
+   A leitura que o banco cortou por tempo, ou que não chegou, é pedida
+   de novo uma vez, sozinha, 3 s depois (nunca a gravação); a falha
+   fica anotada (RosterWork.ultimaFalha, para a frase do que fazer,
+   geral-falha.js) e o corte vai para a aba Erros do Programador.
    ============================================================ */
 (function () {
   'use strict';
@@ -181,8 +185,88 @@
     });
   }
 
-  function apiFetch(caminho, opcoes) {
-    opcoes = opcoes || {};
+  /* ---------- a leitura que falhou: tenta mais uma vez ---------- */
+
+  /* o banco cortou por tempo, não teve a vez (trava) ou desfez por conflito: na segunda vez pode passar; a recusa de
+     propósito (4xx) e o erro do sistema, não */
+  var CODIGOS_DE_TEMPO = ['57014', '55P03', '40001', '40P01'];
+  var ESPERA_REPETIR_MS = 3000;
+  /* a falha que chega depois disto é de conta grande (60 s no banco): repetir sozinha só pesaria mais o banco cheio */
+  var REPETE_ATE_MS = 25000;
+  /* a queda que chega depois disto é corte no caminho (o servidor desistiu sem resposta), não falta de internet */
+  var CORTE_SEM_RESPOSTA_MS = 10000;
+  var ultimaFalha = null;   // { motivo: 'internet' | 'demorou' | 'erro', quando }
+
+  function nomeDaRpc(caminho) {
+    var achou = /^\/rest\/v1\/rpc\/([a-z0-9_]+)/.exec(caminho);
+    return achou ? achou[1] : null;
+  }
+
+  function depois(ms) { return new Promise(function (seguir) { setTimeout(seguir, ms); }); }
+
+  /* a resposta que falhou: { motivo: 'demorou' (vale tentar de novo) | 'erro', frase do corte } ou null (deu certo, ou o
+     banco recusou de propósito, como a permissão) */
+  function falhaDaResposta(resp, ms) {
+    if (resp.ok || resp.status < 500) return Promise.resolve(null);
+    var M = window.RosterWork.mensagens.geral, s = Math.max(10, Math.round(ms / 10000) * 10);
+    if (resp.status === 502 || resp.status === 503 || resp.status === 504) {
+      return Promise.resolve({ motivo: 'demorou', corte: M.corteServidor(resp.status, s) });
+    }
+    return resp.clone().json().then(function (corpo) {
+      var codigo = corpo && corpo.code;
+      if (CODIGOS_DE_TEMPO.indexOf(codigo) < 0) return { motivo: 'erro' };
+      return { motivo: 'demorou', corte: codigo === '57014' ? M.corteTempo(s) : M.corteBanco(codigo, s) };
+    }, function () { return { motivo: 'erro' }; });
+  }
+
+  /* a chamada que nem voltou: sem internet, ou o servidor desistiu no caminho depois de muito tempo */
+  function falhaSemResposta(ms) {
+    if (navigator.onLine === false || ms < CORTE_SEM_RESPOSTA_MS) return { motivo: 'internet' };
+    var s = Math.max(10, Math.round(ms / 10000) * 10);
+    return { motivo: 'demorou', corte: window.RosterWork.mensagens.geral.corteSemResposta(s) };
+  }
+
+  /* anota o motivo (a frase do que fazer) e manda o corte para a aba Erros do Programador */
+  function anotarFalha(falha, caminho) {
+    ultimaFalha = { motivo: falha.motivo, quando: Date.now() };
+    var nome = nomeDaRpc(caminho), erros = window.RosterWork.erros;
+    if (falha.corte && nome && nome !== 'erro_tela_registrar' && erros && erros.registrarCorte) erros.registrarCorte(falha.corte, 'rpc/' + nome);
+  }
+
+  /* só lê: o GET, ou a RPC da lista de leituras do site (a LEITURAS do geral-treino.js) */
+  function soLe(caminho, opcoes) {
+    if ((opcoes.metodo || 'GET') === 'GET') return true;
+    var nome = nomeDaRpc(caminho), treino = window.RosterWork.treino;
+    return !!(nome && treino && treino.ehLeitura && treino.ehLeitura(nome));
+  }
+
+  function apiFetch(caminho, opcoes) { return pedir(caminho, opcoes || {}, false); }
+
+  /* a falha por tempo (ou sem resposta) de uma leitura, que veio antes de REPETE_ATE_MS, fora do modo treino, é pedida
+     de novo uma vez (segunda), ESPERA_REPETIR_MS depois */
+  function pedir(caminho, opcoes, segunda) {
+    var inicio = Date.now();
+    function podeRepetir(falha) {
+      var treino = window.RosterWork.treino;
+      return !segunda && falha.motivo !== 'erro' && Date.now() - inicio < REPETE_ATE_MS && soLe(caminho, opcoes) &&
+        !(treino && treino.ligado && treino.ligado());
+    }
+    function deNovo() { return depois(ESPERA_REPETIR_MS).then(function () { return pedir(caminho, opcoes, true); }); }
+    return chamar(caminho, opcoes).then(function (resp) {
+      return falhaDaResposta(resp, Date.now() - inicio).then(function (falha) {
+        if (!falha) return resp;
+        anotarFalha(falha, caminho);
+        return podeRepetir(falha) ? deNovo() : resp;
+      });
+    }, function (erro) {
+      var falha = falhaSemResposta(Date.now() - inicio);
+      anotarFalha(falha, caminho);
+      if (podeRepetir(falha)) return deNovo();
+      throw erro;
+    });
+  }
+
+  function chamar(caminho, opcoes) {
     var token = obterToken();
     return requisitar(caminho, token, opcoes).then(function (resp) {
       /* o banco não reconhece mais a chamada (a função mudou e a tela aberta ficou velha): o aviso de manutenção */
@@ -256,6 +340,8 @@
 
   window.RosterWork.apiFetch = apiFetch;
   window.RosterWork.rpc = rpc;
+  /* a última falha de chamada ao banco ({ motivo: 'internet' | 'demorou' | 'erro', quando } ou null; geral-falha.js) */
+  window.RosterWork.ultimaFalha = function () { return ultimaFalha; };
   window.RosterWork.renovarSessao = renovarSessao;
   window.RosterWork.expirarSessao = expirarSessao;
   window.RosterWork.obterToken = obterToken;

@@ -179,10 +179,12 @@
       var dep = comExtra ? G().depoisDe(un.id, k, alocs, falta) : null;
       var cob = dep ? dep.cobertura : antes, erro = dep ? dep.erro : G().erroAntes(un.id, k);
       var estagiarios = dep ? dep.estagiarios : G().estagiariosAntes(un.id, k);
+      /* os erros da dica do gráfico: os do depois ou os do antes (null enquanto não chegaram) */
+      var erros = (dep ? dep.erros : G().errosAntes(un.id, k)) || null;
       if (F.escalaCompleta() && RW.escalasCelula) {
-        RW.escalasCelula.preencherCelula(cel, cob, erro, G().deServico(un.id, k), G().pico(un.id) || 1, null, { postoCurto: !!curto, estagiarios: estagiarios });
+        RW.escalasCelula.preencherCelula(cel, cob, erro, G().deServico(un.id, k), G().pico(un.id) || 1, null, { postoCurto: !!curto, estagiarios: estagiarios, erros: erros });
       } else {
-        var g = G().grafico(cob, un.id, erro, estagiarios);
+        var g = G().grafico(cob, un.id, erro, estagiarios, erros);
         if (g) cel.appendChild(g);
       }
       /* com a Falta de gente marcada no Exibir, a linha dos horários embaixo do gráfico */

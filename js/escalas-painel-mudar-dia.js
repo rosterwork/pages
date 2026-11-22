@@ -301,7 +301,7 @@
           var ruins = rs.filter(function (r) { return !r || r.erro; });
           if (ruins.length) {
             carregandoDias = false;
-            RosterWork.avisar({ tipo: 'erro', mensagem: (ruins[0] && ruins[0].erro) || msg().falhaCarregar });
+            RosterWork.avisar({ tipo: 'erro', mensagem: (ruins[0] && ruins[0].erro) || RosterWork.falha.frase(msg().falhaCarregar) });
             atualizar();
             return;
           }
@@ -341,7 +341,7 @@
       RosterWork.escalasDados.lerDistribuicaoDia(uid, dia).then(function (d) {
         if (meu !== pedidoDia || !tela.isConnected) return;
         carregandoDia = false;
-        if (!d) RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar });
+        if (!d) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(msg().falhaCarregar) });
         else dadosNovo[dia] = d;
         atualizar();
       });

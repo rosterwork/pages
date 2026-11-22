@@ -59,6 +59,12 @@
     if (texto) caixa.querySelector('.nota-texto').textContent = texto;
   }
 
+  /* a nota vermelha de quem tem autorização de viagem no dia (m.viagem, das listas do banco): não impede, só avisa (o dia
+     fica com o erro vermelho). A mesma em todos os Adicionar da Escala */
+  function notaViagem(caixa, m) {
+    if (caixa) nota(caixa, m && m.viagem ? msg().viagemNoDia(m.viagem.destinos) : '');
+  }
+
   /* ---------- na guarnição do dia (a sub-tela daqui e a caixa flutuante da célula da grade usam a mesma peça) ---------- */
 
   /* quem pode entrar na guarnição do dia (quem está fora da escala e quem é de outra guarnição); null: a leitura falhou */
@@ -77,6 +83,7 @@
     var api = ed(), C = RosterWork.escalasPainelCiclo, D = RosterWork.data;
     var mudar = m.estado !== 'fora' && !m.serve_hoje;
     var quando = quandoEntra(m, g);
+    notaViagem(g.viagem, m);
     nota(g.mudar, m.serve_hoje ? L().guarnicaoServeHoje(nomeDe(m), g.letra, diaMes(g.iso))
       : !mudar ? ''
       : quando.menor ? L().guarnicaoMudarDescansoMenor(nomeDe(m), g.letra, D.diaMesExtenso(quando.entra), m.descanso.de, diaMes(m.descanso.ultimo))
@@ -238,7 +245,7 @@
       var leitura = est.como === 'dia' ? RosterWork.escalasDados.disponiveis(uid, iso, uid) : lerGuarnicao(uid, iso, letra);
       leitura.then(function (r) {
         if (meu !== pedido || !el.combo.isConnected) return;
-        if (!r) { combo.definir(msg().falhaCarregar, true); return; }
+        if (!r) { combo.definir(msg().falhaCarregar, true); RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(msg().falhaCarregar) }); return; }
         if (est.como === 'dia') { livres = doModo(r); preencherDia(); escolherPreset(); return; }
         combo.preencher(r);
       });
@@ -298,7 +305,8 @@
         militarRotulo: q('.escala-adicionar-militar-rotulo'),
         horario: q('.escala-adicionar-horario'), periodos: q('.escala-adicionar-periodos'),
         banco: q('.escala-adicionar-banco'), contabilizar: q('.escala-adicionar-contabilizar'),
-        mudar: q('.escala-adicionar-mudar'), info: q('.escala-adicionar-ciclo-info'), quando: q('.escala-adicionar-quando')
+        mudar: q('.escala-adicionar-mudar'), info: q('.escala-adicionar-ciclo-info'), quando: q('.escala-adicionar-quando'),
+        viagem: q('.escala-adicionar-viagem')
       };
       el.unidadeVazio = el.unidade.querySelector('.campo-selecao-texto').textContent;
       /* o Onde fica: a caixa comum, no lugar marcado do molde */
@@ -355,6 +363,7 @@
       ['horario', 'ondeBloco', 'acumula', 'banco', 'mudar', 'info', 'quando'].forEach(function (k) { mostra(el[k], false); });
       efeito.esconder();
       nota(el.assume, m && m.assume ? (m.assume === 'chefe_socorro' ? msg().assumeChefe : msg().assumeOficial)(nomeDe(m), '') : '');
+      notaViagem(el.viagem, m);
       if (!m) { api.aoVivo(null, false); return; }
       if (como === 'ciclo') {
         desenharGuarnicao(m, { uid: uid, iso: iso, letra: letra, mudar: el.mudar, info: el.info, quando: el.quando, efeito: efeito, analise: analise,
@@ -450,5 +459,6 @@
     api.abrir(montar);
   }
 
-  window.RosterWork.escalasPainelAdicionar = { abrir: abrir, lerGuarnicao: lerGuarnicao, desenharGuarnicao: desenharGuarnicao };
+  window.RosterWork.escalasPainelAdicionar = { abrir: abrir, lerGuarnicao: lerGuarnicao, desenharGuarnicao: desenharGuarnicao,
+    notaViagem: notaViagem };
 })();

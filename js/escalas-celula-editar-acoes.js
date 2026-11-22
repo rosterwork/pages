@@ -729,7 +729,7 @@
     RW.escalasDados.disponiveis(a.unidadeId, a.iso, a.unidadeId, null, !!oficial).then(function (r) {
       quandoChegar(function () {
         if (c.a !== a || a.acao !== (oficial ? oficial.acao : 'neste-dia') || !el.isConnected) return;
-        if (!r) { fecharLista(combo); combo.definir(msg().falhaCarregar, true); return; }
+        if (!r) { fecharLista(combo); combo.definir(msg().falhaCarregar, true); RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(msg().falhaCarregar) }); return; }
         var Ls = RW.escalasPainelAdicionarListas, lista = [];
         /* quem seria estagiário fica fora: ele entra pelo Adicionar estagiário */
         Ls.unidadesDia(r).forEach(function (u) {
@@ -758,6 +758,8 @@
       RW.escalasDiaNaGrade.tirarNova(a.unidadeId, a.iso, a.escolhido.cpf);
     }
     a.escolhido = item;
+    /* com autorização de viagem no dia: a nota vermelha (não impede) */
+    RW.escalasPainelAdicionar.notaViagem(el.querySelector('.escala-celula-adicionar-viagem'), item.m);
     var livres = (item.m.livres || []).length ? item.m.livres.map(copiar) : [{ hi: '08:00', hf: '08:00' }];
     a.entrada = { livres: livres, periodos: livres.map(copiar), valido: livres.map(copiar), ok: true,
       banco: item.m.estagio ? null : 'sim' };
@@ -884,7 +886,7 @@
     RW.escalasDados.disponiveis(a.unidadeId, a.iso, a.unidadeId, null, false).then(function (r) {
       quandoChegar(function () {
         if (c.a !== a || a.acao !== 'estagiario' || !el.isConnected) return;
-        if (!r) { fecharLista(combo); combo.definir(msg().falhaCarregar, true); return; }
+        if (!r) { fecharLista(combo); combo.definir(msg().falhaCarregar, true); RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(msg().falhaCarregar) }); return; }
         resposta = r;
         preencher();
         inp.focus(); combo.abrir();
@@ -921,6 +923,7 @@
     var g = {
       uid: a.unidadeId, iso: a.iso, letra: letra,
       mudar: q('.escala-celula-guarnicao-mudar'), info: q('.escala-celula-guarnicao-info'), quando: q('.escala-celula-guarnicao-quando'),
+      viagem: q('.escala-celula-guarnicao-viagem'),
       efeito: RW.escalasPainelCiclo.efeito(q('.escala-celula-guarnicao-efeito')),
       analise: { chave: '', aviso: null, pedido: 0 },
       vale: function () { return el.isConnected; },
@@ -938,7 +941,7 @@
     P.lerGuarnicao(a.unidadeId, a.iso, letra).then(function (r) {
       quandoChegar(function () {
         if (c.a !== a || a.acao !== 'guarnicao' || !el.isConnected) return;
-        if (!r) { fecharLista(combo); combo.definir(msg().falhaCarregar, true); return; }
+        if (!r) { fecharLista(combo); combo.definir(msg().falhaCarregar, true); RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(msg().falhaCarregar) }); return; }
         if (!combo.preencher(r)) { fecharLista(combo); return; }
         /* quem está fora da escala, clicado na grade (cpf, escalas-celula-fora.js): já vem escolhido */
         var dele = cpf && r.filter(function (x) { return x.cpf === cpf && !x.inativo; })[0];

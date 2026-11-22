@@ -4,8 +4,8 @@
    sobreaviso: { companhia_id, unidade_id, falta, militares }; com
    unidade_id, as regras da companhia dizem "de cada pelotão" e é o
    desse pelotão), depois dos Estagiários e antes das viaturas, para
-   todos (só na Escala; o
-   "Como fica a escala" das Pendências não o mostra). Quem administra
+   todos (na Escala e, só para ver, na aba Funções do painel do dia da
+   Extrajornada; o "Como fica a escala" das Pendências não o mostra). Quem administra
    a companhia (ou o pelotão, no sobreaviso de cada pelotão) tem o
    lápis de cada um (Pôr
    outro no lugar dele, Mudar o horário e Remover do sobreaviso) e o
@@ -49,7 +49,8 @@
   function soHora(t) { return t ? String(t).slice(0, 2) + 'h' : ''; }
   function deAntes(cpf) { return dia.antes.filter(function (x) { return x.cpf === cpf; })[0] || null; }
   function deAgora(cpf) { return dia.agora.filter(function (x) { return x.cpf === cpf; })[0] || null; }
-  function naEscala() { return !!document.querySelector('.conteudo #escala-modos'); }
+  /* o bloco aparece na Escala e na aba Funções do painel do dia da Extrajornada (lá, só para ver) */
+  function naEscala() { return !!document.querySelector('.conteudo #escala-modos, .conteudo #extrajornada-abas'); }
 
   /* o dia ainda pode mudar: até 7 dias atrás (o banco confere de novo) */
   function noLimite(iso) {

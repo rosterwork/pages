@@ -178,7 +178,7 @@
       if (ctx !== c || meu !== c.pedido) return;
       c.corpo.classList.remove('painel-corpo--refazendo');
       c.corpo.inert = false;
-      if (!d || !d.ok) { falha(d && d.erro); return; }
+      if (!d || !d.ok) { falha(d && d.erro, function () { pedir(escolhas, modo); }); return; }
       c.dados = d;
       c.chave = chaveDe(escolhasDe(d));
       if (modo === 'preencher') C().porVarias(c.unidadeId, c.iso, listaDe(d));
@@ -318,9 +318,10 @@
     c.corpo.scrollTop = rolagem;
   }
 
-  function falha(erro) {
+  /* a recusa do banco (erro) fica escrita; a leitura que não veio mostra o aviso com o Tentar de novo (geral-falha.js) */
+  function falha(erro, tentar) {
     ctx.corpo.textContent = '';
-    var e = RW.painel.criarEstado(erro || RW.mensagens.escala.falhaCarregar);
+    var e = erro ? RW.painel.criarEstado(erro) : RW.falha.bloco(RW.mensagens.escala.falhaCarregar, tentar);
     if (e) ctx.corpo.appendChild(e);
   }
 

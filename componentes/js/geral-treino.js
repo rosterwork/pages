@@ -30,7 +30,8 @@
    perguntar.
    Função de leitura nova chamada pelo site entra em LEITURAS (conferida
    no banco: STABLE, ou sem gravação em tabela de verdade, ou ensaio que
-   desfaz tudo).
+   desfaz tudo). A mesma lista diz ao geral-api.js o que ele pode pedir
+   de novo sozinho quando a chamada falha (ehLeitura).
    ============================================================ */
 (function () {
   'use strict';
@@ -250,6 +251,7 @@
     noAr: function () { return noAr > 0; },
     comecar: comecar, entrarLivre: entrarLivre, continuarLivre: continuarLivre, apagar: apagar, recusar: recusar,
     voltarAosTreinos: voltarAosTreinos, pedirLinha: pedirLinha, linhaPedida: linhaPedida,
-    seguir: seguir, comecarPendente: comecarPendente, passar: passar
+    seguir: seguir, comecarPendente: comecarPendente, passar: passar,
+    ehLeitura: function (nome) { return LEITURAS.indexOf(nome) >= 0; }
   };
 })();

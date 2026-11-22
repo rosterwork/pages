@@ -181,7 +181,7 @@
       .then(function (texto) {
         if (meu !== token) return;
         if (texto == null) {
-          if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaCarregar });
+          if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(RW.mensagens.geral.falhaCarregar) });
           return;
         }
         if (texto === lidoTexto) return;

@@ -158,7 +158,7 @@
       vazioLista: 'Nenhum bug por aqui.',
       vazioDetalhe: 'Selecione um bug na lista para ver os detalhes.',
       carregando: 'Carregando…',
-      falhaCarregar: 'Não foi possível carregar os bugs. Tente de novo.',
+      falhaCarregar: 'Não foi possível carregar os bugs.',
       gravidades: { leve: 'Leve', moderado: 'Moderado', grave: 'Grave' },
       situacoes: { aberto: 'Aberto', em_correcao: 'Em correção', corrigido: 'Corrigido', descartado: 'Descartado' },
       passos: { aberto: 'Aberto por', assumido: 'Assumido por', devolvido: 'Devolvido por', corrigido: 'Corrigido por', descartado: 'Descartado por', reaberto: 'Reaberto por' },
@@ -184,7 +184,7 @@
       vazioLista: 'Nenhum erro nos últimos 90 dias.',
       vazioDetalhe: 'Selecione um erro na lista para ver os detalhes.',
       carregando: 'Carregando…',
-      falhaCarregar: 'Não foi possível carregar os erros. Tente de novo.',
+      falhaCarregar: 'Não foi possível carregar os erros.',
       falhaMarcar: 'Não foi possível marcar como visto. Tente de novo.',
       naoInformado: 'Não informado',
       aparelhos: { celular: 'no celular', computador: 'no computador' },
@@ -266,9 +266,7 @@
       padroes: [
         { valor: 'ferias', rotulo: 'Férias' }, { valor: 'atestado', rotulo: 'Atestado' }, { valor: 'licenca', rotulo: 'Licença' },
         { valor: 'dispensa', rotulo: 'Dispensa' }, { valor: 'op_verao', rotulo: 'Op. Verão' }, { valor: 'op_verao_litoral', rotulo: 'Litoral' },
-        { valor: 'forca_tarefa', rotulo: 'F. Tarefa' },
-        /* não é afastamento: só tira do sobreaviso; "nome" é o texto do dia */
-        { valor: 'viagem', rotulo: 'Autorização de viagem', nome: 'Viagem' }
+        { valor: 'forca_tarefa', rotulo: 'F. Tarefa' }
       ],
       outro: 'Outro',
       /* no filtro Afastamento, os nomes escritos no Outro */
@@ -292,6 +290,29 @@
       /* os dias do afastamento dentro do mês ("05 a 31" ou "17") e a dica do selo */
       diasDoMes: function (a, b) { return a === b ? a : a + ' a ' + b; },
       dicaSelo: function (nome, ini, fim) { return nome + ': ' + ini + ' a ' + fim; },
+      /* embaixo da dica do afastamento (página Afastamentos e Escala): o que ele deixa nesses dias, uma linha por marca,
+         marcada quando sai; m = { escala, gua, tro, ext, sob } */
+      marcas: function (m) {
+        return [['escala', 'Sai da escala'], ['gua', 'Sai da guarnição'], ['tro', 'Sai das trocas e do serviço avulso'],
+                ['ext', 'Sai da extrajornada'], ['sob', 'Sai do sobreaviso']]
+          .map(function (i) { return (m[i[0]] ? '☑ ' : '☐ ') + i[1]; }).join('\n');
+      },
+      /* a autorização de viagem (não é afastamento: só tira do sobreaviso; o Adicionar autorização de viagem, com os
+         destinos): o nome do dia, a dica do selo, os destinos em frase, o título da caixa no painel e o destino que falta */
+      viagem: {
+        rotulo: 'Autorização de viagem',
+        nome: 'Viagem',
+        dica: function (ini, fim, destinos) {
+          return 'Autorização de viagem: ' + ini + ' a ' + fim + '\n' + RosterWork.mensagens.afastamentos.viagem.destinos(destinos) +
+            '\nSó sai do sobreaviso';
+        },
+        destinos: function (lista) { lista = lista || []; return (lista.length === 1 ? 'Destino: ' : 'Destinos: ') + juntarComE(lista); },
+        titulo: function (situacao) { return 'Autorização de viagem (' + situacao + ')'; },
+        situacao: { emCurso: 'em curso', marcado: 'marcada', encerrado: 'encerrada' },
+        novo: 'Nova autorização de viagem',
+        remover: 'Remover esta autorização de viagem',
+        semDestino: 'Escreva pelo menos um destino.'
+      },
       /* a situação do afastamento na ficha */
       emCurso: 'Em curso',
       marcado: 'Marcado',
@@ -838,6 +859,9 @@
         militares: function (hora, n) { return hora + ' · ' + n + (n === 1 ? ' militar' : ' militares'); },
         estagiarios: function (n) { return n + (n === 1 ? ' estagiário' : ' estagiários'); }
       },
+      /* o erro com quem ele toca, na dica do gráfico e no relatório da Extrajornada ("Existe militar sem função: Sd.1ªCl.
+         Tavares"; escalas-painel.js › linhasDoAviso com os nomes) */
+      erroComNomes: function (texto, nomes) { return texto + ': ' + juntarComE(nomes); },
       /* a caixa da célula no dia de mais de 7 dias atrás, para quem administra (escalas-celula-editar.js) */
       diaAntigo: 'Este dia é de mais de 7 dias atrás e não pode mais mudar.',
       /* o título do dia nas grades: o dia com escala e ninguém na função de Oficial de Área (escalas-celula.js); o horário de
@@ -862,7 +886,7 @@
       imprimirAindaDescricao: 'O PDF pode sair com dias que ainda vão mudar. Confira antes de usar.',
       selecioneUnidade: 'Selecione uma companhia ou pelotão no seletor de unidades.',
       falhaSalvar: 'Não foi possível salvar. Tente de novo.',
-      /* abas Funções e Militares: a escala do dia mudou depois que a tela leu (outro administrador ou o sistema) */
+      /* abas Funções e Estagiários: a escala do dia mudou depois que a tela leu (outro administrador ou o sistema) */
       diaDesatualizado: 'A escala deste dia foi alterada por outra pessoa ou pelo sistema. A tela foi atualizada: confira e faça a mudança de novo.',
       /* o Salvar de vários dias: um deles mudou depois que a tela leu (só as alterações dele saem) */
       diaDesatualizadoDe: function (dia, unidade) {
@@ -919,7 +943,9 @@
         chefeDirigeRegra:    { texto: 'Chefe de Socorro dirigindo contra a regra da Distribuição', icone: 'icone-alerta', nivel: 'alerta' },
         /* o mesmo militar em funções de duas unidades no mesmo horário; {unidades} = "2ºPEL e 1ºPEL" (a dele primeiro);
            {faixas} = ", das 08:00 às 20:00" quando é só parte do dia */
-        duasUnidades:        { texto: '{militar} está em duas unidades diferentes ao mesmo tempo ({unidades}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' }
+        duasUnidades:        { texto: '{militar} está em duas unidades diferentes ao mesmo tempo ({unidades}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
+        /* de serviço num dia em que tem autorização de viagem (não impede nada); {destinos} = "Curitiba e Joinville" */
+        viagem:              { texto: '{militar} de serviço com autorização de viagem ({destinos})', icone: 'icone-alerta', nivel: 'erro' }
       },
       /* detalhe por militar dos avisos amarelos (expansível sob cada linha do aviso):
          {pessoa} = grad + nome · {funcao} = nome da vaga · {motivo} = a razão (abaixo) */
@@ -1060,19 +1086,16 @@
       blocoExtra: 'Extrajornada',
       blocoEstagiarios: 'Estagiários',
       rotuloEstagiario: 'Estagiário',
-      /* a aba Militares (o dia por pessoa): os grupos, embaixo do nome as funções e o horário sem função, e o dia vazio */
-      militaresServico: function (n) { return 'De serviço (' + n + ')'; },
-      militaresFora: function (n) { return 'Em outra unidade (' + n + ')'; },
-      militaresFolga: function (n) { return 'De folga (' + n + ')'; },
-      /* quem saiu da guarnição e não faz mais o serviço deste dia (a linha riscada, com o Cancelar a saída; também a dica na
-         grade) */
-      militaresSaida: function (n) { return 'Saiu da guarnição (' + n + ')'; },
+      /* as caixas da aba Funções depois do De folga: quem foi remanejado daqui e quem saiu da guarnição (a linha riscada,
+         com o Cancelar a saída; o texto embaixo do nome também é a dica na grade) */
+      blocoOutraUnidade: 'Em outra unidade',
+      blocoSaiuGuarnicao: 'Saiu da guarnição',
       saiuDaGuarnicao: function (data) { return 'Saiu da guarnição em ' + data; },
       /* a linha riscada de quem saiu à mão: o último serviço dele, a data que a pergunta do Mudar a saída usa */
       ultimoNaGuarnicao: function (data) { return 'Último serviço na guarnição em ' + data; },
+      /* a aba Estagiários (o dia por pessoa): embaixo do nome, as funções e o horário sem função */
       militaresFuncoes: function (lugares) { return juntarComE(lugares); },
       militaresSemFuncao: function (periodos, comFuncao) { return (comFuncao ? '; sem função' : 'Sem função') + (periodos ? ' ' + periodos : ''); },
-      militaresVazio: 'Ninguém de serviço neste dia.',
       /* a aba Estagiários do painel do dia: um grupo por estágio e o vazio */
       estagiariosGrupo: function (nome, n) { return nome + ' (' + n + ')'; },
       estagiariosVazio: 'Nenhum estagiário neste dia.',
@@ -1166,7 +1189,7 @@
         mudouPassou: function (militar, antes, depois) { return 'O ' + militar + ' passou ' + lista('do', antes) + ' para ' + lista('o', depois) + '.'; },
         mudouSemFuncao: function (militar, antes) { return 'O ' + militar + ' saiu ' + lista('do', antes) + ' e ficou sem função.'; },
         mudouSaiu: function (militar, antes) { return 'O ' + militar + ' saiu ' + lista('do', antes) + '.'; },
-        mudouDia: function (militar, para, horas) { return 'O ' + militar + ' passou o serviço' + (horas ? ' ' + horas : '') + ' para ' + para + '.'; },
+        mudouDia: function (militar, para, horas) { return 'O ' + militar + ' mudou o dia de serviço para ' + para + (horas ? ', ' + horas : '') + '.'; },
         mudouHorario: function (militar, periodos) { return 'O ' + militar + ' continua nas mesmas funções, agora ' + (periodos || 'o dia todo') + '.'; },
         mudouDeixou: function (militar, deixou) { return 'O ' + militar + ' deixou ' + lista('o', deixou) + '.'; },
         mudouGanhou: function (militar, ganhou) { return 'O ' + militar + ' passou a fazer também ' + lista('o', ganhou) + '.'; },
@@ -1457,11 +1480,11 @@
       deOutraUnidade: function (nome) { return (/ª/.test(nome || '') ? 'Da ' : 'Do ') + (nome || ''); },
       /* dica do ícone do militar remanejado: "Remanejado do 2ºPEL, só neste dia" */
       remanejadoDe: function (nome) { return 'Remanejado d' + artigo(nome) + ' ' + (nome || '') + ', só neste dia'; },
-      /* dica do ícone da mudança de dia: "Mudou de dia: veio de 12/11" (o dia novo) e "Mudou de dia: passou para 13/11" (o
+      /* dica do ícone da mudança de dia: "Mudou de dia: veio de 12/11" (o dia novo) e "Mudou de dia: foi para 13/11" (o
          de antes); e o texto que vai no lugar do horário em De folga */
       mudouDeDiaDe: function (de) { return 'Mudou de dia: veio de ' + de; },
-      mudouDeDiaPara: function (para) { return 'Mudou de dia: passou para ' + para; },
-      passouPara: function (para) { return 'Passou para ' + para; },
+      mudouDeDiaPara: function (para) { return 'Mudou de dia: foi para ' + para; },
+      passouPara: function (para) { return 'Mudou para ' + para; },
       /* a dica do militar na grade (escalas-celula-dica.js): por que a linha está na escala, uma frase por linha da dica (a
          mudança de dia, a saída da guarnição e o serviço e a extra juntos usam as frases de cima) */
       dica: {
@@ -1492,13 +1515,21 @@
       },
       /* os grupos da célula da Escala (escalas-celula-grupos.js): a dica da linha tracejada diz o grupo de baixo */
       grupoCelula: { guarnicao: 'Guarnição', troca: 'Trocas', pontual: 'Pontual', remanejado: 'Remanejados', extra: 'Extrajornada',
-        estagio: 'Estágio', sobreaviso: 'Sobreaviso', fora: 'Fora da escala' },
+        estagio: 'Estágio', sobreaviso: 'Sobreaviso', viagem: 'Autorização de viagem', fora: 'Fora da escala' },
       /* o título de quem não está em nenhum posto, com quantos (Op. Verão e Estágios, o .escala-mes-posto--sem) */
       semPosto: function (n) { return 'Sem posto (' + n + ')'; },
       /* no lugar do horário de quem está fora da escala: a entrada na guarnição já marcada; o amarelo (a volta de um
          afastamento há até 5 dias) e o vermelho sem a entrada marcada */
       entraEm: function (data) { return 'Entra em ' + data; },
       foraDaEscala: 'Fora da escala',
+      /* a autorização de viagem na grade (o grupo dela, com o filtro): no lugar do horário, até quando; a dica, com os
+         destinos; a nota vermelha de quem é escolhido para entrar num dia em que tem autorização de viagem (não impede) */
+      viagemAte: function (data) { return 'Viagem até ' + data; },
+      dicaViagem: function (data, destinos) {
+        return 'Autorização de viagem até ' + data + '\n' + RosterWork.mensagens.afastamentos.viagem.destinos(destinos) + '\nSó sai do sobreaviso';
+      },
+      viagemNoDia: function (destinos) { return 'Está com autorização de viagem neste dia (' + juntarComE(destinos || []) + ').'; },
+      listaDestinos: function (destinos) { return juntarComE(destinos || []); },
       /* o Adicionar neste dia de quem está fora da escala, sem horas livres no dia (escalas-celula-fora.js) */
       foraSemHoras: 'Este militar não tem horas livres neste dia.',
       /* Observações do dia (notas do admin, trocas, folgas, outra unidade, remanejados) — o banco manda os dados, aqui vira texto */
@@ -2963,7 +2994,20 @@
     geral: {
       camposCorrigir: 'Há campos a corrigir. Revise os destacados em vermelho.',
       erroConexao: 'Erro de conexão. Tente novamente.',
-      falhaCarregar: 'Não foi possível carregar. Tente de novo.',
+      /* o título; o que fazer vem do geral-falha.js (RosterWork.falha) */
+      falhaCarregar: 'Não foi possível carregar.',
+      /* a leitura que falhou mesmo depois de o sistema tentar de novo sozinho (geral-falha.js): o motivo e o que fazer,
+         embaixo do título de cada tela ("Não foi possível carregar a escala."); falhaRascunho, com mudança esperando o
+         Salvar */
+      falhaInternet: 'Confira a sua conexão e tente de novo.',
+      falhaDemorou: 'O sistema demorou para responder. Tente de novo em alguns segundos.',
+      falhaErro: 'Tente de novo. Se continuar, avise pelo Fale conosco.',
+      falhaRascunho: 'A sua mudança continua no rascunho; o Salvar grava.',
+      /* a chamada cortada, para a aba Erros do Programador (geral-api.js); s = os segundos até o corte, de 10 em 10 */
+      corteTempo: function (s) { return 'O banco cortou a chamada por tempo, depois de ' + s + ' s'; },
+      corteServidor: function (status, s) { return 'O servidor do banco não respondeu (' + status + '), depois de ' + s + ' s'; },
+      corteSemResposta: function (s) { return 'A chamada ficou sem resposta do servidor, depois de ' + s + ' s'; },
+      corteBanco: function (codigo, s) { return 'O banco desistiu da chamada (' + codigo + '), depois de ' + s + ' s'; },
       /* salvar — três falhas distintas (sem conexão / servidor / banco rejeitou) */
       semConexao: 'Sem conexão. Nada foi salvo. Verifique sua internet e tente de novo.',
       falhaServidor: 'Não foi possível concluir a ação. Atualize a página e tente de novo.',

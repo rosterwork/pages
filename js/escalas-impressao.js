@@ -9,7 +9,7 @@
    (escala_impressao) e montada pelo escalas-impressao-pdf.js.
    Abre no painel próprio (o Imprimir da barra no Militares) ou, pelo
    Imprimir do painel do dia (subcabeçalho das abas Funções e
-   Militares, só na Escala),
+   Estagiários, só na Escala),
    numa sub-tela no lugar da lista, marcada com o dia e a unidade do
    painel; esse botão fica desligado enquanto há alteração não salva
    (o PDF sai do que está gravado). Aqui também a conferência do erro
@@ -193,7 +193,7 @@
     });
   }
 
-  /* ---------- o Imprimir do painel do dia (subcabeçalho das abas Funções e Militares; escalas-painel-editar.js) ---------- */
+  /* ---------- o Imprimir do painel do dia (subcabeçalho das abas Funções e Estagiários; escalas-painel-editar.js) ---------- */
 
   /* com alteração não salva (o rodapé largo da página à vista, também enquanto grava), o PDF sairia sem ela: o botão
      fica desligado e a dica diz o motivo */

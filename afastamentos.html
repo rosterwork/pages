@@ -212,10 +212,11 @@
   </div>
 </template>
 
-<!-- molde: um afastamento num mês: o listrado do afastado, com o nome e os dias daquele mês -->
+<!-- molde: um afastamento num mês: o listrado do afastado, com o nome e os dias daquele mês; a autorização de viagem
+     (não é afastamento) sem o listrado, com a borda e o ícone do mapa à mostra -->
 <template id="tpl-afastamentos-selo">
   <span class="afastamentos-selo">
-    <span class="afastamentos-selo-nome"></span>
+    <span class="afastamentos-selo-nome"><svg class="icone afastamentos-selo-icone oculto" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg><span class="afastamentos-selo-texto"></span></span>
     <span class="afastamentos-selo-dias"></span>
   </span>
 </template>
@@ -233,20 +234,35 @@
   </div>
 </template>
 
-<!-- molde: a caixa da célula vazia: o Adicionar abre as perguntas na caixa 2 -->
+<!-- molde: a caixa da célula vazia: os dois Adicionar abrem as perguntas na caixa 2 (a autorização de viagem não é
+     afastamento: só o período e os destinos) -->
 <template id="tpl-afastamentos-menu-vazio">
   <div class="afastamentos-menu">
     <button type="button" class="dropdown-item" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg><span>Adicionar afastamento</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="viagem"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg><span>Adicionar autorização de viagem</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <div class="dropdown-divisor"></div>
     <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span>Abrir o painel do militar</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do militar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
   </div>
 </template>
 
-<!-- molde: a caixa do espaço vazio do bloquinho da unidade, no calendário: o Adicionar abre as perguntas na caixa 2,
-     a primeira é o militar -->
+<!-- molde: a caixa do espaço vazio do bloquinho da unidade, no calendário: os dois Adicionar abrem as perguntas na
+     caixa 2, a primeira é o militar -->
 <template id="tpl-afastamentos-menu-dia">
   <div class="afastamentos-menu">
     <button type="button" class="dropdown-item" data-acao="adicionar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg><span>Adicionar afastamento</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="viagem"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg><span>Adicionar autorização de viagem</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+  </div>
+</template>
+
+<!-- molde: a caixa de uma autorização de viagem (caixa 1): o período e os destinos abrem na caixa 2; o Remover vai para o
+     rascunho; o último abre o painel do militar -->
+<template id="tpl-afastamentos-menu-viagem">
+  <div class="afastamentos-menu">
+    <button type="button" class="dropdown-item" data-acao="periodo"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-agendado"/></svg><span>Mudar o período</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="destinos"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg><span>Mudar os destinos</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-lixeira"/></svg><span>Remover a autorização de viagem</span></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-perfil"/></svg><span>Abrir o painel do militar</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do militar"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
   </div>
 </template>
 
@@ -341,6 +357,27 @@
   </div>
 </template>
 
+<!-- molde: os Destinos da autorização de viagem (um campo por destino, molde #tpl-afastamento-destino, e o Adicionar
+     destino embaixo) -->
+<template id="tpl-afastamento-destinos">
+  <div class="campo afastamento-campo-destinos">
+    <span class="campo-rotulo">Destinos</span>
+    <div class="afastamento-destinos" data-af-destinos></div>
+    <button type="button" class="botao afastamento-destinos-adicionar" data-af-destino-adicionar>Adicionar destino</button>
+  </div>
+</template>
+
+<!-- molde: um destino (até 60 letras), com o X (o mesmo das partes do horário): com dois ou mais, ele tira o campo; com
+     um só, limpa. A lixeira fica só no alto, para a autorização inteira -->
+<template id="tpl-afastamento-destino">
+  <div class="afastamento-destino">
+    <input class="campo-entrada" type="text" maxlength="60" autocomplete="off" aria-label="Destino" data-af-destino />
+    <button type="button" class="botao-discreto" aria-label="Remover este destino" data-dica="Remover este destino" data-af-destino-remover>
+      <svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+    </button>
+  </div>
+</template>
+
 <!-- molde: o problema do afastamento, embaixo dos campos -->
 <template id="tpl-afastamento-nota">
   <div class="nota nota--erro oculto" data-af-nota>
@@ -368,9 +405,11 @@
   </div>
 </template>
 
-<!-- molde (painel do militar): o Adicionar afastamento, no fim (quem administra o militar) -->
+<!-- molde (painel do militar): o Adicionar afastamento e o Adicionar autorização de viagem, no fim (quem administra o
+     militar) -->
 <template id="tpl-ficha-afastamento-adicionar">
   <div class="ficha-acoes-fim">
     <button type="button" class="botao" data-af-adicionar>Adicionar afastamento</button>
+    <button type="button" class="botao" data-af-adicionar-viagem>Adicionar autorização de viagem</button>
   </div>
 </template>

@@ -1,5 +1,5 @@
 /* ============================================================
-   ESCALAS — Remover do dia (o lápis da aba Militares: o Remover do
+   ESCALAS — Remover do dia (o lápis da aba Funções: o Remover do
    dia e o Devolver de quem foi para outra unidade; só admin). O mesmo
    caminho pelas duas entradas (REGRAS §4 › Ações e perguntas):
    - abrir(): a sub-tela em caixas de pergunta. Quem sai; a origem

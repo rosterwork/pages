@@ -154,17 +154,26 @@
       }
     }
 
-    var corpo = RW.painel.corpo(); corpo.textContent = '';
-    var estado = RW.painel.criarCarregando(); if (estado) corpo.appendChild(estado);
-    RW.painel.segurar(RW.folgasDados.extrato(militar.usuario_id)).then(function (r) {
-      if (!RW.painel.estaAberto() || form || !detalhe || detalhe.militar !== militar) return;
-      detalhe.dados = r || { saldo_minutos: 0, linhas: [] };
-      mostrarExtrato();
-    }).catch(function () {
-      if (!RW.painel.estaAberto() || form || !detalhe || detalhe.militar !== militar) return;   // guard completo: não sobrescreve o painel de outro militar
+    var corpo = RW.painel.corpo();
+    /* a leitura que não veio (null ou a queda): o aviso com o Tentar de novo (geral-falha.js), nunca o saldo zerado */
+    function lerExtrato() {
       corpo.textContent = '';
-      var e = RW.painel.criarEstado(msg().falhaExtrato); if (e) corpo.appendChild(e);
-    });
+      var estado = RW.painel.criarCarregando(); if (estado) corpo.appendChild(estado);
+      RW.painel.segurar(RW.folgasDados.extrato(militar.usuario_id)).then(function (r) {
+        if (!RW.painel.estaAberto() || form || !detalhe || detalhe.militar !== militar) return;
+        if (r == null) { falhou(); return; }
+        detalhe.dados = r;
+        mostrarExtrato();
+      }).catch(function () {
+        if (!RW.painel.estaAberto() || form || !detalhe || detalhe.militar !== militar) return;   // guard completo: não sobrescreve o painel de outro militar
+        falhou();
+      });
+    }
+    function falhou() {
+      corpo.textContent = '';
+      var e = RW.falha.bloco(msg().falhaExtrato, lerExtrato); if (e) corpo.appendChild(e);
+    }
+    lerExtrato();
   }
 
   function saldoDetalhe() { return detalhe && detalhe.dados ? (detalhe.dados.saldo_minutos || 0) : 0; }

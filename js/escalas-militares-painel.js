@@ -66,11 +66,13 @@
   }
 
   /* preenche a seção Distribuição com o que o militar exerce no dia (retorno de ler_militar_dia).
-     funcoes = [{posto, funcao, origem, periodos}] · [] = de serviço sem função · null = falha */
-  function preencherDistribuicao(corpoSecao, funcoes) {
+     funcoes = [{posto, funcao, origem, periodos}] · [] = de serviço sem função · null = falha (o aviso com o Tentar de
+     novo, que lê de novo: tentar) */
+  function preencherDistribuicao(corpoSecao, funcoes, tentar) {
     corpoSecao.textContent = '';
     if (funcoes == null) {
-      corpoSecao.appendChild(RosterWork.painel.criarEstado(RosterWork.mensagens.escala.falhaCarregar));
+      var aviso = RosterWork.falha.bloco(RosterWork.mensagens.escala.falhaCarregar, tentar);
+      if (aviso) corpoSecao.appendChild(aviso);
       return;
     }
     if (!funcoes.length) {
@@ -109,15 +111,19 @@
     /* Distribuição do militar no dia (assíncrona) */
     var sec2 = RosterWork.painel.criarSecaoColapsavel('Distribuição no dia');
     var c2 = sec2.querySelector('.painel-secao-corpo');
-    var sp = spinner();
-    if (sp) c2.appendChild(sp);
     corpo.appendChild(sec2);
 
     if (!window.RosterWork.escalasDados) return;
-    RosterWork.painel.segurar(RosterWork.escalasDados.lerMilitarDia(ctx.cpf, ctx.iso)).then(function (funcoes) {
-      if (!document.contains(c2)) return;   // fechou ou trocou de célula enquanto carregava
-      preencherDistribuicao(c2, funcoes);
-    });
+    function lerDistribuicao() {
+      c2.textContent = '';
+      var sp = spinner();
+      if (sp) c2.appendChild(sp);
+      RosterWork.painel.segurar(RosterWork.escalasDados.lerMilitarDia(ctx.cpf, ctx.iso)).then(function (funcoes) {
+        if (!document.contains(c2)) return;   // fechou ou trocou de célula enquanto carregava
+        preencherDistribuicao(c2, funcoes, lerDistribuicao);
+      });
+    }
+    lerDistribuicao();
   }
 
   /* abre a gaveta para o militar no dia. ctx = { cpf, grad, nome, unidadeNome, cidade, iso, estado, aoFechar } */

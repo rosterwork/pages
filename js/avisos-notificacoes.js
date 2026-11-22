@@ -83,19 +83,24 @@
     return (segurar ? segurar(leitura) : leitura)
       .then(function (caixa) {
         if (minha !== historico.leitura) return null;
-        renderizar((caixa && caixa.itens) || [], false);
+        if (!caixa) return falhou();
+        renderizar(caixa.itens || [], false);
         return {
-          emAberto: (caixa && caixa.abertos && caixa.abertos.total) || 0,
-          mais: !!(caixa && caixa.mais)
+          emAberto: (caixa.abertos && caixa.abertos.total) || 0,
+          mais: !!caixa.mais
         };
       })
       .catch(function () {
         if (minha !== historico.leitura) return null;
-        var vazio = RosterWork.tpl('tpl-avisos-vazio');
-        lista.textContent = '';
-        if (vazio) { vazio.textContent = RW.mensagens.avisos.falhaCarregar; lista.appendChild(vazio); }
-        return { emAberto: 0, mais: false };
+        return falhou();
       });
+    /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js), que lê a página de novo (aoMudar) */
+    function falhou() {
+      lista.textContent = '';
+      var aviso = RW.falha.bloco(RW.mensagens.avisos.falhaCarregar, aoMudar);
+      if (aviso) lista.appendChild(aviso);
+      return { emAberto: 0, mais: false };
+    }
   }
 
   /* o lote seguinte, embaixo do que já está na tela; devolve { mais } (null se a lista foi

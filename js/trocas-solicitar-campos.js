@@ -54,10 +54,10 @@
     return RW.apiFetch('/rest/v1/rpc/buscar_unidades_ordenadas', { metodo: 'POST', corpo: {} })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (lista) {
-        if (!Array.isArray(lista)) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.falhaServidor }); return []; }
+        if (!Array.isArray(lista)) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(RW.mensagens.geral.falhaCarregar) }); return []; }
         return calcularGrupo(lista, lotacaoId);
       })
-      .catch(function () { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.erroConexao }); return []; });
+      .catch(function () { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(RW.mensagens.geral.falhaCarregar) }); return []; });
   }
   /* o seletor de unidade: as opções do grupo; já marca a unidade da lotação (devolve a escolhida ou null) */
   function preencherUnidades(menu, gatilho, grupo, lotacaoId, aoEscolher) {
@@ -108,6 +108,7 @@
       if (req !== reqSolicitantes || !q('#ts-solicitante-menu')) return;
       combo.habilitar(false);
       combo.definir(txt('modalCarregarFalha'), true);
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(RW.mensagens.geral.falhaCarregar) });
     });
   }
   /* o dia, o período e o parceiro dependem de quem pede: recomeça daí */
@@ -145,6 +146,7 @@
       if (req !== reqParceiros || !q('#ts-parceiro-menu')) return;
       combo.habilitar(false);
       combo.definir(txt('modalCarregarFalha'), true);
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(RW.mensagens.geral.falhaCarregar) });
     });
   }
 

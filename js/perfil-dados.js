@@ -258,12 +258,13 @@
   }
 
   /* ---------- minhas solicitações (agrupadas por pedido) ---------- */
-  /* falha na leitura: mostra erro, NÃO finge "nada pendente" (senão o militar reenvia duplicado) */
+  /* falha na leitura: o aviso com o Tentar de novo (geral-falha.js), NÃO finge "nada pendente" (senão o militar reenvia
+     duplicado) */
   function mostrarErroMinhas() {
     if (!lista) return;
     lista.textContent = '';
-    var erro = RosterWork.tpl('tpl-pedido-vazio');
-    if (erro) { erro.textContent = RosterWork.mensagens.geral.falhaCarregar; lista.appendChild(erro); }
+    var erro = RosterWork.falha.bloco(RosterWork.mensagens.geral.falhaCarregar, carregarMinhas);
+    if (erro) lista.appendChild(erro);
   }
   function carregarMinhas() {
     if (!lista) return;

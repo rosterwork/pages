@@ -275,10 +275,12 @@
     ctx.corpo.removeAttribute('aria-busy');
   }
 
+  /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js), que lê de novo */
   function falha() {
     ctx.corpo.textContent = '';
-    var e = RosterWork.tpl('tpl-escala-distribuicao-estado');
-    if (e) { e.textContent = RosterWork.mensagens.escala.falhaCarregar; ctx.corpo.appendChild(e); }
+    var e = RosterWork.falha.bloco(RosterWork.mensagens.escala.falhaCarregar, ler,
+      { rascunho: !!(RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.paraPrevia()) });
+    if (e) ctx.corpo.appendChild(e);
   }
 
   /* lê as guarnições (com o rascunho, a prévia); a mais nova vale. A prévia que o banco recusa avisa e, se a mudança foi

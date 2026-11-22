@@ -61,6 +61,7 @@
   /* gravou: a leitura depois do Salvar, com o cartão das etapas na frente: o que está na tela fica até o novo chegar */
   function carregar(gravou) {
     var meu = ++pedido;
+    RW.falha.tirarAntes(el.conteudo);
     var leitura = RW.rpc('extrajornada_regras_ler', {});
     if (!gravou) {
       el.carregando.classList.remove('oculto');
@@ -71,7 +72,8 @@
     return leitura.then(function (r) {
       if (meu !== pedido || !montada()) return;
       el.carregando.classList.add('oculto');
-      if (!r || !r.ok) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
+      if (r && r.error) { RW.avisar({ tipo: 'erro', mensagem: r.error }); return; }
+      if (!r || !r.ok) { falhou(); return; }
       dados = r;
       regras = daLeitura(r.regras);
       inicial = texto(regras);
@@ -80,8 +82,10 @@
     }, function () {
       if (meu !== pedido) return;
       el.carregando.classList.add('oculto');
-      RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao });
+      falhou();
     });
+    /* a leitura que não veio: o aviso com o Tentar de novo antes do conteúdo (geral-falha.js) */
+    function falhou() { RW.falha.antes(el.conteudo, RW.mensagens.geral.falhaCarregar, function () { carregar(gravou); }); }
   }
 
   /* ---------- os pelotões: as linhas da ordem, do "quem vai" e das bombeiras (a cada leitura) ---------- */

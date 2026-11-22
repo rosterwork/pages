@@ -349,6 +349,12 @@
   color: var(--texto-suave);
 }
 
+/* a autorização de viagem (não é afastamento): sem as faixas, com a borda fina por dentro */
+.escala-mil-afast--viagem {
+  background-image: none;
+  box-shadow: inset 0 0 0 1px var(--borda-forte);
+}
+
 /* ---------- linha de totais (efetivo de serviço por dia) ---------- */
 .escala-mil-total { background-color: var(--fundo-suave); }
 

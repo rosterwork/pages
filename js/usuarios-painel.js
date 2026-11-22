@@ -280,9 +280,10 @@
 
   /* ---------- carregar ---------- */
 
-  function mostrarErro(corpo) {
+  /* a ficha que não veio: o aviso com o Tentar de novo (geral-falha.js), que lê a ficha de novo */
+  function mostrarErro(corpo, usuarioId) {
     corpo.textContent = '';
-    var estado = RosterWork.painel.criarEstado(RosterWork.mensagens.usuarios.falhaFicha);
+    var estado = RosterWork.falha.bloco(RosterWork.mensagens.usuarios.falhaFicha, function () { carregarFicha(usuarioId); });
     if (estado) corpo.appendChild(estado);
   }
 
@@ -310,7 +311,7 @@
       .then(function (r) {
         if (!RosterWork.painel.estaAberto() || !pessoaAtual || pessoaAtual.usuario_id !== usuarioId) return;
         var ficha = r[0];
-        if (!ficha) { var a = RosterWork.painel.corpo(); if (a) mostrarErro(a); return; }
+        if (!ficha) { var a = RosterWork.painel.corpo(); if (a) mostrarErro(a, usuarioId); return; }
         fichaAtual = ficha;
         grausLista = r[1] || [];
         alteracoes = Array.isArray(r[2]) ? r[2] : [];
@@ -319,7 +320,7 @@
       })
       .catch(function () {
         if (!RosterWork.painel.estaAberto()) return;
-        var a = RosterWork.painel.corpo(); if (a) mostrarErro(a);
+        var a = RosterWork.painel.corpo(); if (a) mostrarErro(a, usuarioId);
       });
   }
 

@@ -333,7 +333,7 @@
     espera = RW.etapas.area(area, { etapas: 'trocasCalendario' });
     var esta = espera;
     function falhou() {
-      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar });
+      if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(msg().falhaCarregar) });
     }
     esta.segurar(RW.trocasDados.listar(lerUnidades ? lerUnidades() : [])).then(function (lista) {
       esta.parar();

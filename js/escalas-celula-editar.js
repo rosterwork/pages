@@ -4,9 +4,10 @@
    fechado, na caixa flutuante (geral-caixa-flutuante) e no rascunho
    do Dia (escalas-painel-editar.js sem a lista: a mesma prévia e o
    mesmo Salvar do rodapé largo). O nome abre ao lado o menu dele no
-   dia (o do lápis da aba Militares, escalas-painel-linha-menu.js ›
+   dia (a parte do dia do lápis da aba Funções, escalas-painel-linha-menu.js ›
    menuDaCelula, com o Abrir o painel do dia); as linhas riscadas têm
-   o menu delas, a troca e o afastamento só o Abrir o painel, e a da
+   o menu delas, a troca, o afastamento e a autorização de viagem só o
+   Abrir o painel, e a da
    extra, para o administrador da companhia, a caixa da extra
    (escalas-celula-extra.js). O pelotão abre Adicionar neste dia,
    Adicionar à guarnição (a letra do dia) e Abrir o painel do dia; o
@@ -43,9 +44,9 @@
     ['.linha-escalado--saiu', 'saida'],
     ['.linha-escalado--remanejado', 'fora'],
     ['.linha-escalado--fora-vermelho, .linha-escalado--fora-aviso', 'fora-escala'],
-    ['.linha-escalado--trocado, .linha-escalado--afastamento, .linha-escalado--fora', 'nada']
+    ['.linha-escalado--trocado, .linha-escalado--afastamento, .linha-escalado--viagem, .linha-escalado--fora', 'nada']
   ];
-  var RISCADAS = '.linha-escalado--folga, .linha-escalado--trocado, .linha-escalado--remanejado, .linha-escalado--mudou-dia, .linha-escalado--saiu, .linha-escalado--afastamento, .linha-escalado--fora';
+  var RISCADAS = '.linha-escalado--folga, .linha-escalado--trocado, .linha-escalado--remanejado, .linha-escalado--mudou-dia, .linha-escalado--saiu, .linha-escalado--afastamento, .linha-escalado--viagem, .linha-escalado--fora';
   /* a caixa do pelotão abre ao lado dele, com o topo 8px abaixo do topo do pelotão (na altura do nome e da faixa) */
   var TOPO_PELOTAO = 8;
 
@@ -107,7 +108,7 @@
 
   /* começa (ou continua) o dia da célula; seguir() roda com o dia já pedido. A mudança não salva de outro dia fica
      guardada com ele, sem pergunta (escalas-rascunho-dias.js), e a deste dia, se estava guardada, volta. Com o painel
-     aberto no dia (na Funções ou na Militares), a caixa usa o rascunho dele, e cada leitura dele chega a ela.
+     aberto no dia (na Funções ou na Estagiários), a caixa usa o rascunho dele, e cada leitura dele chega a ela.
      d = { unidadeId, iso, unidadeNome, unidadeCidade } */
   function irPara(d, seguir) {
     painelNoDia(d);
@@ -124,7 +125,7 @@
   /* a leitura do dia (ou a prévia) chegou ao rascunho: a caixa que esperava mostra o menu; a que está sem a caixa 2 refaz o
      menu (o dia mudou); null: a leitura falhou */
   function chegou(dados) {
-    if (!dados) { RW.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); fecharTudo('largar'); return; }
+    if (!dados) { RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(msg().falhaCarregar) }); fecharTudo('largar'); return; }
     var a = aberto;
     if (!a || !a.caixa) return;
     if (a.esperando || !a.acao) mostrar();
@@ -230,7 +231,7 @@
     if (a.tipo === 'nome') A().aoMostrarMenu(contexto(), a.menu);
   }
 
-  /* o que o menu precisa saber da pessoa no dia, pelo tipo da linha clicada (a mesma montagem da aba Militares) */
+  /* o que o menu precisa saber da pessoa no dia, pelo tipo da linha clicada (a mesma montagem das linhas do painel) */
   function cfgDe(a) {
     var dados = api().dados() || {}, cpf = a.cpf, base = { visao: 'celula' };
     var de = function (x) { return x.cpf === cpf; };
@@ -262,13 +263,13 @@
 
   /* ---------- o painel ---------- */
 
-  /* o painel do dia (cpf: na aba Militares, com o menu dele, ou, com opcoes.fazerAcao, já na tela do item; opcoes.secao: a
-     aba); no mesmo dia, ele continua o que a célula mexeu */
+  /* o painel do dia (cpf: na aba Funções, com o menu da primeira linha dele, ou, com opcoes.fazerAcao, já na tela do item;
+     opcoes.secao: a aba); no mesmo dia, ele continua o que a célula mexeu */
   function abrirPainel(cpf, opcoes) {
     var d = dia;
     opcoes = opcoes || {};
     if (!d) return;
-    RW.escalasPainel.abrirDia(d, opcoes.secao || (cpf ? 'militares' : null),
+    RW.escalasPainel.abrirDia(d, opcoes.secao || (cpf ? 'distribuicao' : null),
       cpf ? { abrirMenuDe: cpf, fazerAcao: opcoes.fazerAcao || null } : null);
   }
 
@@ -296,10 +297,11 @@
   /* o pelotão: o bloco do calendário (com o nome dele) ou a célula */
   function pecaDoPelotao(cel) { return cel.closest('.escala-calendario-unidade') || cel; }
 
-  /* o sobreaviso: a caixa ao lado do nome (com o pelotão marcado junto) ou do dia */
+  /* o sobreaviso: a caixa ao lado do nome ou da linha do que falta (com o pelotão marcado junto) ou do dia */
   function cliqueNoSobreaviso(cel, sob) {
-    abrirSobreaviso(diaDe(cel), sob.linha || pecaDoPelotao(cel), sob.cpf,
-      L().noDia(sob.linha ? nomeDa(sob.linha) : RW.mensagens.escala.sobreaviso.dica, diaMes(diaDe(cel).iso)), sob.linha ? [pecaDoPelotao(cel)] : null);
+    var peca = sob.linha || sob.falta;
+    abrirSobreaviso(diaDe(cel), peca || pecaDoPelotao(cel), sob.cpf,
+      L().noDia(sob.linha ? nomeDa(sob.linha) : RW.mensagens.escala.sobreaviso.dica, diaMes(diaDe(cel).iso)), peca ? [pecaDoPelotao(cel)] : null);
   }
 
   /* a caixa do sobreaviso no dia d (cpf: o nome; null: o dia); fixa: a peça fica a mesma (a aba Militares, fora da grade
@@ -309,7 +311,8 @@
     if (a && a.tipo === 'sobreaviso' && mesmo(a, d.unidadeId, d.iso) && a.cpf === cpf && a.caixa && a.caixa.aberta()) return;
     fecharTudo();
     irPara(d, function () {
-      abrirCaixa({ tipo: 'sobreaviso', unidadeId: d.unidadeId, iso: d.iso, cpf: cpf, fixa: fixa ? peca : null }, peca, titulo, junto);
+      abrirCaixa({ tipo: 'sobreaviso', unidadeId: d.unidadeId, iso: d.iso, cpf: cpf, fixa: fixa ? peca : null,
+        falta: !cpf && !fixa && peca.classList.contains('linha-escalado--sobreaviso-falta') }, peca, titulo, junto);
     });
   }
 
@@ -405,9 +408,11 @@
     var peca = a.tipo === 'oficial' ? RW.escalasCelulaOficial.peca(a)
       : a.fixa ? (a.fixa.isConnected ? a.fixa : null)
       : !cel ? null : a.tipo === 'pelotao' ? pecaDoPelotao(cel)
-      : a.tipo === 'sobreaviso' ? (a.cpf ? cel.querySelector('.linha-escalado--sobreaviso[data-cpf="' + a.cpf + '"]') : pecaDoPelotao(cel))
+      : a.tipo === 'sobreaviso' ? (a.cpf ? cel.querySelector('.linha-escalado--sobreaviso[data-cpf="' + a.cpf + '"]')
+        : (a.falta && cel.querySelector('.linha-escalado--sobreaviso-falta')) || pecaDoPelotao(cel))
       : linhaDe(cel, a.cpf, a.linha, a.lancamento);
-    var junto = cel && !a.fixa && (a.tipo === 'nome' || (a.tipo === 'sobreaviso' && a.cpf)) ? [pecaDoPelotao(cel)] : [];
+    /* o nome e a linha do que falta levam o pelotão junto (sem a linha do que falta, a caixa fica no pelotão) */
+    var junto = cel && !a.fixa && peca !== pecaDoPelotao(cel) && (a.tipo === 'nome' || a.tipo === 'sobreaviso') ? [pecaDoPelotao(cel)] : [];
     if (!a.caixa) {
       if (peca && a.novo) abrirCaixa(a, peca, L().noDia(nomeDa(peca), diaMes(a.iso)), junto);
       return;

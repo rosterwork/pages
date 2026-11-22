@@ -1,6 +1,6 @@
 /* ============================================================
    ESCALAS — Mudar de unidade neste dia (o remanejamento; só admin): o
-   Enviar (o lápis da aba Militares e o nome na célula da grade) e o
+   Enviar (o lápis da aba Funções e o nome na célula da grade) e o
    Trazer de outra unidade (o Editar o dia e o pelotão na célula), na
    sub-tela do painel do dia e na caixa 2 da célula
    (escalas-celula-editar-acoes.js), com as mesmas perguntas e o mesmo
@@ -31,7 +31,7 @@
    respondido, o remanejamento entra no rascunho do Dia ao vivo
    (escalas-painel-editar.js › aoVivo); depois da primeira resposta, a
    resposta pela metade e a recusa desligam o Salvar. Depois de salvo, desfaz-se pelo Devolver
-   (o lápis de quem foi para outra unidade, na aba Militares) ou pelo
+   (o lápis de quem foi para outra unidade, na aba Funções) ou pelo
    Remover do dia.
    API: RosterWork.escalasPainelRemanejar.abrir(opcoes) (a sub-tela do
    painel; opcoes = { cpf }: o Enviar, com ele escolhido, o menu da
@@ -139,7 +139,7 @@
       if (!u) return;
       RosterWork.escalasDados.lerDistribuicaoDia(u.unidade_id, iso).then(function (d) {
         if (meu !== pedido || !tela.isConnected) return;
-        if (!d) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); return; }
+        if (!d) { RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(msg().falhaCarregar) }); return; }
         est.outraDados = d;
         preencherTroca();
         atualizar();
@@ -155,7 +155,7 @@
       Promise.all(outras.map(function (u) { return RosterWork.escalasDados.lerDistribuicaoDia(u.unidade_id, iso); })).then(function (ds) {
         if (meu !== pedido || !tela.isConnected) return;
         if (ds.some(function (d) { return !d; })) {
-          RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar });
+          RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(msg().falhaCarregar) });
           combo.definir(msg().falhaCarregar, true);
           return;
         }
@@ -264,7 +264,7 @@
       atualizar();
     }
 
-    /* Para qual unidade (o Enviar): uma bolinha por outra unidade da companhia que você administra */
+    /* Para qual unidade (o Enviar): uma bolinha por outra unidade da companhia que você administra, com o nome e a cidade */
     function montarUnidades() {
       el.unidades.textContent = '';
       outras.forEach(function (u) {
@@ -272,6 +272,7 @@
         if (!op) return;
         op.querySelector('input').value = String(u.unidade_id);
         op.querySelector('.escala-remanejar-unidade-nome').textContent = u.nome;
+        op.querySelector('.escala-remanejar-unidade-cidade').textContent = u.cidade || '';
         el.unidades.appendChild(op);
       });
       el.marcarUnidade = ligarRadios(el.unidades, function (v) {
@@ -441,7 +442,7 @@
        escolhida); no Trazer, o dia de cada uma, para o Quem vem */
     R().lerUnidades().then(function (lista) {
       if (!tela.isConnected) return;
-      if (!lista) { RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar }); return; }
+      if (!lista) { RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(msg().falhaCarregar) }); return; }
       var aqui = lista.filter(function (u) { return String(u.unidade_id) === String(uid); })[0];
       aquiNome = aqui ? aqui.nome : '';
       outras = R().outrasDe(lista, companhia, uid);

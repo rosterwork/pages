@@ -59,14 +59,14 @@
       carregou = Array.isArray(r);
       erros = carregou ? r : [];
       avisarSubtitulo();
-      if (!carregou) { renderLista(M().falhaCarregar); return; }
+      if (!carregou) { falhaNaLista(); return; }
       if (selecionada && erroDa(selecionada)) selecionar(selecionada);
       else renderLista();
     }).catch(function () {
       erros = [];
       carregou = false;
       avisarSubtitulo();
-      renderLista(M().falhaCarregar);
+      falhaNaLista();
     });
   }
 
@@ -83,6 +83,15 @@
     var no = RosterWork.tpl('tpl-programador-vazio');
     if (no) no.querySelector('span').textContent = texto;
     return no;
+  }
+
+  /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js) */
+  function falhaNaLista() {
+    var lista = q('#erros-lista');
+    if (!lista) return;
+    lista.textContent = '';
+    var aviso = RosterWork.falha.bloco(M().falhaCarregar, carregar);
+    if (aviso) lista.appendChild(aviso);
   }
 
   function renderLista(textoVazio) {

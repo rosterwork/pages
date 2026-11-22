@@ -142,7 +142,7 @@
         RosterWork.periodo.rolarAteHoje(wrap, diaHoje, diaAnterior, { horizontal: true, fixo: cab.querySelector('.escala-semana-canto') });
       }
     }, function () {
-      if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      if (document.contains(corpo) && req === reqSeq && (!opcoes.vigente || opcoes.vigente())) RosterWork.escalasDados.mostrarFalha(corpo);
     });
   }
 

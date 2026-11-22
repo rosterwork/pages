@@ -8,7 +8,9 @@
    Escala), também nos dias de outro mês das pontas (mais escuros; o
    ano vizinho, na virada, é lido junto; o título conta só o mês). Em cada bloquinho, quem está afastado naquele dia, na linha
    da Escala (#tpl-escala-mes-pessoa): o listrado, o posto e o nome sem
-   riscar e, à direita, o nome do afastamento (as datas na dica); o que
+   riscar e, à direita, o nome do afastamento (as datas e as marcas na
+   dica; a autorização de viagem sem o listrado, com o ícone do mapa e,
+   na dica, os destinos); o que
    não foi salvo leva a canaleta. Enquanto o ano chega, a forma de
    espera em cada bloquinho. Abre rolado na semana de hoje; redesenhado
    no mesmo mês, fica na mesma rolagem. O clique, para quem administra:
@@ -28,15 +30,22 @@
   function p2(n) { return (n < 10 ? '0' : '') + n; }
   function iso(d) { return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
 
-  /* a linha do afastado no dia: a da Escala, com o nome do afastamento no lugar do horário */
+  /* a linha do afastado no dia: a da Escala, com o nome do afastamento no lugar do horário; a da autorização de viagem
+     (não é afastamento) sem o listrado, com o ícone do mapa */
   function linhaDoAfastado(af, p, c) {
     var l = RW.tpl('tpl-escala-mes-pessoa');
     if (!l) return null;
-    l.classList.add('linha-escalado--afastamento', 'afastamentos-linha');
+    var viagem = !RW.afastamentosGrade.afastado(af);
+    l.classList.add(viagem ? 'linha-escalado--viagem' : 'linha-escalado--afastamento', 'afastamentos-linha');
+    var pino = viagem ? RW.tpl('tpl-escala-mes-origem') : null;
+    if (pino) {
+      pino.querySelector('use').setAttribute('href', 'icones/todos.svg#icone-mapa-pin');
+      l.querySelector('.linha-escalado-icones').appendChild(pino);
+    }
     l.querySelector('.linha-escalado-grad').textContent = p.grau_abreviacao || '';
     l.querySelector('.linha-escalado-nome').textContent = p.nome_de_guerra || '';
     l.querySelector('.linha-escalado-hora').textContent = af.nome;
-    l.setAttribute('data-dica', M().dicaSelo(af.nome, D().isoParaBR(af.inicio), D().isoParaBR(af.fim)));
+    l.setAttribute('data-dica', RW.afastamentosGrade.dica(af));
     l.setAttribute('data-cpf', p.usuario_id);
     l.setAttribute('data-af', af.chave);
     l.setAttribute('role', 'button');

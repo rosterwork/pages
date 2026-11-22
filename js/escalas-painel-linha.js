@@ -148,7 +148,7 @@
       combo.definir(L().carregando, true);
       RosterWork.escalasDados.disponiveis(api.unidadeId(), api.iso(), api.unidadeId(), vagaDe(cfg, alvo.original, eu ? eu.cpf : null)).then(function (resp) {
         if (!el.isConnected) return;
-        if (!resp) { combo.definir(msg().falhaCarregar, true); return; }
+        if (!resp) { combo.definir(msg().falhaCarregar, true); RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(msg().falhaCarregar) }); return; }
         combo.preencher(RosterWork.escalasPainelQuem.itensDaVaga(resp, eu, unidadeNome, { soDoDia: true }));
       });
     }
@@ -225,7 +225,7 @@
         est.conferindo = false;
         var item = resp ? RosterWork.escalasPainelQuem.itensDaVaga(resp, null, unidadeNome, { soDoDia: true })
           .filter(function (i) { return i.cpf === eu.cpf; })[0] : null;
-        if (!resp) RosterWork.avisar({ tipo: 'erro', mensagem: msg().falhaCarregar });
+        if (!resp) RosterWork.avisar({ tipo: 'erro', mensagem: RosterWork.falha.frase(msg().falhaCarregar) });
         else if (!item || item.inativo || !item.c) est.naoPode = L().naoPodeFuncao(nomeDe(eu), (item && item.info) || '');
         else {
           alvo = { cfg: cfgAlvo, m: cfgAlvo.militar, original: est.periodos.map(copiar) };

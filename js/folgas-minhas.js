@@ -58,9 +58,11 @@
     el.appendChild(raiz);
   }
 
+  /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js), que lê de novo com a forma dos cartões */
   function falharExtrato(el) {
     el.textContent = '';
-    var v = RosterWork.tpl('tpl-folga-lista-vazio'); if (v) { v.textContent = msg().falhaExtrato; el.appendChild(v); }
+    var v = RW.falha.bloco(msg().falhaExtrato, function () { el.textContent = ''; carregar(); });
+    if (v) el.appendChild(v);
   }
 
   function carregar() {

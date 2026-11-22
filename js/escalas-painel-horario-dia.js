@@ -1,5 +1,5 @@
 /* ============================================================
-   ESCALAS — Mudar o horário do serviço (o lápis da aba Militares; só
+   ESCALAS — Mudar o horário do serviço (o lápis da aba Funções; só
    admin)
    Sub-tela em caixas de pergunta (Guia visual › Ações e perguntas),
    já com ele escolhido: o Horário do serviço dele no dia (um horário

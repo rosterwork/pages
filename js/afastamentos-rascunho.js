@@ -19,7 +19,7 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var CAMPOS = ['inicio', 'fim', 'nome', 'padrao', 'gua', 'tro', 'ext', 'sob'];
+  var CAMPOS = ['inicio', 'fim', 'nome', 'padrao', 'gua', 'tro', 'ext', 'sob', 'destinos'];
 
   var gravados = {};        // cpf -> { id -> afastamento gravado, no formato do rascunho }
   var mudancas = {};        // cpf -> { novos: [afastamento], mudados: { id: afastamento }, removidos: { id: true } }
@@ -44,14 +44,23 @@
       id: x.afastamento_id, chave: x.afastamento_id, cpf: String(x.usuario_id),
       inicio: String(x.data_inicio || '').slice(0, 10), fim: String(x.data_fim || '').slice(0, 10),
       nome: x.nome || '', padrao: x.padrao || null, gua: !!x.sai_da_guarnicao, tro: !!x.sai_das_trocas,
-      ext: !!x.sai_da_extra, sob: !!x.sai_do_sobreaviso, escolheu: true
+      ext: !!x.sai_da_extra, sob: !!x.sai_do_sobreaviso, destinos: x.destinos || null, escolheu: true
     };
   }
   function copiar(af) { return JSON.parse(JSON.stringify(af)); }
-  function igual(a, b) { return !!a && !!b && CAMPOS.every(function (k) { return a[k] === b[k]; }); }
-  /* em branco: sem nome e sem datas, ou só com o dia do clique (o Adicionar do mês e do calendário) */
+  function igual(a, b) {
+    return !!a && !!b && CAMPOS.every(function (k) { return JSON.stringify(a[k]) === JSON.stringify(b[k]); });
+  }
+  function viagem(af) { return af.padrao === 'viagem'; }
+  /* os destinos escritos (sem os em branco) */
+  function destinosEscritos(af) {
+    return (af.destinos || []).map(function (d) { return String(d).trim(); }).filter(Boolean);
+  }
+  /* em branco: sem nome (na autorização de viagem, sem destino) e sem datas, ou só com o dia do clique (o Adicionar do
+     mês e do calendário) */
   function vazio(af) {
-    return !af.nome && ((!af.inicio && !af.fim) || (!!af.doDia && af.inicio === af.doDia && af.fim === af.doDia));
+    var semDatas = (!af.inicio && !af.fim) || (!!af.doDia && af.inicio === af.doDia && af.fim === af.doDia);
+    return (viagem(af) ? !destinosEscritos(af).length : !af.nome) && semDatas;
   }
 
   /* os gravados que chegaram do banco (a lista do ano ou a do militar) */
@@ -107,11 +116,15 @@
   }
 
   /* um afastamento novo, em branco (não conta nem vai para o banco até ter algo; o primeiro campo é o primeiro passo
-     do Desfazer); devolve a chave dele */
-  function criar(cpf, dia) {
+     do Desfazer); com tipo 'viagem', a autorização de viagem (só sai do sobreaviso; os destinos a escrever); devolve a
+     chave dele */
+  function criar(cpf, dia, tipo) {
     cpf = String(cpf);
     var af = { id: null, chave: 'novo-' + (++seq), cpf: cpf, inicio: dia || '', fim: dia || '', nome: '', padrao: null,
-      gua: false, tro: true, ext: true, sob: true, escolheu: false, doDia: dia || null };
+      gua: false, tro: true, ext: true, sob: true, destinos: null, escolheu: false, doDia: dia || null };
+    if (tipo === 'viagem') {
+      Object.assign(af, { nome: M().viagem.nome, padrao: 'viagem', tro: false, ext: false, destinos: [''], escolheu: true });
+    }
     doMilitar(cpf).novos.push(af);
     return af.chave;
   }
@@ -222,6 +235,7 @@
     if (!af.nome) return M().nomeVazio;
     if (!af.inicio || !af.fim) return M().datasVazias;
     if (af.fim < af.inicio) return M().fimAntes;
+    if (viagem(af) && !destinosEscritos(af).length) return M().viagem.semDestino;
     var lim = isoLimite(), vespera = isoLimite(-1);
     var g = af.id ? gravado(af.cpf, af.id) : null;
     var aviso = M().limite(br(lim));
@@ -232,10 +246,11 @@
       if (g.fim !== af.fim && (g.fim < lim || af.fim < vespera)) return aviso;
       if (g.inicio < lim && (g.gua !== af.gua || g.tro !== af.tro || g.ext !== af.ext || g.sob !== af.sob)) return aviso;
     }
-    /* dois do mesmo nome não se cruzam */
+    /* dois do mesmo nome não se cruzam (a autorização de viagem só com outra autorização de viagem) */
     var nome = af.nome.toLowerCase();
     var cruza = lista(af.cpf).filter(function (o) {
-      return o.chave !== af.chave && o.inicio && o.fim && o.nome.toLowerCase() === nome && af.inicio <= o.fim && o.inicio <= af.fim;
+      return o.chave !== af.chave && o.inicio && o.fim && o.nome.toLowerCase() === nome && viagem(o) === viagem(af) &&
+        af.inicio <= o.fim && o.inicio <= af.fim;
     })[0];
     if (cruza) return M().cruza(cruza.nome, br(cruza.inicio) + ' a ' + br(cruza.fim));
     return '';
@@ -271,8 +286,10 @@
       var afs = Object.keys(x.mudados).map(function (id) { return x.mudados[id]; })
         .concat(x.novos.filter(function (a) { return !vazio(a); }))
         .map(function (af) {
-          return { afastamento_id: af.id || null, nome: af.nome, padrao: af.padrao, inicio: af.inicio, fim: af.fim,
+          var item = { afastamento_id: af.id || null, nome: af.nome, padrao: af.padrao, inicio: af.inicio, fim: af.fim,
             sai_da_guarnicao: !!af.gua, sai_das_trocas: !!af.tro, sai_da_extra: !!af.ext, sai_do_sobreaviso: !!af.sob };
+          if (viagem(af)) item.destinos = destinosEscritos(af);
+          return item;
         });
       var remover = Object.keys(x.removidos);
       return afs.length || remover.length ? { usuario_id: cpf, afastamentos: afs, remover: remover } : null;
@@ -311,19 +328,19 @@
   }
 
   /* o banco refaz a escala quando mudam os dias de um afastamento de quem está nela (o operacional), ou a guarnição e
-     as trocas dele, até o fim da escala já calculada (hoje + 90 dias); o nome, a extra, o sobreaviso e o que fica
-     depois disso só gravam */
+     as trocas dele, até o fim da escala já calculada (hoje + 90 dias); o nome, a extra, o sobreaviso, a autorização de
+     viagem e o que fica depois disso só gravam */
   function refazEscala() {
     var fimDaEscala = isoLimite(97);
     function entra(iso) { return !!iso && iso <= fimDaEscala; }
     return Object.keys(mudancas).some(function (cpf) {
       if (setorDe && String(setorDe(cpf) || 'Operacional').toUpperCase() !== 'OPERACIONAL') return false;
       var x = mudancas[cpf], g = gravados[cpf] || {};
-      return x.novos.some(function (af) { return !vazio(af) && entra(af.inicio); })
-        || Object.keys(x.removidos).some(function (id) { return !!g[id] && entra(g[id].inicio); })
+      return x.novos.some(function (af) { return !vazio(af) && !viagem(af) && entra(af.inicio); })
+        || Object.keys(x.removidos).some(function (id) { return !!g[id] && !viagem(g[id]) && entra(g[id].inicio); })
         || Object.keys(x.mudados).some(function (id) {
           var a = g[id], d = x.mudados[id];
-          if (!a) return false;
+          if (!a || viagem(a)) return false;
           if (a.inicio !== d.inicio || a.gua !== d.gua || a.tro !== d.tro) return entra(a.inicio < d.inicio ? a.inicio : d.inicio);
           return a.fim !== d.fim && (a.fim < d.fim ? a.fim : d.fim) < fimDaEscala;   // muda do dia seguinte ao fim mais cedo
         });

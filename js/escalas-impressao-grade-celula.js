@@ -114,8 +114,13 @@
   function soHora(h) { return escalasCelula().soHora ? escalasCelula().soHora(h) : (h || ''); }
   function comInicio(p) { return (p.periodos || []).filter(function (per) { return per.inicio; }); }
 
-  /* afastado (com o filtro Afastamentos): "Férias até DD/MM" no lugar do horário */
-  function textoAfastado(p) { return RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5)); }
+  /* afastado (com o filtro Afastamentos): "Férias até DD/MM" no lugar do horário; a autorização de viagem (com o filtro
+     dela): "Viagem até DD/MM" */
+  function textoAfastado(p) {
+    if (p.origem === 'viagem') return RW.mensagens.escala.viagemAte(RW.data.isoParaBR(p.ate).slice(0, 5));
+    return RW.mensagens.geral.afastadoAte(p.afastamento || '', RW.data.isoParaBR(p.ate).slice(0, 5));
+  }
+  function semHorario(p) { return p.origem === 'afastamento' || p.origem === 'viagem'; }
 
   /* quem está fora da escala, no lugar do horário, como na tela (escalas-celula-fora.js): "Fora da escala" no amarelo (a
      volta de um afastamento há até 5 dias); "Entra em DD/MM", a entrada marcada; sem ela, "Fora da escala" no vermelho */
@@ -125,7 +130,7 @@
   }
 
   function horarios(p, c) {
-    if (p.origem === 'afastamento') {
+    if (semHorario(p)) {
       return { text: textoAfastado(p), fontSize: FONTE.hora, color: c.texto, width: 'auto', margin: MARGEM.hora };
     }
     if (p.origem === 'fora') {
@@ -143,7 +148,7 @@
 
   /* a largura (pt) da coluna do horário: o par mais largo (ou o texto do afastado) */
   function larguraHorarios(p) {
-    if (p.origem === 'afastamento') return larguraTexto(textoAfastado(p), FONTE.hora, false);
+    if (semHorario(p)) return larguraTexto(textoAfastado(p), FONTE.hora, false);
     if (p.origem === 'fora') return textoFora(p) ? larguraTexto(textoFora(p), FONTE.hora, false) : 0;
     var maior = 0;
     comInicio(p).forEach(function (per) {
@@ -165,13 +170,16 @@
   }
 
   /* quem aparece no dia, nos grupos da tela (escalas-celula-grupos.js): os de serviço, o sobreaviso da companhia, no lugar
-     em que ele aparece, e o Fora da escala (os afastados dele, com o filtro Afastamentos), pelos filtros da tela */
+     em que ele aparece, a autorização de viagem (com o filtro dela) e o Fora da escala (os afastados dele, com o filtro
+     Afastamentos), pelos filtros da tela */
   function pessoasDoDia(dados, uid, dia) {
-    var passa = RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return p.origem !== 'afastamento'; };
+    var passa = RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return !semHorario(p); };
     function noGrupo(lista, grupo) { return lista.map(function (p) { return Object.assign({}, p, { grupo: grupo }); }); }
     var sobreaviso = RW.escalasCelulaSobreaviso ? RW.escalasCelulaSobreaviso.pessoas(uid, dia) : [];
+    var fora = ((dados.fora || {})[uid] || {})[dia] || [];
     var lista = ((dados.militares[uid] || {})[dia] || []).concat(noGrupo(sobreaviso, 'sobreaviso'),
-      noGrupo(((dados.fora || {})[uid] || {})[dia] || [], 'fora'));
+      noGrupo(fora.filter(function (p) { return p.origem === 'viagem'; }), 'viagem'),
+      noGrupo(fora.filter(function (p) { return p.origem !== 'viagem'; }), 'fora'));
     return lista.filter(passa);
   }
 

@@ -105,13 +105,28 @@
       var chip = RosterWork.tpl('tpl-escala-mil-afast');
       if (!chip) return;
       chip.textContent = estado.sigla || 'FÉR';
-      /* a dica: o nome do afastamento até a data */
-      if (estado.ate) chip.setAttribute('data-dica', (estado.afastamento || 'Férias') + ' até ' + dataCurta(estado.ate));
+      /* a dica: o nome do afastamento até a data e, embaixo, o que ele deixa nesses dias (as marcas que o banco manda) */
+      if (estado.ate) {
+        var dica = RosterWork.mensagens.geral.afastadoAte(estado.afastamento || 'Férias', dataCurta(estado.ate));
+        if (estado.marcas) dica += '\n' + RosterWork.mensagens.afastamentos.marcas(Object.assign({ escala: true }, estado.marcas));
+        chip.setAttribute('data-dica', dica);
+      }
       chip.setAttribute('data-situacao', 'afastamento');   // para o filtro
       celula.appendChild(chip);
       return;
     }
     montarChips(celula, estado.periodos, estado.estado === 'trocado', !!estado.is_extra, !!estado.estagio);
+  }
+
+  /* o dia de autorização de viagem do militar: o selo VIA (escondido até o filtro Incluir autorizações de viagem), com a
+     dica de até quando, os destinos e que só sai do sobreaviso */
+  function selarViagem(celula, viagens, iso) {
+    var v = (viagens || []).filter(function (x) { return x.inicio <= iso && iso <= x.fim; })[0];
+    if (!v) return;
+    var chip = RosterWork.tpl('tpl-escala-mil-viagem');
+    if (!chip) return;
+    chip.setAttribute('data-dica', RosterWork.mensagens.escala.dicaViagem(dataCurta(v.fim), v.destinos));
+    celula.appendChild(chip);
   }
 
   /* liga o clique do título (botão da 1ª coluna) para recolher/expandir os militares da unidade */
@@ -216,6 +231,7 @@
         var cel = RosterWork.tpl('tpl-escala-mil-celula');
         var estadoDia = m.dias && m.dias[info.iso];
         preencherCelula(cel, estadoDia);
+        selarViagem(cel, m.viagens, info.iso);
         if (info.fds) cel.classList.add('escala-mil-celula--fds');
         cel.dataset.iso = info.iso;
         ligarCelula(cel, m, coluna, info.iso, estadoDia, aba);
@@ -416,7 +432,7 @@
     }, function () {
       if (!document.contains(corpo) || req !== reqSeq || (opcoes.vigente && !opcoes.vigente())) return;
       Esqueleto.parar();
-      mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      RosterWork.escalasDados.mostrarFalha(corpo);
     });
   }
 

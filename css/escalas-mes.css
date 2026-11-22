@@ -295,7 +295,7 @@
   pointer-events: none;
 }
 
-.escala-mes-celula--edita:has(:is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf]:hover):not(.escala-mes-celula--selecionada):not(.caixa-flutuante-escolhida)::before {
+.escala-mes-celula--edita:has(:is(:is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf], .linha-escalado--sobreaviso-falta):hover):not(.escala-mes-celula--selecionada):not(.caixa-flutuante-escolhida)::before {
   content: none;
 }
 
@@ -309,9 +309,10 @@
   outline: none;
 }
 
-/* os nomes de quem edita o dia (a caixa da célula abre no nome): a mesma borda, por dentro de cada nome (a de um nunca
-   encosta na do vizinho); o nome escolhido fica com a forte enquanto o mouse passa nos outros */
-.escala-mes-celula--edita :is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf]:not(.caixa-flutuante-escolhida):hover {
+/* os nomes de quem edita o dia (a caixa da célula abre no nome) e a linha do que falta no sobreaviso: a mesma borda, por
+   dentro de cada linha (a de uma nunca encosta na da vizinha); a escolhida fica com a forte enquanto o mouse passa nas
+   outras */
+.escala-mes-celula--edita :is(:is(.linha-escalado, .extrajornada-vaga, .extrajornada-foco-ponto)[data-cpf], .linha-escalado--sobreaviso-falta):not(.caixa-flutuante-escolhida):hover {
   outline: 1px solid var(--foco);
   outline-offset: -1px;
   border-radius: var(--raio-pequeno);
@@ -515,6 +516,29 @@
   display: block;
 }
 
+/* os erros que pintam a hora, embaixo dos militares: uma linha por erro, o ícone de alerta na cor dele */
+.escala-mes-dica-erros {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0;
+}
+
+.escala-mes-dica-erro {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.escala-mes-dica-erro .icone {
+  flex: none;
+  width: 12px;
+  height: 12px;
+}
+
+.escala-mes-dica-erro--erro .icone { color: var(--erro); }
+.escala-mes-dica-erro--alerta .icone { color: var(--alerta); }
+
 /* uma linha de militar escalado: ícone(s) de origem + grad + nome + horário */
 .linha-escalado {
   display: flex;
@@ -637,6 +661,12 @@
 }
 
 .linha-escalado--afastamento .linha-escalado-hora {
+  font-weight: 600;
+}
+
+/* a autorização de viagem (o grupo dela, com o filtro Incluir autorizações de viagem): não é afastamento, então sem o
+   listrado e sem riscar; o ícone do mapa e o "Viagem até DD/MM" no lugar do horário */
+.linha-escalado--viagem .linha-escalado-hora {
   font-weight: 600;
 }
 

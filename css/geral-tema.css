@@ -37,7 +37,7 @@
   --cinza-450: rgb(172, 172, 172);
   --cinza-500: rgb(170, 170, 170);
   --cinza-550: rgb(151, 151, 151);   /* o texto fraco do escuro: 4,5 para 1 também sobre o --fundo-medio */
-  --cinza-600: rgb(106, 106, 106);   /* o texto fraco do claro: 4,5 para 1 também sobre o --fundo-medio */
+  --cinza-600: rgb(100, 100, 100);   /* o texto fraco do claro: 4,5 para 1 também sobre o --fundo-medio e o --fundo-dia-fora */
   --cinza-650: rgb(96,  96,  96);
   --cinza-700: rgb(92,  92,  92);
   --cinza-750: rgb(72,  72,  72);
@@ -59,8 +59,11 @@
   --fundo-contraste:       var(--cinza-900);
   --fundo-contraste-hover: var(--cinza-820);
   --fundo-flutuante:       var(--cinza-0);
-  /* o dia de outro mês nos calendários: mais escuro que o fundo da página, nos dois temas */
+  /* o dia de outro mês nos calendários (o fundo do dia) e as caixas dentro dele (o pelotão na Escala, o dia inteiro na
+     Minha escala): a caixa um tom acima do dia, como nos dias do mês; no claro mais escuros que os do mês, no escuro
+     fora do preto (fundo escuro destaca o texto claro) */
   --fundo-dia-fora:        var(--cinza-250);
+  --fundo-caixa-fora:      var(--cinza-150);
 
   /* -------------------------------------------------------
      Papéis de texto
@@ -238,7 +241,8 @@ html[data-tema="escuro"] {
   --fundo-contraste:       var(--cinza-200);
   --fundo-contraste-hover: var(--cinza-400);
   --fundo-flutuante:       var(--cinza-900);
-  --fundo-dia-fora:        var(--cinza-950);
+  --fundo-dia-fora:        var(--cinza-940);
+  --fundo-caixa-fora:      var(--cinza-900);
 
   --texto-forte:     var(--cinza-100);
   --texto:           var(--cinza-250);

@@ -10,10 +10,13 @@
    (afastamentos-campos.js); Remover o afastamento vai para o
    rascunho; nas Férias, o que ele sai é só a guarnição; no que começou há mais
    de uma semana, só o período (o fim) e o nome; no que terminou antes
-   disso, o aviso. Na célula vazia, Adicionar afastamento (no dia do
-   Mês, já com o início e o fim nesse dia). Em todas, Abrir o painel do
+   disso, o aviso. Na autorização de viagem (não é afastamento): Mudar o
+   período, Mudar os destinos e Remover a autorização de viagem. Na
+   célula vazia, Adicionar afastamento e Adicionar autorização de viagem
+   (esta pergunta só o período e os destinos; no dia do Mês, já com o
+   início e o fim nesse dia). Em todas, Abrir o painel do
    militar. No espaço vazio do bloquinho
-   do calendário, Adicionar afastamento: a caixa 2 pergunta primeiro o
+   do calendário, os dois Adicionar: a caixa 2 pergunta primeiro o
    Militar (o efetivo da unidade, por antiguidade) e, escolhido ele, as
    outras perguntas aparecem embaixo, com o início e o fim no dia. No
    nome do mês do cabeçalho do Ano, a caixa do mês: Ver o mês e Ver o
@@ -25,7 +28,10 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  var PARTES = { periodo: ['periodo'], nome: ['nome'], marcas: ['guarnicao', 'marcas'], adicionar: ['nome', 'periodo', 'guarnicao', 'marcas'] };
+  var PARTES = { periodo: ['periodo'], nome: ['nome'], marcas: ['guarnicao', 'marcas'], destinos: ['destinos'],
+    adicionar: ['nome', 'periodo', 'guarnicao', 'marcas'], viagem: ['periodo', 'destinos'] };
+  /* os dois Adicionar: o que cada um cria no rascunho */
+  var NOVO = { adicionar: null, viagem: 'viagem' };
   var TOPO_BLOCO = 8;   // a caixa do bloquinho: o topo dela abaixo do topo dele (px), como no pelotão da Escala
 
   /* a caixa aberta: { tipo ('ano', 'mes', 'cal', 'bloco' ou 'mesNome'), cpf, pessoa, mes, dia, unidadeId, chave, campos,
@@ -116,9 +122,20 @@
     });
   }
 
+  /* o novo do Adicionar escolhido (o afastamento ou a autorização de viagem): o que já estava de outro Adicionar sai, se
+     ficou em branco, e o novo entra no rascunho */
+  function novoDe(a, acao) {
+    var tipo = NOVO[acao];
+    var af = a.chave && a.cpf ? R().achar(a.cpf, a.chave) : null;
+    if (af && (af.padrao === 'viagem') === (tipo === 'viagem')) return;
+    if (af) R().largar(a.cpf, a.chave);
+    a.chave = a.cpf ? R().criar(a.cpf, a.dia, tipo) : null;
+  }
+
   /* o Adicionar do bloquinho: o Militar e, escolhido ele, as outras perguntas embaixo (trocar o militar leva o que já
      foi respondido para o novo) */
   function adicionarNoBloco(a, item) {
+    var acao = item.getAttribute('data-acao');
     var cartao = RW.tpl('tpl-afastamentos-cartao');
     var campo = RW.tpl('tpl-afastamento-militar');
     if (!cartao || !campo) return;
@@ -132,11 +149,19 @@
       a.cpf = cpf;
       a.pessoa = a.efetivo.filter(function (p) { return String(p.usuario_id) === cpf; })[0] || null;
       while (campo.nextSibling) cartao.removeChild(campo.nextSibling);
-      if (!a.chave) a.chave = R().criar(cpf, a.dia);
+      if (!a.chave) a.chave = R().criar(cpf, a.dia, NOVO[acao]);
       else R().passarNovo(antes, a.chave, cpf, 'celula');
-      perguntas(a, cartao, 'adicionar');
+      perguntas(a, cartao, acao);
     });
+    /* o outro Adicionar do mesmo bloquinho: o que ficou em branco sai, e o militar escolhido continua */
+    if (a.cpf) {
+      novoDe(a, acao);
+      RW.campos.definirSelecao(botao, a.cpf);
+      botao.querySelector('.campo-selecao-texto').textContent =
+        ((a.pessoa.grau_abreviacao || '') + ' ' + (a.pessoa.nome_de_guerra || '')).trim();
+    }
     cartao.appendChild(campo);
+    if (a.cpf) perguntas(a, cartao, acao);
     a.caixa.segunda(item, cartao, item.textContent.trim());
     botao.focus({ preventScroll: true });
   }
@@ -165,7 +190,7 @@
     }
     if (!PARTES[acao]) return;
     if (a.tipo === 'bloco') { adicionarNoBloco(a, item); return; }
-    if (acao === 'adicionar' && !a.chave) a.chave = R().criar(a.cpf, a.dia);
+    if (NOVO.hasOwnProperty(acao)) novoDe(a, acao);
     var cartao = RW.tpl('tpl-afastamentos-cartao');
     if (!cartao) return;
     perguntas(a, cartao, acao);
@@ -181,12 +206,15 @@
     var af = a.chave ? R().achar(a.cpf, a.chave) : null;
     a.chave = af ? af.chave : null;
     var t = travas(af);
-    var menu = RW.tpl(!af ? 'tpl-afastamentos-menu-vazio' : (t.fim ? 'tpl-afastamentos-menu-travado' : 'tpl-afastamentos-menu'));
+    var menu = RW.tpl(!af ? 'tpl-afastamentos-menu-vazio' : t.fim ? 'tpl-afastamentos-menu-travado'
+      : af.padrao === 'viagem' ? 'tpl-afastamentos-menu-viagem' : 'tpl-afastamentos-menu');
     if (!menu) return;
     if (af && !t.fim) {
       /* o que começou antes do limite não muda as marcas nem sai (nas férias, as marcas são só a guarnição) */
-      menu.querySelector('[data-acao="marcas"]').classList.toggle('oculto', t.inicio);
-      menu.querySelector('[data-acao="remover"]').classList.toggle('oculto', t.inicio);
+      ['marcas', 'remover'].forEach(function (k) {
+        var b = menu.querySelector('[data-acao="' + k + '"]');
+        if (b) b.classList.toggle('oculto', t.inicio);
+      });
     }
     a.campos = null;
     aberto = a;

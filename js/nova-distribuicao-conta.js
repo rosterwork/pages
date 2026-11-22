@@ -60,14 +60,23 @@
     return Promise.all([D().ler(unidadeId, versaoId), D().ritmos()]).then(function (rs) {
       var r = rs[0];
       if (meu !== tokenCarga || !pagina.montada()) return;
-      if (!r || !r.success) return depois(function () { pararEspera(); P().mostrarNoCorpo('falha', (r && r.error) || G().falhaCarregar); });
+      if (!r || !r.success) return depois(function () { pararEspera(); if (r && r.error) P().mostrarNoCorpo('falha', r.error); else falhou(unidadeId, versaoId); });
       /* as contas de cada posto, a 2ª etapa */
       espera.ir(1);
       if (!pagina.receber(r, rs[1])) return depois(function () { pararEspera(); pagina.desenharSemRespostas(); });
       return recalcular();
     }, function () {
-      if (meu === tokenCarga && pagina.montada()) return depois(function () { pararEspera(); P().mostrarNoCorpo('falha', G().semConexao); });
+      if (meu === tokenCarga && pagina.montada()) return depois(function () { pararEspera(); falhou(unidadeId, versaoId); });
     }).then(terminou, terminou);
+  }
+
+  /* a leitura que não veio: o aviso com o Tentar de novo no corpo (geral-falha.js), que lê a mesma unidade de novo */
+  function falhou(unidadeId, versaoId) {
+    var corpo = el('nova-distribuicao-corpo');
+    if (!corpo) return;
+    corpo.textContent = '';
+    var aviso = RosterWork.falha.bloco(G().falhaCarregar, function () { carregar(unidadeId, versaoId); });
+    if (aviso) corpo.appendChild(aviso);
   }
 
   function pararEspera() {

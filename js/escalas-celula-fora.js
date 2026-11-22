@@ -11,7 +11,10 @@
    (também no vermelho); riscado, com "Férias até DD/MM", quem está
    afastado, também quem continua na guarnição (só com o filtro
    Afastamentos). O grupo vem por último, embaixo do Sobreaviso, na
-   caixa dos grupos (escalas-celula-grupos.js).
+   caixa dos grupos (escalas-celula-grupos.js). Quem tem autorização
+   de viagem no dia (a chave "viagens", que a leitura junta a esta
+   lista) fica no grupo dela, logo antes: sem riscar, com "Viagem até
+   DD/MM" (só com o filtro Incluir autorizações de viagem).
    Para quem administra o dia, o nome em vermelho ou em amarelo abre a caixa dele
    (escalas-celula-editar.js): Adicionar neste dia e Adicionar à
    guarnição do dia, os do pelotão já com ele (escalas-celula-editar-
@@ -31,12 +34,21 @@
   function api() { return RW.escalasPainelEditar.sub; }
   function diaMes(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : ''; }
 
-  /* o grupo no fim da célula (curto: o posto curto das células pequenas; D: a dica das linhas, escalas-celula-dica.js) */
+  /* o grupo no fim da célula (curto: o posto curto das células pequenas; D: a dica das linhas, escalas-celula-dica.js);
+     quem tem autorização de viagem no dia vem na mesma lista e vai para o grupo dela, logo antes */
   function preencher(celula, fora, curto, D) {
     if (!(fora || []).length || !RW.escalasCelulaGrupos.naEscala(celula)) return;
-    var grupo = RW.escalasCelulaGrupos.caixa('fora');
+    var viagens = fora.filter(function (p) { return p.origem === 'viagem'; });
+    var resto = fora.filter(function (p) { return p.origem !== 'viagem'; });
+    if (viagens.length) grupoDe(celula, 'viagem', viagens, curto, D);
+    if (resto.length) grupoDe(celula, 'fora', resto, curto, D);
+  }
+
+  /* um grupo (a caixa com a linha tracejada) com as linhas dele, no fim da célula */
+  function grupoDe(celula, nome, lista, curto, D) {
+    var grupo = RW.escalasCelulaGrupos.caixa(nome);
     if (!grupo) return;
-    fora.forEach(function (p) {
+    lista.forEach(function (p) {
       var linha = RW.escalasCelula.montarPessoa(p, curto, D);
       if (!linha) return;
       if (p.origem === 'fora') {

@@ -103,10 +103,10 @@
       .then(function (resp) { return resp.ok ? resp.json() : null; })
       .then(function (e) {
         if (ctx !== atual) return;
-        if (!e || !e.ok) { avisarErro(RosterWork.mensagens.geral.falhaCarregar); return; }
+        if (!e || !e.ok) { avisarErro(RosterWork.falha.frase(RosterWork.mensagens.geral.falhaCarregar)); return; }
         desenhar(atual, e);
       })
-      .catch(function () { if (ctx === atual) avisarErro(RosterWork.mensagens.geral.erroConexao); });
+      .catch(function () { if (ctx === atual) avisarErro(RosterWork.falha.frase(RosterWork.mensagens.geral.falhaCarregar)); });
   }
 
   /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s (também no cancelar) */

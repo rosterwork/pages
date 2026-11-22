@@ -438,7 +438,7 @@
         if (meu !== pedido) return;
         fim();
         if (!res) return;
-        if (!res.r || !res.r.ok) { RW.avisar({ tipo: 'erro', mensagem: (res.r && res.r.error) || M.extrajornada.org.falhaSugestao }); return; }
+        if (!res.r || !res.r.ok) { RW.avisar({ tipo: 'erro', mensagem: (res.r && res.r.error) || RW.falha.frase(M.extrajornada.org.falhaSugestao) }); return; }
         aoTerminar(res.r, res.reserva);
       }, function () {
         if (meu !== pedido) return;

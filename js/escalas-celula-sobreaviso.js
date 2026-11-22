@@ -71,11 +71,10 @@
   var rascunhos = {};
   var desenhoDa = new WeakMap();   // a célula -> { curto, D }, para refazer o campo com o rascunho
   function chaveDe(s, iso) { return (s.unidade_id || s.companhia_id) + '|' + iso; }
-  function hojeIso() { return RW.data.paraIsoDeData(RW.data.diaDeServico()); }
-
-  /* quantos faltam com outra lista (o que falta conta só do dia de serviço de hoje em diante, como no banco) */
+  /* quantos faltam com outra lista (o que falta conta de 7 dias atrás em diante, como no banco: o dia mais antigo que se
+     mexe, escalas-celula-editar.js) */
   function faltaCom(s, iso, militares) {
-    if (iso < hojeIso()) return 0;
+    if (iso < RW.escalasCelulaEditar.limite()) return 0;
     return Math.max(0, (s.falta || 0) + (s.militares || []).length - militares.length);
   }
 

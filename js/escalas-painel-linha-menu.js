@@ -7,7 +7,7 @@
    os itens que valem, cada um com o ícone dele (o que tira alguém por
    último, em vermelho, no fim da parte dele). Na aba Funções, a parte
    do lugar e, depois do traço, a parte do dia da pessoa (os mesmos
-   itens da aba Militares):
+   itens da aba Estagiários e do nome na célula da grade):
    - militar numa função ("Condutor da ABT-14935"): Pôr outro no lugar
      dele, Mudar para outra função, Mudar o horário nesta função,
      Voltar ao automático (o fixado) e Remover desta função;
@@ -26,9 +26,10 @@
    - as outras linhas que a Central só exibe não têm lápis; a exceção é
      o Oficial de Área da companhia na Central do pelotão, para quem
      administra a companhia: o Ver o dia na companhia ("Ver o dia na
-     2ªCIBM") abre o dia da companhia na aba Militares, já com o menu
+     2ªCIBM") abre o dia da companhia na aba Funções, já com o menu
      dele aberto.
-   Na aba Militares, só o dia da pessoa ("Cb. Veloso no dia 21/11"):
+   A parte do dia da pessoa ("Cb. Veloso no dia 21/11"; na aba
+   Estagiários, só ela):
    Mudar o horário do serviço, Mudar o dia do serviço, Mudar de
    unidade neste dia, Pôr como Oficial de Área (o Sub.Ten. ou mais
    antigo de serviço num pelotão, para quem administra a companhia: a
@@ -48,18 +49,20 @@
    último serviço antes da saída marcada à mão, o Mudar a saída (a
    pergunta Último serviço com os dias de serviço dele) e o Cancelar
    a saída no lugar dele; quem foi
-   remanejado daqui para outra unidade, o Devolver; quem saiu da
-   guarnição (a linha riscada do grupo Saiu da guarnição), o Mudar a
-   saída e o Cancelar a saída. No De folga (nas
-   duas abas) e na linha riscada da célula (uma por folga e por
+   remanejado daqui para outra unidade (a caixa Em outra unidade da
+   aba Funções), o Devolver; quem saiu da guarnição (a linha riscada da
+   caixa Saiu da guarnição), o Mudar a saída e o Cancelar a saída. No
+   De folga e na linha riscada da célula (uma por folga e por
    mudança de dia): Cancelar a folga, ou Desfazer a mudança (a folga
-   que veio da mudança de dia), na hora, com o Desfazer; na da mudança,
+   que veio da mudança de dia), na hora, com o Desfazer (com a extra
+   dele por cima da folga, o Cancelar a folga confirma antes, com o
+   texto da página Folgas); na da mudança,
    também o Mudar o dia do serviço (a mudança vai para outra data, o
    Mudar o dia com ela, sem outra folga dele no dia) e o Dar folga
    neste dia (ele não trabalha em nenhum dos dois dias, a pergunta do
    banco de horas embaixo da linha).
-   Na Militares, embaixo do traço, o Ver as funções troca de aba já com
-   o menu da linha dele aberto.
+   Na Estagiários, embaixo do traço, o Ver as funções troca de aba já
+   com o menu da linha dele aberto.
    A mudança de dia ainda não salva (só no rascunho, sem número no
    banco): quem vem de outro dia tem só o Remover deste dia, e o
    Desfazer a mudança de quem sai; os dois só a largam do rascunho.
@@ -85,10 +88,11 @@
    (a célula usa as mesmas).
    cfg = { tipo: 'funcao' | 'papel' | 'exibida' (as outras linhas que a Central
    só exibe: sem lápis) | 'vaga' | 'sem' | 'folga' | 'militar'
-   (a linha da aba Militares) | 'fora' (remanejado daqui para outra
+   (a linha da aba Estagiários) | 'fora' (remanejado daqui para outra
    unidade) | 'saida' (quem saiu da guarnição; saida = a data da saída; ultimo e dias = o último serviço e os dias do
    Mudar a saída, só na saída à mão) | 'companhia' (o Oficial de Área da companhia na Central do
-   pelotão), visao: 'funcoes' | 'militares', exibida (no papel: a linha das
+   pelotão), visao: 'funcoes' | 'militares' (a aba Estagiários: só o dia
+   da pessoa), exibida (no papel: a linha das
    Funções especiais), levado (no papel: a linha do papel que foi junto com
    ele para outra função do posto), grupo() (o bloco da função
    na lista), posto, funcao, rotulo, militar, periodos, folga (na De
@@ -144,10 +148,10 @@
     if (r['onde-estagio']) { r['registrar-troca'] = false; r['mudar-unidade'] = false; }
   }
 
-  /* os itens que valem para a linha: { acao: true }. Na aba Funções, o que é do lugar e o dia da pessoa; na Militares,
-     só o dia da pessoa (e o Ver as funções); o De folga é igual nas duas */
+  /* os itens que valem para a linha: { acao: true }. Na aba Funções, o que é do lugar e o dia da pessoa; na Estagiários
+     (visao 'militares'), só o dia da pessoa (e o Ver as funções) */
   function itens(cfg) {
-    /* a célula da grade: os mesmos da aba Militares, sem o Ver as funções, e o Abrir o painel do dia em todos */
+    /* a célula da grade: os do dia da pessoa (visao 'militares'), sem o Ver as funções, e o Abrir o painel do dia em todos */
     if (cfg.visao === 'celula') {
       var c = itens(Object.assign({}, cfg, { visao: 'militares' }));
       delete c['ver-funcoes'];
@@ -160,7 +164,7 @@
       return c;
     }
     var r = {}, m = cfg.militar, militares = cfg.visao === 'militares';
-    /* quem vem de outro dia e ainda não foi salvo: só sair deste dia (o rascunho larga a mudança), pela aba Militares */
+    /* quem vem de outro dia e ainda não foi salvo: só sair deste dia (o rascunho larga a mudança) */
     if (m && cfg.tipo !== 'folga' && cfg.tipo !== 'saida' && ed().mudancaNoRascunho(m.cpf) === 'vem') {
       return militares ? { 'remover-dia': true, 'ver-funcoes': true } : { 'remover-dia': true };
     }
@@ -278,9 +282,22 @@
   }
 
   /* Cancelar a folga (ele volta ao serviço no horário dela) e Desfazer a mudança (o serviço volta para este dia e sai do
-     dia novo): na hora, com o Desfazer; a linha da caixa De folga e a riscada da célula usam as mesmas */
+     dia novo): na hora, com o Desfazer; a linha da caixa De folga e a riscada da célula usam as mesmas. Com a extra dele
+     por cima da folga (o banco diz as horas na chave extra de cada linha dela), o Cancelar a folga confirma antes, com o
+     texto da página Folgas: cancelada, ele fica de serviço e de extra no mesmo horário */
   function cancelarFolga(cfg) {
-    ed().mudar(function () { ed().cancelarFolga(cfg.folga.lancamento_id); });
+    var f = cfg.folga, R = RosterWork;
+    function cancelar() { ed().mudar(function () { ed().cancelarFolga(f.lancamento_id); }); }
+    var linhas = ((ed().dados() || {}).folgas || []).filter(function (x) { return !!f.lancamento_id && x.lancamento_id === f.lancamento_id; });
+    var faixas = [];
+    (linhas.length ? linhas : [f]).forEach(function (l) {
+      (l.extra || []).forEach(function (x) { faixas.push([R.horario.curta(x.hi), R.horario.curta(x.hf)]); });
+    });
+    if (!faixas.length || !R.confirmar) { cancelar(); return; }
+    R.confirmar({
+      tipo: 'aviso', confirmarPerigo: true, aoConfirmar: cancelar,
+      mensagem: R.mensagens.folgas.confirmarCancelar + ' ' + R.mensagens.escala.cancelarFolgaExtra(faixas)
+    });
   }
   function desfazerMudanca(cfg) {
     var m = cfg.folga && cfg.folga.mudanca;
@@ -342,12 +359,12 @@
     /* quem foi remanejado daqui: a tela do Remover do dia, já com ele (Devolver ou Tirar do dia) */
     devolver: function (cfg) { RosterWork.escalasPainelRemover.abrir({ cpf: cfg.militar.cpf }); },
     /* a outra aba, já com o menu dele aberto */
-    'ver-funcoes': function (cfg) { ed().verMilitar(cfg.militar.cpf, 'funcoes'); },
-    /* o Oficial de Área no pelotão: o dia dele é o da companhia; abre o dia dela, na aba Militares, já com o menu dele */
+    'ver-funcoes': function (cfg) { ed().verMilitar(cfg.militar.cpf); },
+    /* o Oficial de Área no pelotão: o dia dele é o da companhia; abre o dia dela, na aba Funções, já com o menu dele */
     'ver-companhia': function (cfg) {
       var cia = cfg.companhia;
       RosterWork.escalasPainel.abrirDia({ unidadeId: cia.id, iso: ed().iso(), unidadeNome: cia.nome, unidadeCidade: cia.cidade },
-        'militares', { abrirMenuDe: cfg.militar.cpf });
+        'distribuicao', { abrirMenuDe: cfg.militar.cpf });
     }
   };
 
@@ -368,8 +385,8 @@
     var lugar = linha && linha.querySelector('.escala-edicao-acoes');
     if (!lugar) return;
     cfg.visao = cfg.visao || 'funcoes';
-    /* as unidades da companhia (o Mudar de unidade) já começam a ser lidas para quando o menu abrir */
-    if (cfg.visao === 'militares' && RosterWork.escalasPainelRemanejar && !RosterWork.escalasPainelRemanejar.unidadesProntas()) {
+    /* as unidades da companhia (o Mudar de unidade) já começam a ser lidas para quando o menu abrir (lidas uma vez) */
+    if (RosterWork.escalasPainelRemanejar && !RosterWork.escalasPainelRemanejar.unidadesProntas()) {
       RosterWork.escalasPainelRemanejar.prepararUnidades();
     }
     /* sem nenhum item (o papel especial e a linha que a Central exibe, na aba Funções), a linha fica sem o lápis */

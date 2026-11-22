@@ -180,8 +180,9 @@
     var lista = q('#pendencias-fazer');
     if (!lista) return;
     lista.textContent = '';
-    var v = RosterWork.tpl('tpl-pedido-vazio');
-    if (v) { v.textContent = msg().falhaCarregar; lista.appendChild(v); }
+    /* o aviso com o Tentar de novo (geral-falha.js) */
+    var v = RW.falha.bloco(msg().falhaCarregar, carregar);
+    if (v) lista.appendChild(v);
   }
 
   /* lê tudo de uma vez: a fila e os seus pedidos (a fila também chama depois de cada decisão) */

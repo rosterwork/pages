@@ -128,10 +128,12 @@
   padding: 0 var(--respiro-pagina) var(--respiro-pagina);   /* sem padding-top: o respiro do topo é fixo no .pagina-corpo--camada (acima da rolagem) */
 }
 
-/* o bloqueio do aviso de manutenção, no lugar da tela (molde #tpl-pagina-manutencao, geral-manutencao.js), e a tela que
-   não abriu (#tpl-pagina-nao-chegou e #tpl-pagina-erro, index-navegacao.js), com o Tentar de novo embaixo do texto */
+/* o bloqueio do aviso de manutenção, no lugar da tela (molde #tpl-pagina-manutencao, geral-manutencao.js), a tela que
+   não abriu (#tpl-pagina-nao-chegou e #tpl-pagina-erro, index-navegacao.js) e a leitura que falhou, no lugar dos dados
+   da área ou do painel (#tpl-falha-leitura, geral-falha.js), com o Tentar de novo embaixo do texto */
 .pagina-manutencao,
-.pagina-nao-abriu {
+.pagina-nao-abriu,
+.falha-leitura {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -143,13 +145,25 @@
   border-radius: var(--raio-medio);
 }
 
+/* no meio da área (a grade, a lista), na largura da leitura */
+.falha-leitura {
+  max-width: var(--leitura-largura);
+}
+
+/* na página que esconde o conteúdo enquanto lê (os Ajustes; RosterWork.falha.antes): o respiro da forma de carregando */
+.falha-leitura--na-pagina {
+  margin: 16px 24px 24px;
+}
+
 .pagina-manutencao > .icone,
-.pagina-nao-abriu > .icone {
+.pagina-nao-abriu > .icone,
+.falha-leitura > .icone {
   color: var(--alerta);
 }
 
 .pagina-manutencao-titulo,
-.pagina-nao-abriu-titulo {
+.pagina-nao-abriu-titulo,
+.falha-leitura-titulo {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
@@ -157,7 +171,8 @@
 }
 
 .pagina-manutencao-texto,
-.pagina-nao-abriu-texto {
+.pagina-nao-abriu-texto,
+.falha-leitura-texto {
   margin: 0;
   font-size: var(--fonte-padrao);
   color: var(--texto-suave);
@@ -335,5 +350,9 @@
 
   html[data-celular] .acoes-admin-menu .botao:hover {
     background-color: var(--fundo-medio);
+  }
+
+  html[data-celular] .falha-leitura--na-pagina {
+    margin: 12px var(--respiro-pagina) 24px;
   }
 }

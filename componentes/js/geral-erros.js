@@ -95,8 +95,9 @@
   window.addEventListener('unhandledrejection', function (evento) { registrar(evento.reason); });
 
   /* RosterWork.erros.registrar(erro): manda o erro que o código pegou (ex.: a tela que deu erro ao abrir,
-     index-navegacao.js), com as mesmas regras */
-  RW.erros = { registrar: registrar };
+     index-navegacao.js), com as mesmas regras. registrarCorte(frase, onde): a chamada ao banco cortada por tempo
+     (geral-api.js), com o onde = "rpc/<função>" */
+  RW.erros = { registrar: registrar, registrarCorte: guardar };
 
   function enviarEsperando() {
     var lista = esperando;

@@ -258,9 +258,17 @@
   }
 
   /* as unidades ainda não chegaram: a forma do modo, sem os nomes (escalas-esqueleto.js), com as etapas de abrir a
-     escala, que dizem quando demora; a leitura que falhou mostra o erro no lugar da forma */
+     escala, que dizem quando demora; a leitura que falhou mostra o aviso com o Tentar de novo no lugar da forma */
+  /* as unidades não vieram: o Tentar de novo lê de novo, com a forma da grade enquanto espera */
+  function falhaDasUnidades(corpo) {
+    RosterWork.escalasDados.mostrarFalha(corpo, null, function () {
+      carregarUnidades();
+      esperarUnidades(corpo);
+    });
+  }
+
   function esperarUnidades(corpo) {
-    if (unidadesFalharam) { mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes); return; }
+    if (unidadesFalharam) { falhaDasUnidades(corpo); return; }
     var E = RosterWork.escalasEsqueleto;
     var modo = modoAtual(), tipoColunas = tipoColunasAtual(), subMes = subMesAtual();
     var provisorias = idsAplicados().map(function (id) { return { id: id, nome: '' }; });
@@ -571,13 +579,13 @@
       }
     } catch (e) { falhou = true; }
     /* falha na leitura das unidades: para a forma da grade (desenhada depois, ela cobriria o aviso e travaria a área) e
-       mostra o erro; trocar de aba depois disso mostra o mesmo erro (esperarUnidades) */
+       mostra o aviso; trocar de aba depois disso mostra o mesmo aviso (esperarUnidades) */
     if (falhou && !unidades) {
       unidadesFalharam = true;
       if (!naEscala()) return;
       if (RosterWork.escalasEsqueleto) RosterWork.escalasEsqueleto.parar();
       var corpo = conteudo.querySelector('.pagina-corpo');
-      if (corpo) mostrarEstado(corpo, window.RosterWork.mensagens.escala.falhaCarregarMes);
+      if (corpo) falhaDasUnidades(corpo);
       return;
     }
     montarUnidades();

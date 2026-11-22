@@ -58,6 +58,7 @@
     'componentes/js/geral-alteracoes.js',
     'componentes/js/geral-guarda-saida.js',
     'componentes/js/geral-api.js',
+    'componentes/js/geral-falha.js',
     'componentes/js/geral-notificacoes-celular.js',
     'componentes/js/geral-recalculo.js',
     'componentes/js/geral-notificacao.js',

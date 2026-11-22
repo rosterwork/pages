@@ -217,7 +217,7 @@
   color: var(--texto-fraco);
 }
 
-/* a aba Militares (escalas-painel-militares.js): as linhas na largura toda, sem a coluna do nome da função, e embaixo do
+/* a aba Estagiários (escalas-painel-militares.js): as linhas na largura toda, sem a coluna do nome da função, e embaixo do
    nome as funções dele no dia e, em vermelho, o horário sem função */
 .escala-edicao-grupo--militares {
   grid-template-columns: minmax(0, 1fr);
@@ -445,6 +445,11 @@
 /* as bolinhas do Para qual unidade entram na caixa como as outras respostas */
 .escala-remanejar-unidades {
   display: contents;
+}
+
+/* a cidade, depois do nome da unidade, mais apagada */
+.escala-remanejar-unidade-cidade {
+  color: var(--texto-suave);
 }
 
 /* o militar da troca, embaixo do Sim */
