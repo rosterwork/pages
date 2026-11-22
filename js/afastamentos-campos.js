@@ -13,8 +13,11 @@
    (não é afastamento: só tira do sobreaviso) pergunta o período e os
    Destinos: um campo por destino, com o X (com dois ou mais, tira o
    campo; com um só, limpa) e o Adicionar destino. Cada resposta
-   entra no rascunho na hora. Na caixa da grade, o nome ou o destino em
-   branco só aparece quando se tenta fechar (podeFechar). O que é de mais de uma semana atrás fica
+   entra no rascunho na hora. O que está errado aparece na frase embaixo
+   e em vermelho no campo (a data errada, o início, o fim ou as duas,
+   até ser corrigida); na caixa da grade, o nome, a data ou o destino em
+   branco só aparece quando se tenta fechar, e ela não fecha com o
+   erro de uma pergunta que está nela (podeFechar). O que é de mais de uma semana atrás fica
    travado (o mesmo limite do banco): o que terminou antes não muda; o
    que começou antes muda só o fim e o nome.
    ============================================================ */
@@ -35,8 +38,6 @@
     var p = M().padroes.filter(function (x) { return x.valor === padrao; })[0];
     return p ? p.rotulo : '';
   }
-  /* a autorização de viagem tem algum destino escrito? */
-  function temDestino(af) { return (af.destinos || []).some(function (d) { return String(d).trim(); }); }
   function dias(af) {
     if (!af.inicio || !af.fim || af.fim < af.inicio) return 0;
     return Math.round((new Date(af.fim + 'T12:00:00') - new Date(af.inicio + 'T12:00:00')) / 86400000) + 1;
@@ -54,10 +55,10 @@
 
   /* as perguntas de um afastamento no lugar. opcoes = { cpf, chave, partes ('nome', 'periodo', 'guarnicao', 'marcas',
      'destinos'; sem elas, todas as do afastamento, ou o período e os destinos da autorização de viagem), origem (quem
-     pergunta: o rascunho não o redesenha), editavel, nomeNaTentativa (o nome ou o destino em branco só aparece quando
-     se tenta fechar: a caixa da grade) }.
-     Devolve { pintar() (o que muda sem perder o campo que se digita), podeFechar() (com o nome ou o destino em branco,
-     não: a frase aparece) } ou null */
+     pergunta: o rascunho não o redesenha), editavel, brancoNaTentativa (o nome, a data ou o destino em branco só
+     aparece quando se tenta fechar: a caixa da grade) }.
+     Devolve { pintar() (o que muda sem perder o campo que se digita), podeFechar() (com o erro de uma das perguntas
+     à vista, não: a frase aparece e o campo fica vermelho) } ou null */
   function montar(lugar, opcoes) {
     var cpf = String(opcoes.cpf), chave = opcoes.chave;
     var af = R().achar(cpf, chave);
@@ -70,7 +71,7 @@
     var fimTravado = !editavel || !!(g && g.fim < lim);
     var iniTravado = fimTravado || !!(g && g.inicio < lim);
     var el = {};
-    var tentou = false;   // tentou fechar com o nome em branco (nomeNaTentativa)
+    var tentou = false;   // tentou fechar com algo em branco (brancoNaTentativa)
 
     function atual() { return R().achar(cpf, chave); }
     function mudar(campos, juntar) {
@@ -269,11 +270,11 @@
         });
       }
       if (el.nota) {
-        var problema = R().problemaDe(a);
-        /* o nome ou o destino em branco (o problema do que está sem nome ou da viagem sem destino): na caixa da grade, só
-           depois de tentar fechar */
-        if (!falta(a)) tentou = false;
-        else if (opcoes.nomeNaTentativa && !tentou) problema = '';
+        var erro = R().conferir(a);
+        var problema = erro.texto;
+        /* o que está em branco (o nome, uma data ou o destino): na caixa da grade, só depois de tentar fechar */
+        if (!erro.branco) tentou = false;
+        else if (opcoes.brancoNaTentativa && !tentou) problema = '';
         if (el.destinos) el.destinos.classList.toggle('campo--erro', problema === M().viagem.semDestino);
         el.nota.querySelector('.nota-texto').textContent = problema;
         el.nota.classList.toggle('oculto', !problema);
@@ -284,16 +285,21 @@
           el.outro.classList.toggle('campo--erro', faltaNome && noOutro);
           el.nome.classList.toggle('campo--erro', faltaNome && !noOutro);
         }
+        /* e na data errada (o início, o fim ou as duas), até ser corrigida */
+        if (el.periodo) {
+          el.periodo.querySelector('[data-af-inicio]').classList.toggle('campo-entrada--erro', !!problema && erro.inicio);
+          el.periodo.querySelector('[data-af-fim]').classList.toggle('campo-entrada--erro', !!problema && erro.fim);
+        }
       }
     }
 
-    /* falta o nome (no afastamento) ou o destino (na autorização de viagem)? */
-    function falta(a) { return !a.nome || (a.padrao === 'viagem' && !temDestino(a)); }
-
-    /* pode fechar? Com as perguntas à vista e o nome ou o destino em branco, não: a frase aparece */
+    /* pode fechar? Com as perguntas à vista e um problema que elas corrigem (o nome, uma data, o destino), não: a frase
+       aparece e o campo fica vermelho */
     function podeFechar() {
       var a = atual();
-      if (!a || !falta(a) || !el.nota || !el.nota.isConnected || !R().problemaDe(a)) return true;
+      if (!a || !el.nota || !el.nota.isConnected) return true;
+      var erro = R().conferir(a);
+      if (!erro.texto || !erro.partes.some(function (p) { return partes.indexOf(p) >= 0; })) return true;
       tentou = true;
       pintar();
       return false;

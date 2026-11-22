@@ -5,9 +5,9 @@
    css/escalas-militares.css, que o manifesto carrega junto): a árvore
    na largura toda, rolando para o lado por dentro; o cabeçalho preso
    embaixo do título do bloco; o mês de hoje escuro (o nome abre a
-   caixa do mês); em cada mês, o selo listrado do afastado, com o nome
-   e os dias; no mês, a barra contínua de cada afastamento por cima
-   dos dias. A aba Calendário: o calendário da Escala (css/escalas-calendario.css
+   caixa do mês); cada afastamento numa barra contínua (o selo
+   listrado do afastado, com o nome e as datas) por cima dos meses
+   ou dos dias que ele toca. A aba Calendário: o calendário da Escala (css/escalas-calendario.css
    e a linha do css/escalas-mes.css, que o manifesto carrega junto),
    com a linha do afastado sem riscar. A caixa da célula (a da Escala,
    css/escalas-celula-editar.css) e os campos de um afastamento
@@ -101,13 +101,11 @@
   color: var(--texto-invertido);
 }
 
-/* a célula do mês: os selos empilhados; só a de quem se pode mudar é clicável */
+/* a célula do mês (ou do dia, na grade do mês): as barras passam por cima dela; com dois afastamentos que se cruzam,
+   ela cresce uma faixa por afastamento (--faixas, dado da tela, na linha); só a de quem se pode mudar é clicável */
 .afastamentos-celula {
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 2px;
-  min-height: 44px;
-  padding: 2px;
+  min-height: calc(var(--faixas, 1) * 40px + 4px);
+  padding: 0;
   cursor: default;
 }
 
@@ -151,9 +149,11 @@
   white-space: nowrap;
 }
 
-/* o que ainda não foi salvo: a canaleta da linha mexida */
-.afastamentos-selo--rascunho {
-  box-shadow: inset 2px 0 0 var(--texto-forte);
+/* o que ainda não foi salvo: a borda tracejada da Escala, por dentro (some no hover e com a caixa aberta nele, que têm
+   a borda deles) */
+.afastamentos-selo--rascunho:not(.caixa-flutuante-escolhida):not(:hover) {
+  outline: 2px dashed var(--texto-forte);
+  outline-offset: -2px;
 }
 
 /* a autorização de viagem (não é afastamento): sem o listrado, com a borda fina por dentro e o ícone do mapa antes do
@@ -161,10 +161,6 @@
 .afastamentos-selo--viagem {
   background-image: none;
   box-shadow: inset 0 0 0 1px var(--borda-forte);
-}
-
-.afastamentos-selo--viagem.afastamentos-selo--rascunho {
-  box-shadow: inset 2px 0 0 var(--texto-forte), inset 0 0 0 1px var(--borda-forte);
 }
 
 .afastamentos-selo-icone {
@@ -184,19 +180,15 @@
   padding: 4px 0;
 }
 
-/* a linha do militar: as barras se posicionam nas colunas dos dias; com dois afastamentos que se cruzam, ela cresce
-   uma faixa por afastamento (--faixas, dado da tela) */
+/* a linha do militar (no Ano e no Mês): as barras se posicionam nas colunas dos meses ou dos dias */
+.afastamentos-linha-ano,
 .afastamentos-linha-mes {
   position: relative;
 }
 
-.afastamentos-grade--mes .afastamentos-celula {
-  min-height: calc(var(--faixas, 1) * 40px + 4px);
-  padding: 0;
-}
-
-/* a barra do afastamento: do primeiro ao último dia dele no mês, por cima das células (a coluna, os dias e a faixa
-   são dado da tela: --barra-coluna, --barra-dias e --barra-faixa); a coluna do militar fica por cima ao rolar */
+/* a barra do afastamento (no Ano e no Mês): do primeiro ao último mês ou dia dele, por cima das células (a coluna, o
+   tamanho e a faixa são dado da tela: --barra-coluna, --barra-dias, que no Ano conta os meses, e --barra-faixa); a
+   coluna do militar fica por cima ao rolar */
 .afastamentos-barra {
   position: absolute;
   grid-column: var(--barra-coluna) / span var(--barra-dias);
@@ -288,9 +280,10 @@
   color: var(--texto-invertido);
 }
 
-/* o que ainda não foi salvo: a canaleta */
-.afastamentos-linha--rascunho {
-  box-shadow: inset 2px 0 0 var(--texto-forte);
+/* o que ainda não foi salvo: a borda tracejada da Escala, por dentro (fora do hover e da caixa aberta nela) */
+.afastamentos-linha--rascunho:not(.caixa-flutuante-escolhida):not(:hover) {
+  outline: 2px dashed var(--texto-forte);
+  outline-offset: -2px;
 }
 
 /* ---------- a caixa da célula ---------- */
@@ -379,9 +372,10 @@
   gap: 8px;
 }
 
-/* o afastamento que ainda não foi salvo: a canaleta */
+/* o afastamento que ainda não foi salvo: a borda tracejada da Escala, por dentro */
 .ficha-periodo--mudou {
-  box-shadow: inset 2px 0 0 var(--texto-forte);
+  outline: 2px dashed var(--texto-forte);
+  outline-offset: -2px;
 }
 
 /* o aviso da unidade quando os filtros não deixam nenhum militar */

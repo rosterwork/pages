@@ -8,7 +8,8 @@
    e os removidos. O rodapé largo da página (#afastamentos-rodape)
    aparece com alteração: Desfazer e Refazer (Ctrl+Z e Ctrl+Y),
    Cancelar (joga fora o que não foi salvo) e Salvar, desligado
-   enquanto algum afastamento tem problema (afastamentos_salvar, tudo
+   enquanto algum afastamento tem problema, com o motivo em vermelho no
+   lugar da contagem (afastamentos_salvar, tudo
    ou nada; os avisos do banco vêm numa lista só, por militar, e o
    administrador decide se segue). Gravou: o que foi lido é esquecido,
    as telas releem e o resumo abre. Sair da página, fechar ou
@@ -31,6 +32,8 @@
   var raiz = null;          // a página Afastamentos
   var salvando = false;
   var setorDe = null;       // cpf -> o setor do militar (da página), para saber se o Salvar refaz a escala
+  var nomeDe = null;        // cpf -> o posto e o nome de guerra (da página), na frente do motivo do rodapé
+  var caixaAberta = null;   // () -> { cpf, chave } do afastamento da caixa da grade aberta, ou null
   var teclasLigadas = false;
 
   function M() { return RW.mensagens.afastamentos; }
@@ -140,11 +143,12 @@
     doMilitar(af.cpf).novos.push(af);
     avisar(origem);
   }
-  /* o novo que ficou em branco sai sem deixar passo (a caixa fechou, o painel fechou) */
+  /* o novo que ficou em branco sai sem deixar passo (a caixa fechou, o painel fechou); o rodapé volta a contar o
+     afastamento da caixa que fechou */
   function largar(cpf, chave) {
     var x = mudancas[String(cpf)];
-    if (!x) return;
-    x.novos = x.novos.filter(function (a) { return a.chave !== chave || !vazio(a); });
+    if (x) x.novos = x.novos.filter(function (a) { return a.chave !== chave || !vazio(a); });
+    pintarRodape();
   }
 
   /* muda os campos de um afastamento; juntar: o nome do campo que está sendo digitado (um passo só) */
@@ -229,22 +233,29 @@
   }
   function br(iso) { return D().isoParaBR(iso); }
 
-  /* o problema de um afastamento que mudou (o texto da nota) ou '' */
-  function problemaDe(af) {
-    if (!af || (!af.mudou && !af.novo) || (af.novo && vazio(af))) return '';
-    if (!af.nome) return M().nomeVazio;
-    if (!af.inicio || !af.fim) return M().datasVazias;
-    if (af.fim < af.inicio) return M().fimAntes;
-    if (viagem(af) && !destinosEscritos(af).length) return M().viagem.semDestino;
+  /* o problema de um afastamento que mudou: { texto (a frase da nota, ou ''), branco (falta preencher: o nome, uma
+     data, o destino), partes (as perguntas que o corrigem), inicio e fim (a data errada, que fica vermelha) } */
+  function conferir(af) {
+    function erro(texto, partes, datas) {
+      datas = datas || {};
+      return { texto: texto, branco: !!datas.branco, partes: partes, inicio: !!datas.inicio, fim: !!datas.fim };
+    }
+    if (!af || (!af.mudou && !af.novo) || (af.novo && vazio(af))) return erro('', []);
+    if (!af.nome) return erro(M().nomeVazio, ['nome'], { branco: true });
+    if (!af.inicio || !af.fim) return erro(M().datasVazias, ['periodo'], { branco: true, inicio: !af.inicio, fim: !af.fim });
+    if (af.fim < af.inicio) return erro(M().fimAntes, ['periodo'], { fim: true });
+    if (viagem(af) && !destinosEscritos(af).length) return erro(M().viagem.semDestino, ['destinos'], { branco: true });
     var lim = isoLimite(), vespera = isoLimite(-1);
     var g = af.id ? gravado(af.cpf, af.id) : null;
     var aviso = M().limite(br(lim));
     /* nenhum dia de antes do limite entra nem sai; no que começou antes, o início e as marcas ficam */
-    if (!g && af.inicio < lim) return aviso;
+    if (!g && af.inicio < lim) return erro(aviso, ['periodo'], { inicio: true });
     if (g) {
-      if (g.inicio !== af.inicio && (g.inicio < lim || af.inicio < lim)) return aviso;
-      if (g.fim !== af.fim && (g.fim < lim || af.fim < vespera)) return aviso;
-      if (g.inicio < lim && (g.gua !== af.gua || g.tro !== af.tro || g.ext !== af.ext || g.sob !== af.sob)) return aviso;
+      if (g.inicio !== af.inicio && (g.inicio < lim || af.inicio < lim)) return erro(aviso, ['periodo'], { inicio: true });
+      if (g.fim !== af.fim && (g.fim < lim || af.fim < vespera)) return erro(aviso, ['periodo'], { fim: true });
+      if (g.inicio < lim && (g.gua !== af.gua || g.tro !== af.tro || g.ext !== af.ext || g.sob !== af.sob)) {
+        return erro(aviso, ['guarnicao', 'marcas']);
+      }
     }
     /* dois do mesmo nome não se cruzam (a autorização de viagem só com outra autorização de viagem) */
     var nome = af.nome.toLowerCase();
@@ -252,13 +263,24 @@
       return o.chave !== af.chave && o.inicio && o.fim && o.nome.toLowerCase() === nome && viagem(o) === viagem(af) &&
         af.inicio <= o.fim && o.inicio <= af.fim;
     })[0];
-    if (cruza) return M().cruza(cruza.nome, br(cruza.inicio) + ' a ' + br(cruza.fim));
-    return '';
+    if (cruza) {
+      return erro(M().cruza(cruza.nome, br(cruza.inicio) + ' a ' + br(cruza.fim)), ['periodo', 'nome'], { inicio: true, fim: true });
+    }
+    return erro('', []);
   }
-  function problema() {
-    var achou = '';
+  /* o problema de um afastamento que mudou (o texto da nota) ou '' */
+  function problemaDe(af) { return conferir(af).texto; }
+  /* o primeiro problema do rascunho, { cpf, texto } ou null; pular(af): o que não conta (o rodapé pula o da caixa
+     aberta, que mostra o dele) */
+  function problema(pular) {
+    var achou = null;
     Object.keys(mudancas).some(function (cpf) {
-      return lista(cpf).some(function (af) { achou = problemaDe(af); return !!achou; });
+      return lista(cpf).some(function (af) {
+        if (pular && pular(af)) return false;
+        var texto = problemaDe(af);
+        if (texto) achou = { cpf: cpf, texto: texto };
+        return !!texto;
+      });
     });
     return achou;
   }
@@ -267,12 +289,25 @@
 
   function el(id) { return raiz ? raiz.querySelector('#' + id) : null; }
 
+  /* o afastamento é o da caixa da grade aberta? (ela mostra o problema dele e não fecha com ele) */
+  function naCaixa(af) {
+    var a = caixaAberta ? caixaAberta() : null;
+    return !!a && a.cpf === af.cpf && a.chave === af.chave;
+  }
+
+  /* com algum afastamento com problema, o Salvar fica desligado e o motivo, em vermelho, no lugar da contagem (com o
+     nome do militar na frente); o da caixa aberta não entra (a caixa mostra o dele) */
   function pintarRodape() {
     var rodape = el('afastamentos-rodape');
     if (!rodape) return;
     var n = contar();
     rodape.classList.toggle('oculto', !n);
-    el('afastamentos-mudancas').textContent = n ? RW.mensagens.escala.alteracoesNaoSalvas(n) : '';
+    var motivo = n ? problema(naCaixa) : null;
+    var quem = motivo && nomeDe ? nomeDe(motivo.cpf) : '';
+    var texto = el('afastamentos-mudancas');
+    texto.textContent = motivo ? (quem ? M().deQuem(quem, motivo.texto) : motivo.texto)
+      : n ? RW.mensagens.escala.alteracoesNaoSalvas(n) : '';
+    texto.classList.toggle('rodape-texto--erro', !!motivo);
     el('afastamentos-salvar').disabled = salvando || !n || !!problema();
     el('afastamentos-cancelar').disabled = salvando;
     el('afastamentos-desfazer').disabled = salvando || !pilhaDesfazer.length;
@@ -425,10 +460,13 @@
   }
 
   /* a navegação abriu a página: o rascunho começa vazio e o rodapé é ligado (as abas mostram o mesmo rascunho);
-     opcoes.setor(cpf) diz o setor de cada militar */
+     opcoes.setor(cpf) diz o setor de cada militar, opcoes.nome(cpf) o posto e o nome dele e opcoes.caixaAberta() o
+     afastamento da caixa da grade aberta ({ cpf, chave } ou null) */
   function iniciar(conteudo, opcoes) {
     raiz = conteudo;
     setorDe = (opcoes && opcoes.setor) || null;
+    nomeDe = (opcoes && opcoes.nome) || null;
+    caixaAberta = (opcoes && opcoes.caixaAberta) || null;
     gravados = {};
     mudancas = {};
     pilhaDesfazer = [];
@@ -458,6 +496,7 @@
   window.RosterWork.afastamentosRascunho = {
     iniciar: iniciar, conhecer: conhecer, lista: lista, achar: achar, gravado: gravado, militares: militares,
     criar: criar, passarNovo: passarNovo, largar: largar, mudar: mudar, remover: remover, contar: contar, problemaDe: problemaDe,
+    conferir: conferir,
     isoLimite: isoLimite, ouvir: ouvir, perguntarAntes: perguntarAntes, salvando: function () { return salvando; }
   };
 })();

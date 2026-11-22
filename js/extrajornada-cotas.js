@@ -1,10 +1,10 @@
 /* ============================================================
    EXTRAJORNADA — passo 2: Cotas
-   A faixa: o jeito de repartir (Entre todos ou Por unidade, o dos
-   Ajustes › Extrajornada, só para ler); as cotas da companhia (campo no "Entre todos"; no "Unidades", o texto com a
-   soma das unidades); Entregues (amarelo: ainda há cota e voluntário
+   A faixa: as cotas da companhia (campo no "Entre todos"; no "Unidades", o texto com a
+   soma das unidades; o jeito de repartir é o dos Ajustes › Extrajornada); Entregues (amarelo: ainda há cota e voluntário
    que pediu mais; vermelho: passou do recebido), Sobram e Na escala;
-   e o Preencher pela sugestão. Embaixo, a grade, com um bloco por
+   na ponta direita, a caixa da Sugestão só com pares (no rascunho, como o total: refaz a Sugestão e só o Salvar
+   grava); e o Preencher pela sugestão. Embaixo, a grade, com um bloco por
    unidade nos dois jeitos e, no título, o Recebeu, o Entregues e o
    Sobram. O Recebeu é o campo da unidade no "Unidades"; no "Entre
    todos" é o texto com a parte que a fila da companhia dá a ela (a
@@ -27,7 +27,7 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var d = null, el = null, aoSalvar = null;
-  var p2 = null;           // o rascunho: { modo, recebidas, unidades, conc, sujo, sug, antes }
+  var p2 = null;           // o rascunho: { modo, recebidas, unidades, conc, sujo, sug, antes, pares }
   var guardaLigada = false;
   var pedidoSug = 0;       // latest-wins da sugestão
   var esperaSug = null;    // o intervalo antes de pedir a sugestão (enquanto digita)
@@ -79,7 +79,7 @@
 
   function iniciarRascunho() {
     p2 = { modo: d.mes.repartir_por || 'grupo', recebidas: d.mes.cotas_recebidas, unidades: Object.assign({}, d.mes.cotas_unidades || {}),
-      conc: {}, sujo: false, sug: {}, antes: null };
+      conc: {}, sujo: false, sug: {}, antes: null, pares: !!d.mes.sugestao_pares };
     d.militares.forEach(function (m) { if (m.sugerido) p2.sug[m.cpf] = m.sugerido; });
   }
 
@@ -107,7 +107,8 @@
     if (lugar) lugar.classList.add('oculto');
   }
 
-  /* a Sugestão com a repartição da tela, sem salvar: o banco refaz a conta (espera um pouco enquanto digita) */
+  /* a Sugestão com a repartição e a caixa dos pares da tela, sem salvar: o banco refaz a conta (espera um pouco
+     enquanto digita) */
   function pedirSugestao() {
     clearTimeout(esperaSug);
     esperaSug = setTimeout(function () {
@@ -115,7 +116,7 @@
       Object.keys(p2.unidades).forEach(function (k) { uni[k] = +p2.unidades[k] || 0; });
       mostrarCalculando();
       RW.rpc('extrajornada_mes', { p_competencia: d.competencia, p_repartir_por: p2.modo, p_cotas_recebidas: porUnidade ? null : (+p2.recebidas || 0),
-        p_cotas_unidades: porUnidade ? uni : null, p_so_sugestao: true }).then(function (r) {
+        p_cotas_unidades: porUnidade ? uni : null, p_so_sugestao: true, p_sugestao_pares: p2.pares }).then(function (r) {
         if (meu !== pedidoSug) return;
         pararCalculando();
         if (!r || !r.ok || !p2 || !q('#p2-salvar')) return;
@@ -128,9 +129,10 @@
   function desenhar() {
     if (!p2) iniciarRascunho();
     var porUnidade = p2.modo === 'por_unidade';
-    /* a faixa: o jeito de repartir (o dos Ajustes, só para ler), as cotas da companhia (campo ou a soma das unidades) e os
-       números */
-    todos('#p2-modo [data-modo]', function (b) { b.classList.toggle('oculto', b.getAttribute('data-modo') !== p2.modo); });
+    /* a faixa: as cotas da companhia (campo ou a soma das unidades), os números e a caixa dos pares */
+    var pares = q('#p2-pares');
+    pares.setAttribute('aria-checked', p2.pares ? 'true' : 'false');
+    pares.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', p2.pares);
     todos('.extrajornada-cia', function (e) { e.textContent = cia().nome || ''; });
     var campo = q('#p2-recebidas');
     campo.classList.toggle('oculto', porUnidade);
@@ -199,7 +201,7 @@
     /* com os pedidos abertos, o aviso no alto e os campos travados (o banco também recusa) */
     var aberto = d.mes.estado !== 'encerrado';
     q('#p2-topo').classList.toggle('oculto', !aberto);
-    todos('[data-aba-painel="cotas"] input, .extrajornada-voluntarios-conc-gatilho', function (e) { e.disabled = aberto; });
+    todos('[data-aba-painel="cotas"] input, .extrajornada-voluntarios-conc-gatilho, #p2-pares', function (e) { e.disabled = aberto; });
   }
 
   /* um voluntário: a fila, o militar, o pedido, o atendido em 12 meses, a sugestão, o Recebe e o que já está na escala */
@@ -238,7 +240,8 @@
     var espera = RW.etapas.acao('extraCotas', null, { doServidor: 1, botao: btn, atraso: true, semFila: !lancado });
     RW.rpc('extrajornada_cotas_salvar', {
       p_competencia: d.competencia, p_cotas_recebidas: p2.modo === 'por_unidade' ? somaUnidades() : (p2.recebidas === '' || p2.recebidas == null ? null : +p2.recebidas),
-      p_repartir_por: p2.modo, p_cotas_unidades: p2.modo === 'por_unidade' ? p2.unidades : null, p_concedidas: concedidas
+      p_repartir_por: p2.modo, p_cotas_unidades: p2.modo === 'por_unidade' ? p2.unidades : null, p_concedidas: concedidas,
+      p_sugestao_pares: p2.pares
     }).then(function (r) {
       espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
@@ -252,6 +255,10 @@
     q('#p2-recebidas').addEventListener('input', function () {
       var v = q('#p2-recebidas').value.trim();
       p2.recebidas = v === '' ? null : (parseInt(v, 10) || 0); p2.sujo = true; desenhar(); pedirSugestao();
+    });
+    /* a caixa dos pares: vai para o rascunho e a Sugestão se refaz (o Recebe só muda pelo Preencher) */
+    q('#p2-pares').addEventListener('click', function () {
+      p2.pares = !p2.pares; p2.sujo = true; desenhar(); pedirSugestao();
     });
     /* Preencher pela sugestão: a Sugestão no Recebe de todos, na hora; o Desfazer volta ao de antes. Com algum Recebe
        mudado e não salvo, não preenche (o menu Ações mostra o motivo) */

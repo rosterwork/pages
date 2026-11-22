@@ -44,6 +44,7 @@
   var aberto = { cpf: null, peca: null };   // o militar do painel aberto e a peça dele na grade (o realce)
   var siglas = {};           // cpf -> a sigla da unidade (ao lado do nome, no painel)
   var setores = {};          // cpf -> o setor (Operacional, Administrativo, Aluno): o Salvar sabe se refaz a escala
+  var nomes = {};            // cpf -> o posto e o nome de guerra (na frente do motivo do rodapé)
 
   function M() { return RW.mensagens.afastamentos; }
   function R() { return RW.afastamentosRascunho; }
@@ -102,10 +103,12 @@
   }
 
   /* o militar entra? a busca e a situação no período (pelos afastamentos à vista; no Calendário não vale: ali só
-     aparece quem tem afastamento) */
+     aparece quem tem afastamento). O da caixa aberta fica enquanto ela está aberta (a data mudada não o tira da grade) */
   function passa(pessoa) {
     if (busca(pessoa) === 'esconder') return false;
     if (lendo() || noCalendario()) return true;
+    var caixa = Cx() ? Cx().aberta() : null;
+    if (caixa && caixa.cpf === String(pessoa.usuario_id)) return true;
     return !filtros || filtros.passa('situacao', visiveis(pessoa).length ? 'com' : 'sem');
   }
 
@@ -163,6 +166,7 @@
     pessoas.forEach(function (p) {
       siglas[String(p.usuario_id)] = unidade.nome || '';
       setores[String(p.usuario_id)] = p.tipo || '';
+      nomes[String(p.usuario_id)] = ((p.grau_abreviacao || '') + ' ' + (p.nome_de_guerra || '')).trim();
     });
     var lista = X().ordenar(pessoas).filter(passa);
     if (noCalendario()) { naPassada.push({ unidade: unidade, pessoas: lista, efetivo: pessoas }); return; }
@@ -349,9 +353,14 @@
     aberto = { cpf: null, peca: null };
     siglas = {};
     setores = {};
+    nomes = {};
     lerEscolha();
 
-    R().iniciar(conteudo, { setor: function (cpf) { return setores[String(cpf)] || ''; } });
+    R().iniciar(conteudo, {
+      setor: function (cpf) { return setores[String(cpf)] || ''; },
+      nome: function (cpf) { return nomes[String(cpf)] || ''; },
+      caixaAberta: function () { return Cx() ? Cx().aberta() : null; }
+    });
     R().ouvir('pagina', aoMudarRascunho);
     if (Cx()) Cx().iniciar({ abrirPainel: function (pessoa) { abrirPainel(pecaDoMilitar(pessoa), pessoa); } });
 

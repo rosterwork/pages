@@ -21,7 +21,10 @@
    outras perguntas aparecem embaixo, com o início e o fim no dia. No
    nome do mês do cabeçalho do Ano, a caixa do mês: Ver o mês e Ver o
    calendário. As respostas entram no rascunho na hora: a grade
-   se redesenha e a caixa acompanha a peça nova.
+   se redesenha e a caixa acompanha a peça nova (sem a peça, a célula
+   do militar ou, no Calendário, o bloquinho do dia: ela não fecha
+   sozinha). Com o erro de uma pergunta dela (o nome, uma data, o
+   destino), o clique fora, o X e o Esc não fecham.
    ============================================================ */
 (function () {
   'use strict';
@@ -80,15 +83,17 @@
       peca = (a.tipo === 'ano' && celula && a.chave && celula.querySelector('.afastamentos-selo[data-af="' + a.chave + '"]')) || selos[0] || celula;
       return peca ? { peca: peca, junto: selos.filter(function (s) { return s !== peca; }) } : null;
     }
-    /* o calendário: a linha do nome no dia (ou o bloquinho), e as linhas do afastamento nos outros dias */
+    /* o calendário: a linha do nome no dia (ou o bloquinho), e as linhas do afastamento nos outros dias; a data mudada
+       que tirou a linha do calendário (errada ou em outro mês) deixa a caixa no bloquinho do dia */
     var linhas = a.chave ? todos('#afastamentos-calendario .afastamentos-linha[data-af="' + a.chave + '"]') : [];
     var bloco = document.querySelector('#afastamentos-calendario .afastamentos-bloco[data-unidade-id="' + a.unidadeId + '"][data-iso="' + a.dia + '"]');
     if (a.tipo === 'bloco') peca = bloco;
-    else peca = (bloco && a.chave && bloco.querySelector('.afastamentos-linha[data-af="' + a.chave + '"]')) || linhas[0] || null;
+    else peca = (bloco && a.chave && bloco.querySelector('.afastamentos-linha[data-af="' + a.chave + '"]')) || linhas[0] || bloco || null;
     return peca ? { peca: peca, junto: linhas.filter(function (l) { return l !== peca; }) } : null;
   }
 
-  /* a caixa pode fechar? Com o nome em branco, não (a frase aparece); o Cancelar e o Desfazer do rodapé desistem */
+  /* a caixa pode fechar? Com o erro de uma pergunta dela (o nome, uma data, o destino), não: a frase aparece e o campo
+     fica vermelho; o Cancelar e o Desfazer do rodapé desistem */
   function podeFechar(a, alvo) {
     if (aberto !== a || !a.campos) return true;
     if (alvo && alvo.closest && alvo.closest('#afastamentos-cancelar, #afastamentos-desfazer')) return true;
@@ -104,7 +109,7 @@
         aberto = null;
         if (a.chave && a.cpf) R().largar(a.cpf, a.chave);
       },
-      /* o nome em branco segura o clique fora (e o rodapé), o X e o Esc */
+      /* o erro de uma pergunta da caixa segura o clique fora (e o rodapé), o X e o Esc */
       aoClicarFora: function (alvo) { return podeFechar(a, alvo); },
       aoTentarFechar: function (alvo) { return podeFechar(a, alvo); }
     });
@@ -118,7 +123,7 @@
   /* as perguntas de um afastamento na caixa 2 (no lugar, depois do que já estiver nele) */
   function perguntas(a, lugar, acao) {
     a.campos = RW.afastamentosCampos.montar(lugar, {
-      cpf: a.cpf, chave: a.chave, partes: PARTES[acao], origem: 'celula', nomeNaTentativa: true
+      cpf: a.cpf, chave: a.chave, partes: PARTES[acao], origem: 'celula', brancoNaTentativa: true
     });
   }
 
@@ -289,8 +294,13 @@
     R().ouvir('celula', aoMudarRascunho);
   }
 
+  /* o afastamento e o militar da caixa aberta: { cpf, chave } (chave null no Adicionar sem nada ainda), ou null */
+  function aberta() {
+    return aberto && aberto.cpf ? { cpf: aberto.cpf, chave: aberto.chave || null } : null;
+  }
+
   window.RosterWork.afastamentosCelula = {
     iniciar: iniciar, aoClicar: aoClicar, aoClicarLinha: aoClicarLinha, aoClicarBloco: aoClicarBloco, menuDoMes: menuDoMes,
-    reancorar: reancorar, fechar: fechar
+    reancorar: reancorar, fechar: fechar, aberta: aberta
   };
 })();

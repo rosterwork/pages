@@ -291,12 +291,6 @@
         </div>
       </div>
       <div class="extrajornada-voluntarios-banda">
-        <!-- o jeito de repartir vem dos Ajustes (aba Extrajornada): aqui só se lê -->
-        <span class="extrajornada-voluntarios-banda-item" id="p2-modo" data-dica="Muda nos Ajustes, na aba Extrajornada">
-          <span>Repartir</span>
-          <b class="extrajornada-banda-texto" data-modo="grupo">Entre todos</b>
-          <b class="extrajornada-banda-texto oculto" data-modo="por_unidade">Por unidade</b>
-        </span>
         <label class="extrajornada-voluntarios-banda-item">
           <span>Cotas da <span class="extrajornada-cia"></span></span>
           <input type="text" inputmode="numeric" maxlength="3" class="campo-entrada extrajornada-voluntarios-total" id="p2-recebidas" />
@@ -305,6 +299,11 @@
         <span class="extrajornada-voluntarios-numero"><span>Entregues</span><strong class="extrajornada-voluntarios-numero-valor" id="p2-entregues"></strong></span>
         <span class="extrajornada-voluntarios-numero"><span>Sobram</span><strong class="extrajornada-voluntarios-numero-valor" id="p2-sobram"></strong></span>
         <span class="extrajornada-voluntarios-numero"><span>Na escala</span><strong class="extrajornada-voluntarios-numero-valor" id="p2-na-escala"></strong></span>
+        <!-- a Sugestão só com pares (no máximo um ímpar para fechar o total): vai para o rascunho, só o Salvar grava -->
+        <button type="button" class="geral-opcao extrajornada-pares" role="checkbox" aria-checked="false" id="p2-pares">
+          <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+          <span>Sugestão do sistema apenas com números pares</span>
+        </button>
       </div>
       <span class="extrajornada-vazio extrajornada-vazio--area oculto" id="p2-vazio">Nenhum voluntário com termo.</span>
       <div class="extrajornada-voluntarios-rolagem extrajornada-grade" id="p2-lista"></div>

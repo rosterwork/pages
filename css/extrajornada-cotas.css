@@ -1,7 +1,7 @@
 /* ============================================================
    EXTRAJORNADA — os blocos das Cotas (Organizar o mês › Cotas)
-   A faixa de cima (o total recebido, a forma de repartir e os
-   números do mês), a lista que rola e os blocos: o cinza é a
+   A faixa de cima (o total recebido, os números do mês e, na ponta
+   direita, a caixa da sugestão só com pares), a lista que rola e os blocos: o cinza é a
    unidade, o bloquinho branco são as linhas dela, em colunas fixas
    que casam entre os blocos. Padrão de blocos, sem traços.
    Montagem: js/extrajornada-cotas.js
@@ -16,7 +16,7 @@
   background-color: var(--fundo-superficie);
 }
 
-/* faixa de cima: total recebido, forma de repartir e os números do mês */
+/* faixa de cima: total recebido, os números do mês e a caixa dos pares */
 .extrajornada-voluntarios-banda {
   display: flex;
   align-items: center;
@@ -49,6 +49,10 @@
 }
 .extrajornada-voluntarios-numero-valor--erro {
   color: var(--erro);
+}
+/* a caixa da sugestão só com pares, na ponta direita da faixa */
+.extrajornada-pares {
+  margin-left: auto;
 }
 
 /* a lista rola; os blocos ficam no branco da página */

@@ -77,6 +77,12 @@
   color: var(--texto-suave);
 }
 
+/* o motivo de o Salvar estar desligado, no lugar da situação (ex.: "Sd. Silva: Preencha as duas datas.") */
+.rodape-texto--erro {
+  font-weight: 600;
+  color: var(--erro);
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    O texto em cima e os botões dividindo a largura, numa linha só

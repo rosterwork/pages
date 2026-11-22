@@ -79,6 +79,13 @@ textarea.campo-entrada {
   border-color: var(--erro);
 }
 
+/* o erro num campo só, quando o bloco tem dois (o início e o fim do período): o mesmo vermelho, também com o mouse
+   em cima e no foco */
+.campo-entrada.campo-entrada--erro,
+.campo-entrada.campo-entrada--erro:not(:disabled):hover {
+  border-color: var(--erro);
+}
+
 /* ---------- CAMPO DE SELEÇÃO (dropdown com aparência de campo) ---------- */
 /* o dropdown ocupa a largura do campo; o menu acompanha a mesma largura */
 .campo .dropdown {

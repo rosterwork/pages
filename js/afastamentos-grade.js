@@ -5,17 +5,17 @@
    da Escala: a coluna do militar (presa à esquerda, com o selo cinza
    dos dias afastado no período) e o cabeçalho preso no alto ao rolar.
    No Ano, os meses no lugar dos dias (o de hoje escuro; o nome abre a
-   caixa do mês) e, em cada mês, um selo por afastamento: o listrado
-   do afastado, o nome e os dias daquele mês ("Férias 14 a 30"; o que
-   passa de um mês ao outro aparece nos dois). No Mês, os dias (a sigla
-   do dia da semana e o número; hoje no círculo escuro; sábado e
-   domingo sombreados) e cada afastamento numa barra contínua, do
-   primeiro ao último dia dele no mês, com o nome e os dias (o de 1 ou
-   2 dias só com o listrado; dois que se cruzam, um embaixo do outro).
-   O que ainda não foi salvo leva a canaleta. O clique no militar abre
-   o painel dele; na célula e na barra, a caixa (quem administra o militar;
-   afastamentos-celula.js). No celular, a lista: o militar e,
-   embaixo, um afastamento do período por linha.
+   caixa do mês) e cada afastamento numa barra contínua, do primeiro ao
+   último mês que ele toca no ano, com o nome e as datas inteiras ("Férias
+   23/11 a 01/01/2027": só a data de outro ano leva o ano). No Mês, os
+   dias (a sigla do dia da semana e o número; hoje no círculo escuro;
+   sábado e domingo sombreados) e cada afastamento numa barra contínua,
+   do primeiro ao último dia dele no mês, com o nome e os dias (o de 1
+   ou 2 dias só com o listrado). Nos dois, dois que se cruzam ficam um
+   embaixo do outro, e o que ainda não foi salvo leva a borda tracejada.
+   O clique no militar abre o painel dele; na célula e na barra, a caixa
+   (quem administra o militar; afastamentos-celula.js). No celular, a
+   lista: o militar e, embaixo, um afastamento do período por linha.
    ============================================================ */
 (function () {
   'use strict';
@@ -74,9 +74,9 @@
     return hoje.getFullYear() === ano ? hoje.getMonth() : -1;
   }
 
-  /* um selo: o nome, os dias no mês e a dica com as datas inteiras e as marcas; a autorização de viagem sem o listrado,
-     com o ícone do mapa */
-  function selo(af, de, ate) {
+  /* um selo: o nome, as datas (os dias no mês ou as datas inteiras no ano) e a dica com as datas inteiras e as marcas;
+     a autorização de viagem sem o listrado, com o ícone do mapa */
+  function selo(af, datas) {
     var s = RW.tpl('tpl-afastamentos-selo');
     if (!s) return null;
     s.querySelector('.afastamentos-selo-texto').textContent = af.nome;
@@ -84,21 +84,50 @@
       s.classList.add('afastamentos-selo--viagem');
       s.querySelector('.afastamentos-selo-icone').classList.remove('oculto');
     }
-    s.querySelector('.afastamentos-selo-dias').textContent = M().diasDoMes(de.slice(8, 10), ate.slice(8, 10));
+    s.querySelector('.afastamentos-selo-dias').textContent = datas;
     s.setAttribute('data-dica', dica(af));
     s.setAttribute('data-af', af.chave);
     if (af.mudou) s.classList.add('afastamentos-selo--rascunho');
     return s;
   }
 
-  /* um selo por afastamento que toca o mês */
-  function preencherCelula(celula, afs, ano, mes) {
-    var ini = ano + '-' + p2(mes + 1) + '-01';
-    var fim = ano + '-' + p2(mes + 1) + '-' + p2(new Date(ano, mes + 1, 0).getDate());
-    afs.forEach(function (af) {
-      if (af.fim < ini || af.inicio > fim) return;
-      var s = selo(af, af.inicio > ini ? af.inicio : ini, af.fim < fim ? af.fim : fim);
-      if (s) celula.appendChild(s);
+  /* a faixa de cada barra: a primeira em que ela não cruza com a de antes (dois do mesmo militar que se cruzam ficam um
+     embaixo do outro) */
+  function emFaixas(barras) {
+    var fins = [];
+    barras.forEach(function (b) {
+      var f = 0;
+      while (fins[f] !== undefined && fins[f] >= b.de) f++;
+      fins[f] = b.ate;
+      b.faixa = f;
+    });
+    return fins.length;
+  }
+
+  /* as barras da linha, por cima das células: cada uma da coluna do começo à do fim (b = { af, de, ate, datas, atributo,
+     valor }; de e ate contam os meses ou os dias a partir de 1, e a coluna 1 é a do militar); dois que se cruzam em
+     faixas, um embaixo do outro, e a linha cresce uma faixa por afastamento. A coluna, o tamanho e as faixas em custom
+     properties de dado; a barra entra antes da coluna do militar, que fica por cima ao rolar para o lado. curta = a de
+     1 ou 2 só com o listrado (no Mês) */
+  function desenharBarras(linha, barras, p, c, curta) {
+    var coluna = linha.querySelector('.escala-mil-pessoa');
+    var pode = c.podeMudar(p);
+    barras.sort(function (a, b) { return a.de - b.de; });
+    linha.style.setProperty('--faixas', String(Math.max(1, emFaixas(barras))));
+    barras.forEach(function (b) {
+      var s = selo(b.af, b.datas);
+      if (!s) return;
+      s.classList.add('afastamentos-barra');
+      if (curta && b.ate - b.de < 2) s.classList.add('afastamentos-barra--curta');
+      s.setAttribute(b.atributo, b.valor);
+      s.style.setProperty('--barra-coluna', String(b.de + 1));
+      s.style.setProperty('--barra-dias', String(b.ate - b.de + 1));
+      s.style.setProperty('--barra-faixa', String(b.faixa));
+      if (pode) {
+        s.classList.add('afastamentos-barra--clicavel');
+        s.addEventListener('click', function (ev) { c.aoClicarCelula(s, p, ev); });
+      }
+      linha.insertBefore(s, coluna);
     });
   }
 
@@ -148,11 +177,13 @@
       if (i === atual) mes.classList.add('afastamentos-mes--atual');
       cabecalho.appendChild(mes);
     });
+    var ini = c.ano + '-01-01', fim = c.ano + '-12-31';
     pessoas.forEach(function (p) {
       var afs = c.afastamentos(p);
       var total = diasNoAno(afs.filter(afastado), c.ano);
       var linha = linhaDoMilitar(p, c, total, M().diasNoAno(total, c.ano));
       if (!linha) return;
+      linha.classList.add('afastamentos-linha-ano');
       var pode = c.podeMudar(p);
       for (var m = 0; m < 12; m++) {
         var celula = RW.tpl('tpl-escala-mil-celula');
@@ -165,27 +196,23 @@
           celula.classList.add('afastamentos-celula--clicavel');
           celula.addEventListener('click', function (ev) { c.aoClicarCelula(ev.currentTarget, p, ev); });
         }
-        preencherCelula(celula, afs, c.ano, m);
         linha.appendChild(celula);
       }
+      /* uma barra por afastamento, do primeiro ao último mês que ele toca no ano (data-mes = o primeiro, de 0 a 11) */
+      var barras = [];
+      afs.forEach(function (af) {
+        var de = af.inicio > ini ? af.inicio : ini, ate = af.fim < fim ? af.fim : fim;
+        if (ate < de) return;
+        var mesDe = Number(de.slice(5, 7));
+        barras.push({ af: af, de: mesDe, ate: Number(ate.slice(5, 7)), datas: textoDatas(af.inicio, af.fim, c.ano),
+          atributo: 'data-mes', valor: String(mesDe - 1) });
+      });
+      desenharBarras(linha, barras, p, c, false);
       grade.appendChild(linha);
       c.contar();
     });
     container.appendChild(grade);
     return pessoas.length;
-  }
-
-  /* a faixa de cada barra: a primeira em que ela não cruza com a de antes (dois do mesmo militar que se cruzam ficam um
-     embaixo do outro) */
-  function emFaixas(barras) {
-    var fins = [];
-    barras.forEach(function (b) {
-      var f = 0;
-      while (fins[f] !== undefined && fins[f] >= b.de) f++;
-      fins[f] = b.ate;
-      b.faixa = f;
-    });
-    return fins.length;
   }
 
   /* a grade do mês da unidade (o mesmo c da do ano, com o mes e o periodo). Devolve quantos militares entraram */
@@ -218,7 +245,6 @@
       var linha = linhaDoMilitar(p, c, total, M().diasNoMes(total, c.mes));
       if (!linha) return;
       linha.classList.add('afastamentos-linha-mes');
-      var coluna = linha.querySelector('.escala-mil-pessoa');
       var pode = c.podeMudar(p);
       for (var k = 1; k <= n; k++) {
         var celula = RW.tpl('tpl-escala-mil-celula');
@@ -233,28 +259,12 @@
         }
         linha.appendChild(celula);
       }
-      /* as barras: do primeiro ao último dia no mês, por cima das células (a coluna e o tamanho em custom properties
-         de dado; antes da coluna do militar, que fica por cima ao rolar para o lado) */
-      var barras = afs.map(function (af) {
+      /* uma barra por afastamento, do primeiro ao último dia dele no mês (data-dia = o primeiro) */
+      desenharBarras(linha, afs.map(function (af) {
         var de = af.inicio > ini ? af.inicio : ini, ate = af.fim < fim ? af.fim : fim;
-        return { af: af, de: Number(de.slice(8, 10)), ate: Number(ate.slice(8, 10)), deIso: de, ateIso: ate };
-      }).sort(function (a, b) { return a.de - b.de; });
-      linha.style.setProperty('--faixas', String(Math.max(1, emFaixas(barras))));
-      barras.forEach(function (b) {
-        var s = selo(b.af, b.deIso, b.ateIso);
-        if (!s) return;
-        s.classList.add('afastamentos-barra');
-        if (b.ate - b.de < 2) s.classList.add('afastamentos-barra--curta');
-        s.setAttribute('data-dia', b.deIso);
-        s.style.setProperty('--barra-coluna', String(b.de + 1));
-        s.style.setProperty('--barra-dias', String(b.ate - b.de + 1));
-        s.style.setProperty('--barra-faixa', String(b.faixa));
-        if (pode) {
-          s.classList.add('afastamentos-barra--clicavel');
-          s.addEventListener('click', function (ev) { c.aoClicarCelula(s, p, ev); });
-        }
-        linha.insertBefore(s, coluna);
-      });
+        return { af: af, de: Number(de.slice(8, 10)), ate: Number(ate.slice(8, 10)),
+          datas: M().diasDoMes(de.slice(8, 10), ate.slice(8, 10)), atributo: 'data-dia', valor: de };
+      }), p, c, true);
       grade.appendChild(linha);
       c.contar();
     });
