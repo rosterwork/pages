@@ -7,7 +7,8 @@
    No Ano, os meses no lugar dos dias (o de hoje escuro; o nome abre a
    caixa do mês) e cada afastamento numa barra contínua, do primeiro ao
    último mês que ele toca no ano, com o nome e as datas inteiras ("Férias
-   23/11 a 01/01/2027": só a data de outro ano leva o ano). No Mês, os
+   23/11 a 01/01/2027": só a data de outro ano leva o ano; o que fica
+   todo num mês só, os dias: "Atestado 10 a 12"). No Mês, os
    dias (a sigla do dia da semana e o número; hoje no círculo escuro;
    sábado e domingo sombreados) e cada afastamento numa barra contínua,
    do primeiro ao último dia dele no mês, com o nome e os dias (o de 1
@@ -198,14 +199,16 @@
         }
         linha.appendChild(celula);
       }
-      /* uma barra por afastamento, do primeiro ao último mês que ele toca no ano (data-mes = o primeiro, de 0 a 11) */
+      /* uma barra por afastamento, do primeiro ao último mês que ele toca no ano (data-mes = o primeiro, de 0 a 11); o
+         que fica todo num mês só mostra os dias, como no Mês (o mês é a coluna) */
       var barras = [];
       afs.forEach(function (af) {
         var de = af.inicio > ini ? af.inicio : ini, ate = af.fim < fim ? af.fim : fim;
         if (ate < de) return;
         var mesDe = Number(de.slice(5, 7));
-        barras.push({ af: af, de: mesDe, ate: Number(ate.slice(5, 7)), datas: textoDatas(af.inicio, af.fim, c.ano),
-          atributo: 'data-mes', valor: String(mesDe - 1) });
+        var datas = af.inicio.slice(0, 7) === af.fim.slice(0, 7)
+          ? M().diasDoMes(af.inicio.slice(8, 10), af.fim.slice(8, 10)) : textoDatas(af.inicio, af.fim, c.ano);
+        barras.push({ af: af, de: mesDe, ate: Number(ate.slice(5, 7)), datas: datas, atributo: 'data-mes', valor: String(mesDe - 1) });
       });
       desenharBarras(linha, barras, p, c, false);
       grade.appendChild(linha);

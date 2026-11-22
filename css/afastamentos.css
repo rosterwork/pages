@@ -142,11 +142,15 @@
   text-overflow: ellipsis;
 }
 
+/* as datas que não cabem (no Ano, a barra de um mês só do que vem de outro ano) cortam com reticências; inteiras na
+   dica */
 .afastamentos-selo-dias {
   font-size: 11px;
   color: var(--texto-suave);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* o que ainda não foi salvo: a borda tracejada da Escala, por dentro (some no hover e com a caixa aberta nele, que têm

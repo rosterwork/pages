@@ -8,9 +8,13 @@
    banco (escala_falta_mes: a falta sem as extras que já estão na
    escala e com elas), lidos só com a opção marcada, numa leitura só
    para as unidades e os dias da tela, e guardados aqui; a célula
-   refeita com o gráfico diferente (a escala mudou) lê de novo. A grade
-   sai como sempre e a linha chega logo depois. Sem a leitura (o banco
-   falhou), a linha não aparece.
+   refeita com o gráfico diferente (a escala mudou) lê de novo. Como a
+   grade, o dia que mudou e ainda não foi refeito vem da cópia de antes
+   (a célula está com a borda amarela) e é lido de novo quando a cópia
+   fica pronta; o dia que o Salvar acabou de gravar (certo na tela) vem
+   do dado real, numa leitura à parte. A grade sai como sempre e a
+   linha chega logo depois. Sem a leitura (o banco falhou), a linha não
+   aparece.
    Não cria HTML (o componente clona o molde) nem escreve estilo.
    RosterWork.escalasFalta.
    ============================================================ */
@@ -70,12 +74,22 @@
     setTimeout(ler, 0);
   }
 
-  /* lê a conta das células que esperam: as unidades delas, do primeiro ao último dia */
+  /* lê a conta das células que esperam: as dos dias certos na tela (o Salvar acabou de gravar) com o dado real, as outras
+     aceitando a cópia de antes, como a grade */
   function ler() {
     agendada = false;
     var marcas = pendentes, chaves = Object.keys(marcas);
     pendentes = {};
     if (!chaves.length || !ligada()) return;
+    var at = RW.escalaAtualizando;
+    var certas = chaves.filter(function (k) { var p = k.split('|'); return !!(at && at.certo(p[0], p[1])); });
+    lerGrupo(chaves.filter(function (k) { return certas.indexOf(k) < 0; }), marcas, true);
+    lerGrupo(certas, marcas, false);
+  }
+
+  /* uma leitura: as unidades das células, do primeiro ao último dia */
+  function lerGrupo(chaves, marcas, copia) {
+    if (!chaves.length) return;
     var unidades = [], ini = null, fim = null;
     chaves.forEach(function (k) {
       var p = k.split('|'), uid = +p[0], dia = p[1];
@@ -83,13 +97,16 @@
       if (!ini || dia < ini) ini = dia;
       if (!fim || dia > fim) fim = dia;
     });
-    RW.rpc('escala_falta_mes', { p_unidade_ids: unidades, p_inicio: ini, p_fim: fim }).then(function (r) {
+    var corpo = { p_unidade_ids: unidades, p_inicio: ini, p_fim: fim };
+    /* o modo treino não pede a cópia (escalas-dados.js › carregar) */
+    if (copia && !(RW.treino && RW.treino.ligado())) corpo.p_aceita_copia = true;
+    RW.rpc('escala_falta_mes', corpo).then(function (r) {
       if (!r) { console.error('[Escala] Falta de gente: a leitura escala_falta_mes não veio'); return; }
       chaves.forEach(function (k) {
         var p = k.split('|');
         dados[k] = { sem: ((r.sem || {})[p[0]] || {})[p[1]] || {}, com: ((r.com || {})[p[0]] || {})[p[1]] || {}, marca: marcas[k] };
       });
-      Array.prototype.forEach.call(celulas(), function (cel) { if (marcas[chave(cel)] !== undefined) desenhar(cel); });
+      Array.prototype.forEach.call(celulas(), function (cel) { if (chaves.indexOf(chave(cel)) >= 0) desenhar(cel); });
     }).catch(function (e) { console.error('[Escala] Falta de gente: a leitura escala_falta_mes falhou', e); });
   }
 
@@ -111,6 +128,8 @@
   RW.escalasFalta = {
     decorar: decorar,
     atualizar: atualizar,
+    /* a cópia dos dias ficou pronta (escalas-atualizando.js): a célula refeita lê a conta de novo. chaves = ['unidade|dia'] */
+    esquecer: function (chaves) { (chaves || []).forEach(function (k) { delete dados[k]; }); },
     /* a página é nova (a visita): esquece a conta guardada e confere a opção */
     reiniciar: function () { dados = {}; pendentes = {}; atualizar(); }
   };

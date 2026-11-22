@@ -11,7 +11,7 @@
    gravar fica certo na tela, sem a borda amarela, enquanto a cópia
    dele é refeita (salvou e certos).
    API: RosterWork.escalaAtualizando.{ ligar, conferir, receberGrade,
-   salvou, certos, atualizarCelula, pendente, naFilaNoDia, soCopia,
+   salvou, certos, atualizarCelula, pendente, certo, naFilaNoDia, soCopia,
    esperar, corrigir, aoImprimir, conferirImpressao }
    ============================================================ */
 (function () {
@@ -43,6 +43,9 @@
     var k = chave(unidadeId, iso);
     return ativa() && dias[k] === false && !corrigidos[k];
   }
+
+  /* o dia que o Salvar acabou de gravar fica certo na tela, com o dado real (a Falta de gente lê igual) */
+  function certo(unidadeId, iso) { return ativa() && !!corrigidos[chave(unidadeId, iso)]; }
 
   function naFilaNoDia(iso) {
     return ativa() && Object.keys(dias).some(function (k) { return dias[k] && k.split('|')[1] === iso; });
@@ -160,6 +163,8 @@
     var filaAcabou = tinhaFila && !temFila();
     /* a cópia dos dias salvos ficou pronta: eles voltam a ser lidos dela (escalas-dados.js) */
     if (prontos.length && RosterWork.escalasDados && RosterWork.escalasDados.esquecerCertos) RosterWork.escalasDados.esquecerCertos(prontos);
+    /* e a Falta de gente desses dias, que veio da cópia de antes, é lida de novo com a célula refeita */
+    if (prontos.length && RosterWork.escalasFalta) RosterWork.escalasFalta.esquecer(prontos);
     if (prontos.length || filaAcabou) redesenharProntos(prontos, filaAcabou);
     relerGrade();
     marcar();
@@ -307,7 +312,7 @@
 
   window.RosterWork.escalaAtualizando = {
     ligar: ligar, conferir: conferir, receberGrade: receberGrade, salvou: salvou, certos: certos, atualizarCelula: atualizarCelula,
-    pendente: pendente, naFilaNoDia: naFilaNoDia, soCopia: soCopia, esperar: esperar, corrigir: corrigir,
+    pendente: pendente, certo: certo, naFilaNoDia: naFilaNoDia, soCopia: soCopia, esperar: esperar, corrigir: corrigir,
     aoImprimir: aoImprimir, conferirImpressao: conferirImpressao
   };
 })();
