@@ -171,6 +171,8 @@
     if (prontos.length && RosterWork.escalasDados && RosterWork.escalasDados.esquecerCertos) RosterWork.escalasDados.esquecerCertos(prontos);
     /* e a Falta de gente desses dias, que veio da cópia de antes, é lida de novo com a célula refeita */
     if (prontos.length && RosterWork.escalasFalta) RosterWork.escalasFalta.esquecer(prontos);
+    /* e os erros da dica do gráfico desses dias, também lidos da cópia de antes */
+    if (prontos.length && RosterWork.escalasCelulaErros) RosterWork.escalasCelulaErros.esquecer(prontos);
     if (prontos.length || filaAcabou) redesenharProntos(prontos, filaAcabou);
     relerGrade();
     marcar();

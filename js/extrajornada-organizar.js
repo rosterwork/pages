@@ -55,7 +55,10 @@
       if (tecnico) console.error('[Extrajornada] extrajornada_mes falhou: ' + tecnico);
       RW.extrajornada.leitura('mes', 'falha', texto || msg().falhaMes);
     }
-    return util.chamar('extrajornada_mes', { p_competencia: comp }).then(function (r) {
+    /* da cópia guardada, como a grade da Escala: o dia que mudou há pouco vem da versão de antes, e a nota avisa */
+    var corpo = { p_competencia: comp };
+    if (!treinando()) corpo.p_aceita_copia = true;
+    return util.chamar('extrajornada_mes', corpo).then(function (r) {
       if (meu !== pedido || !el.isConnected) return;
       if (!r || !r.ok) { falha(r && r.error); return; }
       lendo = null;
@@ -66,7 +69,36 @@
       if (RW.extrajornadaCotas) RW.extrajornadaCotas.reiniciar();
       RW.extrajornada.leitura('mes', 'ok');
       desenharAba();
+      conferirAtualizando(comp);
     }, function (e) { falha(null, (e && e.message) || 'sem conexão'); });
+  }
+
+  /* ---------- o mês lido da cópia guardada ----------
+     Com dia do mês que ainda vai mudar (escala_dias_atualizando: na fila do recálculo ou esperando a cópia), a nota
+     amarela no alto; a cada CONFERIR_MS a página confere de novo e, quando todos ficam prontos, lê o mês outra vez. Com
+     mudança não salva na página, a nota fica até ela sair (o Salvar lê o mês de novo) */
+  var CONFERIR_MS = 10000;
+  var conferirTimer = null;
+  function treinando() { return !!(RW.treino && RW.treino.ligado()); }
+  function notaAtualizando(sim) { var n = q('#extrajornada-atualizando'); if (n) n.classList.toggle('oculto', !sim); }
+  function fimDoMes(c) { var f = new Date(+c.slice(0, 4), +c.slice(5, 7), 0); return c.slice(0, 8) + String(f.getDate()).padStart(2, '0'); }
+  function conferirAtualizando(comp) {
+    clearTimeout(conferirTimer);
+    if (!el || !el.isConnected || !d || d.competencia !== comp || treinando() || !RW.escalasDados) { notaAtualizando(false); return; }
+    var ids = (d.unidades || []).map(function (x) { return x.id; });
+    RW.escalasDados.lerDiasAtualizando(ids, d.competencia, fimDoMes(d.competencia)).then(function (lista) {
+      if (!el.isConnected || !d || d.competencia !== comp) return;
+      var n = q('#extrajornada-atualizando'), tinha = !!n && !n.classList.contains('oculto');
+      var pendente = !!(RW.guardaSaida && RW.guardaSaida.temPendencia());
+      /* sem a leitura (falha), fica como está e confere de novo */
+      if (!lista || lista.length || (tinha && pendente)) {
+        if (lista) notaAtualizando(lista.length > 0 || tinha);
+        conferirTimer = setTimeout(function () { conferirAtualizando(comp); }, CONFERIR_MS);
+        return;
+      }
+      notaAtualizando(false);
+      if (tinha) carregar();
+    });
   }
 
   /* a aba aberta (na Minha extra, só os números dos passos); no Organizar o mês sem passo escolhido, abre o da vez.

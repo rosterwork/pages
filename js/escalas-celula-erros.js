@@ -7,7 +7,9 @@
    a do banco (escala_erros_mes: só os erros principais, sem o abaixo
    do ideal, que o gráfico não pinta), pedida depois da grade numa
    leitura só para as células da tela com vermelho ou amarelo e lida de
-   novo quando o gráfico da célula muda; na Extrajornada, quem desenha
+   novo quando o gráfico da célula muda; como a grade, o dia que mudou
+   e ainda não foi refeito vem da cópia de antes (a borda amarela), e o
+   dia que o Salvar acabou de gravar, do dado real; na Extrajornada, quem desenha
    o gráfico entrega a lista (a da escala sem as extras, a de hoje ou a
    do rascunho). Sem a leitura (o banco falhou), a dica fica só com os
    militares.
@@ -56,11 +58,21 @@
     setTimeout(ler, 0);
   }
 
-  /* lê os erros das células que esperam: as unidades delas, do primeiro ao último dia */
+  /* lê os erros das células que esperam: as dos dias certos na tela (o Salvar acabou de gravar) com o dado real, as outras
+     aceitando a cópia de antes, como a grade (o dia que mudou está com a borda amarela e é lido de novo quando fica pronto) */
   function ler() {
     agendada = false;
     var marcas = pendentes, chaves = Object.keys(marcas);
     pendentes = {};
+    if (!chaves.length) return;
+    var at = RW.escalaAtualizando;
+    var certas = chaves.filter(function (k) { var p = k.split('|'); return !!(at && at.certo(p[0], p[1])); });
+    lerGrupo(chaves.filter(function (k) { return certas.indexOf(k) < 0; }), marcas, true);
+    lerGrupo(certas, marcas, false);
+  }
+
+  /* uma leitura: as unidades das células, do primeiro ao último dia */
+  function lerGrupo(chaves, marcas, copia) {
     if (!chaves.length) return;
     var unidades = [], ini = null, fim = null;
     chaves.forEach(function (k) {
@@ -69,7 +81,10 @@
       if (!ini || dia < ini) ini = dia;
       if (!fim || dia > fim) fim = dia;
     });
-    RW.rpc('escala_erros_mes', { p_unidade_ids: unidades, p_inicio: ini, p_fim: fim }).then(function (r) {
+    var corpo = { p_unidade_ids: unidades, p_inicio: ini, p_fim: fim };
+    /* o modo treino não pede a cópia (escalas-dados.js › carregar) */
+    if (copia && !(RW.treino && RW.treino.ligado())) corpo.p_aceita_copia = true;
+    RW.rpc('escala_erros_mes', corpo).then(function (r) {
       if (!r) { console.error('[Escala] Erros da dica: a leitura escala_erros_mes não veio'); return; }
       chaves.forEach(function (k) {
         var p = k.split('|');
@@ -98,6 +113,8 @@
     marcar: marcar,
     decorar: decorar,
     daHora: daHora,
+    /* a cópia dos dias ficou pronta (escalas-atualizando.js): a célula refeita lê os erros de novo. chaves = ['unidade|dia'] */
+    esquecer: function (chaves) { (chaves || []).forEach(function (k) { delete dados[k]; }); },
     /* os textos de uma lista de erros (o relatório do painel do dia da Extrajornada, com os horários) */
     textos: textos
   };

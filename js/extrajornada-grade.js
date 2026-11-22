@@ -226,7 +226,10 @@
     if (!d || errosDe === d) return;
     var meu = errosDe = d;
     erros = null;
-    u().chamar('escala_erros_mes', { p_unidade_ids: d.unidades.map(function (x) { return x.id; }), p_inicio: d.competencia, p_fim: ultimoDia(), p_sem: true })
+    /* da cópia guardada, como o mês (extrajornada-organizar.js): o dia que mudou vem da versão de antes, e a nota avisa */
+    var corpo = { p_unidade_ids: d.unidades.map(function (x) { return x.id; }), p_inicio: d.competencia, p_fim: ultimoDia(), p_sem: true };
+    if (!(RW.treino && RW.treino.ligado())) corpo.p_aceita_copia = true;
+    u().chamar('escala_erros_mes', corpo)
       .then(function (r) {
         if (errosDe !== meu || !r) return;
         erros = r;

@@ -42,6 +42,9 @@
 /* o vazio que fica no lugar da área inteira */
 .extrajornada-vazio--area { padding: 16px var(--respiro-pagina); }
 
+/* a nota do mês lido da cópia de antes (extrajornada-organizar.js): a barra no meio da altura da frase, como a da Escala */
+.extrajornada-atualizando { align-items: center; }
+
 /* o número do passo, antes do nome no botão da barra: branco (não começou), verde (feito) e preto (o da vez) */
 .extrajornada-aba-num {
   display: inline-grid;
