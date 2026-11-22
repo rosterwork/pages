@@ -807,7 +807,8 @@
 }
 
 /* quem está fora da escala (escalas-celula-fora.js), com o ícone de quem está fora: em vermelho, quem devia estar na escala;
-   em amarelo, quem voltou de um afastamento há até 5 dias (o administrador decide para onde ele vai) */
+   em amarelo, quem voltou de um afastamento ou saiu pelo Remover da guarnição há até 5 dias (o administrador decide para
+   onde ele vai) */
 .linha-escalado--fora-vermelho .linha-escalado-grad,
 .linha-escalado--fora-vermelho .linha-escalado-nome {
   color: var(--erro);

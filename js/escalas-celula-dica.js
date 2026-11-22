@@ -34,8 +34,8 @@
 
   /* por que ele está fora da escala (o motivo que o banco manda, _escala_ausentes): a saída à mão (pelo último serviço,
      a data que a pergunta do Mudar a saída usa; sem ele, o dia da saída), a volta de um afastamento, a transferência para
-     cá ou ainda sem guarnição; ainda sem guarnição e voltando de um afastamento há até 5 dias (o aviso amarelo), de onde
-     ele voltou */
+     cá ou ainda sem guarnição; ainda sem guarnição e voltando de um afastamento há até 5 dias (um dos avisos amarelos;
+     o outro é a saída à mão há até 5 dias), de onde ele voltou */
   function motivoFora(p, d) {
     var desde = diaMes(p.fora_desde);
     if (p.fora_motivo === 'saida') return p.fora_ultimo ? d.foraUltimo(diaMes(p.fora_ultimo)) : d.foraSaiu(desde);

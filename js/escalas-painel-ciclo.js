@@ -10,10 +10,13 @@
      mudança pode levar a sua data e a letra da guarnição (a aba
      Guarnições); sem elas, vale a partir do dia aberto, na guarnição
      dele (o Adicionar militar sem a letra, e o Remover do dia);
-   - o Desfazer e o Refazer da aba Guarnições: cada passo dela guarda
-     a mudança de antes e a de depois do militar (marcarPasso,
-     desmarcarPasso), ou de vários de uma vez (passoVarios, a volta de
-     férias; porVarias põe a sugestão sem ser passo);
+   - o Desfazer e o Refazer: cada passo guarda a mudança de antes e a
+     de depois do militar (marcarPasso, desmarcarPasso), ou de vários
+     de uma vez (passoVarios, a volta de férias; porVarias põe a
+     sugestão sem ser passo; passoDaFoto, o que uma sub-tela ao vivo
+     mudou, escalas-painel-editar.js › terminarVivo). Os passos entram
+     na ordem única do Desfazer do rodapé (escalas-rascunho-dias.js), e
+     a aba Guarnições anda pelos deles, com a ordem acompanhando;
    - analisar: a lista do que acontece com as trocas e folgas a
      partir de uma data (escala_ciclo_retirar_analisar; as extras
      ficam), que o Adicionar militar, o Remover do dia e o Remover da
@@ -38,7 +41,7 @@
      pergunta); tipo = entrar, mudar, sair, cancelar_saida ou mudar_saida; itens = o que acontece com as trocas e folgas (a
      lista da pergunta); de = a guarnição de antes (quem muda pela aba Guarnições) */
   var rascunho = { chave: '', lista: [] };
-  var pilha = [];      // os passos da aba Guarnições, { cpf, antes, depois } ou, de vários, { lista: [...] } (o Desfazer volta o último)
+  var pilha = [];      // os passos, { cpf, antes, depois } ou, de vários, { lista: [...] } (o Desfazer volta o último)
   var refeitos = [];   // os passos desfeitos (o Refazer)
 
   /* ---------- o rascunho ---------- */
@@ -106,18 +109,24 @@
   function copia() { return { chave: rascunho.chave, lista: rascunho.lista.slice() }; }
   function voltarA(c) { rascunho = { chave: c.chave, lista: c.lista.slice() }; }
 
-  /* ---------- os passos da aba Guarnições (com o Desfazer) ---------- */
+  /* ---------- os passos (com o Desfazer) ---------- */
 
-  /* cada passo guarda a mudança de antes e a de depois de um militar só: o Desfazer volta só ele (o que veio de outra
-     tela, como o Adicionar militar, fica) */
-  function trocarDe(cpf, mudanca) {
-    rascunho.lista = rascunho.lista.filter(function (x) { return x.cpf !== cpf; }).concat(mudanca ? [mudanca] : []);
+  /* cada passo guarda a mudança de antes e a de depois de cada militar dele: o Desfazer volta só eles (o que veio de
+     outra mudança fica). r = o rascunho de agora ou o de um dia guardado na gaveta */
+  function trocarEm(r, cpf, mudanca) {
+    r.lista = r.lista.filter(function (x) { return x.cpf !== cpf; }).concat(mudanca ? [mudanca] : []);
+  }
+  function trocarDe(cpf, mudanca) { trocarEm(rascunho, cpf, mudanca); }
+  /* um passo novo no dia de agora: o Refazer zera, e ele entra na ordem do Desfazer do rodapé */
+  function novoPasso(p) {
+    pilha.push(p);
+    refeitos = [];
+    if (G()) G().passou('ciclo', rascunho.chave);
   }
   function passo(unidadeId, iso, cpf, depois) {
     var k = unidadeId + '|' + iso;
     trocarDia(k);
-    pilha.push({ cpf: cpf, antes: marcado(unidadeId, iso, cpf), depois: depois });
-    refeitos = [];
+    novoPasso({ cpf: cpf, antes: marcado(unidadeId, iso, cpf), depois: depois });
     trocarDe(cpf, depois);
     avisar();
   }
@@ -134,28 +143,45 @@
   function passoVarios(unidadeId, iso, lista) {
     var k = unidadeId + '|' + iso;
     trocarDia(k);
-    pilha.push({ lista: lista.map(function (x) { return { cpf: x.cpf, antes: marcado(unidadeId, iso, x.cpf), depois: x.mudanca }; }) });
-    refeitos = [];
+    novoPasso({ lista: lista.map(function (x) { return { cpf: x.cpf, antes: marcado(unidadeId, iso, x.cpf), depois: x.mudanca }; }) });
     lista.forEach(function (x) { trocarDe(x.cpf, x.mudanca); });
     avisar();
   }
-  function aplicarPasso(p, lado) {
-    (p.lista || [p]).forEach(function (x) { trocarDe(x.cpf, x[lado]); });
+  /* a sub-tela ao vivo terminou (escalas-painel-editar.js › terminarVivo; foto = copia() de quando ela abriu): o que ela
+     mudou no rascunho vira um passo só, com cada militar que mudou */
+  function passoDaFoto(foto) {
+    if (!foto || foto.chave !== rascunho.chave) return;
+    var antes = {}, agora = {}, cpfs = [];
+    foto.lista.forEach(function (x) { antes[x.cpf] = x; cpfs.push(x.cpf); });
+    rascunho.lista.forEach(function (x) { agora[x.cpf] = x; if (!antes[x.cpf]) cpfs.push(x.cpf); });
+    var lista = cpfs.filter(function (cpf) { return antes[cpf] !== agora[cpf]; })
+      .map(function (cpf) { return { cpf: cpf, antes: antes[cpf] || null, depois: agora[cpf] || null }; });
+    if (!lista.length) return;
+    novoPasso({ lista: lista });
+    avisar();   // o rodapé liga o Desfazer
   }
+  /* um passo do Desfazer (ou do Refazer) num estado { rascunho, pilha, refeitos }: o de agora ou o de um dia guardado na
+     gaveta. false: sem passo */
+  function andarEm(est, desfazer) {
+    var de = desfazer ? est.pilha : est.refeitos, para = desfazer ? est.refeitos : est.pilha;
+    var p = de.pop();
+    if (!p) return false;
+    para.push(p);
+    (p.lista || [p]).forEach(function (x) { trocarEm(est.rascunho, x.cpf, desfazer ? x.antes : x.depois); });
+    return true;
+  }
+  function andarAgora(desfazer) { return andarEm({ rascunho: rascunho, pilha: pilha, refeitos: refeitos }, desfazer); }
   function podeDesfazer(unidadeId, iso) { return rascunho.chave === unidadeId + '|' + iso && pilha.length > 0; }
   function podeRefazer(unidadeId, iso) { return rascunho.chave === unidadeId + '|' + iso && refeitos.length > 0; }
+  /* o Desfazer e o Refazer da aba Guarnições (e o passo que o banco recusou): a ordem do rodapé acompanha */
   function desfazer() {
-    var p = pilha.pop();
-    if (!p) return;
-    refeitos.push(p);
-    aplicarPasso(p, 'antes');
+    if (!andarAgora(true)) return;
+    if (G()) G().andou('ciclo', rascunho.chave, true);
     avisar();
   }
   function refazer() {
-    var p = refeitos.pop();
-    if (!p) return;
-    pilha.push(p);
-    aplicarPasso(p, 'depois');
+    if (!andarAgora(false)) return;
+    if (G()) G().andou('ciclo', rascunho.chave, false);
     avisar();
   }
 
@@ -247,15 +273,27 @@
     return (dd.ultimo_servico || []).filter(function (x) { return x.cpf === cpf; })[0] || null;
   }
 
-  /* a pergunta sai: 'largar', sem mudar o rascunho (o Cancelar já voltou); 'guardar', a resposta fica; sem modo, também
-     a lista se refaz, já com a saída */
+  /* a pergunta sai: 'largar', sem mudar o rascunho (o Cancelar já voltou); 'guardar', a resposta fica; 'desistir' (o X e
+     o Esc da caixa da célula), como o Cancelar: o rascunho volta ao que era; sem modo, também a lista se refaz, já com a
+     saída */
   function fecharPergunta(modo) {
     var p = pergunta;
     pergunta = null;
     if (!p) return;
     p.pedido++;
+    if (modo === 'desistir') voltarDa(p);
     if (p.el.parentNode) p.el.remove();
     if (!modo) ed().redesenhar();
+  }
+  /* o rascunho volta a como estava antes da pergunta: os passos dela saem (também da ordem do rodapé) e ele volta à
+     mudança de antes */
+  function voltarDa(p) {
+    if (!p.passos) return;
+    pilha.splice(pilha.length - p.passos, p.passos);
+    if (G()) G().largou('ciclo', rascunho.chave, p.passos);
+    trocarDe(p.cpf, p.antes);
+    p.passos = 0;
+    avisar();
   }
 
   /* o Remover da guarnição de quem está no dia (m; linha = a linha dele na aba Funções): a pergunta Último serviço
@@ -273,7 +311,7 @@
     if (!el || !(linha || opcoes.dentro)) return;
     var api = ed(), uid = api.unidadeId(), iso = api.iso(), cpf = m.cpf, antes = marcado(uid, iso, cpf);
     var vizinhos = ((api.dados() || {}).servicos_vizinhos || {})[cpf] || {};
-    var p = { el: el, pedido: 0, passos: 0 }, ver = null;
+    var p = { el: el, pedido: 0, passos: 0, cpf: cpf, antes: antes }, ver = null;
     var marcador = el.querySelector('.escala-remover-guarnicao-efeito'), nome = 'escala-remover-guarnicao-' + (++conta);
     [vizinhos.antes, iso, vizinhos.depois].filter(Boolean).forEach(function (dia) {
       var op = RosterWork.tpl('tpl-escala-mudar-saida-opcao');
@@ -300,11 +338,7 @@
     });
     ver = efeito(marcador);
     el.querySelector('.escala-remover-guarnicao-cancelar').addEventListener('click', function () {
-      if (p.passos) {
-        pilha.splice(pilha.length - p.passos, p.passos);
-        trocarDe(cpf, antes);
-        avisar();
-      }
+      voltarDa(p);
       fecharPergunta('largar');
       if (opcoes.aoCancelar) opcoes.aoCancelar();
     });
@@ -328,7 +362,7 @@
     var api = ed(), uid = api.unidadeId(), iso = api.iso(), cpf = m.cpf, antes = marcado(uid, iso, cpf);
     var soNoRascunho = !!antes && antes.acao === 'tirar';
     var gravada = antes && antes.acao === 'mudar_saida' ? antes.saida : s.saida;
-    var p = { el: el, pedido: 0, passos: 0 }, ver = null;
+    var p = { el: el, pedido: 0, passos: 0, cpf: cpf, antes: antes }, ver = null;
     var marcador = el.querySelector('.escala-mudar-saida-efeito'), nome = 'escala-mudar-saida-' + (++conta);
     (s.dias || []).forEach(function (dia) {
       var op = RosterWork.tpl('tpl-escala-mudar-saida-opcao');
@@ -360,11 +394,7 @@
     });
     ver = efeito(marcador);
     el.querySelector('.escala-mudar-saida-cancelar').addEventListener('click', function () {
-      if (p.passos) {
-        pilha.splice(pilha.length - p.passos, p.passos);
-        trocarDe(cpf, antes);
-        avisar();
-      }
+      voltarDa(p);
       fecharPergunta('largar');
       if (opcoes.aoCancelar) opcoes.aoCancelar();
     });
@@ -398,8 +428,11 @@
     /* o dia mais antigo que se mexe (o Cancelar a saída da caixa do Fora da escala, escalas-celula-fora.js) */
     limite: limite,
     abrirDia: abrirDia,
-    /* para a gaveta dos dias (escalas-rascunho-dias.js): o Ciclo fica fora da ordem do Desfazer do rodapé (a aba
-       Guarnições tem o dela) */
+    /* a sub-tela ao vivo (escalas-painel-editar.js): antes da foto, o rascunho passa a ser o do dia dela (o de outro dia
+       vai para a gaveta), e no fim o que ela mudou vira um passo */
+    irParaDia: function (unidadeId, iso) { trocarDia(unidadeId + '|' + iso); },
+    passoDaFoto: passoDaFoto,
+    /* para a gaveta dos dias (escalas-rascunho-dias.js): os passos do Ciclo entram na ordem do Desfazer do rodapé */
     gaveta: {
       vivo: function () {
         if (!rascunho.chave || !(rascunho.lista.length || pilha.length || refeitos.length)) return null;
@@ -409,9 +442,20 @@
       contar: function (item) { return item.vivo ? rascunho.lista.length : item.estado.rascunho.lista.length; },
       /* a lista de mudanças do item (a de agora ou a guardada) */
       lista: function (item) { return item.vivo ? rascunho.lista : item.estado.rascunho.lista; },
-      pode: function () { return false; },
-      andar: function () { return false; },
-      limparRefazer: function () {},
+      pode: function (item, desfazer) {
+        var est = item.vivo ? { pilha: pilha, refeitos: refeitos } : item.estado;
+        return (desfazer ? est.pilha : est.refeitos).length > 0;
+      },
+      /* no de agora, a pergunta aberta guarda a resposta antes (ela vira o passo que se desfaz), e o dia aberto se refaz */
+      andar: function (item, desfazer) {
+        if (!item.vivo) return andarEm(item.estado, desfazer);
+        fecharPergunta('guardar');
+        if (!andarAgora(desfazer)) return false;
+        avisar();
+        if (ed().diaAberto()) ed().redesenhar();
+        return true;
+      },
+      limparRefazer: function (item) { item.estado.refeitos = []; },
       soltar: function () {}
     }
   };

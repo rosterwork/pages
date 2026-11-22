@@ -20,8 +20,9 @@
    dia, as unidades da companhia e o mês da extra começam a ser lidos
    antes do clique (escalas-celula-adiantar.js); a caixa abre com o menu
    quando eles chegam e, passando de 0,2 s, com as faixas até lá
-   (geral-caixa-flutuante.js); o clique fora e o
-   Esc fecham (o concluído fica, o que ficou pela metade sai); trocar
+   (geral-caixa-flutuante.js); o clique fora fecha (o concluído fica,
+   o que ficou pela metade sai), e o X e o Esc fecham desistindo do
+   item aberto (o que ele fez sai do rascunho); trocar
    de dia não pergunta (o rascunho de cada dia fica guardado,
    escalas-rascunho-dias.js). Com o painel aberto, a caixa abre do
    mesmo jeito e o painel vai junto para o dia clicado, na aba dele
@@ -156,8 +157,9 @@
     aberto = a;
     a.caixa = RW.caixaFlutuante.abrir({
       peca: peca, junto: junto || [], titulo: titulo, esperar: true, topo: a.tipo === 'pelotao' ? TOPO_PELOTAO : null,
-      /* o clique fora, o Esc ou a peça que saiu: o que está concluído fica */
-      aoFechar: function () { if (aberto === a) fecharTudo(); },
+      /* o X e o Esc desistem do item aberto (o rascunho volta a como estava antes dele); o clique fora, o Voltar do
+         navegador e a peça que saiu: o que está concluído fica */
+      aoFechar: function (como) { if (aberto === a) fecharTudo(como === 'x' || como === 'esc' ? 'desistir' : undefined); },
       /* a resposta pela metade: o clique fora (e o rodapé largo, fora o Cancelar) espera, com a pergunta que falta marcada */
       aoClicarFora: function (alvo) { return aberto !== a || A().podeFechar(contexto(), alvo); },
       /* no celular, o Voltar da folha: a pergunta pela metade sai e o menu volta */
@@ -361,13 +363,15 @@
       titulo: L().noDia(d.unidadeNome, diaMes(d.iso)), aoPainel: function () { RW.escalasPainel.abrirDia(d, null); } });
   }
 
-  /* o dia que a fila do recálculo ainda vai refazer: a caixa do pelotão com o aviso (ninguém mexe num dia que vai mudar);
-     o painel abre só pelo item dela. Quando o dia fica pronto, com a caixa ainda aberta, o clique segue para o menu do
-     nome clicado (o mesmo militar no dia refeito) ou, sem ele, para o do pelotão */
+  /* o dia que a fila do recálculo ainda vai refazer: a caixa com o aviso (ninguém mexe num dia que vai mudar), no lugar
+     do menu que foi pedido: colada no nome clicado, como o menu do nome, ou no pelotão; o painel abre só pelo item dela.
+     Quando o dia fica pronto, com a caixa ainda aberta, o clique segue para o menu do nome clicado (o mesmo militar no dia
+     refeito) ou, sem ele, para o do pelotão */
   function avisoAtualizando(cel, linha) {
     var d = diaDe(cel), cpf = linha ? linha.getAttribute('data-cpf') : null;
     fecharTudo();
-    var caixa = RW.caixaFlutuante.aviso({ peca: pecaDoPelotao(cel), topo: TOPO_PELOTAO, texto: msg().diaAtualizandoCaixa,
+    var caixa = RW.caixaFlutuante.aviso({ peca: linha || pecaDoPelotao(cel), junto: linha ? [pecaDoPelotao(cel)] : [],
+      topo: linha ? null : TOPO_PELOTAO, texto: msg().diaAtualizandoCaixa,
       titulo: L().noDia(d.unidadeNome, diaMes(d.iso)), aoPainel: function () { RW.escalasPainel.abrirDia(d, null); } });
     if (!caixa) return;
     RW.escalaAtualizando.esperar(d.unidadeId, d.iso).then(function () {
@@ -398,7 +402,8 @@
   }
 
   /* fecha a caixa (modo: 'guardar', o que está concluído fica sem ler o dia de novo, porque o painel vai abrir nele;
-     'largar', sai tudo, porque o rascunho já foi gravado ou descartado; sem modo, o concluído fica) */
+     'largar', sai tudo, porque o rascunho já foi gravado ou descartado; 'desistir', o X e o Esc: o que o item aberto fez
+     sai do rascunho; sem modo, o concluído fica) */
   function fecharTudo(modo) {
     var a = aberto;
     aberto = null;

@@ -41,8 +41,10 @@
      Pôr como Oficial de Área do nome vai para ele. A lista do campo de
      militar da caixa 2 mostra as faixas enquanto chega, e as do pelotão
      já começam a ser lidas quando a caixa 1 dele aparece. Trocar
-     de item: o concluído fica (um passo do desfazer) e o que estava pela
-     metade sai. Não cria HTML (clona os moldes) nem escreve estilo.
+     de item e o clique fora: o concluído fica (um passo do desfazer) e o
+     que estava pela metade sai; o X e o Esc da caixa desistem do item
+     aberto (o que ele fez sai do rascunho). Não cria HTML (clona os
+     moldes) nem escreve estilo.
      RosterWork.escalasCelulaAcoes.
    ============================================================ */
 (function () {
@@ -82,19 +84,24 @@
   }
 
   /* o item termina: o que está concluído fica no rascunho (um passo do desfazer) e o dia é lido de novo com ele; o que
-     ficou pela metade sai. modo 'guardar': fica, sem ler de novo (o painel vai abrir no dia); 'largar': sai tudo */
+     ficou pela metade sai. modo 'guardar': fica, sem ler de novo (o painel vai abrir no dia); 'largar': sai tudo;
+     'desistir' (o X e o Esc da caixa): o que o item fez sai, e o dia e as guarnições voltam a como estavam antes dele */
   function terminar(a, modo) {
-    var acao = a.acao, tinha = a.vivo;
-    if (acao === 'remover-guarnicao' || acao === 'mudar-saida') RW.escalasPainelCiclo.fecharPergunta(modo === 'largar' ? 'largar' : 'guardar');
-    var metade = tinha && (acao === 'horario' || acao === 'remanejado' || acao === 'mudanca' || !!a.perguntas || !!a.remocao || !!a.origemFalta)
-      && pelaMetade(a);
+    var acao = a.acao, tinha = a.vivo, desistir = modo === 'desistir';
+    if (acao === 'remover-guarnicao' || acao === 'mudar-saida') {
+      RW.escalasPainelCiclo.fecharPergunta(modo === 'largar' || desistir ? modo : 'guardar');
+    }
+    var metade = tinha && (desistir || ((acao === 'horario' || acao === 'remanejado' || acao === 'mudanca' || !!a.perguntas
+      || !!a.remocao || !!a.origemFalta) && pelaMetade(a)));
+    /* quem estava entrando pelo Adicionar neste dia: a linha dele, posta na célula na hora, sai */
+    if (desistir && acao === 'neste-dia' && a.escolhido) RW.escalasDiaNaGrade.tirarNova(a.unidadeId, a.iso, a.escolhido.cpf);
     a.origemFalta = false;
     a.vivo = false;
     a.acao = null;
     if (!tinha || !api().diaAberto()) return;   // o dia da célula, ou o do painel aberto nele
     if (modo === 'largar') { api().largarVivo(); return; }
     if (metade) api().aoVivo(null, false);
-    if (api().terminarVivo() && modo !== 'guardar') api().redesenhar();
+    if ((api().terminarVivo() && modo !== 'guardar') || desistir) api().redesenhar();
   }
 
   /* a caixa fecha (escalas-celula-editar.js › fecharTudo) */

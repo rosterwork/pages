@@ -123,7 +123,7 @@
   function semHorario(p) { return p.origem === 'afastamento' || p.origem === 'viagem'; }
 
   /* quem está fora da escala, no lugar do horário, como na tela (escalas-celula-fora.js): "Fora da escala" no amarelo (a
-     volta de um afastamento há até 5 dias); "Entra em DD/MM", a entrada marcada; sem ela, "Fora da escala" no vermelho */
+     volta de um afastamento ou a saída pelo Remover da guarnição há até 5 dias); "Entra em DD/MM", a entrada marcada; sem ela, "Fora da escala" no vermelho */
   function textoFora(p) {
     var E = RW.mensagens.escala, br = function (iso) { return RW.data.isoParaBR(iso).slice(0, 5); };
     return p.aviso ? E.foraDaEscala : p.entra_em ? E.entraEm(br(p.entra_em)) : p.vermelho ? E.foraDaEscala : '';

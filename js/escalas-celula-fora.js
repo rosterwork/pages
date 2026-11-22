@@ -4,9 +4,10 @@
    operacionais da unidade que estão sem guarnição no dia, por
    antiguidade, com o ícone de quem está fora: em amarelo quem voltou
    de um afastamento há até 5 dias (as férias tiram da guarnição; o
-   administrador decide para onde ele vai) e em vermelho quem devia
-   estar na escala (do 6º dia depois da volta, ou sem volta: a mesma
-   regra do Para corrigir do Início), os dois com "Fora da escala" no
+   administrador decide para onde ele vai) ou saiu pelo Remover da
+   guarnição há até 5 dias, e em vermelho quem devia estar na escala
+   (do 6º dia depois da volta ou da saída, ou sem nenhuma delas: a
+   mesma regra do Para corrigir do Início), os dois com "Fora da escala" no
    lugar do horário; "Entra em DD/MM" de quem já tem a entrada marcada
    (também no vermelho); riscado, com "Férias até DD/MM", quem está
    afastado, também quem continua na guarnição (só com o filtro

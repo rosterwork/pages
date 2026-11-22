@@ -191,9 +191,9 @@
     el.classList.add('oculto');
   }
 
-  /* o Desfazer e o Refazer da aba aberta: nas Funções e na Estagiários (e na célula da grade), os passos do Dia e do
-     Sobreaviso de todos os dias, numa ordem só (escalas-rascunho-dias.js; com uma sub-tela aberta, esperam); as Guarnições
-     e a Extrajornada, os delas. Devolve { podeDesfazer(), podeRefazer(), desfazer(), refazer() }, ou null */
+  /* o Desfazer e o Refazer da aba aberta: nas Funções e na Estagiários (e na célula da grade), os passos do Dia, do Ciclo
+     e do Sobreaviso de todos os dias, numa ordem só (escalas-rascunho-dias.js; com uma sub-tela aberta, esperam); as
+     Guarnições e a Extrajornada, os delas. Devolve { podeDesfazer(), podeRefazer(), desfazer(), refazer() }, ou null */
   function daAba() {
     var c = contexto(), s = c && c.secao;
     var x = X() ? { podeDesfazer: X().podeDesfazer, podeRefazer: X().podeRefazer, desfazer: X().desfazer, refazer: X().refazer } : null;

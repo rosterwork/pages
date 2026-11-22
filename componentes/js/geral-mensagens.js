@@ -1522,7 +1522,7 @@
       /* o título de quem não está em nenhum posto, com quantos (Op. Verão e Estágios, o .escala-mes-posto--sem) */
       semPosto: function (n) { return 'Sem posto (' + n + ')'; },
       /* no lugar do horário de quem está fora da escala: a entrada na guarnição já marcada; o amarelo (a volta de um
-         afastamento há até 5 dias) e o vermelho sem a entrada marcada */
+         afastamento ou a saída pelo Remover da guarnição há até 5 dias) e o vermelho sem a entrada marcada */
       entraEm: function (data) { return 'Entra em ' + data; },
       foraDaEscala: 'Fora da escala',
       /* a autorização de viagem na grade (o grupo dela, com o filtro): no lugar do horário, até quando; a dica, com os

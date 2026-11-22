@@ -645,10 +645,11 @@
     if (RosterWork.escalasPainelCiclo && RosterWork.escalasPainelCiclo.fecharPergunta) RosterWork.escalasPainelCiclo.fecharPergunta(modo);
   }
 
-  /* abre a mudança ao vivo: a foto do rascunho do Dia e do Ciclo de agora */
+  /* abre a mudança ao vivo: a foto do rascunho do Dia e do Ciclo de agora (o do Ciclo passa antes a ser o deste dia) */
   function comecarVivo() {
     if (!rasc) return;
     var C = RosterWork.escalasPainelCiclo;
+    if (C && C.irParaDia) C.irParaDia(donoUnidade(), donoIso());
     vivo = { foto: copiar(rasc), ciclo: C ? C.copia() : null, mudou: false, travado: false };
   }
   /* a resposta mudou: o rascunho volta à foto e fn põe nele a mudança de agora (fn nulo: pergunta sem resposta).
@@ -663,13 +664,14 @@
     vivo.travado = !!travado;
     avisarRascunho();
   }
-  /* o Voltar ao dia e o X do lápis: o que foi respondido fica, como um passo do desfazer. Devolve true quando o Dia
-     mudou (a mudança do Ciclo fica no rascunho do Ciclo) */
+  /* o Voltar ao dia e o X do lápis: o que foi respondido fica, como um passo do desfazer (o do Ciclo, como um passo
+     dele, escalas-painel-ciclo.js › passoDaFoto). Devolve true quando o Dia mudou */
   function terminarVivo() {
     if (!vivo) return false;
-    var v = vivo;
+    var v = vivo, C = RosterWork.escalasPainelCiclo;
     vivo = null;
     if (v.mudou) passo(v.foto);
+    if (C && C.passoDaFoto && v.ciclo) C.passoDaFoto(v.ciclo);
     if (v.travado) avisarRascunho();   // o Salvar volta a ligar
     return v.mudou;
   }

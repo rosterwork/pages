@@ -42,8 +42,8 @@
    API: RosterWork.caixaFlutuante.abrir(opcoes) -> caixa
         opcoes = { peca, junto (o que é marcado com ela), topo (o bloco: o topo da caixa, em px, abaixo do topo dele;
                    sem ele, o primeiro item no meio da peça), titulo (o da folha), conteudo, esperar (sem o conteúdo no
-                   quadro seguinte, a forma), aoFechar() (fechou pelo clique fora, pelo Esc, pelo X ou pela peça que
-                   saiu), aoVoltar() (o Voltar da folha), aoClicarFora(alvo) (false: a caixa fica, e o clique não faz
+                   quadro seguinte, a forma), aoFechar(como) (fechou pelo clique fora, pelo Esc, pelo X, pelo Voltar
+                   do navegador ou pela peça que saiu: como = 'fora', 'esc', 'x', 'voltar' ou 'peca'), aoVoltar() (o Voltar da folha), aoClicarFora(alvo) (false: a caixa fica, e o clique não faz
                    mais nada; o alvo é o que foi clicado, também no rodapé largo), aoTentarFechar(alvo) (o mesmo para o
                    X e o Esc; o alvo é o X, ou null no Esc), preferirEsquerda (a caixa 1 abre à
                    esquerda da peça quando cabe: booleano ou função, como no geral-flutuante) }
@@ -131,7 +131,7 @@
         if (atual !== c) return;
         var r = c.peca.getBoundingClientRect(), doc = document.documentElement;
         if (c.peca.isConnected && r.bottom >= 0 && r.top <= doc.clientHeight) return;
-        fecharDe(c, true);
+        fecharDe(c, 'peca');
       });
     };
   }
@@ -250,7 +250,7 @@
     var x = c2.querySelector('.caixa-flutuante-fechar');
     if (x) {
       x.classList.remove('oculto');
-      x.addEventListener('click', function () { if (podeFechar(c, x)) fecharDe(c, true); });
+      x.addEventListener('click', function () { if (podeFechar(c, x)) fecharDe(c, 'x'); });
     }
     document.body.appendChild(c2);
     c.c2 = c2;
@@ -318,8 +318,9 @@
     return !c.opcoes.aoTentarFechar || c.opcoes.aoTentarFechar(alvo) !== false;
   }
 
-  /* avisar: fechou pelo clique fora, pelo Esc ou pela peça que saiu (a página fecha o que é dela) */
-  function fecharDe(c, avisar) {
+  /* como (a página fecha o que é dela, aoFechar): 'fora' (o clique fora), 'x', 'esc', 'voltar' (o Voltar do navegador)
+     ou 'peca' (a peça que saiu); sem ele, a página mesma fechou, e não é avisada */
+  function fecharDe(c, como) {
     if (atual !== c) return;
     atual = null;
     clearTimeout(c.relogioForma);
@@ -329,7 +330,7 @@
     });
     if (c.item) c.item.classList.remove('caixa-flutuante-item--escolhido');
     tirar([c.c1, c.c2, c.veu], function () { desligarTudo(c); });
-    if (avisar && c.opcoes.aoFechar) c.opcoes.aoFechar();
+    if (como && c.opcoes.aoFechar) c.opcoes.aoFechar(como);
   }
 
   function ligar() {
@@ -340,14 +341,14 @@
       if (!c || !t || !t.closest) return;
       if (t.closest(DENTRO)) return;
       /* a caixa que ainda não apareceu (esperando o conteúdo): o clique fecha e segue para onde foi */
-      if (c.esperando) { fecharDe(c, true); return; }
+      if (c.esperando) { fecharDe(c, 'fora'); return; }
       /* a resposta pela metade (a página diz, aoClicarFora): a caixa fica, e o clique não faz mais nada */
       if (c.opcoes.aoClicarFora && c.opcoes.aoClicarFora(t) === false) {
         ev.stopPropagation();
         ev.preventDefault();
         return;
       }
-      fecharDe(c, true);
+      fecharDe(c, 'fora');
       /* o primeiro clique fora só fecha: não chega ao que está embaixo (os outros ouvintes do documento seguem) */
       if (t.closest(PASSA)) return;
       ev.stopPropagation();
@@ -357,9 +358,9 @@
       if (ev.key !== 'Escape' || !atual) return;
       if (document.querySelector('.dropdown--aberto, .modal-veu--aberto')) return;
       ev.preventDefault();   // o Esc foi da caixa: o painel atrás dela fica (geral-painel.js)
-      if (podeFechar(atual, null)) fecharDe(atual, true);
+      if (podeFechar(atual, null)) fecharDe(atual, 'esc');
     });
-    window.addEventListener('popstate', function () { if (atual) fecharDe(atual, true); });
+    window.addEventListener('popstate', function () { if (atual) fecharDe(atual, 'voltar'); });
   }
 
   function api(c) {

@@ -9,10 +9,11 @@
    nada. O Salvar do rodapé largo (escalas-painel-salvar.js) grava
    todos os dias de uma vez (escala_painel_salvar_dias), e o Cancelar
    descarta todos.
-   Aqui fica também a ordem dos passos do Dia e do Sobreaviso de todos
-   os dias: o Desfazer volta o último, em qualquer dia, e o Refazer o
-   último desfeito (o Ciclo e a Extrajornada têm o Desfazer da aba
-   deles).
+   Aqui fica também a ordem dos passos do Dia, do Ciclo e do Sobreaviso
+   de todos os dias: o Desfazer volta o último, em qualquer dia, e o
+   Refazer o último desfeito (a aba Guarnições anda pelos passos do
+   Ciclo, e a ordem acompanha, andou; a pergunta que desiste tira os
+   dela, largou; a Extrajornada tem o Desfazer dela).
    Cada parte dá, na API dela, o objeto gaveta: { vivo() (o dia
    carregado nela, { chave, unidadeId, iso, vivo: true }, ou null),
    contar(item), pode(item, desfazer), andar(item, desfazer) (true:
@@ -23,7 +24,8 @@
    tirar(parte, chave), porDia() ([{ unidadeId, iso, dia, ciclo,
    sobreaviso }], os itens com mudança), contar(), datas() (quantos
    dias diferentes), descartar(gravou), soltar(parte, chave, gravou),
-   passou(parte, chave), podeDesfazer(), podeRefazer(), desfazer(),
+   passou(parte, chave), andou(parte, chave, desfazer),
+   largou(parte, chave, n), podeDesfazer(), podeRefazer(), desfazer(),
    refazer() }
    ============================================================ */
 (function () {
@@ -114,6 +116,25 @@
       Object.keys(guardados[n]).forEach(function (k) { if (p && p.limparRefazer) p.limparRefazer(guardados[n][k]); });
     });
   }
+  /* o último passo de uma parte num dia, numa das listas (-1: nenhum) */
+  function ultimoDa(lista, nome, chave) {
+    for (var i = lista.length - 1; i >= 0; i--) if (lista[i].parte === nome && lista[i].chave === chave) return i;
+    return -1;
+  }
+  /* a parte andou um passo pelo Desfazer (ou o Refazer) dela mesma (a aba Guarnições): o passo dela passa para a outra lista */
+  function andou(nome, chave, desfazer) {
+    var de = desfazer ? ordem : refeitos, i = ultimoDa(de, nome, chave);
+    if (i >= 0) de.splice(i, 1);
+    (desfazer ? refeitos : ordem).push({ parte: nome, chave: chave });
+  }
+  /* a parte largou os n últimos passos dela (a pergunta que desistiu): eles saem da ordem */
+  function largou(nome, chave, n) {
+    for (var k = 0; k < n; k++) {
+      var i = ultimoDa(ordem, nome, chave);
+      if (i < 0) return;
+      ordem.splice(i, 1);
+    }
+  }
   /* o último passo que ainda dá para andar (o da parte que ficou sem passo, como o recusado pelo banco, fica de fora) */
   function ultimo(pilha, desfazer) {
     for (var i = pilha.length - 1; i >= 0; i--) {
@@ -140,7 +161,7 @@
 
   RW.escalasRascunhoDias = {
     guardar: guardar, tirar: tirar, porDia: porDia, contar: contar, datas: datas, descartar: descartar, soltar: soltar,
-    passou: passou, podeDesfazer: podeDesfazer, podeRefazer: podeRefazer,
+    passou: passou, andou: andou, largou: largou, podeDesfazer: podeDesfazer, podeRefazer: podeRefazer,
     desfazer: function () { return andar(true); }, refazer: function () { return andar(false); }
   };
 })();

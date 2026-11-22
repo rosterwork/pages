@@ -102,7 +102,7 @@
 }
 
 /* amostras do nome de quem está fora da escala (escalas-celula-fora.js): em vermelho quem devia estar nela; em amarelo quem
-   voltou de um afastamento há até 5 dias */
+   voltou de um afastamento ou saiu pelo Remover da guarnição há até 5 dias */
 .escala-legenda-nome-fora,
 .escala-legenda-nome-volta {
   flex-shrink: 0;
