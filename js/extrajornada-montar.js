@@ -7,7 +7,8 @@
    Tudo fica no rascunho até o Salvar (extrajornada_distribuicao_salvar),
    que espera acertar quem passou da cota. "Preencher pela sugestão"
    (só com tudo salvo) mantém as extras que o administrador pôs ou mudou
-   e pede ao motor (extrajornada_sugerir) que refaça as que o sistema pôs.
+   e pede ao otimizador (extrajornada-otimizador.js) que refaça as que o
+   sistema pôs; o banco (extrajornada_sugerir) confere cada uma.
    O Desfazer e o Refazer do rodapé (e o Ctrl+Z e o Ctrl+Y) andam pelos
    passos do rascunho; o Preencher inteiro é um passo só.
    Os Ajustes são a mesma tela (o modo ajustes): abrem depois do
@@ -24,7 +25,7 @@
   var sugestaoGuardada = null;   // o resultado da sugestão desfeita (o Refazer o põe de volta)
   var postas = null;       // as cotas que a última sugestão pôs no mês (a nota do resultado); null = sem sugestão
   var foraSug = {};        // quem ficou com cota na última sugestão: cpf -> motivo (o grupo Faltam da lista mostra)
-  var reserva = false;     // a última sugestão usou o cálculo simples do banco
+  var recusadas = 0;       // as extras da última sugestão que o banco recusou (ficaram de fora)
   var resultadoFechado = false;   // o resultado da sugestão fechado no X (volta no próximo Preencher)
   var escalaSeq = 0;
   var esperaDaEscala = null;   // a leitura da escala do mês (geral-etapas.js)
@@ -81,13 +82,13 @@
 
   /* ---------- sugestão, salvar e o resto ---------- */
   /* Preencher pela sugestão, só com tudo salvo: as extras que o administrador pôs ou mudou ficam; as que o sistema
-     salvou saem e o otimizador (extrajornada-otimizador.js, com o véu e o cálculo simples de reserva) refaz tudo com as
-     cotas que sobram. A extra refeita igual à salva não é mudança */
+     salvou saem e o otimizador (extrajornada-otimizador.js, com o véu) refaz tudo com as cotas que sobram. A extra
+     refeita igual à salva não é mudança */
   function sugerir() {
     if (G().alteracoes().length || RW.extrajornadaOtimizador.calculando()) return;
     var fixas = d.alocacoes.filter(function (a) { return a.origem !== 'sugestao'; });
     var botao = q('#p3-sugerir');
-    RW.extrajornadaOtimizador.preencher(d.competencia, fixas, function (r, usouReserva) {
+    RW.extrajornadaOtimizador.preencher(d.competencia, fixas, function (r, quantasRecusadas) {
       /* a pessoa saiu da página durante o cálculo: o resultado fica para trás */
       if (q('#p3-sugerir') !== botao) return;
       /* o Preencher inteiro é um passo só do Desfazer */
@@ -108,7 +109,7 @@
       });
       foraSug = {};
       (r.nao_coube || []).forEach(function (n) { foraSug[n.cpf] = n.motivo; });
-      reserva = usouReserva;
+      recusadas = quantasRecusadas;
       dia().reorganizar();
       redesenhar();
     });
@@ -117,9 +118,9 @@
   /* o resultado da sugestão (a nota e quem ficou com cota) sai com o Desfazer do Preencher e volta com o Refazer: troca
      com o guardado */
   function trocarSugestao() {
-    var agora = { postas: postas, foraSug: foraSug, reserva: reserva };
-    var volta = sugestaoGuardada || { postas: null, foraSug: {}, reserva: false };
-    postas = volta.postas; foraSug = volta.foraSug; reserva = volta.reserva;
+    var agora = { postas: postas, foraSug: foraSug, recusadas: recusadas };
+    var volta = sugestaoGuardada || { postas: null, foraSug: {}, recusadas: 0 };
+    postas = volta.postas; foraSug = volta.foraSug; recusadas = volta.recusadas;
     sugestaoGuardada = agora;
   }
 
@@ -213,7 +214,7 @@
         var cores = G().pelotoes().map(function (x) { return G().corDe(G().faltaDoDia(x.id, k, alocs)); });
         if (cores.indexOf('erro') >= 0) vermelho++; else if (cores.indexOf('alerta') >= 0) amarelo++;
       });
-      resultado.querySelector('.nota-texto').textContent = (reserva ? msg().reservaUsada + ' ' : '') + msg().resultadoSugestao(postas, vermelho, amarelo);
+      resultado.querySelector('.nota-texto').textContent = msg().resultadoSugestao(postas, vermelho, amarelo) + (recusadas ? ' ' + msg().sugestaoRecusadas(recusadas) : '');
     }
     RW.extrajornadaLista.desenhar(el);
     /* sem nenhum pelotão: o vazio no lugar do calendário */

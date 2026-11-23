@@ -561,9 +561,9 @@
             </div>
             <ol class="ajustes-regras ajustes-regras--numeradas">
               <li class="ajustes-regras-item">Cobrir a falta dos pelotões, na ordem escolhida abaixo.</li>
-              <li class="ajustes-regras-item">Colocar todas as cotas. A que sobra vai para a cidade da companhia.</li>
+              <li class="ajustes-regras-item">Só onde falta gente. A cota que não fecha falta fica para o administrador.</li>
               <li class="ajustes-regras-item">Cada um no próprio pelotão.</li>
-              <li class="ajustes-regras-item">Fora da cidade da companhia, não passar do necessário.</li>
+              <li class="ajustes-regras-item">Nunca passar do necessário.</li>
               <li class="ajustes-regras-item">Quando dois querem o mesmo lugar, fica quem vem primeiro, como escolhido abaixo.</li>
               <li class="ajustes-regras-item">A balança, no fim.</li>
             </ol>
@@ -577,7 +577,7 @@
           <!-- os pelotões na ordem da falta (molde tpl-regras-extra-pelotao) -->
           <div class="grupo-caixa subtela-pergunta">
             <span class="rotulo-secao">A falta que vem primeiro</span>
-            <span class="subtela-ajuda">O sistema cobre primeiro o vermelho, um pelotão por vez nesta ordem, e depois o amarelo, na mesma ordem.</span>
+            <span class="subtela-ajuda">O sistema cobre primeiro o vermelho, um pelotão por vez nesta ordem. Fora da cidade da companhia, o amarelo só entra junto com o vermelho; o da cidade da companhia, só quando não sobra vermelho no mês.</span>
             <div class="ajustes-extra-pelotoes" id="regras-extra-ordem"></div>
           </div>
           <div class="grupo-caixa subtela-pergunta" id="regras-extra-primeiro">
@@ -589,7 +589,7 @@
           <!-- uma linha por pelotão (molde tpl-regras-extra-sai) -->
           <div class="grupo-caixa subtela-pergunta">
             <span class="rotulo-secao">Quem vai para outro pelotão</span>
-            <span class="subtela-ajuda">Quando falta gente num pelotão e os de lá não bastam, ou quando sobra gente para mandar à cidade da companhia. Em rodízio, vai quem foi menos vezes nos últimos 12 meses, sem olhar a antiguidade.</span>
+            <span class="subtela-ajuda">Quando falta gente num pelotão e os de lá não bastam. Em rodízio, vai quem foi menos vezes nos últimos 12 meses, sem olhar a antiguidade.</span>
             <div class="ajustes-extra-linhas" id="regras-extra-sai"></div>
           </div>
           <!-- uma caixa de marcar por pelotão (molde tpl-regras-extra-bombeira) -->
@@ -660,21 +660,6 @@
                   </div>
                 </span>
                 <span class="subtela-ajuda">O dia marcado com Quero no pedido.</span>
-              </div>
-              <div class="ajustes-balanca-item" data-chave="igual">
-                <span class="ajustes-balanca-nome">A sobra igual entre os dias</span>
-                <span class="dropdown nova-distribuicao-selecao">
-                  <button type="button" class="campo-entrada campo-selecao" aria-label="A sobra igual entre os dias">
-                    <span class="campo-selecao-texto"></span>
-                    <svg class="icone seletor-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-baixo"/></svg>
-                  </button>
-                  <div class="dropdown-menu nova-distribuicao-selecao-menu">
-                    <button type="button" class="dropdown-item" data-valor="pouco">Pouco</button>
-                    <button type="button" class="dropdown-item" data-valor="normal">Normal</button>
-                    <button type="button" class="dropdown-item" data-valor="muito">Muito</button>
-                  </div>
-                </span>
-                <span class="subtela-ajuda">Sem falta para cobrir, a extra vai para o dia com menos gente, com as graduações equilibradas.</span>
               </div>
             </div>
           </div>

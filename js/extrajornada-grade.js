@@ -203,8 +203,9 @@
     });
     for (var h = 0; h < 24; h++) {
       var b = Math.floor(h / 6) + 1, v = Number(err[h]) || 0, meia = meias[h] || 0;
-      var cobreVermelho = v === 1 && falta.base[b] > 0 && falta.total[b] - meia <= 0;
-      var cobreAmarelo = v === 2 && falta.abase[b] > 0 && falta.atotal[b] - meia <= 0;
+      /* a hora sai do vermelho só com as pessoas e o condutor cobertos (no amarelo, o ideal e o chefe que dirige) */
+      var cobreVermelho = v === 1 && falta.base[b] + falta.cbase[b] > 0 && falta.total[b] - meia <= 0 && falta.cond[b] === 0;
+      var cobreAmarelo = v === 2 && falta.abase[b] + falta.acbase[b] > 0 && falta.atotal[b] - meia <= 0 && falta.acond[b] === 0;
       /* as extras cobriram a falta; com outro erro vermelho na hora (alguém sem função), ela continua vermelha */
       if ((cobreVermelho && !outroVermelho(lista, h)) || cobreAmarelo) v = 0;
       cobre.push(cobreVermelho ? 1 : cobreAmarelo ? 2 : 0);
@@ -214,8 +215,9 @@
   }
 
   /* ---------- os erros que pintam o gráfico (escala_erros_mes): a dica do gráfico e o relatório do painel do dia ---------- */
-  /* os erros de falta, que a extra cobre (os do _falta_por_horario): no vermelho e no amarelo */
-  var FALTA = { 1: ['abaixo_minimo', 'unidade_abaixo_minimo', 'posto_fora', 'sem_condutor', 'sem_condutor_habilitado', 'posto_sem_solucao'],
+  /* os erros de falta, que a extra cobre (os do _falta_por_horario: as pessoas e o condutor; o posto travado fica com a
+     escala): no vermelho e no amarelo */
+  var FALTA = { 1: ['abaixo_minimo', 'unidade_abaixo_minimo', 'posto_fora', 'sem_condutor', 'sem_condutor_habilitado'],
                 2: ['unidade_abaixo_minimo', 'posto_fora', 'chefe_condutor'] };
   var erros = null, errosDe = null;   // { hoje, sem } do banco e o mês lido a que eles pertencem
   function eFalta(p) { return (FALTA[p.nivel] || []).indexOf(p.codigo) >= 0; }
@@ -358,7 +360,8 @@
     /* a conta das duas (sem a cor da escala de hoje, que já tem a extra salva): a diferença é o que o início muda */
     var com = F().doDia(d, uid, k, alocs, null), sem = F().doDia(d, uid, k, naBolinha, null);
     var ultimo = Math.max.apply(null, blocos(a));
-    var vermelho = com.total[ultimo] > sem.total[ultimo], amarelo = com.atotal[ultimo] > sem.atotal[ultimo];
+    var vermelho = com.total[ultimo] + com.cond[ultimo] > sem.total[ultimo] + sem.cond[ultimo];
+    var amarelo = com.atotal[ultimo] + com.acond[ultimo] > sem.atotal[ultimo] + sem.acond[ultimo];
     if (!vermelho && !amarelo) return null;
     return { cor: vermelho ? 'erro' : 'alerta', das: u().horas(blocos(a), a.inicio).split(' às ')[1], ate: u().horas([ultimo]).split(' às ')[1] };
   }

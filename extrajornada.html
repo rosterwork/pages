@@ -893,7 +893,7 @@
       <li>No dia em que o expediente termina antes das 14h (a quarta), a extra do administrativo pode começar no fim dele: arraste a bolinha do começo até lá.</li>
       <li>A companhia só recebe extra posta manualmente.</li>
       <li>O Preencher pela sugestão só funciona com tudo salvo. Ele refaz as extras que o sistema pôs e mantém as que o administrador pôs ou mudou.</li>
-      <li>O Preencher pela sugestão calcula a melhor combinação. Se o cálculo não terminar em 6 minutos, ele usa o cálculo simples.</li>
+      <li>O Preencher pela sugestão testa todas as combinações e fica com a melhor.</li>
       <li>Só lança na escala com todas as cotas colocadas.</li>
       <li>Depois de lançada, a distribuição só muda pelos Ajustes.</li>
     </ul>
@@ -902,17 +902,16 @@
     <span class="rotulo-secao">Regras do Preencher pela sugestão</span>
     <ol class="extrajornada-legenda-lista">
       <li>Cada regra vale mais que todas as de baixo juntas. A ordem e as escolhas da companhia ficam nos Ajustes, na aba Extrajornada.</li>
-      <li>Corrige primeiro o vermelho, um pelotão por vez na ordem dos Ajustes. Fora da cidade da companhia, só até o mínimo: o amarelo de lá só entra junto com o vermelho, e o que passar vai para o pelotão da cidade da companhia. Depois, o amarelo da cidade da companhia.</li>
-      <li>Todas as cotas são colocadas: a que sobra vai para o pelotão da cidade da companhia.</li>
-      <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem ou para levar a cota que sobra, e vai quem os Ajustes dizem: o mais moderno ou, em rodízio, quem foi menos vezes nos últimos 12 meses.</li>
+      <li>Corrige primeiro o vermelho, um pelotão por vez na ordem dos Ajustes. Fora da cidade da companhia, só até o mínimo: o amarelo de lá só entra junto com o vermelho, na mesma extra. O amarelo da cidade da companhia só entra quando não sobra vermelho no mês.</li>
+      <li>A extra só vai onde falta gente. A cota que não fecha falta fica para o administrador.</li>
+      <li>Cada um fica no pelotão dele. Só vai para outro pelotão para corrigir o que os de lá não conseguem, e vai quem os Ajustes dizem: o mais moderno ou, em rodízio, quem foi menos vezes nos últimos 12 meses.</li>
       <li>As bombeiras, só nos pelotões marcados nos Ajustes.</li>
-      <li>Passar do necessário, com duas extras que se cruzam, só em último caso.</li>
-      <li>Nunca 1 cota sozinha: para usar a última, a extra pode passar do necessário.</li>
+      <li>Nunca passa do necessário: nenhum horário com gente a mais.</li>
+      <li>Nunca 1 cota sozinha: a última fica para o administrador.</li>
       <li>Nunca 4 dias seguidos no quartel, contando serviço, troca e extra (o expediente não conta). De preferência, nem 3.</li>
       <li>Quando dois querem o mesmo lugar, ou não dá para todos, fica quem vem primeiro: pela fila das Cotas ou pela antiguidade, como nos Ajustes.</li>
       <li>Blocos inteiros: 24 horas, e o resto num bloco só.</li>
       <li>O administrativo recebe as cotas no menor número de dias: 24 horas no fim de semana ou no feriado, ou 18 horas na quarta. O sistema nunca o quebra em mais dias: o que não couber fica para o administrador.</li>
-      <li>Sem falta para corrigir, a sobra vai para o pelotão da cidade da companhia, até o máximo dos postos, deixando os dias com a mesma quantidade de gente (no máximo 1 de diferença, sempre que der). A graduação desempata.</li>
       <li>Colado a um serviço: a extra termina às 08h, quando ele entra, ou começa às 08h, quando ele sai. O administrativo, logo depois do expediente; na quarta, com 2 cotas, das 12h às 00h, e com 3, das 14h às 08h, quando a falta não pede outro horário.</li>
       <li>O dia que ele quer vem antes do dia sem preferência. Nunca no dia que ele não quer: se for o único, a cota fica para o administrador.</li>
     </ol>

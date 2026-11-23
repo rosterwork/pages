@@ -136,6 +136,7 @@
               <a class="lista-item lista-item--clicavel manual-item manual-item--parte" href="#afastamentos">Afastamentos</a>
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#ver-afastamentos">Ver os afastamentos</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#imprimir-afastamentos">Imprimir os afastamentos</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#registrar-afastamento">Lançar e mudar um afastamento</a></li>
               </ul>
             </li>
@@ -1949,6 +1950,7 @@
                 </figcaption>
               </figure>
               <p><strong>O prazo.</strong> O pedido de um mês costuma abrir no dia 1º do mês anterior e fechar no dia 25, às 23h59; o selo da Minha extra mostra as datas do mês. Até fechar, dá para mudar o pedido quantas vezes quiser; depois, o botão vira <strong>Ver o pedido</strong>, só para ver. Quem ainda não respondeu recebe nos últimos dias a contagem regressiva em <strong>Pendências</strong>, no sino e na faixa do alto da página, como "Faltam 3 dias para pedir a extra de dezembro"; um clique abre a Minha extra no mês do pedido.</p>
+              <p><strong>A data do pedido.</strong> A Minha extra mostra a data em que você mandou o pedido pela última vez. Se o pedido foi lançado pelo sistema, a partir da planilha, ele aparece como "Pedido lançado pelo sistema", sem data, e o termo marcado pelo sistema aparece só como "Termo recebido.".</p>
               <p><strong>Depois do prazo</strong>, o administrador reparte as cotas, com prioridade para quem foi menos atendido nos últimos 12 meses, e coloca as extras nos dias. A conta do atendimento usa o que cabia nos seus dias livres: se você pediu 10 cotas, só cabiam 4 e recebeu as 4, conta como 100%. A Minha extra mostra as cotas que você recebeu e, depois que a extra entra na escala, os seus dias. Se uma extra sua mudar depois disso, você recebe um aviso no sino, como "Sua extra de novembro mudou", com o que mudou e o motivo.</p>
               <p><strong>Sem nenhum dia livre no mês</strong> (por exemplo, de férias o mês inteiro), não há pedido a fazer. A Minha extra mostra "Você não tem dia livre para extra em dezembro, por isso não pode fazer o pedido.", e o botão <strong>Ver o calendário</strong> abre o mês só para ver o motivo de cada dia; o Sim e o Não ficam apagados. Esse mês fica fora da conta de quem foi menos atendido: não ajuda nem atrapalha você na fila das cotas. A contagem regressiva do prazo também não aparece.</p>
               <p class="manual-nota">A extra é só para praças: o oficial vê esse aviso no lugar do pedido.</p>
@@ -2035,7 +2037,7 @@
                   </figcaption>
                 </figure>
                 <p><strong>Pelo militar.</strong> Clique num voluntário da lista: embaixo do nome abrem as datas dele, cada uma com a barra de horário, e o calendário passa a mostrar só ele. Onde ele tem extra, fica o cartão dele; onde não tem, só a bolinha do pedido: verde no dia que quer, vermelha no que não quer e cinza sem preferência. O dia em que ele não pode fica apagado, com o motivo. Clique no cartão ou na bolinha para abrir a barra de horário embaixo dele e pôr ou tirar horas. Um novo clique no nome, um clique fora ou o Esc voltam ao mês inteiro.</p>
-                <p><strong>Ações › Preencher pela sugestão</strong> preenche o mês de uma vez, com as regras da companhia (veja <strong>As regras da Extrajornada</strong>, nos Ajustes). O cálculo pode levar alguns minutos; se passar de 6, o sistema usa um cálculo mais simples. Enquanto isso, a tela fica escurecida, com os passos do cálculo e o <strong>Cancelar</strong>. Ele nunca quebra as regras: só praça voluntária com termo, no dia em que ela está livre e não disse que não quer, sem passar da cota, sem 1 cota sozinha, sem 4 dias seguidos no quartel e com a bombeira só nos pelotões marcados. Para quem pediu 24 horas seguidas, ele só põe as 24 horas inteiras. Entre o que cabe, ele segue a ordem das regras: cobre primeiro a falta de gente (o vermelho antes do amarelo, na ordem dos pelotões), coloca todas as cotas, deixa cada um no seu pelotão (quem vai para outro é o mais moderno ou o da vez no rodízio), segue a fila ou a antiguidade e, por último, a balança: blocos de 24 horas, a extra colada ao serviço e o dia que o militar quer. As extras que <strong>você</strong> pôs ou mudou ficam travadas: a sugestão refaz só as do sistema. O <strong>Desfazer</strong> do rodapé volta a sugestão inteira de uma vez.</p>
+                <p><strong>Ações › Preencher pela sugestão</strong> preenche o mês de uma vez, com as regras da companhia (veja <strong>As regras da Extrajornada</strong>, nos Ajustes). O cálculo testa todas as combinações e pode levar alguns minutos. Enquanto isso, a tela fica escurecida, com os passos do cálculo e o <strong>Cancelar</strong>; se ele não terminar, a tela oferece <strong>Tentar de novo</strong>. Ele nunca quebra as regras: só praça voluntária com termo, no dia em que ela está livre e não disse que não quer, sem passar da cota, sem 1 cota sozinha, sem 4 dias seguidos no quartel e com a bombeira só nos pelotões marcados. Para quem pediu 24 horas seguidas, ele só põe as 24 horas inteiras. Entre o que cabe, ele segue a ordem das regras: cobre primeiro a falta de gente (o vermelho antes do amarelo, na ordem dos pelotões), põe a extra só onde falta gente (a cota que não fecha falta fica para você), deixa cada um no seu pelotão (quem vai para outro é o mais moderno ou o da vez no rodízio), segue a fila ou a antiguidade e, por último, a balança: blocos de 24 horas, a extra colada ao serviço e o dia que o militar quer. As extras que <strong>você</strong> pôs ou mudou ficam travadas: a sugestão refaz só as do sistema. O <strong>Desfazer</strong> do rodapé volta a sugestão inteira de uma vez.</p>
 
                 <h3 id="extra-painel">O painel do dia <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Clique num dia do calendário para abrir o painel do dia à direita. No alto, a <strong>Cobertura do dia</strong> mostra as barras sem extra e com extra; pela seta, ela abre o <strong>relatório do dia</strong>, que diz quem foi posto, por quê, o que ainda falta e os erros da escala que a extra não resolve, como alguém sem função. Embaixo do título ficam as abas <strong>Extrajornada</strong> e <strong>Funções</strong>: a Funções mostra a escala do dia por posto e função, como no painel do dia da Escala, só para ver; a aba escolhida continua quando você abre outro dia. Embaixo vêm os grupos: <strong>Neste dia</strong>, <strong>Querem este dia</strong>, <strong>Sem preferência</strong>, <strong>Não querem este dia</strong> e <strong>Indisponíveis</strong>, com o motivo, como "Serviço" ou "Férias". Quem está de serviço e marcou Quero naquele dia aparece como "Serviço, quer este dia": ele só pode tirar a extra depois de fazer a troca. A folga do banco de horas não impede a extra, nem no próprio pelotão. Quem está de folga ou é pontual só numa parte do dia aparece disponível, com "De serviço das 20h às 08h. A extra só nas outras horas." embaixo do nome e essas horas em cinza na barra.</p>
@@ -2387,10 +2389,10 @@
               <p>Duas caixas ficam fixas. <strong>Nunca quebram</strong> são as regras que valem para todas as companhias: só a praça voluntária, com o termo assinado; só no dia em que ela marcou Quero ou não marcou nada, e está livre (o dia marcado Não quero, só o administrador põe); o administrativo, só fora do expediente; uma extra por dia, em horários seguidos, dentro da cota e sem deixar 1 cota sozinha; o condutor com a CNH da viatura e o máximo de cada posto; e nunca 4 dias seguidos no quartel. <strong>A ordem das regras</strong> é a ordem em que o sistema decide: a regra de cima sempre vale mais que todas as de baixo juntas.</p>
               <figure class="manual-diagrama manual-ordem">
                 <ol class="manual-ordem-lista">
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">1</span><span class="manual-ordem-texto"><strong>Cobrir a falta dos pelotões</strong><span>Primeiro o vermelho, um pelotão por vez, na ordem escolhida na pergunta 2. Fora da cidade da companhia, só até o mínimo: o amarelo de lá só entra junto com o vermelho, e o que passar vai para o pelotão da cidade da companhia. Depois, o amarelo da cidade da companhia.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">2</span><span class="manual-ordem-texto"><strong>Colocar todas as cotas</strong><span>A cota que sobra vai para o pelotão da cidade da companhia.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">3</span><span class="manual-ordem-texto"><strong>Cada um no próprio pelotão</strong><span>Só vai para outro pelotão quem a pergunta 4 escolhe, para cobrir a falta de lá ou levar a cota que sobra.</span></span></li>
-                  <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>Não passar do necessário</strong><span>Fora da cidade da companhia, só a gente que falta.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">1</span><span class="manual-ordem-texto"><strong>Cobrir a falta dos pelotões</strong><span>Primeiro o vermelho, um pelotão por vez, na ordem escolhida na pergunta 2. Fora da cidade da companhia, só até o mínimo: o amarelo de lá só entra junto com o vermelho, na mesma extra. O amarelo da cidade da companhia só entra quando não sobra vermelho no mês.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">2</span><span class="manual-ordem-texto"><strong>Só onde falta gente</strong><span>A cota que não fecha falta fica para o administrador.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">3</span><span class="manual-ordem-texto"><strong>Cada um no próprio pelotão</strong><span>Só vai para outro pelotão quem a pergunta 4 escolhe, para cobrir a falta de lá.</span></span></li>
+                  <li class="manual-ordem-passo"><span class="manual-ordem-num">4</span><span class="manual-ordem-texto"><strong>Nunca passar do necessário</strong><span>Nenhum horário com gente a mais.</span></span></li>
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">5</span><span class="manual-ordem-texto"><strong>Quem fica com o lugar</strong><span>Quando dois querem o mesmo lugar, fica quem vem primeiro, como escolhido na pergunta 3.</span></span></li>
                   <li class="manual-ordem-passo"><span class="manual-ordem-num">6</span><span class="manual-ordem-texto"><strong>A balança</strong><span>No fim, o que sobra se decide pelos pesos da pergunta 6.</span></span></li>
                 </ol>
@@ -2398,7 +2400,7 @@
               </figure>
               <p>Depois vêm as seis perguntas, que cada companhia responde do seu jeito:</p>
               <figure class="manual-figura manual-figura--cheia">
-                <img src="manual/imagens/ajustes-extrajornada.png" width="666" height="1342" alt="A aba Extrajornada dos Ajustes com as seis perguntas: Como repartir as cotas (1), A falta que vem primeiro (2), Quando dois querem o mesmo lugar (3), Quem vai para outro pelotão (4), Onde as bombeiras tiram extra (5) e A balança (6)." />
+                <img src="manual/imagens/ajustes-extrajornada.png" width="666" height="1290" alt="A aba Extrajornada dos Ajustes com as seis perguntas: Como repartir as cotas (1), A falta que vem primeiro (2), Quando dois querem o mesmo lugar (3), Quem vai para outro pelotão (4), Onde as bombeiras tiram extra (5) e A balança (6)." />
                 <figcaption>
                   <ol class="manual-chamadas">
                     <li>Como repartir as cotas</li>
@@ -2412,11 +2414,11 @@
               </figure>
               <ul class="manual-lista">
                 <li><strong>Como repartir as cotas</strong>: <strong>Entre todos</strong> (uma fila só, da companhia) ou <strong>Por unidade</strong> (cada unidade com o seu total e a sua fila). O total que a companhia recebe em cada mês continua no passo Cotas da Extrajornada, que reparte do jeito escolhido aqui.</li>
-                <li><strong>A falta que vem primeiro</strong>: a ordem dos pelotões, com as setas para subir e descer. O sistema cobre primeiro o vermelho de cada pelotão, nessa ordem. Fora da cidade da companhia, só até o mínimo: o amarelo de lá só entra junto com o vermelho. Depois, o amarelo da cidade da companhia.</li>
+                <li><strong>A falta que vem primeiro</strong>: a ordem dos pelotões, com as setas para subir e descer. O sistema cobre primeiro o vermelho de cada pelotão, nessa ordem. Fora da cidade da companhia, o amarelo só entra junto com o vermelho; o da cidade da companhia, só quando não sobra vermelho no mês.</li>
                 <li><strong>Quando dois querem o mesmo lugar</strong>: quem foi menos atendido nos últimos 12 meses, pela fila das Cotas, ou o mais antigo. Vale também para quem fica de fora quando não cabe todo mundo.</li>
                 <li><strong>Quem vai para outro pelotão</strong>: de cada pelotão, <strong>O mais moderno</strong> ou <strong>Em rodízio</strong>. No rodízio, vai quem tirou extra fora do próprio pelotão menos vezes nos últimos 12 meses, sem olhar a antiguidade; contam as extras da planilha da Sargenteação, de dezembro de 2025 a outubro de 2026, e as do sistema.</li>
                 <li><strong>Onde as bombeiras tiram extra</strong>: os pelotões marcados. Nos desmarcados, o sistema não põe extra para quem tem o sexo Feminino na ficha; o administrador pode pôr manualmente.</li>
-                <li><strong>A balança</strong>: cinco preferências, cada uma em <strong>Pouco</strong>, <strong>Normal</strong> ou <strong>Muito</strong> (a metade, o peso de hoje e o dobro): evitar 3 dias seguidos no quartel, blocos de 24 horas, a extra colada ao serviço, o dia que ele quer e a sobra igual entre os dias.</li>
+                <li><strong>A balança</strong>: quatro preferências, cada uma em <strong>Pouco</strong>, <strong>Normal</strong> ou <strong>Muito</strong> (a metade, o peso de hoje e o dobro): evitar 3 dias seguidos no quartel, blocos de 24 horas, a extra colada ao serviço e o dia que ele quer.</li>
               </ul>
               <p>O <strong>Salvar</strong> do rodapé grava sem perguntar a data e abre o resumo. As extras que já estão no mês ficam como estão: a mudança vale a partir do próximo <strong>Preencher pela sugestão</strong> (veja <strong>Distribuir a extra do mês</strong>). Quem não pode mudar vê o cadeado e as perguntas apagadas.</p>
               <h3 id="ajustes-pontuacao">A pontuação da escala</h3>
@@ -2723,6 +2725,39 @@
               <p><strong>O painel do militar.</strong> Um clique no militar abre o painel dele à direita, com o posto, o nome, a unidade e o nome completo. No alto do painel fica o ano, que muda pelas setas sem mexer na página, e embaixo o <strong>Resumo do ano</strong>, com os dias de cada afastamento e o total. Depois vem cada afastamento do ano, com as datas e os dias.</p>
               <p><strong>No celular.</strong> O Ano e o Mês viram uma lista: o militar e, embaixo dele, cada afastamento do período, com os dias. Um toque no militar abre o painel. O Calendário é o da Escala no celular.</p>
               <p class="manual-nota">Quem não é administrador só consulta. O atestado aparece como "Licença" para quem não administra o militar.</p>
+              <h3 id="imprimir-afastamentos">Imprimir os afastamentos</h3>
+              <p>No fim da barra, à direita, depois do botão Ordem, fica o botão com o desenho da impressora (1). Ele aparece nas três abas e para todos, e imprime a aba que está na tela.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/afastamentos-imprimir-botao.png" width="364" height="70" alt="O fim da barra da página Afastamentos, com a pesquisa, o botão Ordem e, por último, o botão de imprimir (1)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Botão Imprimir</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>O botão abre, à direita, o mesmo painel de impressão da escala; só muda o que sai no papel. Sai o que a tela mostra: o ano ou o mês, os filtros, a busca, a ordem e também o que você ainda não salvou.</p>
+              <ul class="manual-lista">
+                <li><strong>Será impresso</strong> (1): a nota do alto resume o que vai sair, como "Mês de dezembro de 2026, 1ºPEL, 2ºPEL e 3ºPEL, com o filtro Situação: Com afastamento no mês.".</li>
+                <li><strong>Unidades</strong> (2): começam marcadas com as da tela. Marque ou desmarque o que quiser no papel; a unidade que não estava na tela sai do mesmo jeito, com os mesmos filtros.</li>
+                <li><strong>Formato</strong> (3): <strong>Folhas A4</strong>, para imprimir, ou <strong>Página contínua</strong>, uma página só, sem quebras, para ver na tela.</li>
+                <li><strong>Prévia</strong> (4): o próprio PDF, com as folhas como vão sair, e quantas são. Ela muda a cada escolha. No celular, a prévia e o Imprimir não aparecem, mas o Gerar PDF funciona.</li>
+              </ul>
+              <p>O botão <strong>Imprimir</strong> (5) abre a janela de imprimir do navegador com o PDF da prévia, e o <strong>Gerar PDF</strong> (6) baixa o arquivo.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/afastamentos-imprimir.png" width="480" height="850" alt="O painel Imprimir mês: o resumo do que será impresso (1), as unidades marcadas (2), o formato Folhas A4 ou Página contínua (3), a prévia do PDF (4), o botão Imprimir (5) e o botão Gerar PDF (6)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>O que será impresso</li>
+                    <li>As unidades</li>
+                    <li>Formato do PDF</li>
+                    <li>Prévia do PDF</li>
+                    <li>Imprimir</li>
+                    <li>Gerar PDF</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p><strong>O que sai no papel.</strong> No <strong>Ano</strong> e no <strong>Mês</strong>, a grade da tela numa folha A4 paisagem: cada unidade com os seus militares, um por linha, com o posto, o nome, o CPF e os dias afastado, e cada afastamento numa barra listrada com o nome e as datas. Como no papel não dá para parar o mouse, a barra curta também mostra o nome (cortado com "…" quando não cabe). A unidade que não cabe numa folha continua na seguinte, com o nome dela e os dias no alto de novo, e nenhum militar fica dividido entre duas folhas.</p>
+              <p>No <strong>Calendário</strong>, o painel tem também as <strong>Semanas</strong> (o mês todo ou só as semanas que você escolher), e a folha sai como o calendário da Escala: em cada dia, as unidades uma embaixo da outra, com quem está afastado e até quando (por exemplo, "Férias até 15/12"). Os dias de outro mês, nas pontas, saem vazios.</p>
               <div class="manual-admin manual-zona-admin">
                 <h3 id="registrar-afastamento">Lançar e mudar um afastamento <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>Você lança e muda os afastamentos dos militares da sua área ali mesmo, na página, numa caixa que abre ao lado do que foi clicado, a mesma da Escala. Um clique num afastamento (1) abre as ações dele (2): <strong>Mudar o período</strong>, <strong>Mudar o afastamento</strong> e <strong>Mudar o que ele sai</strong> abrem as perguntas numa segunda caixa, ao lado (3); <strong>Remover o afastamento</strong> tira o afastamento; <strong>Abrir o painel do militar</strong> abre o painel dele.</p>

@@ -580,7 +580,7 @@
         ajudaOrdem: 'Em ordem de antiguidade. A última linha de cada tabela é o total.',
         ajudaMudou: 'Só quem mudou. Quem não aparece manteve as datas do lançamento.',
         colunas: {
-          militar: 'Militar', cpf: 'CPF', pelotao: 'Pelotão', pedidoEm: 'Pedido em', cotasPedidas: 'Cotas pedidas', termo: 'Termo',
+          militar: 'Militar', cpf: 'CPF', pelotao: 'Pelotão', pedidoEm: 'Pedido em', peloSistema: 'Pelo sistema', cotasPedidas: 'Cotas pedidas', termo: 'Termo',
           pediu: 'Pediu', recebeu: 'Recebeu', data: 'Data', horario: 'Horário', cotas: 'Cotas', era: 'Era', ficou: 'Ficou',
           ajustadoPor: 'Ajustado por'
         },
@@ -618,13 +618,17 @@
       /* quem: o militar do pedido feito em nome dele (sem ele, "Você") */
       semDiaLivre: function (mes) { return 'Você não tem dia livre para extra em ' + mes + ', por isso não pode fazer o pedido.'; },
       verCalendario: 'Ver o calendário',
+      /* o pedido lançado pelo sistema (a carga da planilha) e o termo marcado pelo sistema ficam sem data; no lançado pelo
+         sistema, os dias que quer só quando há algum */
       pediu: function (p) {
-        return 'Pedido enviado em ' + p.enviado_em + ': ' + p.cotas + (p.cotas === 1 ? ' cota' : ' cotas') + (p.so_24h ? ', só 24 h' : '')
-          + ', ' + p.quer.length + (p.quer.length === 1 ? ' dia que quer' : ' dias que quer')
+        return (p.pelo_sistema ? 'Pedido lançado pelo sistema: ' : 'Pedido enviado em ' + p.enviado_em + ': ')
+          + p.cotas + (p.cotas === 1 ? ' cota' : ' cotas') + (p.so_24h ? ', só 24 h' : '')
+          + (p.quer.length || !p.pelo_sistema ? ', ' + p.quer.length + (p.quer.length === 1 ? ' dia que quer' : ' dias que quer') : '')
           + (p.nao_posso.length ? ', ' + p.nao_posso.length + (p.nao_posso.length === 1 ? ' que não quer' : ' que não quer') : '')
-          + '. Termo ' + (p.termo ? 'recebido em ' + p.termo_em : 'pendente') + '.';
+          + '. Termo ' + (p.termo ? (p.termo_pelo_sistema ? 'recebido' : 'recebido em ' + p.termo_em) : 'pendente') + '.';
       },
       naoQuer: function (em) { return 'Respondeu que não quer extra (' + em + ').'; },
+      naoQuerSistema: 'Pedido lançado pelo sistema: não quer extra.',
       /* o mês antes da escala no sistema: só quantas cotas pediu */
       pediuCotas: function (n) { return 'Pediu ' + n + (n === 1 ? ' cota.' : ' cotas.'); },
       fazer: 'Fazer o pedido',
@@ -649,7 +653,8 @@
       falta: function (n) { return (n === 1 ? 'falta ' : 'faltam ') + n; },
       querem: function (n) { return n + (n === 1 ? ' quer' : ' querem'); },
       termoPendente: 'Termo pendente. Mande o termo pelo eProtocolo. Sem o termo recebido, você não entra na repartição das cotas.',
-      termoRecebido: function (em) { return 'Termo recebido em ' + em + '.'; },
+      /* sem a data (o termo marcado pelo sistema), só que foi recebido */
+      termoRecebido: function (em) { return em ? 'Termo recebido em ' + em + '.' : 'Termo recebido.'; },
       semDias: 'Os dias de extra aparecem aqui depois da distribuição.',
       aindaNaoLancado: 'Ainda não lançado na escala.',
       /* Organizar o mês, Calendário e a grade do passo 3 */
@@ -775,15 +780,18 @@
           if (outros) partes.push(outros + (outros === 1 ? ' está de serviço, de folga ou afastado' : ' estão de serviço, de folga ou afastados'));
           return 'Ninguém mais pode' + (partes.length ? ': ' + (partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes[partes.length - 1] : partes[0]) : '') + '.';
         },
-        /* o Preencher pela sugestão: quando o cálculo completo não termina, e por que alguém ficou com cota */
-        reservaUsada: 'O cálculo completo não terminou a tempo. A sugestão usou o cálculo simples.',
+        /* o Preencher pela sugestão: as extras que o banco recusou (ficaram de fora), e por que alguém ficou com cota */
+        sugestaoRecusadas: function (n) {
+          return n === 1 ? '1 extra da sugestão ficou de fora porque quebra regra; o militar está em Faltam, com o motivo.'
+            : n + ' extras da sugestão ficaram de fora porque quebram regra; os militares estão em Faltam, com o motivo.';
+        },
         /* a leitura que falhou (a mensagem técnica do banco fica no console) */
         falhaMes: 'Não foi possível ler o mês.',
         falhaEscala: 'Não foi possível ler a escala.',
         falhaSugestao: 'Não foi possível calcular a sugestão.',
         /* o Voltar do navegador (ou a troca de tela pelo sistema) durante o cálculo */
         sairDoCalculo: 'Sair e cancelar o cálculo?',
-        foraMotivo: { solta: 'Sobrou 1 cota sozinha.', nao_quero: 'Só sobrou dia que ele não quer.', sem_dia: 'Sem dia livre com falta ou vaga.',
+        foraMotivo: { solta: 'Sobrou 1 cota sozinha.', nao_quero: 'Só sobrou dia que ele não quer.', sem_dia: 'Sem falta nos dias livres dele.',
           administrativo: 'Administrativo: não coube sem quebrar em mais dias.' },
         /* a extra do administrativo que começa no fim do expediente (a quarta) e deixa falta que a bolinha cobriria */
         inicioFalta: function (ini, das, ate) { return 'Começando às ' + ini + ', fica falta de gente das ' + das + ' às ' + ate + '.'; },
@@ -3070,6 +3078,8 @@
       sairSemSalvar: 'Sair sem salvar',
       sairECancelar: 'Sair e cancelar',
       continuarOCalculo: 'Continuar o cálculo',
+      tentarDeNovo: 'Tentar de novo',
+      fechar: 'Fechar',
       irParaLogin: 'Ir para o login',
       sairDeTodos: 'Sair de todos',
       excluirModelo: 'Excluir modelo',

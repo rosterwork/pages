@@ -277,9 +277,9 @@
     });
     var gente = [], cond = [], ideal = [], chefe = [];
     [1, 2, 3, 4].forEach(function (b) {
-      if (falta.total[b] - falta.cond[b] > 0) gente.push(b);
+      if (falta.total[b] > 0) gente.push(b);
       if (falta.cond[b] > 0) cond.push(b);
-      if (falta.atotal[b] - falta.acond[b] > 0) ideal.push(b);
+      if (falta.atotal[b] > 0) ideal.push(b);
       if (falta.acond[b] > 0) chefe.push(b);
     });
     /* [frase, cor, é falta]: a falta e, depois dela, os erros da escala que a extra não resolve (alguém sem função, falta
@@ -307,7 +307,7 @@
       dentro.appendChild(lin);
       linhas++;
     });
-    var tinha = [1, 2, 3, 4].some(function (b) { return falta.base[b] + falta.abase[b] > 0; });
+    var tinha = [1, 2, 3, 4].some(function (b) { return RW.extrajornadaFalta.tinha(falta, b); });
     if (tinha && !primeiraFalta) {
       var ok = RW.tpl('tpl-extrajornada-rd-ok');
       ok.querySelector('.extrajornada-rd-fim').textContent = msg().faltaCoberta;

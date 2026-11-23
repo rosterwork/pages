@@ -24,6 +24,7 @@
   var inicial = '';      // as gravadas, para saber se mudou
   var pedido = 0;        // latest-wins
   var guardaLigada = false;
+  /* 'igual' (a sobra igual entre os dias) não tem mais item na tela nem peso no cálculo: a escolha guardada só passa adiante */
   var CHAVES = ['seguidos', 'bloco', 'colado', 'quer', 'igual'];
 
   function msg() { return RW.mensagens.ajustes.extrajornada; }

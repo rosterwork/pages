@@ -224,7 +224,8 @@
     ])]);
     conteudo = conteudo.concat(quadros(p, r, opc, vols,
       [{ titulo: C.militar, largura: '*' }, { titulo: C.cpf, largura: LARGURA.cpf }, { titulo: C.pedidoEm, largura: LARGURA.pedidoEm }, { titulo: C.cotasPedidas, largura: LARGURA.cotasPedidas }],
-      function (m) { return [nome(m), cpfFormatado(m.cpf), m.pedido_em || '', String(m.cotas || 0)]; },
+      /* o pedido lançado pelo sistema (a carga da planilha) sai sem data: "Pelo sistema" */
+      function (m) { return [nome(m), cpfFormatado(m.cpf), m.pelo_sistema ? C.peloSistema : (m.pedido_em || ''), String(m.cotas || 0)]; },
       function (ms) { return { rotulo: t.total(ms.length), contas: [String(somaDe(ms, cotasDe))] }; },
       2, p.secao(t.secoes.pedidos).concat([p.ajuda(t.ajudaOrdem)])));
     conteudo.push(p.observacoes([t.obs.cota, t.obs.reproduz]));

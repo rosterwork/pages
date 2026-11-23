@@ -204,7 +204,8 @@
     var comPraia = motivosServico.indexOf('op_verao') >= 0;
     f.querySelector('#extrajornada-ajuda-servico').classList.toggle('oculto', !motivosServico.length || comPraia);
     f.querySelector('#extrajornada-ajuda-servico-op-verao').classList.toggle('oculto', !comPraia);
-    f.querySelector('#extrajornada-termo').textContent = ped && ped.termo ? msg().termoRecebido(ped.termo_em) : msg().termoPendente;
+    /* o termo marcado pelo sistema fica sem a data */
+    f.querySelector('#extrajornada-termo').textContent = ped && ped.termo ? msg().termoRecebido(ped.termo_pelo_sistema ? null : ped.termo_em) : msg().termoPendente;
     RW.painel.corpo().appendChild(f);
 
     var rodape = RW.painel.rodape();
