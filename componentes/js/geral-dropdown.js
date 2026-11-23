@@ -1,7 +1,8 @@
 /* ============================================================
    DROPDOWN — comportamento compartilhado
    Abre/fecha o menu no clique do gatilho; o posicionamento (flutuante,
-   flip, shift, limite do modal, reposicionar ao rolar) fica no helper
+   flip, shift, limite do modal, reposicionar ao rolar e quando o
+   gatilho muda de lugar) fica no helper
    geral-flutuante. Fecha ao clicar fora, ao clicar num item, no Esc,
    ou se o gatilho sair da tela (avisado pelo helper: fecha só ele, e
    o vigia da rolagem se desliga junto, também quando um redesenho

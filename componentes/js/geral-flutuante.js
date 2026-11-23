@@ -4,8 +4,9 @@
    (flip), desliza para caber (shift), respeita o limite (o modal que
    contém o gatilho, ou a janela) e — opcionalmente — limita a altura
    ao espaço (o conteúdo rola por dentro). Mantém a posição ao rolar/
-   redimensionar e quando o painel ou o gatilho mudam de tamanho, e
-   avisa (aoSair) se o gatilho sair da tela.
+   redimensionar, quando o painel ou o gatilho mudam de tamanho e
+   quando o gatilho muda de lugar (o conteúdo que chega acima dele),
+   e avisa (aoSair) se o gatilho sair da tela ou da página.
 
    Usado por geral-dropdown.js, geral-calendario.js e
    geral-caixa-flutuante.js. Cada componente cuida do próprio
@@ -38,6 +39,13 @@
   /* só escreve a variável se mudou — evita disparos extras do ResizeObserver */
   function setVar(el, nome, valor) {
     if (el.style.getPropertyValue(nome) !== valor) el.style.setProperty(nome, valor);
+  }
+
+  /* o lugar do gatilho (e o da peça que alinha, no lado 'direita') numa linha só, para comparar de um quadro ao outro */
+  function lugarDe(gatilho, opcoes) {
+    var r = gatilho.getBoundingClientRect();
+    var a = opcoes.alinhar ? opcoes.alinhar.getBoundingClientRect() : r;
+    return [r.top, r.left, r.width, r.height, a.top, a.left].map(Math.round).join(',');
   }
 
   /* limite onde o painel pode aparecer: o modal que contém o gatilho, ou a janela */
@@ -166,12 +174,22 @@
       : null;
     /* o painel e o gatilho: o conteúdo que muda e a grade que se acomoda (o gatilho muda de tamanho) */
     if (observador) { observador.observe(painel); observador.observe(gatilho); }
+    /* o gatilho que muda de lugar sem rolar nem mudar de tamanho (o conteúdo que chega acima dele empurra a linha):
+       a cada quadro, enquanto aberto, confere o lugar dele e reposiciona quando mudou; fora da página, avisa e para */
+    var lugar = lugarDe(gatilho, opcoes);
+    var vigia = requestAnimationFrame(function conferir() {
+      if (!gatilho.isConnected) { vigia = 0; aoMexer(); return; }
+      vigia = requestAnimationFrame(conferir);
+      var agora = lugarDe(gatilho, opcoes);
+      if (agora !== lugar) { lugar = agora; aoMexer(); }
+    });
 
     return function desligar() {
       document.removeEventListener('scroll', aoMexer, true);
       window.removeEventListener('resize', aoMexer);
       if (observador) observador.disconnect();
       if (quadro) { cancelAnimationFrame(quadro); quadro = 0; }
+      if (vigia) { cancelAnimationFrame(vigia); vigia = 0; }
       painel.classList.remove('flutuante', 'flutuante--acima', 'flutuante--esquerda');
     };
   }
