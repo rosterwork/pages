@@ -93,6 +93,7 @@
               <ul>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#solicitar-extra">Pedir a extra do mês</a></li>
                 <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#calendario-extra">Ver quem tira extra</a></li>
+                <li><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#imprimir-extra">Imprimir a extrajornada</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-organizar">Organizar o mês</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-cotas">Pedidos, termos e cotas</a></li>
                 <li class="manual-admin"><a class="lista-item lista-item--clicavel manual-item manual-item--sub" href="#extra-distribuir">Distribuir a extra do mês</a></li>
@@ -2003,6 +2004,43 @@
               <p>Aqui aparece só o que já está na <strong>escala</strong>. Na página Escala, a extra aparece como serviço, com o ícone da extrajornada, e conta na cobertura da unidade onde o militar tira a extra. A extra não entra no banco de horas de folga.</p>
               <p><strong>Os meses de janeiro a setembro de 2026.</strong> A escala desses meses não está no sistema; deles ficaram guardados só os pedidos e as cotas recebidas. Por isso, nesses meses, as <strong>Extras do mês</strong> não têm calendário: mostram, por unidade, cada voluntário com quantas cotas pediu e quantas recebeu. Na <strong>Minha extra</strong>, aparece só quantas cotas você pediu e quantas recebeu (ou "Nenhum pedido feito.", se não pediu naquele mês).</p>
 
+              <h3 id="imprimir-extra">Imprimir a extrajornada</h3>
+              <p>No fim da barra, à direita, fica o botão com o desenho da impressora (1). Ele imprime a aba que está na tela, no mesmo painel de impressão da escala, que abre à direita.</p>
+              <figure class="manual-figura">
+                <img src="manual/imagens/extra-imprimir-botao.png" width="364" height="70" alt="O fim da barra da Minha extra, com o botão de imprimir (1)." />
+                <figcaption>
+                  <ol class="manual-chamadas">
+                    <li>Botão Imprimir</li>
+                  </ol>
+                </figcaption>
+              </figure>
+              <p>Na <strong>Minha extra</strong>, sai uma folha com o seu mês, como no cartão da tela: o seu pedido (quando foi enviado, as cotas, os dias que você quer e os que não quer, e o termo), quantas cotas você recebeu e os seus dias de extra, com o horário e o pelotão. Nas <strong>Extras do mês</strong>, sai a Agenda ou o Calendário, com a <strong>Orientação</strong>: Retrato sai como a agenda e Paisagem como o calendário. No celular, a prévia e o Imprimir do painel não aparecem, mas o Gerar PDF funciona.</p>
+              <div class="manual-bloco-admin manual-admin">
+                <span class="manual-selo-admin">Apenas administradores</span>
+                <p>No <strong>Organizar o mês</strong>, o botão fica nos Pedidos, nas Cotas, na Distribuição e nos Ajustes (nos Ajustes, depois do lançamento). Nos Relatórios ele não aparece, porque cada etapa tem o seu Imprimir.</p>
+                <ul class="manual-lista">
+                  <li><strong>O que imprimir</strong> (1): a <strong>Cópia da tela</strong>, que sai como a tela está agora, com o que você ainda não salvou, ou o <strong>relatório</strong> da aba (de pedidos, de termos e cotas, inicial ou final), que sai só com o que está gravado, com o nome completo e o CPF. Enquanto o relatório não libera, ele fica apagado; com o mouse em cima, aparece o motivo.</li>
+                  <li><strong>Orientação</strong> (2): nos Pedidos e nas Cotas, <strong>Retrato</strong> ou <strong>Paisagem</strong>. Os Voluntários começam em Paisagem, para os dias caberem numa linha.</li>
+                  <li><strong>Como organizar</strong> (3): nos Pedidos, sai a lista aberta na tela (Voluntários, Não querem ou Sem resposta), numa <strong>lista única</strong>, como a tela, ou <strong>separada por pelotão</strong>. Nos Voluntários, o Não pode leva o motivo entre parênteses, como "1 a 28 (férias)".</li>
+                  <li><strong>Prévia</strong> (4): o próprio PDF, com as folhas como vão sair, e quantas são.</li>
+                </ul>
+                <p>O botão <strong>Imprimir</strong> (5) abre a janela de imprimir do navegador com o PDF da prévia, e o <strong>Gerar PDF</strong> (6) baixa o arquivo.</p>
+                <figure class="manual-figura">
+                  <img src="manual/imagens/extra-imprimir.png" width="480" height="915" alt="O painel Imprimir pedidos: a escolha entre a cópia da tela e o relatório de pedidos (1), a orientação (2), como organizar (3), a prévia do PDF (4), o botão Imprimir (5) e o botão Gerar PDF (6)." />
+                  <figcaption>
+                    <ol class="manual-chamadas">
+                      <li>O que imprimir</li>
+                      <li>Orientação</li>
+                      <li>Como organizar</li>
+                      <li>Prévia do PDF</li>
+                      <li>Imprimir</li>
+                      <li>Gerar PDF</li>
+                    </ol>
+                  </figcaption>
+                </figure>
+                <p>Nas <strong>Cotas</strong>, a cópia da tela sai com os números do alto e um bloco por pelotão, na ordem da fila. Na <strong>Distribuição</strong> e nos <strong>Ajustes</strong>, sai o calendário (ou a agenda), como nas Extras do mês, com o que ainda não foi salvo. No <strong>Mostrar</strong>, a caixa <strong>Lista dos voluntários</strong> vem marcada quando a lista da esquerda está aberta na tela: ela sai numa folha depois do calendário, com as cotas colocadas e os grupos Faltam e Completos.</p>
+              </div>
+
               <div class="manual-admin manual-zona-admin">
                 <h3 id="extra-organizar">Organizar o mês <span class="manual-selo-admin">Apenas administradores</span></h3>
                 <p>A aba <strong>Organizar o mês</strong> aparece para o administrador da companhia, inclusive o de um pelotão, e vale para a companhia inteira; ela fica só no computador. Ela guia o mês em <strong>cinco passos</strong>, na barra: <strong>Pedidos</strong>, <strong>Cotas</strong>, <strong>Distribuição</strong>, <strong>Ajustes</strong> e <strong>Relatórios</strong>. O número fica verde no passo feito e escuro no passo da vez. À direita, o menu <strong>Ações</strong> traz o que o passo aberto faz; o que ainda não pode ser feito fica apagado, com o motivo escrito embaixo. A <strong>Legenda</strong> resume as regras de cada passo.</p>
@@ -2153,7 +2191,7 @@
                     </ol>
                   </figcaption>
                 </figure>
-                <p>Cada etapa tem o seu <strong>Imprimir</strong>, que abre o painel de impressão: escolha o relatório, o pelotão e se os pelotões saem separados ou numa lista só, confira a prévia e imprima ou baixe o PDF. São quatro relatórios: os pedidos, os termos e as cotas, o <strong>relatório inicial</strong> (a extra como foi lançada) e o <strong>relatório final</strong> (com os ajustes), liberado a partir do dia 1º do mês seguinte.</p>
+                <p>Cada etapa tem o seu <strong>Imprimir</strong>, que abre o painel de impressão: escolha o relatório, o pelotão e se os pelotões saem separados ou numa lista só, confira a prévia e imprima ou baixe o PDF. São quatro relatórios: os pedidos, os termos e as cotas, o <strong>relatório inicial</strong> (a extra como foi lançada) e o <strong>relatório final</strong> (com os ajustes), liberado a partir do dia 1º do mês seguinte. A tabela que não cabe numa folha continua na seguinte, com os títulos das colunas repetidos. O relatório de cada etapa também sai pelo Imprimir da barra da aba dela, na caixa <strong>O que imprimir</strong> (ver Imprimir a extrajornada).</p>
               </div>
             </section>
 

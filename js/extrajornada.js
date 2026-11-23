@@ -393,6 +393,8 @@
       if (estado && RW.extrajornadaPedido) RW.extrajornadaPedido.abrir(estado, comp, carregar);
     });
     marcarAba('minha');
+    /* a barra da aba que abre (a Minha extra, com o Imprimir) */
+    barraDoPasso(null);
     carregar();
     return Promise.resolve();
   }
