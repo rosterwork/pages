@@ -3,7 +3,8 @@
    O painel de impressão comum (componentes/js/geral-impressao.js),
    com as caixas do molde #tpl-extrajornada-imprimir: 1. o relatório (já
    marcado o do botão; o que ainda não liberou fica apagado, com o
-   motivo na dica); 2. o pelotão: todos ou um, entre os da área de
+   motivo na dica; aberto pelo Imprimir de outra aba, a caixa "O que
+   imprimir" no lugar dela); 2. o pelotão: todos ou um, entre os da área de
    quem imprime (com um só, a caixa some); 3. com todos, separar por
    pelotão ou a lista única. A nota, a prévia e o Gerar PDF são do
    painel comum. Os PDFs são do extrajornada-relatorios-pdf.js.
@@ -103,8 +104,10 @@
     form = null;
   }
 
-  /* abre o painel com o relatório qual ('pedidos', 'termos', 'inicial' ou 'final') do mês d (extrajornada_mes) */
-  function abrir(qual, d, subtitulo) {
+  /* abre o painel com o relatório qual ('pedidos', 'termos', 'inicial' ou 'final') do mês d (extrajornada_mes). Aberto de
+     outra aba (o Imprimir da barra, extrajornada-imprimir-tela.js), escolha é a caixa "O que imprimir" do painel comum, no
+     lugar da caixa Relatório */
+  function abrir(qual, d, subtitulo, escolha) {
     fecharLimpo();
     RW.painel.abrir({ titulo: msg().titulo, subtitulo: subtitulo || '', aoFechar: fecharLimpo });
     var corpo = RW.painel.corpo();
@@ -112,6 +115,8 @@
     form = { d: d, qual: qual, unidade: area.length === 1 ? area[0].id : null, modo: 'separar', atualizar: null };
     RW.impressao.montar(corpo, RW.painel.rodape(), {
       molde: 'tpl-extrajornada-imprimir',
+      marcas: escolha ? [] : ['relatorios'],
+      escolha: escolha || null,
       aoSair: function () { RW.painel.fechar(); },
       ligar: function (peca, atualizar) { ligar(corpo, atualizar); },
       estado: estado

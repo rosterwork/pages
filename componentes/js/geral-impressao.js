@@ -1,7 +1,8 @@
 /* ============================================================
    COMPONENTE geral-impressao — o painel de impressão, um só para
    todas as impressões (o Imprimir escala e o das grades da Escala,
-   o Imprimir trocas e o Imprimir relatório da Extrajornada). A casca
+   o Imprimir trocas e, na Extrajornada, o Imprimir relatório e as cópias
+   da tela; com a caixa "O que imprimir" no alto, cfg.escolha). A casca
    é do shell (#tpl-impressao e #tpl-impressao-acoes do index.html):
    no alto, a nota "Será impresso:" com o resumo e, embaixo dela, o
    aviso (o erro grave da escala); no meio, as caixas da impressão
@@ -25,6 +26,9 @@
            marcas: o que vale do molde (data-impressao-so), opcional,
            ids: as unidades marcadas no começo (a companhia de cada pelotão entra junto), só com a árvore,
            mostrar: o começo do Mostrar ({ icones } ou { grafico, icones, faixa }), opcional,
+           escolha: a caixa "O que imprimir" no alto (#tpl-impressao-escolha), opcional: { relatorio (o nome do
+             relatório da tela), motivo (o que ainda o impede; vazio = pode), atual ('tela' ou 'relatorio'),
+             aoTrocar(escolha) (quem abriu troca o painel) },
            aoSair: o Cancelar e o fim do Gerar PDF,
            ligar(peca, atualizar): liga as peças da impressão,
            estado(escolhas, marcarErros): { erro, avisar } ou { resumo, chave, montar, inicio, fim },
@@ -61,6 +65,23 @@
     Array.prototype.forEach.call(form.corpo.querySelectorAll('[data-impressao-so]'), function (el) {
       var vale = el.getAttribute('data-impressao-so').split(' ').some(function (m) { return marcas.indexOf(m) >= 0; });
       el.classList.toggle('oculto', !vale);
+    });
+  }
+
+  /* a caixa "O que imprimir" (cfg.escolha): a Cópia da tela ou o relatório da tela, este apagado com o motivo na dica
+     enquanto não libera; trocar devolve a escolha a quem abriu, que troca o painel */
+  function ligarEscolha(caixa, escolha) {
+    var seletor = caixa.querySelector('[data-impressao-escolha]');
+    var relatorio = seletor.querySelector('[data-escolha="relatorio"]');
+    relatorio.textContent = escolha.relatorio;
+    relatorio.disabled = !!escolha.motivo;
+    if (escolha.motivo) relatorio.setAttribute('data-dica', escolha.motivo);
+    Array.prototype.forEach.call(seletor.querySelectorAll('[data-escolha]'), function (b) {
+      b.classList.toggle('aba--ativa', b.getAttribute('data-escolha') === escolha.atual);
+    });
+    RW.abas.ligar(seletor, function (b) {
+      var valor = b.getAttribute('data-escolha');
+      if (valor !== escolha.atual) escolha.aoTrocar(valor);
     });
   }
 
@@ -349,7 +370,11 @@
     if (!corpo || !casca || !molde) return;
     esquecer();
     corpo.appendChild(casca.content.cloneNode(true));
-    corpo.querySelector('[data-impressao-caixas]').replaceWith(molde.content.cloneNode(true));
+    var lugar = corpo.querySelector('[data-impressao-caixas]');
+    var escolha = cfg.escolha ? RW.tpl('tpl-impressao-escolha') : null;
+    if (escolha) lugar.parentNode.insertBefore(escolha, lugar);
+    lugar.replaceWith(molde.content.cloneNode(true));
+    if (escolha) ligarEscolha(escolha, cfg.escolha);
     if (rodape && acoes) { rodape.appendChild(acoes.content.cloneNode(true)); rodape.classList.remove('oculto'); }
     var mostrar = {};
     Object.keys(cfg.mostrar || {}).forEach(function (k) { mostrar[k] = cfg.mostrar[k]; });

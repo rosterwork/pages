@@ -17,6 +17,8 @@
      repetem no alto de cada folha.
    - Página contínua: uma página só, na largura da A4, da altura do
      conteúdo, sem quebras.
+   - O anexo de quem abriu (a lista dos voluntários da Extrajornada):
+     nas Folhas A4, na folha seguinte à grade; na contínua, embaixo dela.
    - No Calendário e no Colunas › Dias, as Folhas A4 saem com as
      unidades uma embaixo da outra, seja qual for a tela, para caber na
      A4. A Página contínua sai como a tela: lado a lado, as unidades de
@@ -342,7 +344,9 @@
       topo[0].margin = [0, 0, 0, 12];
       if (comDias) topo.push(linhaDosDias(c, geo));
       var fim = (legenda() ? [legenda()] : []).concat([{ text: txt().site }]);
-      doc.content = topo.concat(conteudo, [{ stack: fim, fontSize: rodape, color: c.suave, margin: [0, 8, 0, 0] }]);
+      /* o anexo de quem abriu (a lista dos voluntários da Extrajornada), embaixo da grade */
+      var anexo = cfg.anexo ? [{ stack: cfg.anexo(c, geo.largura), margin: [0, ESPACO.entreGrupos, 0, 0] }] : [];
+      doc.content = topo.concat(conteudo, anexo, [{ stack: fim, fontSize: rodape, color: c.suave, margin: [0, 8, 0, 0] }]);
     } else {
       doc.pageSize = 'A4';
       doc.pageOrientation = cfg.paisagem ? 'landscape' : 'portrait';
@@ -363,6 +367,28 @@
     var contorno = !!cfg.ladoALado && calendario;
     if (plano.caixas) doc.background = function (folha) { return RW.escalasImpressaoPdf.blocosArredondados(plano.caixas[folha - 1], c, contorno); };
     return { doc: doc, marcadores: marcadores };
+  }
+
+  /* as Folhas A4 com o anexo de quem abriu (a lista dos voluntários da Extrajornada): o mesmo desenho da grade (as folhas
+     1 a n ficam como estavam) e o anexo na folha seguinte, sem a linha dos dias, sem os blocos de fundo e sem a legenda
+     no pé (a dos ícones e da falta é da grade) */
+  function comAnexo(cfg, c, geo, plano, n) {
+    var m = montarDocumento(cfg, c, geo, plano), doc = m.doc;
+    var topo = doc.header, pe = doc.footer, fundo = doc.background;
+    doc.header = function (pagina, total, tamanho) {
+      if (pagina <= n) return topo(pagina, total, tamanho);
+      var cab = cabecalho(cfg, c);
+      cab.margin = [LADO, CABECALHO.topo, LADO, 0];
+      return cab;
+    };
+    doc.footer = function (pagina, total) {
+      var p = pe(pagina, total);
+      if (pagina > n) p.stack = p.stack.slice(-1);
+      return p;
+    };
+    if (fundo) doc.background = function (folha, tamanho) { return folha <= n ? fundo(folha, tamanho) : null; };
+    doc.content = doc.content.concat([{ stack: cfg.anexo(c, geo.largura), pageBreak: 'before' }]);
+    return RW.escalasImpressaoPdf.desenhar(doc, c, m.marcadores);
   }
 
   /* as passadas → o arquivo. Calendário em folhas: mede, monta com as linhas inteiras (as maiores que
@@ -392,9 +418,13 @@
     return escolhido.then(function (e) {
       if (cfg.continua && alturaDoDesenho(e.desenho) > LIMITE_CONTINUA) throw { longaDemais: true };
       var plano = { modo: e.plano.modo, partes: e.plano.partes, preencher: false, caixas: igualarAlturas(e.desenho.caixas) };
+      /* nas Folhas A4, o anexo de quem abriu vai por último, na folha seguinte, sobre o desenho escolhido */
+      function fim(planoFim, desenho) {
+        return cfg.anexo && !cfg.continua ? comAnexo(cfg, c, geo, planoFim, desenho.caixas.length) : desenho;
+      }
       return desenharPlano(plano).then(function (r) {
-        return r.desenho.assinatura === e.desenho.assinatura ? r.desenho : e.desenho;
-      }, function () { return e.desenho; });
+        return r.desenho.assinatura === e.desenho.assinatura ? fim(plano, r.desenho) : fim(e.plano, e.desenho);
+      }, function () { return fim(e.plano, e.desenho); });
     });
   }
 
@@ -448,7 +478,8 @@
 
   /* cfg: { formato, paisagem, continua, mostrar, diasPorLinha, unidades, dias: [{data, fora}], texto, dados, titulo e
      prefixo (o título da folha e o começo do nome do arquivo; sem eles, os da escala), comOficial, comSobreaviso (o
-     sobreaviso, só na escala) e ladoALado (as unidades lado a lado, só na página contínua) } → { arquivo, folhas, nome } */
+     sobreaviso, só na escala), ladoALado (as unidades lado a lado, só na página contínua) e anexo (de quem abriu:
+     conteudo(c, largura), a folha a mais depois da grade) } → { arquivo, folhas, nome } */
   function gerar(cfg) {
     var ids = cfg.unidades.map(function (u) { return u.unidade_id; });
     cfg.max = RW.escalasCelula ? RW.escalasCelula.calcularMaxPorUnidade(cfg.dados.cobertura, ids) : {};

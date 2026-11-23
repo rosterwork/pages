@@ -10,7 +10,10 @@
    marcada no Exibir, a linha dela embaixo do gráfico (a conta da
    tela, extrajornada-falta.js). A leitura é a da tela
    (o rascunho também), sem buscar nada no banco, no formato da leitura
-   da escala (RosterWork.escalasDados.carregar).
+   da escala (RosterWork.escalasDados.carregar). Na Distribuição e nos
+   Ajustes, a caixa "O que imprimir" no alto (o relatório inicial ou o
+   final) e a lista dos voluntários (o painel esquerdo) na folha
+   seguinte, com a caixa dela no Mostrar.
    RosterWork.extrajornadaImprimirGrade.
    ============================================================ */
 (function () {
@@ -77,8 +80,43 @@
     };
   }
 
-  /* extrasDoMes: a aba Extras do mês (senão, a Distribuição ou os Ajustes); modo: 'agenda' ou 'calendario' */
-  function abrir(extrasDoMes, modo) {
+  /* a folha da lista dos voluntários (Distribuição e Ajustes), como o painel esquerdo da tela: as cotas colocadas no alto
+     e os grupos Faltam e Completos, cada um com a faixa cinza e os nomes em três colunas (o posto e o nome, o pelotão, as
+     cotas colocadas de recebidas e, embaixo, o motivo). lista: a da tela (RosterWork.extrajornadaLista.paraImprimir);
+     c: as cores da folha; largura: a do conteúdo */
+  var LISTA = { colunas: 3, vao: 18, pelotao: 34, cotas: 46, titulo: 11, faixa: 7.5, nome: 8.5, posto: 7, miudo: 7, linha: 0.5 };
+  function semLinha() { return 0; }
+  function folhaDaLista(lista, c, largura) {
+    var M = RW.mensagens.extrajornada.imprimir.lista, L = LISTA;
+    var w = (largura - (L.colunas - 1) * L.vao) / L.colunas;
+    var saida = [{ text: [{ text: M.titulo, bold: true, color: c.forte }, { text: '    ' + lista.total, color: c.suave }], fontSize: L.titulo, margin: [0, 0, 0, 6] }];
+    function linha(x) {
+      var pilha = [{ columns: [
+        { width: '*', text: [{ text: x.grad + ' ', fontSize: L.posto, color: c.suave }, { text: x.nome, bold: true, color: c.forte }], fontSize: L.nome },
+        { width: L.pelotao, text: x.pelotao, fontSize: L.miudo, color: c.suave, alignment: 'right' },
+        { width: L.cotas, text: x.cotas, fontSize: L.nome, color: x.passou ? c.erro : c.texto, alignment: 'right' }
+      ], margin: [4, 4, 4, 0] }];
+      if (x.motivo) pilha.push({ text: x.motivo, fontSize: L.miudo, color: c.suave, margin: [4, 1, 4, 0] });
+      pilha.push({ canvas: [{ type: 'line', x1: 0, y1: 4, x2: w, y2: 4, lineWidth: L.linha, lineColor: c.borda }] });
+      return { stack: pilha, unbreakable: true };
+    }
+    ['faltam', 'completos'].forEach(function (g) {
+      var itens = lista.grupos[g];
+      saida.push({ table: { widths: ['*'], body: [[{ text: [{ text: M.grupos[g], bold: true, characterSpacing: 0.6 }, { text: '    ' + itens.length }], fontSize: L.faixa, color: c.suave }]] },
+        layout: { fillColor: function () { return c.fundo; }, hLineWidth: semLinha, vLineWidth: semLinha, paddingLeft: function () { return 6; },
+          paddingTop: function () { return 4; }, paddingBottom: function () { return 4; } }, margin: [0, 8, 0, 2] });
+      if (!itens.length) { saida.push({ text: M.vazio[g], fontSize: L.nome, color: c.suave, margin: [6, 4, 0, 2] }); return; }
+      /* de cima para baixo em cada coluna, na ordem da tela */
+      var porColuna = Math.ceil(itens.length / L.colunas), colunas = [];
+      for (var i = 0; i < L.colunas; i++) colunas.push({ width: w, stack: itens.slice(i * porColuna, (i + 1) * porColuna).map(linha) });
+      saida.push({ columns: colunas, columnGap: L.vao });
+    });
+    return saida;
+  }
+
+  /* extrasDoMes: a aba Extras do mês (senão, a Distribuição ou os Ajustes); modo: 'agenda' ou 'calendario'; escolha: a
+     caixa "O que imprimir" da Distribuição e dos Ajustes (extrajornada-imprimir-tela.js) */
+  function abrir(extrasDoMes, modo, escolha) {
     var d = extrasDoMes ? RW.extrajornadaOrg.dados() : G().dados();
     if (!d || !RW.escalasImpressaoGrade) return;
     var comp = d.competencia, unidades;
@@ -92,6 +130,9 @@
     var filtros = [];
     if (!extrasDoMes && RW.extrajornadaFiltros.escalaCompleta()) filtros.push(M.escalaCompleta);
     if (comFalta) filtros.push(M.faltaDeGente);
+    /* na Distribuição e nos Ajustes, a lista dos voluntários na folha seguinte (a caixa no Mostrar começa marcada com a
+       lista aberta na tela), tirada da tela agora */
+    var lista = !extrasDoMes && RW.extrajornadaLista ? RW.extrajornadaLista.paraImprimir() : null;
     RW.escalasImpressaoGrade.abrir({
       formato: modo,
       data: new Date(+comp.slice(0, 4), +comp.slice(5, 7) - 1, 1),
@@ -100,7 +141,11 @@
       dados: leitura(extrasDoMes, comFalta),
       titulo: M.titulo,
       prefixo: M.arquivo,
-      conferir: null
+      conferir: null,
+      escolha: escolha || null,
+      marcas: lista ? ['grade', 'lista-voluntarios'] : undefined,
+      mostrar: lista ? { grafico: true, icones: true, lista: RW.extrajornadaLista.aberta() } : undefined,
+      anexo: lista ? { resumo: RW.mensagens.extrajornada.imprimir.lista.resumo, conteudo: function (c, largura) { return folhaDaLista(lista, c, largura); } } : null
     });
   }
 

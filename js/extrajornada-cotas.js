@@ -19,6 +19,7 @@
    e não salvo, ele trava (apagaria a mudança). Cota abaixo do que ele já tem na distribuição avisa
    embaixo da linha: as extras dele saem ao salvar. Tudo fica no
    rascunho até o Salvar (extrajornada_cotas_salvar), que abre o resumo.
+   A cópia da tela (o Imprimir da barra) lê o mesmo, com o rascunho.
    No mês antes da escala no sistema (antes de outubro de 2026), só para
    ver: as cotas da companhia são a soma do que cada um recebeu, o
    Recebe é texto, e a Sugestão, o Na escala e a caixa dos pares somem.
@@ -86,6 +87,26 @@
 
   /* o mês antes da escala no sistema: só para ver o que cada um pediu e recebeu */
   function antesDaEscala() { return !!d.antes_da_escala; }
+
+  /* a grade da tela: um bloco por unidade escolhida que tem voluntário com termo (o desenho e a cópia da tela usam os
+     mesmos) */
+  function blocosDaTela(lista) {
+    var sel = u().escolhidas();
+    return d.unidades.filter(function (un) { return sel.indexOf(un.id) >= 0; }).map(function (un) {
+      return { un: un, daqui: lista.filter(function (m) { return m.unidade_id === un.id; }) };
+    }).filter(function (b) { return b.daqui.length; });
+  }
+  /* o Recebeu da unidade: o campo dela (por unidades) ou a parte que a fila da companhia dá a ela (entre todos); antes da
+     escala no sistema, a soma do que os militares dela receberam */
+  function recebeuDa(un, daqui) { return p2.modo === 'por_unidade' ? (+p2.unidades[un.id] || 0) : soma(daqui, antesDaEscala() ? conc : sugestao); }
+  /* a posição na fila: a da companhia (entre todos) ou a da unidade (por unidades) */
+  function filaDe(m, daqui, lista) { return p2.modo === 'por_unidade' ? daqui.indexOf(m) + 1 : lista.indexOf(m) + 1; }
+  /* o atendido nos 12 meses: quem pede pela primeira vez conta como 100% na fila; a tela diz "Primeira vez" */
+  function atendido(m) {
+    var primeira = !m.pediu12;
+    return { primeira: primeira, porcento: primeira ? '' : msg().porcento(Math.round(100 * (m.recebeu12 || 0) / m.pediu12)),
+      de: primeira ? '' : msg().deCotas(m.recebeu12 || 0, m.pediu12) };
+  }
 
   function iniciarRascunho() {
     p2 = { modo: d.mes.repartir_por || 'grupo', recebidas: d.mes.cotas_recebidas, unidades: Object.assign({}, d.mes.cotas_unidades || {}),
@@ -174,17 +195,15 @@
       alvo.appendChild(cab);
     }
     var ajuste = d.iniciado && !!d.lancamento;
-    d.unidades.forEach(function (un) {
-      if (sel.indexOf(un.id) < 0) return;
-      var daqui = lista.filter(function (m) { return m.unidade_id === un.id; });
-      if (!daqui.length) return;
+    blocosDaTela(lista).forEach(function (b) {
+      var un = b.un, daqui = b.daqui;
       var bloco = RW.tpl('tpl-extrajornada-p2-bloco');
       bloco.querySelector('.extrajornada-voluntarios-bloco-nome').textContent = un.nome;
       bloco.querySelector('.extrajornada-voluntarios-bloco-detalhe').textContent = un.cidade || '';
       /* o Recebeu: o campo da unidade (por unidades) ou a parte que a fila da companhia dá a ela (entre todos); antes da
          escala no sistema, a soma do que os militares dela receberam */
       var inp = bloco.querySelector('.extrajornada-voluntarios-bloco-total'), texto = bloco.querySelector('.extrajornada-bloco-recebeu');
-      var recebeu = porUnidade ? (+p2.unidades[un.id] || 0) : soma(daqui, antes ? conc : sugestao);
+      var recebeu = recebeuDa(un, daqui);
       inp.classList.toggle('oculto', !porUnidade);
       texto.classList.toggle('oculto', porUnidade);
       texto.textContent = recebeu;
@@ -202,7 +221,7 @@
       /* a fila: a da companhia (entre todos) ou a da unidade (por unidades) */
       var bloquinho = bloco.querySelector('.extrajornada-voluntarios-bloquinho');
       daqui.forEach(function (m) {
-        bloquinho.appendChild(linha(m, porUnidade ? daqui.indexOf(m) + 1 : lista.indexOf(m) + 1));
+        bloquinho.appendChild(linha(m, filaDe(m, daqui, lista)));
         if (perde(m)) {
           var av = RW.tpl('tpl-extrajornada-p2-aviso');
           av.textContent = msg().retiraCota(conc(m), diasDe(m), ajuste);
@@ -235,11 +254,10 @@
     l.querySelector('.extrajornada-voluntarios-nome').textContent = m.nome;
     l.querySelector('.extrajornada-vaga-24h').classList.toggle('oculto', !m.so24);
     l.querySelector('.extrajornada-voluntarios-pediu').textContent = m.cotas;
-    /* quem pede pela primeira vez conta como 100% na fila; a tela diz "Primeira vez" */
-    var primeira = !m.pediu12;
-    l.querySelector('.extrajornada-p2-porcento').textContent = primeira ? '' : msg().porcento(Math.round(100 * (m.recebeu12 || 0) / m.pediu12));
-    l.querySelector('.extrajornada-p2-de-cotas').textContent = primeira ? '' : msg().deCotas(m.recebeu12 || 0, m.pediu12);
-    l.querySelector('.extrajornada-p2-primeira-vez').classList.toggle('oculto', !primeira);
+    var at = atendido(m);
+    l.querySelector('.extrajornada-p2-porcento').textContent = at.porcento;
+    l.querySelector('.extrajornada-p2-de-cotas').textContent = at.de;
+    l.querySelector('.extrajornada-p2-primeira-vez').classList.toggle('oculto', !at.primeira);
     var sug = l.querySelector('.extrajornada-sug');
     sug.textContent = sugestao(m);
     /* a sugestão parou no que cabe nos dias livres dele: a dica diz quanto cabe */
@@ -329,5 +347,25 @@
     desenhar();
   }
 
-  RW.extrajornadaCotas = { mostrar: mostrar, reiniciar: function () { p2 = null; }, recebeMudado: recebeMudado };
+  /* as Cotas como a tela (com o que ainda não foi salvo), para a cópia da tela (extrajornada-imprimir-tela.js): a faixa e
+     um bloco por unidade, com as mesmas contas do desenho */
+  function paraImprimir() {
+    if (!d) return null;
+    if (!p2) iniciarRascunho();
+    var lista = comTermo(), total = recebido(), ent = soma(lista, conc);
+    return {
+      cia: cia().nome || '', recebidas: total, entregues: ent, sobram: total - ent, naEscala: soma(lista, naGrade),
+      blocos: blocosDaTela(lista).map(function (b) {
+        var recebeu = recebeuDa(b.un, b.daqui), entregues = soma(b.daqui, conc);
+        return { nome: b.un.nome, cidade: b.un.cidade || '', recebeu: recebeu, entregues: entregues, sobram: recebeu - entregues,
+          linhas: b.daqui.map(function (m) {
+            var at = atendido(m);
+            return { fila: msg().fila(filaDe(m, b.daqui, lista)), grad: m.grad, nome: m.nome, so24: !!m.so24, pediu: m.cotas, primeira: at.primeira,
+              porcento: at.porcento, deCotas: at.de, sugestao: sugestao(m), recebe: conc(m), naEscala: msg().deCotas(naGrade(m), conc(m)) };
+          }) };
+      })
+    };
+  }
+
+  RW.extrajornadaCotas = { mostrar: mostrar, reiniciar: function () { p2 = null; }, recebeMudado: recebeMudado, paraImprimir: paraImprimir };
 })();

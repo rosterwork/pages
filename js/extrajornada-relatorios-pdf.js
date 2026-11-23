@@ -13,8 +13,11 @@
    uma tabela por pelotão (2.1, 2.2...) ou a lista única (com a coluna
    Pelotão). O Relatório final tem como ficou no fim do mês e o que
    mudou desde o lançamento (era, ficou e quem ajustou).
+   A tabela vai inteira para a folha seguinte só quando cabe numa folha;
+   mais alta, ela se parte, com os títulos das colunas repetidos.
    Usa as peças do PDF da escala (escalas-impressao-pdf.js: biblioteca,
-   fontes, logo, cores do tema e download). O PDF é desenhado aqui
+   fontes, logo, cores do tema e download) e empresta as suas às cópias
+   da tela (extrajornada-tela-pdf.js). O PDF é desenhado aqui
    (exceção REGRAS §3/§4).
    RosterWork.extrajornadaRelatoriosPdf.
    ============================================================ */
@@ -34,7 +37,9 @@
   var ESPACAMENTO_CAIXA_ALTA = { titulo: 0.4, secao: 0.6 };
   var ALTURA_LINHA = FONTE.celula * 1.22 * 1.15;   // uma linha de texto da célula (a fonte e o lineHeight do documento)
   var LETRA = 0.52;                                // a largura média de uma letra, em vezes a fonte (estimativa das linhas)
-  var LINHAS_INTEIRAS = 30;                        // até aqui a tabela não se parte entre duas folhas
+  var LINHAS_INTEIRAS = 30;                        // até aqui a tabela não se parte entre duas folhas (se couber numa folha)
+  var A4 = { largura: 595, altura: 842 };          // a folha em retrato (pontos)
+  var FOLGA_INTEIRA = 120;                         // o que a folha leva além da tabela inteira (o título da seção, a ajuda...)
   var LARGURA = { cpf: 72, pelotao: 40, pedidoEm: 62, cotasPedidas: 70, termo: 40, pediu: 34, recebeu: 44, data: 58, horario: 86, cotas: 36,
                   era: 58, ficou: 58, ajustadoPor: 80, campoRotulo: 150 };
 
@@ -70,8 +75,12 @@
   }
 
   /* ---------- as peças do registro RW ---------- */
-  function pecas(c) {
-    var largura = 595 - P().medidas.MARGENS[0] - P().medidas.MARGENS[2];
+  /* larga: a folha em paisagem (as cópias da tela que pedem; os relatórios saem em retrato) */
+  function pecas(c, larga) {
+    var M = P().medidas.MARGENS;
+    var largura = (larga ? A4.altura : A4.largura) - M[0] - M[2];
+    /* até essa altura a tabela pode ir inteira para a folha seguinte; mais alta que a folha, o pdfmake some com ela */
+    var alturaInteira = (larga ? A4.largura : A4.altura) - M[1] - M[3] - FOLGA_INTEIRA;
     var numero = 0;
     var linhasFinas = {
       hLineWidth: function (i) { return i === 0 ? 0 : LINHA.tabela; },
@@ -85,6 +94,7 @@
     function linhasDe(t, l) { return typeof t !== 'string' || typeof l !== 'number' ? 1 : Math.max(1, Math.ceil(t.length * FONTE.celula * LETRA / l)); }
     return {
       largura: largura,
+      alturaInteira: alturaInteira,
       numero: function () { return numero; },
       /* o título da seção (numerado pela ordem em que aparece) com a linha embaixo */
       secao: function (titulo) {
@@ -106,8 +116,11 @@
       },
       /* uma linha: a 1ª célula à esquerda, as outras no centro, todas descidas para o meio da altura da linha; a célula
          é um texto, uma lista de linhas ou { v, plano, negrito, junta } (plano = o texto simples do nome, para contar as
-         linhas; junta = quantas colunas ela ocupa) */
-      linha: function (celulas, larguras, negrito) {
+         linhas; junta = quantas colunas ela ocupa). jeito (opcional, as cópias da tela): { noAlto (todas no alto da
+         linha), esquerda (quantas colunas à esquerda; o padrão é 1) }. A linha leva quantas linhas de texto a mais alta
+         tem (linhas: a altura da tabela, em quadros) */
+      linha: function (celulas, larguras, negrito, jeito) {
+        var esquerda = (jeito && jeito.esquerda) || 1, noAlto = !!(jeito && jeito.noAlto);
         function valor(x) { return x && x.v !== undefined ? x.v : x; }
         var conta = celulas.map(function (x, i) {
           if (x === null) return 0;
@@ -115,18 +128,21 @@
           return Array.isArray(v) ? v.length : linhasDe(x && x.plano ? x.plano : v, larguras[i]);
         });
         var n = Math.max.apply(null, conta);
-        return celulas.map(function (x, i) {
+        var saida = celulas.map(function (x, i) {
           if (x === null) return {};
           var v = valor(x);
           var cel = { stack: (Array.isArray(v) ? v : [v]).map(function (t) { return typeof t === 'object' ? t : { text: t }; }),
-            alignment: i === 0 ? 'left' : 'center', fontSize: FONTE.celula, color: c.forte, bold: !!(negrito || (x && x.negrito)),
-            margin: [0, (n - conta[i]) * ALTURA_LINHA / 2, 0, 0] };
+            alignment: i < esquerda ? 'left' : 'center', fontSize: FONTE.celula, color: c.forte, bold: !!(negrito || (x && x.negrito)),
+            margin: [0, noAlto ? 0 : (n - conta[i]) * ALTURA_LINHA / 2, 0, 0] };
           if (x && x.junta) cel.colSpan = x.junta;
           return cel;
         });
+        saida.linhas = n;
+        return saida;
       },
-      tabela: function (larguras, titulos, linhas) {
-        var cab = titulos.map(function (t, i) { return { text: t, bold: true, fontSize: FONTE.cabecalho, color: c.suave, alignment: i === 0 ? 'left' : 'center' }; });
+      /* esquerda: quantas colunas à esquerda (o padrão é 1) */
+      tabela: function (larguras, titulos, linhas, esquerda) {
+        var cab = titulos.map(function (t, i) { return { text: t, bold: true, fontSize: FONTE.cabecalho, color: c.suave, alignment: i < (esquerda || 1) ? 'left' : 'center' }; });
         return { table: { headerRows: 1, dontBreakRows: true, widths: larguras, body: [cab].concat(linhas) }, layout: linhasFinas };
       },
       /* o pelotão dentro da seção (2.1, 2.2...) */
@@ -142,22 +158,29 @@
     };
   }
 
-  function documento(qual, r, opc, conteudo, c) {
-    var M = P().medidas, pdf = RW.mensagens.escala.impressao.pdf, p = pecas(c), t = txt();
+  /* a folha no padrão do registro RW: o título, a linha do alto (topo: as colunas feitas com p.topo) e o conteúdo; larga =
+     em paisagem (as cópias da tela, extrajornada-tela-pdf.js) */
+  function folha(titulo, topo, conteudo, c, larga) {
+    var M = P().medidas, pdf = RW.mensagens.escala.impressao.pdf;
     return {
-      pageSize: 'A4', pageMargins: M.MARGENS,
+      pageSize: 'A4', pageOrientation: larga ? 'landscape' : 'portrait', pageMargins: M.MARGENS,
       defaultStyle: { font: 'Montserrat', fontSize: FONTE.celula, color: c.texto, lineHeight: 1.15 },
-      info: { title: t.titulos[qual], author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' },
+      info: { title: titulo, author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' },
       header: function () { return { svg: c.logo, width: M.LOGO_LARGURA, margin: M.LOGO_MARGEM }; },
       footer: function (pagina, total) {
         return { columns: [{ text: pdf.site }, { text: pdf.pagina(pagina, total), alignment: 'right' }], fontSize: M.FONTE.rodape, color: c.suave, margin: M.RODAPE_MARGEM };
       },
       content: [
-        { text: t.titulos[qual], bold: true, fontSize: FONTE.titulo, color: c.forte, characterSpacing: ESPACAMENTO_CAIXA_ALTA.titulo },
-        { columns: [p.topo(t.rotuloMes, rotuloMes(r.competencia), true), p.topo(t.rotuloUnidade, opc.unidade ? unidade(r, opc.unidade).nome : t.todos, true),
-          p.topo(t.rotuloGerado, r.geradoEm)], margin: MARGEM.cabecalho }
+        { text: titulo, bold: true, fontSize: FONTE.titulo, color: c.forte, characterSpacing: ESPACAMENTO_CAIXA_ALTA.titulo },
+        { columns: topo, margin: MARGEM.cabecalho }
       ].concat(conteudo)
     };
+  }
+
+  function documento(qual, r, opc, conteudo, c) {
+    var p = pecas(c), t = txt();
+    return folha(t.titulos[qual], [p.topo(t.rotuloMes, rotuloMes(r.competencia), true),
+      p.topo(t.rotuloUnidade, opc.unidade ? unidade(r, opc.unidade).nome : t.todos, true), p.topo(t.rotuloGerado, r.geradoEm)], conteudo, c, false);
   }
 
   /* ---------- quem entra e como se agrupa ---------- */
@@ -181,8 +204,10 @@
     return { v: { text: partes }, plano: (m.grad || '') + ' ' + completo };
   }
   /* as tabelas de uma seção: uma por pelotão (n.1, n.2...) ou uma só; a coluna Pelotão entra na lista única, na posição
-     pos (2 = depois do CPF); antes = o título da seção e a ajuda, que vão junto com a 1ª tabela */
-  function quadros(p, r, opc, lista, colunas, linhaDe, totalDe, pos, antes) {
+     pos (2 = depois do CPF); antes = o título da seção e a ajuda, que vão junto com a 1ª tabela; jeito = o das linhas
+     (p.linha). A tabela vai inteira para a folha seguinte só quando cabe numa folha; mais alta, ela se parte, com os
+     títulos das colunas repetidos */
+  function quadros(p, r, opc, lista, colunas, linhaDe, totalDe, pos, antes, jeito) {
     var unica = opc.modo === 'unica' && !opc.unidade;
     var cols = colunas.slice();
     if (unica) cols.splice(pos, 0, { titulo: txt().colunas.pelotao, largura: LARGURA.pelotao });
@@ -198,13 +223,14 @@
       var linhas = g.ms.map(function (m) {
         var cel = linhaDe(m);
         if (unica) cel.splice(pos, 0, unidade(r, m.unidade_id).nome);
-        return p.linha(cel, estimar);
+        return p.linha(cel, estimar, false, jeito);
       });
       var t = totalDe(g.ms), juntas = cols.length - t.contas.length, cel = [{ v: t.rotulo, junta: juntas }];
       for (var k = 1; k < juntas; k++) cel.push(null);
-      linhas.push(p.linha(cel.concat(t.contas), estimar, true));
+      linhas.push(p.linha(cel.concat(t.contas), estimar, true, jeito));
       var bloco = (i === 0 && antes ? antes : []).concat(g.u ? [p.subsecao(n + '.' + (i + 1), g.u)] : [], [p.tabela(larguras, cols.map(function (x) { return x.titulo; }), linhas)]);
-      return { stack: bloco, unbreakable: linhas.length <= LINHAS_INTEIRAS };
+      var altura = linhas.reduce(function (s, l) { return s + l.linhas * ALTURA_LINHA + 2 * CELULA.vertical; }, 0);
+      return { stack: bloco, unbreakable: linhas.length <= LINHAS_INTEIRAS && altura <= p.alturaInteira };
     });
   }
   function porCpf(lista) { var o = {}; (lista || []).forEach(function (x) { (o[x.cpf] = o[x.cpf] || []).push(x); }); return o; }
@@ -314,14 +340,20 @@
   }
 
   /* ---------- os dados do mês (extrajornada_mes) no formato dos relatórios ---------- */
+  /* o "Gerado em" do alto: a data e a hora de agora */
+  function geradoAgora() {
+    var agora = new Date();
+    return txt().gerado(dois(agora.getDate()) + '/' + dois(agora.getMonth() + 1) + '/' + agora.getFullYear(), dois(agora.getHours()) + ':' + dois(agora.getMinutes()));
+  }
+
   function dados(d) {
-    var agora = new Date(), mes = d.mes;
+    var mes = d.mes;
     var recebidas = mes.repartir_por === 'por_unidade'
       ? Object.keys(mes.cotas_unidades || {}).reduce(function (s, k) { return s + (+mes.cotas_unidades[k] || 0); }, 0) : (mes.cotas_recebidas || 0);
     return {
       competencia: d.competencia, abre: mes.abre, fecha: mes.fecha, cotasRecebidas: recebidas,
       lancado: d.lancamento ? d.lancamento.lancado_em : '', lancadoPor: d.lancamento ? d.lancamento.por || '' : '',
-      geradoEm: txt().gerado(dois(agora.getDate()) + '/' + dois(agora.getMonth() + 1) + '/' + agora.getFullYear(), dois(agora.getHours()) + ':' + dois(agora.getMinutes())),
+      geradoEm: geradoAgora(),
       unidades: d.unidades.map(function (u) { return { unidade_id: u.id, nome: u.nome, cidade: u.cidade }; }),
       militares: d.militares,
       base: trechos(d.lancamento ? d.lancamento.foto : []), atual: trechos(d.alocacoes), ajustes: d.ajustes || []
@@ -342,5 +374,11 @@
     return txt().arquivo(txt().arquivos[qual], d.competencia.slice(5, 7), d.competencia.slice(0, 4), u ? String(u).normalize('NFD').replace(/[^\w]/g, '') : '');
   }
 
-  RW.extrajornadaRelatoriosPdf = { arquivo: arquivo, nomeArquivo: nomeArquivo, trechos: trechos };
+  RW.extrajornadaRelatoriosPdf = {
+    arquivo: arquivo, nomeArquivo: nomeArquivo, trechos: trechos,
+    /* as peças para as cópias da tela (extrajornada-tela-pdf.js): a folha, as peças, as tabelas por pelotão, os dados do
+       mês e os textos de data, mês e horário */
+    folha: folha, pecas: pecas, quadros: quadros, dados: dados, geradoAgora: geradoAgora, dataBr: dataBr, rotuloMes: rotuloMes,
+    horario: horario
+  };
 })();

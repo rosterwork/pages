@@ -560,6 +560,60 @@
           relatorios: { pedidos: 'Relatório de pedidos', termos: 'Relatório de termos e cotas', inicial: 'Relatório inicial', final: 'Relatório final' },
           todos: 'todos os pelotões',
           modos: { separar: 'separados por pelotão', unica: 'em lista única' }
+        },
+        /* a lista dos voluntários na folha seguinte ao calendário (Distribuição e Ajustes; extrajornada-imprimir-grade.js):
+           o que entra na nota do painel, o título, os grupos e o vazio de cada um */
+        lista: {
+          resumo: 'a lista dos voluntários', titulo: 'Lista dos voluntários',
+          grupos: { faltam: 'FALTAM', completos: 'COMPLETOS' },
+          vazio: { faltam: 'Ninguém com cota faltando.', completos: 'Ninguém completou as cotas.' }
+        },
+        /* a cópia da tela da Minha extra, dos Pedidos e das Cotas (extrajornada-imprimir-tela.js e extrajornada-tela-pdf.js):
+           o título do painel, a nota do alto ("Cópia da tela dos Pedidos de dezembro de 2026, lista Voluntários, todos os
+           pelotões, em lista única.") e as folhas */
+        tela: {
+          titulos: { minha: 'Imprimir a minha extra', pedidos: 'Imprimir pedidos', cotas: 'Imprimir cotas' },
+          resumo: function (tela, mes, detalhe) { return 'Cópia da tela ' + tela + ' de ' + mes + (detalhe ? ', ' + detalhe : '') + '.'; },
+          telas: { minha: 'da Minha extra', pedidos: 'dos Pedidos', cotas: 'das Cotas' },
+          listas: { vol: 'Voluntários', nao: 'Não querem', sem: 'Sem resposta' },
+          daLista: function (lista, modo) { return 'lista ' + lista + ', todos os pelotões, ' + modo; },
+          todos: 'todos os pelotões',
+          folhas: { minha: 'MINHA EXTRA', pedidos: 'PEDIDOS DA EXTRAJORNADA', cotas: 'COTAS DA EXTRAJORNADA' },
+          arquivos: { minha: 'extrajornada-minha-extra', pedidos: 'extrajornada-pedidos-tela', cotas: 'extrajornada-cotas-tela' },
+          secoes: { vol: 'VOLUNTÁRIOS', nao: 'NÃO QUEREM', sem: 'SEM RESPOSTA', cotas: 'COTAS POR PELOTÃO', pedido: 'PEDIDO',
+            reparticao: 'REPARTIÇÃO DAS COTAS', dias: 'OS SEUS DIAS' },
+          colunas: { quer: 'Quer', naoQuer: 'Não quer', naoPode: 'Não pode', fila: 'Fila', pediu: 'Pediu', atendido: 'Atendido em 12 meses',
+            sugestao: 'Sugestão', recebe: 'Recebe', naEscala: 'Na escala', data: 'Data', dia: 'Dia', horario: 'Horário' },
+          campos: { responderam: 'Responderam', entregues: 'Entregues', sobram: 'Sobram', naEscala: 'Na escala', enviadoEm: 'Enviado em',
+            cotasPedidas: 'Cotas pedidas', diasQuer: 'Dias que quer', diasNaoQuer: 'Dias que não quer', termo: 'Termo', recebeu: 'Recebeu',
+            militar: 'Militar' },
+          cotasDa: function (cia) { return 'Cotas da ' + cia; },
+          responderam: function (n, total) { return n + ' de ' + total; },
+          naoPode: function (periodo, motivo) { return periodo + ' (' + motivo.toLowerCase() + ')'; },
+          do24h: ' (24 h)',
+          primeiraVez: 'Primeira vez',
+          noPelotao: function (recebeu, entregues, sobram) { return 'Recebeu ' + recebeu + '    Entregues ' + entregues + '    Sobram ' + sobram; },
+          militar: function (grad, nome, unidade) { return grad + ' ' + nome + ', ' + unidade; },
+          peloSistema: 'Pelo sistema',
+          cotasPedidas: function (n, so24) { return n + (n === 1 ? ' cota' : ' cotas') + ' (' + (n * 6) + ' horas)' + (so24 ? ', só 24 h' : ''); },
+          nenhum: 'Nenhum',
+          termo: function (recebido, em) { return !recebido ? 'Pendente' : (em ? 'Recebido em ' + em : 'Recebido'); },
+          recebeu: function (n, pediu) { return n + ' de ' + pediu + (pediu === 1 ? ' cota' : ' cotas') + ' (' + (n * 6) + ' horas)'; },
+          semPedido: 'Nenhum pedido feito.',
+          naoQuer: 'Não quer tirar extra neste mês.',
+          semCotas: 'Sem cotas neste mês.',
+          semExtra: 'Nenhuma extra neste mês.',
+          diasDepois: 'Os dias de extra aparecem aqui depois da distribuição.',
+          semana: ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'],
+          totalExtras: function (n) { return 'Total: ' + n + (n === 1 ? ' extra' : ' extras'); },
+          ajudaTela: 'Na ordem da tela. A última linha de cada tabela é o total.',
+          ajudaFila: 'Na ordem da fila, como na tela.',
+          obs: {
+            dias: 'Quer e Não quer: os dias do mês que o militar marcou no pedido.',
+            naoPode: 'Não pode: férias, licença, dispensa ou litoral que já estão no sistema.',
+            atendido: 'Atendido em 12 meses: as cotas recebidas das pedidas nos últimos 12 meses.',
+            copia: 'Cópia da tela: sai como estava na tela na hora de imprimir, inclusive o que ainda não foi salvo.'
+          }
         }
       },
       /* os quatro PDFs dos relatórios (extrajornada-relatorios-pdf.js), no padrão do registro RW das trocas */
@@ -1771,9 +1825,10 @@
           /* a nota do alto ("Será impresso:"): "Calendário de outubro de 2026, 2ªCIBM, 1ºPEL e 2ºPEL, sem filtros." */
           doMesDaTela: function (texto) { return 'de ' + texto; },
           daSemana: function (texto) { return 'da semana de ' + texto; },
-          resumo: function (grade, periodo, unidades, filtros) {
+          /* anexo: a folha a mais depois da grade, quando sai (a lista dos voluntários da Extrajornada) */
+          resumo: function (grade, periodo, unidades, filtros, anexo) {
             var comFiltros = filtros.length ? (filtros.length > 1 ? 'com os filtros ' : 'com o filtro ') + filtros.join('; ') : 'sem filtros';
-            return grade + ' ' + periodo + ', ' + unidades + ', ' + comFiltros + '.';
+            return grade + ' ' + periodo + ', ' + unidades + ', ' + comFiltros + (anexo ? ', com ' + anexo : '') + '.';
           },
           longaDemais: 'A página contínua ficou longa demais para os leitores de PDF. Escolha Folhas A4 ou um período menor.',
           arquivo: function (nome, periodo, unidade, prefixo) { return (prefixo || 'Escala') + ' ' + nome.toLowerCase() + ' ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }

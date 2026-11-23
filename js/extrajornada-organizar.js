@@ -193,6 +193,15 @@
   }
 
   /* ---------- passo 1: prazo, mínimo e termos ---------- */
+  /* a lista aberta (Voluntários, Não querem ou Sem resposta), na ordem da tela, e o termo como está na tela (o marcado e
+     ainda não salvo também): o desenho e a cópia da tela (extrajornada-imprimir-tela.js) usam os mesmos */
+  function listaDosPedidos(todosDaqui) {
+    return todosDaqui.filter(function (m) {
+      return p1.lista === 'vol' ? m.voluntario : p1.lista === 'nao' ? m.respondeu && !m.voluntario : !m.respondeu;
+    });
+  }
+  function termoNaTela(m) { return m.cpf in p1.termos ? p1.termos[m.cpf] : m.termo; }
+
   function passo1() {
     if (!p1) { p1 = { lista: 'vol', termos: {} }; RW.extrajornadaMinimo.iniciar(d); }
     /* o mês antes da escala no sistema, só para ver: os voluntários, sem o prazo, o mínimo, o filtro e a marca do termo */
@@ -207,9 +216,7 @@
     q('#p1-fechados').classList.toggle('oculto', !d.mes.fechado_em);
     q('#p1-fechados .nota-texto').textContent = d.mes.fechado_em ? msg().fechadosEm(d.mes.fechado_em, d.mes.fechado_por || '') : '';
     todos('#p1-filtro [data-lista]', function (b) { b.classList.toggle('aba--ativa', b.getAttribute('data-lista') === p1.lista); });
-    var lista = todosDaqui.filter(function (m) {
-      return p1.lista === 'vol' ? m.voluntario : p1.lista === 'nao' ? m.respondeu && !m.voluntario : !m.respondeu;
-    });
+    var lista = listaDosPedidos(todosDaqui);
     var tb = q('#p1-lista');
     tb.textContent = '';
     lista.forEach(function (m) {
@@ -230,7 +237,7 @@
       });
       var t = tr.querySelector('.extrajornada-p1-termo');
       if (!m.voluntario) { t.classList.add('oculto'); } else {
-        var marcado = m.cpf in p1.termos ? p1.termos[m.cpf] : m.termo;
+        var marcado = termoNaTela(m);
         t.setAttribute('aria-checked', marcado ? 'true' : 'false');
         t.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', marcado);
         t.disabled = antes;
@@ -418,6 +425,13 @@
     /* o que o menu Ações (extrajornada-acoes.js) lê do mês */
     dados: function () { return d; },
     vols: vols, totalConcedidas: totalConcedidas, naGrade: naGrade, mudancasDesdeLancamento: mudancasDesdeLancamento,
+    /* os Pedidos como a tela, para a cópia da tela (null antes de abrir os Pedidos): a lista aberta, todos da companhia
+       (as contas do resumo), os militares da lista, o termo e os períodos do Não pode de cada um */
+    pedidos: function () {
+      if (!d || !p1) return null;
+      var todosDaqui = daqui();
+      return { lista: p1.lista, todos: todosDaqui, militares: listaDosPedidos(todosDaqui), termo: termoNaTela, naoPode: periodosNaoPode };
+    },
     sair: function () { aba = null; sair(); },
     recarregar: carregar,
     desenharAba: function () { if (d) desenharAba(); },

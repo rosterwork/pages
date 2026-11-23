@@ -213,17 +213,25 @@
     mostrarArea(n);
   }
 
+  /* o Imprimir da aba aberta (extrajornada-imprimir-tela.js): em todas, menos nos Relatórios (os botões deles imprimem) e
+     nos Ajustes antes do lançamento (a tela só tem o aviso); no mês antes da escala no sistema, só na Minha extra */
+  function comImprimir(n, comModos) {
+    var d = RW.extrajornadaOrg && RW.extrajornadaOrg.dados();
+    var lancada = !!(d && d.lancamento && !d.lancamento.reaberto);
+    return aba === 'minha' || (n === 4 ? lancada : comModos || n === 1 || n === 2);
+  }
+
   /* na barra, o que é só de alguns passos (data-passo-barra) aparece só neles e, no menu Ações, só os itens do passo
      aberto (data-passo-acao); fora do Organizar o mês, nenhum. O Exibir da Distribuição e dos Ajustes (a Escala
-     completa) mostra e esconde pelo extrajornada-filtros.js. O seletor Agenda | Calendário e o Imprimir ficam nas Extras
-     do mês, na Distribuição e nos Ajustes; fora deles, o seletor de unidade do celular some. No mês antes da escala no
-     sistema, nenhum (só para ver; as Extras do mês, sem calendário) */
+     completa) mostra e esconde pelo extrajornada-filtros.js. O seletor Agenda | Calendário fica nas Extras do mês, na
+     Distribuição e nos Ajustes; fora deles, o seletor de unidade do celular some. No mês antes da escala no sistema,
+     nenhum (só para ver; as Extras do mês, sem calendário). O Imprimir: comImprimir */
   function barraDoPasso(n) {
     var antes = antesDaEscala();
     if (antes) n = null;
     var comModos = (aba === 'calendario' && !antes) || n === 3 || n === 4;
     el.modos.classList.toggle('oculto', !comModos);
-    el.imprimir.classList.toggle('oculto', !comModos);
+    el.imprimir.classList.toggle('oculto', !comImprimir(n, comModos));
     mostrarDisposicao();
     if (!comModos && RW.seletorUnidade) RW.seletorUnidade.mostrar(null);
     Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-passo-barra]'), function (e) {
@@ -375,8 +383,11 @@
     });
     /* as unidades lado a lado ou uma embaixo da outra: o clique troca, grava a escolha e redesenha o calendário */
     if (RW.visaoGrade) RW.visaoGrade.ligarDisposicao(el.disposicao, redesenharGrade);
-    /* Imprimir: a grade da tela, no painel de impressão das grades da Escala */
-    el.imprimir.addEventListener('click', function () { RW.extrajornadaImprimirGrade.abrir(aba === 'calendario', modo()); });
+    /* Imprimir: a aba aberta (a cópia da tela, a grade ou o relatório da aba) */
+    el.imprimir.addEventListener('click', function () {
+      var qual = aba === 'minha' ? 'minha' : aba === 'calendario' ? 'extras' : [null, 'pedidos', 'cotas', 'distribuicao', 'ajustes'][passoVisivel];
+      if (qual) RW.extrajornadaImprimirTela.abrir(qual, { modo: modo(), minha: estado });
+    });
     RW.extrajornadaOrg.montar(conteudo);
     el.pedir.addEventListener('click', function () {
       if (estado && RW.extrajornadaPedido) RW.extrajornadaPedido.abrir(estado, comp, carregar);

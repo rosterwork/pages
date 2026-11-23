@@ -4957,6 +4957,21 @@
     <button type="button" class="botao botao--primario" data-impressao-gerar>Gerar PDF</button>
   </template>
 
+  <!-- a caixa "O que imprimir" do painel de impressão (componentes/js/geral-impressao.js, cfg.escolha): a primeira caixa,
+       na tela que tem um relatório (na Extrajornada: Pedidos, Cotas, Distribuição e Ajustes). A Cópia da tela sai como
+       a tela, com o que ainda não foi salvo; o relatório (o nome vem do JS) sai com o que está gravado. O relatório que
+       ainda não liberou fica apagado, com o motivo na dica -->
+  <template id="tpl-impressao-escolha">
+    <div class="grupo-caixa">
+      <span class="rotulo-secao"><span data-impressao-num></span>. O que imprimir</span>
+      <div class="abas abas--seletor" data-impressao-escolha>
+        <button type="button" class="aba" data-escolha="tela">Cópia da tela</button>
+        <button type="button" class="aba" data-escolha="relatorio"></button>
+      </div>
+      <span class="campo-ajuda">A cópia da tela sai como está agora, com o que ainda não foi salvo. O relatório sai só com o que está gravado, com o nome completo e o CPF.</span>
+    </div>
+  </template>
+
   <!-- link escondido que baixa o PDF pronto (clicado e retirado na hora; PDF da escala e relatórios da extrajornada) -->
   <template id="tpl-escala-impressao-baixar">
     <a class="oculto" href="#" download="escala.pdf">PDF</a>
@@ -5058,8 +5073,9 @@
       <span class="campo-ajuda">Folhas A4 para imprimir. Página contínua para ver na tela: uma página só, sem quebras.</span>
     </div>
     <!-- o que mostrar: nas grades, o gráfico e os ícones de cada célula; no dia e na Op. Verão (sem gráfico), os ícones.
-         Com os ícones, o pé da folha leva a legenda deles. Nos Afastamentos não aparece (a folha não tem gráfico nem
-         ícones) -->
+         Com os ícones, o pé da folha leva a legenda deles. Na Distribuição e nos Ajustes da Extrajornada, também a lista
+         dos voluntários (marca lista-voluntarios), na folha seguinte à grade. Nos Afastamentos não aparece (a folha não
+         tem gráfico nem ícones) -->
     <div class="grupo-caixa" data-impressao-so="dia grade op-verao">
       <span class="rotulo-secao"><span data-impressao-num></span>. Mostrar</span>
       <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="grafico">
@@ -5069,6 +5085,10 @@
       <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-mostrar="icones">
         <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
         <span class="arvore-nome">Ícones de origem</span>
+      </button>
+      <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="lista-voluntarios" data-mostrar="lista">
+        <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
+        <span class="arvore-nome">Lista dos voluntários</span>
       </button>
       <span class="campo-ajuda">Igual à tela. Desmarque o que não quiser no papel.</span>
     </div>

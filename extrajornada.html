@@ -109,8 +109,11 @@
          lista dos níveis (molde geral #tpl-calendario-tamanho; geral-calendario-tamanho.js) -->
     <div class="oculto" id="extrajornada-tamanho"></div>
     <div class="oculto" id="extrajornada-legenda"></div>
-    <!-- imprimir a grade da tela (Agenda ou Calendário), nas Extras do mês, na Distribuição e nos Ajustes: o painel de
-         impressão das grades da Escala, com as extras (extrajornada-imprimir-grade.js) -->
+    <!-- imprimir a aba aberta (extrajornada-imprimir-tela.js), em todas menos nos Relatórios (os botões deles imprimem) e
+         nos Ajustes antes do lançamento: a cópia da Minha extra, dos Pedidos e das Cotas; nas Extras do mês, na
+         Distribuição e nos Ajustes, a grade da tela (Agenda ou Calendário) no painel de impressão das grades da Escala,
+         com as extras (extrajornada-imprimir-grade.js); nos Pedidos, nas Cotas, na Distribuição e nos Ajustes, a caixa
+         "O que imprimir" troca a cópia pelo relatório da aba -->
     <button type="button" class="botao botao--quadrado oculto" id="extrajornada-imprimir" aria-label="Imprimir a grade" data-dica="Imprimir">
       <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
     </button>
@@ -714,10 +717,11 @@
 
 <!-- Relatórios › Imprimir: as caixas do Imprimir relatório no painel de impressão comum (#tpl-impressao do index.html,
      com a nota, a Prévia e o rodapé), numeradas pelo JS: o relatório, já marcado o do botão, e os que ainda não
-     liberaram apagados, com o motivo na dica; o pelotão, entre os da área de quem imprime, que some com um só; com
-     todos, separar por pelotão ou a lista única -->
+     liberaram apagados, com o motivo na dica (só aberto pela aba Relatórios, marca relatorios; aberto de outra aba, a
+     caixa "O que imprimir" do painel comum fica no lugar dela); o pelotão, entre os da área de quem imprime, que some
+     com um só; com todos, separar por pelotão ou a lista única -->
 <template id="tpl-extrajornada-imprimir">
-  <div class="grupo-caixa">
+  <div class="grupo-caixa" data-impressao-so="relatorios">
     <span class="rotulo-secao"><span data-impressao-num></span>. Relatório</span>
     <div class="abas abas--seletor" data-imprimir-relatorio>
       <button type="button" class="aba" data-relatorio="pedidos">Pedidos</button>
@@ -738,6 +742,27 @@
       <button type="button" class="aba aba--ativa" data-modo="separar">Separar por pelotão</button>
       <button type="button" class="aba" data-modo="unica">Lista única</button>
     </div>
+  </div>
+</template>
+
+<!-- o Imprimir da Minha extra, dos Pedidos e das Cotas: as caixas da cópia da tela no painel de impressão comum (com a
+     caixa "O que imprimir" no alto, nos Pedidos e nas Cotas), numeradas pelo JS: a orientação (Pedidos e Cotas; o JS
+     marca a do começo) e, nos Pedidos, como organizar a lista aberta na tela (extrajornada-imprimir-tela.js) -->
+<template id="tpl-extrajornada-imprimir-tela">
+  <div class="grupo-caixa" data-impressao-so="orientacao">
+    <span class="rotulo-secao"><span data-impressao-num></span>. Orientação</span>
+    <div class="abas abas--seletor" data-imprimir-orientacao>
+      <button type="button" class="aba" data-orientacao="retrato">Retrato</button>
+      <button type="button" class="aba" data-orientacao="paisagem">Paisagem</button>
+    </div>
+  </div>
+  <div class="grupo-caixa" data-impressao-so="organizar">
+    <span class="rotulo-secao"><span data-impressao-num></span>. Como organizar</span>
+    <div class="abas abas--seletor" data-imprimir-modo>
+      <button type="button" class="aba" data-modo="separar">Separar por pelotão</button>
+      <button type="button" class="aba aba--ativa" data-modo="unica">Lista única</button>
+    </div>
+    <span class="campo-ajuda">Sai a lista aberta na tela (Voluntários, Não querem ou Sem resposta). A lista única sai como a tela.</span>
   </div>
 </template>
 

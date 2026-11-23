@@ -18,7 +18,8 @@
    recolhe sozinha e volta ao fechar o painel (só se foi o sistema que
    recolheu); no outro sentido, abrir a lista pela alça sem espaço para
    4 dias fecha o painel do dia. A faixa de cada grupo abre e fecha a
-   lista dela.
+   lista dela. A folha da lista na impressão do calendário lê os mesmos
+   grupos e linhas (paraImprimir).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.extrajornadaLista.
    ============================================================ */
@@ -109,26 +110,40 @@
     abrirLista(true);
   }
 
+  /* os voluntários na ordem da fila, nos dois grupos; quem está em foco fica no grupo em que estava até sair do foco (o
+     desenho e a folha da impressão usam os mesmos) */
+  function grupos(alocs) {
+    var vols = G().voluntarios().slice().sort(function (x, y) { return (x.ordem || 0) - (y.ordem || 0); });
+    if (foco && !vols.some(function (m) { return m.cpf === foco.cpf; })) foco = null;
+    var saida = { faltam: [], completos: [] };
+    vols.forEach(function (m) {
+      var g = foco && foco.cpf === m.cpf ? foco.grupo : (G().usadas(m.cpf, alocs) >= (m.concedidas || 0) ? 'completos' : 'faltam');
+      saida[g].push(m);
+    });
+    return saida;
+  }
+
+  /* o que a linha de um voluntário mostra: o posto e o nome, o pelotão, as cotas colocadas de recebidas (passou = mais
+     que as recebidas) e, em Faltam, o motivo de ter ficado com cota na última sugestão */
+  function dadosDoItem(m, g, alocs) {
+    var usou = G().usadas(m.cpf, alocs), fora = g === 'faltam' ? RW.extrajornadaMontar.foraDaSugestao(m.cpf) : null;
+    return { grad: m.grad || '', nome: m.nome || m.cpf, pelotao: (u().unidade(m.unidade_id) || {}).nome || '', usou: usou, recebidas: m.concedidas || 0,
+      cotas: msg().deCotas(usou, m.concedidas || 0), passou: usou > (m.concedidas || 0), motivo: fora ? msg().foraMotivo[fora] || '' : '' };
+  }
+
   function desenhar(el) {
     pagina = el;
     var alocs = G().efetivas();
-    var vols = G().voluntarios().slice().sort(function (x, y) { return (x.ordem || 0) - (y.ordem || 0); });
-    if (foco && !vols.some(function (m) { return m.cpf === foco.cpf; })) foco = null;
-    /* quem está em foco fica no grupo em que estava até sair do foco */
-    var grupos = { faltam: [], completos: [] };
-    vols.forEach(function (m) {
-      var g = foco && foco.cpf === m.cpf ? foco.grupo : (G().usadas(m.cpf, alocs) >= (m.concedidas || 0) ? 'completos' : 'faltam');
-      grupos[g].push(m);
-    });
+    var porGrupo = grupos(alocs);
     ['faltam', 'completos'].forEach(function (g) {
       var alvo = el.querySelector('#p3-' + g);
       alvo.textContent = '';
-      grupos[g].forEach(function (m) {
+      porGrupo[g].forEach(function (m) {
         alvo.appendChild(item(m, g, alocs));
         if (foco && foco.cpf === m.cpf) alvo.appendChild(datas(m));
       });
-      el.querySelector('#p3-' + g + '-conta').textContent = grupos[g].length;
-      el.querySelector('#p3-' + g + '-vazio').classList.toggle('oculto', grupos[g].length > 0);
+      el.querySelector('#p3-' + g + '-conta').textContent = porGrupo[g].length;
+      el.querySelector('#p3-' + g + '-vazio').classList.toggle('oculto', porGrupo[g].length > 0);
     });
     /* a pesquisa da barra deixa na lista só quem casa */
     if (RW.extrajornadaFiltros) RW.extrajornadaFiltros.aplicar();
@@ -137,17 +152,16 @@
   /* um voluntário: posto e nome, o pelotão e as cotas colocadas de recebidas; clicar põe ou tira do foco */
   function item(m, g, alocs) {
     var b = RW.tpl('tpl-extrajornada-esq-item');
-    var emFoco = !!foco && foco.cpf === m.cpf;
-    b.querySelector('.extrajornada-esq-grad').textContent = m.grad || '';
-    b.querySelector('.extrajornada-esq-nome').textContent = m.nome || m.cpf;
+    var emFoco = !!foco && foco.cpf === m.cpf, x = dadosDoItem(m, g, alocs);
+    b.querySelector('.extrajornada-esq-grad').textContent = x.grad;
+    b.querySelector('.extrajornada-esq-nome').textContent = x.nome;
     b.setAttribute('data-busca', RW.busca ? RW.busca.chave(m) : '');
-    b.querySelector('.extrajornada-esq-pel').textContent = (u().unidade(m.unidade_id) || {}).nome || '';
-    var usou = G().usadas(m.cpf, alocs), cotas = b.querySelector('.extrajornada-esq-cotas');
-    cotas.textContent = msg().deCotas(usou, m.concedidas || 0);
-    cotas.classList.toggle('extrajornada-esq-cotas--erro', usou > (m.concedidas || 0));
+    b.querySelector('.extrajornada-esq-pel').textContent = x.pelotao;
+    var cotas = b.querySelector('.extrajornada-esq-cotas');
+    cotas.textContent = x.cotas;
+    cotas.classList.toggle('extrajornada-esq-cotas--erro', x.passou);
     /* ficou com cota na última sugestão: o motivo embaixo do nome */
-    var fora = g === 'faltam' ? RW.extrajornadaMontar.foraDaSugestao(m.cpf) : null;
-    b.querySelector('.extrajornada-esq-motivo').textContent = fora ? msg().foraMotivo[fora] || '' : '';
+    b.querySelector('.extrajornada-esq-motivo').textContent = x.motivo;
     b.classList.toggle('lista-item--ativo', emFoco);
     b.setAttribute('aria-pressed', emFoco ? 'true' : 'false');
     b.addEventListener('click', function () {
@@ -186,9 +200,27 @@
     RW.extrajornadaMontar.redesenhar();
   }
 
+  /* a lista como a tela, para a folha seguinte ao calendário (extrajornada-imprimir-grade.js): as cotas colocadas das
+     recebidas e os dois grupos, cada linha com o que ela mostra */
+  function paraImprimir() {
+    var alocs = G().efetivas(), porGrupo = grupos(alocs), saida = {}, usadas = 0, recebidas = 0;
+    ['faltam', 'completos'].forEach(function (g) {
+      saida[g] = porGrupo[g].map(function (m) {
+        var x = dadosDoItem(m, g, alocs);
+        usadas += x.usou;
+        recebidas += x.recebidas;
+        return x;
+      });
+    });
+    return { total: msg().colocadas(usadas, recebidas), grupos: saida };
+  }
+
   RW.extrajornadaLista = {
     ligar: ligar,
     desenhar: desenhar,
+    paraImprimir: paraImprimir,
+    /* a lista aberta na tela (pela alça): a caixa dela no Mostrar da impressão começa marcada */
+    aberta: function () { return naPagina() && pagina.querySelector('#p3-alca').getAttribute('aria-expanded') === 'true'; },
     /* o cpf do militar em foco (ou null) */
     foco: function () { return foco ? foco.cpf : null; },
     focar: focar,

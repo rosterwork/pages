@@ -233,12 +233,14 @@
     return cacheFalta.promessa.then(function (falta) { return Object.assign({}, dados, { falta: falta }); });
   }
 
-  /* a nota do alto: "Calendário de outubro de 2026, 2ªCIBM e 2ºPEL, sem filtros." */
-  function resumo(unidades) {
+  /* a nota do alto: "Calendário de outubro de 2026, 2ªCIBM e 2ºPEL, sem filtros." (com o anexo, ", com a lista dos
+     voluntários") */
+  function resumo(unidades, anexo) {
     var periodo = FORMATOS[form.formato].periodo === 'semana'
       ? msg().daSemana(periodoEscolhido().texto)
       : msg().doMesDaTela(msg().comAno(MESES[form.mes.getMonth()], form.mes.getFullYear()));
-    return msg().resumo(msg().nomes[form.formato], periodo, msg().juntar(unidades.map(function (u) { return u.nome; })), form.filtros);
+    return msg().resumo(msg().nomes[form.formato], periodo, msg().juntar(unidades.map(function (u) { return u.nome; })), form.filtros,
+      anexo ? anexo.resumo : null);
   }
 
   /* o estado das escolhas para o painel comum: o resumo, o período (para o erro grave) e o arquivo */
@@ -251,6 +253,8 @@
     if (form.unidadesDaFolha) unidades = form.unidadesDaFolha(unidades);
     var ids = unidades.map(function (u) { return u.unidade_id; });
     var mostrar = escolhas.mostrar;
+    /* a folha a mais de quem abriu (a lista dos voluntários da Extrajornada), com a caixa dela no Mostrar */
+    var anexo = form.anexo && mostrar.lista ? form.anexo : null;
     /* como a tela, o Oficial de Área no título do dia e o sobreaviso, só na escala (a grade de outra tela, como a
        Extrajornada, vem com os dados dela, e a página Sobreaviso não mostra o Oficial); a leitura de outra tela que traz o
        título do dia (a Op. Verão, com o Oficial de Praia) também o mostra */
@@ -269,10 +273,10 @@
       RW.painel.definirTitulos(null, subtitulo());
     }
     return {
-      resumo: resumo(unidades),
+      resumo: resumo(unidades, anexo),
       inicio: iso(dentro[0].data),
       fim: iso(dentro[dentro.length - 1].data),
-      chave: [ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, p.dias.length,
+      chave: [ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, !!anexo, p.dias.length,
         iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto, ladoALado].join('|'),
       montar: function () {
         var inicio = iso(p.busca.inicio), fim = iso(p.busca.fim);
@@ -281,7 +285,7 @@
         }).then(function (dados) {
           return RW.escalasImpressaoGradePdf.gerar({ formato: formato, paisagem: paisagem, continua: continua, mostrar: mostrar,
             diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados, titulo: titulo, prefixo: prefixo,
-            comOficial: comOficial, comSobreaviso: comSobreaviso, ladoALado: ladoALado });
+            comOficial: comOficial, comSobreaviso: comSobreaviso, ladoALado: ladoALado, anexo: anexo ? anexo.conteudo : null });
         }).then(function (r) {
           return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(r.folhas, continua, paisagem) };
         }, function (e) {
@@ -302,7 +306,9 @@
      e mostrar (as caixas do Mostrar já marcadas); da Escala, falta (a Falta de gente marcada nos Filtros); da página
      Afastamentos, marcas (as caixas do molde que valem, no lugar das das grades) e semOrientacao (sem a Orientação); da
      página Op. Verão, comOficial (a leitura dela traz o título do dia, em linhas prontas) e unidadesDaFolha(unidades)
-     (as marcadas no painel viram as da folha: a companhia de cada uma) } */
+     (as marcadas no painel viram as da folha: a companhia de cada uma); da Extrajornada, escolha (a caixa "O que
+     imprimir" do painel comum) e anexo ({ resumo, conteudo(c, largura) }: a folha a mais depois da grade, com a caixa
+     Lista no Mostrar) } */
   function abrir(opcoes) {
     if (!RW.painel || !RW.impressao || !FORMATOS[opcoes.formato]) return;
     var formato = opcoes.formato;
@@ -319,7 +325,7 @@
       continua: false, diasPorLinha: opcoes.diasPorLinha || 3, filtros: opcoes.filtros || [],
       dados: opcoes.dados || null, titulo: opcoes.titulo || null, prefixo: opcoes.prefixo || null, semOficial: !!opcoes.semOficial,
       comOficial: !!opcoes.comOficial, unidadesDaFolha: opcoes.unidadesDaFolha || null,
-      falta: !!opcoes.falta,
+      falta: !!opcoes.falta, anexo: opcoes.anexo || null,
       data: new Date(data.getFullYear(), data.getMonth(), data.getDate()), mes: new Date(data.getFullYear(), data.getMonth(), 1),
       mesTodo: true, semanas: [], de: 1, ate: 1
     };
@@ -327,6 +333,7 @@
     RW.impressao.montar(RW.painel.corpo(), RW.painel.rodape(), {
       molde: 'tpl-escala-impressao',
       marcas: marcas(),
+      escolha: opcoes.escolha || null,
       conferir: 'conferir' in opcoes ? opcoes.conferir : (RW.escalasImpressao ? RW.escalasImpressao.conferirErros : null),
       ids: (opcoes.unidades || []).map(function (u) { return u.unidade_id; }),
       mostrar: opcoes.mostrar || { grafico: true, icones: true },
