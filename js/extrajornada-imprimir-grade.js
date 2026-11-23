@@ -81,14 +81,17 @@
   }
 
   /* a folha da lista dos voluntários (Distribuição e Ajustes), como o painel esquerdo da tela: as cotas colocadas no alto
-     e os grupos Faltam e Completos, cada um com a faixa cinza e os nomes em três colunas (o posto e o nome, o pelotão, as
-     cotas colocadas de recebidas e, embaixo, o motivo). lista: a da tela (RosterWork.extrajornadaLista.paraImprimir);
-     c: as cores da folha; largura: a do conteúdo */
-  var LISTA = { colunas: 3, vao: 18, pelotao: 34, cotas: 46, titulo: 11, faixa: 7.5, nome: 8.5, posto: 7, miudo: 7, linha: 0.5 };
+     e os grupos Faltam e Completos, cada um com a faixa cinza e os nomes em colunas (o posto e o nome, o pelotão, as
+     cotas colocadas de recebidas e, embaixo, o motivo): duas no retrato, três no paisagem e até quatro na página
+     contínua larga. lista: a da tela (RosterWork.extrajornadaLista.paraImprimir); c: as cores da folha; largura: a do
+     conteúdo */
+  var LISTA = { colunasMinimo: 2, colunasMaximo: 4, larguraColuna: 250, vao: 18, pelotao: 34, cotas: 46, titulo: 11, faixa: 7.5, nome: 8.5,
+    posto: 7, miudo: 7, linha: 0.5 };
   function semLinha() { return 0; }
   function folhaDaLista(lista, c, largura) {
     var M = RW.mensagens.extrajornada.imprimir.lista, L = LISTA;
-    var w = (largura - (L.colunas - 1) * L.vao) / L.colunas;
+    var colunas = Math.max(L.colunasMinimo, Math.min(L.colunasMaximo, Math.floor(largura / L.larguraColuna)));
+    var w = (largura - (colunas - 1) * L.vao) / colunas;
     var saida = [{ text: [{ text: M.titulo, bold: true, color: c.forte }, { text: '    ' + lista.total, color: c.suave }], fontSize: L.titulo, margin: [0, 0, 0, 6] }];
     function linha(x) {
       var pilha = [{ columns: [
@@ -107,9 +110,9 @@
           paddingTop: function () { return 4; }, paddingBottom: function () { return 4; } }, margin: [0, 8, 0, 2] });
       if (!itens.length) { saida.push({ text: M.vazio[g], fontSize: L.nome, color: c.suave, margin: [6, 4, 0, 2] }); return; }
       /* de cima para baixo em cada coluna, na ordem da tela */
-      var porColuna = Math.ceil(itens.length / L.colunas), colunas = [];
-      for (var i = 0; i < L.colunas; i++) colunas.push({ width: w, stack: itens.slice(i * porColuna, (i + 1) * porColuna).map(linha) });
-      saida.push({ columns: colunas, columnGap: L.vao });
+      var porColuna = Math.ceil(itens.length / colunas), blocos = [];
+      for (var i = 0; i < colunas; i++) blocos.push({ width: w, stack: itens.slice(i * porColuna, (i + 1) * porColuna).map(linha) });
+      saida.push({ columns: blocos, columnGap: L.vao });
     });
     return saida;
   }
