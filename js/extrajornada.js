@@ -11,7 +11,12 @@
    Agenda do celular), o menu Ações do passo aberto e a Legenda (o
    molde que o passo pedir, RosterWork.extrajornada.legenda).
    Abre no mês de hoje (ou no que o aviso pedir); a seta do mês anda
-   de outubro de 2026 até o mês do pedido que já abriu mais à frente.
+   de janeiro de 2026 até o mês do pedido que já abriu mais à frente.
+   Os meses antes de outubro de 2026 (antes da escala no sistema) são
+   só para ver quanto cada um pediu e recebeu: a Minha extra só com
+   isso, as Extras do mês sem calendário e, no Organizar o mês, os
+   Pedidos e as Cotas, sem as ações; a Distribuição, os Ajustes e os
+   Relatórios mostram só o aviso.
    No treino da Extrajornada, abre no mês de treino, com as setas
    paradas (geral-treino-extra.js).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
@@ -23,9 +28,9 @@
   var RW = window.RosterWork = window.RosterWork || {};
   RW.paginas = RW.paginas || {};
 
-  /* as setas do mês: de outubro de 2026 (o começo da Extrajornada no sistema) até o mês do pedido que já abriu mais à
-     frente (o ultimo_mes do extrajornada_minha; antes de ele chegar, o mês que vem) */
-  var PRIMEIRO = new Date(2026, 9, 1);
+  /* as setas do mês: de janeiro de 2026 (o primeiro mês com os pedidos e as cotas guardados) até o mês do pedido que já
+     abriu mais à frente (o ultimo_mes do extrajornada_minha; antes de ele chegar, o mês que vem) */
+  var PRIMEIRO = new Date(2026, 0, 1);
   var ultimo = null;
 
   var el = {};
@@ -98,6 +103,19 @@
     var r = estado, p = r.prazo, ped = r.pedido;
     var mes = nomeMes(comp);
     el.titulo.textContent = mes.charAt(0).toUpperCase() + mes.slice(1);
+    /* o mês antes da escala no sistema: só quantas cotas pediu e quantas recebeu (sem o prazo, o botão do pedido e os
+       dias); sem pedido no mês, só que não pediu */
+    var antes = !!r.antes_da_escala, pediu = antes && !!(ped && ped.voluntario);
+    el.prazo.classList.toggle('oculto', antes);
+    el.cotasTexto.closest('.extrajornada-passo').classList.toggle('oculto', antes && !pediu);
+    el.diasTexto.closest('.extrajornada-passo').classList.toggle('oculto', antes);
+    if (antes) {
+      el.pedidoTexto.textContent = pediu ? msg().pediuCotas(ped.cotas) : msg().naoPediu;
+      el.cotasTexto.textContent = pediu ? msg().concedidas(ped.concedidas || 0) : '';
+      el.pedir.classList.add('oculto');
+      el.fechado.classList.add('oculto');
+      return;
+    }
     el.prazo.textContent = p.estado === 'aberto' ? msg().prazoAberto(p.faltam_dias) : p.estado === 'antes' ? msg().prazoAntes(br(p.abre)) : msg().prazoFechado(br(p.fecha));
     el.prazo.classList.toggle('selo--alerta', p.estado === 'aberto');
     if (ped) el.pedidoTexto.textContent = ped.voluntario ? msg().pediu(ped) : msg().naoQuer(ped.enviado_em);
@@ -139,14 +157,23 @@
   /* o passo n está na lista do atributo ("3 4" = nos passos 3 e 4) */
   function doPasso(e, atributo, n) { return (e.getAttribute(atributo) || '').split(' ').indexOf(String(n)) >= 0; }
 
+  /* o mês à vista é de antes da escala no sistema (o extrajornada_mes diz): só para ver os Pedidos e as Cotas */
+  function antesDaEscala() {
+    var d = RW.extrajornadaOrg.dados();
+    return !!(d && d.antes_da_escala && d.competencia === iso(comp));
+  }
+
   /* a área à vista: a da aba (Minha extra, Calendário) ou a do passo (Organizar o mês; a Distribuição e os Ajustes
      são a mesma área). Enquanto a leitura dela não chega, a forma no lugar; se falhou, a frase (os moldes da Escala).
+     No mês antes da escala no sistema, a Distribuição, os Ajustes e os Relatórios dão lugar ao aviso.
      O menu Ações fica desligado enquanto o mês não chega, para nada agir sobre o mês antigo */
   function mostrarArea(n) {
     passoVisivel = n;
     var l = leituras[aba === 'minha' ? 'minha' : 'mes'], pronta = l.situacao === 'ok';
+    var antes = aba === 'organizar' && n >= 3 && antesDaEscala();
     Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-corpo [data-aba-painel]'), function (s) {
-      var ve = aba === 'organizar' ? doPasso(s, 'data-passo-painel', n) : s.getAttribute('data-aba-painel') === aba;
+      var ve = antes ? s.getAttribute('data-aba-painel') === 'antes'
+        : aba === 'organizar' ? doPasso(s, 'data-passo-painel', n) : s.getAttribute('data-aba-painel') === aba;
       s.classList.toggle('oculto', !ve || !pronta);
     });
     el.estado.classList.toggle('oculto', pronta);
@@ -189,9 +216,12 @@
   /* na barra, o que é só de alguns passos (data-passo-barra) aparece só neles e, no menu Ações, só os itens do passo
      aberto (data-passo-acao); fora do Organizar o mês, nenhum. O Exibir da Distribuição e dos Ajustes (a Escala
      completa) mostra e esconde pelo extrajornada-filtros.js. O seletor Agenda | Calendário e o Imprimir ficam nas Extras
-     do mês, na Distribuição e nos Ajustes; fora deles, o seletor de unidade do celular some */
+     do mês, na Distribuição e nos Ajustes; fora deles, o seletor de unidade do celular some. No mês antes da escala no
+     sistema, nenhum (só para ver; as Extras do mês, sem calendário) */
   function barraDoPasso(n) {
-    var comModos = aba === 'calendario' || n === 3 || n === 4;
+    var antes = antesDaEscala();
+    if (antes) n = null;
+    var comModos = (aba === 'calendario' && !antes) || n === 3 || n === 4;
     el.modos.classList.toggle('oculto', !comModos);
     el.imprimir.classList.toggle('oculto', !comModos);
     mostrarDisposicao();
@@ -286,6 +316,7 @@
     el.legenda = RW.legenda.montar(conteudo.querySelector('#extrajornada-legenda'));
     el.legendaDivisor = conteudo.querySelector('#extrajornada-legenda-divisor');
     el.estado = conteudo.querySelector('#extrajornada-estado');
+    conteudo.querySelector('#extrajornada-antes-texto').textContent = msg().org.antesDaEscala;
     el.acoes = conteudo.querySelector('#extrajornada-acoes > .botao');
     el.modos = conteudo.querySelector('#extrajornada-modos');
     el.imprimir = conteudo.querySelector('#extrajornada-imprimir');
@@ -357,6 +388,8 @@
 
   RW.extrajornada = { comp: function () { return iso(comp); }, legenda: legenda, passo: mostrarPasso, recarregar: function () { carregar(); }, leitura: leitura,
     modo: modo,
+    /* refaz a barra da aba aberta com o mês lido (as Extras do mês do mês antes da escala no sistema ficam sem calendário) */
+    barra: function () { barraDoPasso(aba === 'organizar' ? passoVisivel : null); },
     /* o dia pedido pela Escala (o Organizar o mês abre nos Ajustes; os Ajustes abrem o painel dele); usar: lido, sai */
     diaPedido: function (usar) { var x = diaPedido; if (usar) diaPedido = null; return x; },
     /* as grades do mês: antes de desenhar a Agenda, as unidades dela (no celular, o seletor de unidade); depois de montar,

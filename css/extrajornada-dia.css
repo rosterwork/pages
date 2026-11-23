@@ -246,9 +246,9 @@
   white-space: nowrap;
 }
 
-/* quem inseriu a extra (o ícone do sistema ou o do administrador): no calendário e na Agenda, ao lado das bolinhas; no
-   Neste dia do painel do dia, antes do nome. A dica dele ("Inserido pelo...") sai para a esquerda, como a da vaga, e a
-   do nome e do horário não aparece junto */
+/* o cadeado da extra que o administrador pôs ou mudou (a do sistema fica sem ícone): no calendário e na Agenda, ao lado
+   das bolinhas; no Neste dia do painel do dia, antes do nome. A dica dele ("Inserido pelo administrador") sai para a
+   esquerda, como a da vaga, e a do nome e do horário não aparece junto */
 .extrajornada-origem {
   display: inline-flex;
   align-items: center;

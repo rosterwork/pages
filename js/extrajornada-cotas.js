@@ -11,14 +11,17 @@
    soma da Sugestão dos militares dela). A fila é a da companhia no
    "Entre todos" e a de cada unidade no "Unidades". A Sugestão vem do banco e é pedida de novo a cada mudança
    na repartição, sem salvar (extrajornada_mes com p_so_sugestao). O
-   Recebe é o campo de seleção (de 0 até o que ele pediu; quem só
-   aceita 24 h, de 4 em 4), com a borda forte quando difere do
+   Recebe é o campo de seleção (de 0 a 10 para todos, mesmo acima
+   do que ele pediu), com a borda forte quando difere do
    salvo, e o cadeado ao lado quando o número foi escolhido no campo
    (a marca é guardada no salvar). O Preencher põe a Sugestão em todos
    e tira o cadeado, com o Desfazer no rodapé; com algum Recebe mudado
    e não salvo, ele trava (apagaria a mudança). Cota abaixo do que ele já tem na distribuição avisa
    embaixo da linha: as extras dele saem ao salvar. Tudo fica no
    rascunho até o Salvar (extrajornada_cotas_salvar), que abre o resumo.
+   No mês antes da escala no sistema (antes de outubro de 2026), só para
+   ver: as cotas da companhia são a soma do que cada um recebeu, o
+   Recebe é texto, e a Sugestão, o Na escala e a caixa dos pares somem.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.extrajornadaCotas.
    ============================================================ */
@@ -54,8 +57,9 @@
   function diasDe(m) { return d.alocacoes.filter(function (a) { return a.cpf === m.cpf; }).map(function (a) { return a.data; }).sort().map(u().br); }
   /* abaixo do que está na grade, as extras dele saem ao salvar */
   function perde(m) { return conc(m) < naGrade(m); }
-  /* a lista do Recebe: de 0 até o que ele pediu */
-  function opcoes(m) { var l = []; for (var n = 0; n <= (m.cotas || 0); n++) l.push(n); return l; }
+  /* a lista do Recebe: de 0 a 10 para todos, mesmo acima do que ele pediu (a Sugestão nunca passa do pedido) */
+  var RECEBE_MAXIMO = 10;
+  function opcoes() { var l = []; for (var n = 0; n <= RECEBE_MAXIMO; n++) l.push(n); return l; }
   /* por unidades, as cotas da companhia são a soma das unidades */
   function somaUnidades() { return Object.keys(p2.unidades).reduce(function (s, k) { return s + (+p2.unidades[k] || 0); }, 0); }
   function recebido() { return p2.modo === 'por_unidade' ? somaUnidades() : (+p2.recebidas || 0); }
@@ -80,10 +84,15 @@
     return un ? msg().cotasPassaramUnidade(un.nome, repartidoEm(un.id), +p2.unidades[un.id] || 0) : '';
   }
 
+  /* o mês antes da escala no sistema: só para ver o que cada um pediu e recebeu */
+  function antesDaEscala() { return !!d.antes_da_escala; }
+
   function iniciarRascunho() {
     p2 = { modo: d.mes.repartir_por || 'grupo', recebidas: d.mes.cotas_recebidas, unidades: Object.assign({}, d.mes.cotas_unidades || {}),
       conc: {}, manual: {}, sujo: false, sug: {}, antes: null, pares: !!d.mes.sugestao_pares };
     d.militares.forEach(function (m) { if (m.sugerido) p2.sug[m.cpf] = m.sugerido; });
+    /* antes da escala no sistema, o total não foi guardado: as cotas da companhia são a soma do que cada um recebeu */
+    if (antesDaEscala()) { p2.modo = 'grupo'; p2.recebidas = soma(comTermo(), function (m) { return m.concedidas || 0; }); }
   }
 
   /* a frase "Calculando a sugestão" no rodapé, no lugar do texto dele, só se a conta passar de 0,3 s (sem travar a tela:
@@ -131,30 +140,39 @@
 
   function desenhar() {
     if (!p2) iniciarRascunho();
-    var porUnidade = p2.modo === 'por_unidade';
-    /* a faixa: as cotas da companhia (campo ou a soma das unidades), os números e a caixa dos pares */
+    var porUnidade = p2.modo === 'por_unidade', antes = antesDaEscala();
+    /* a faixa: as cotas da companhia (campo ou a soma das unidades; antes da escala no sistema, a soma do que cada um
+       recebeu, em texto), os números e a caixa dos pares */
     var pares = q('#p2-pares');
+    pares.classList.toggle('oculto', antes);
     pares.setAttribute('aria-checked', p2.pares ? 'true' : 'false');
     pares.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', p2.pares);
     todos('.extrajornada-cia', function (e) { e.textContent = cia().nome || ''; });
     var campo = q('#p2-recebidas');
-    campo.classList.toggle('oculto', porUnidade);
+    campo.classList.toggle('oculto', porUnidade || antes);
     if (document.activeElement !== campo) campo.value = p2.recebidas == null ? '' : p2.recebidas;
-    q('#p2-recebidas-soma').classList.toggle('oculto', !porUnidade);
-    q('#p2-recebidas-soma').textContent = somaUnidades();
+    q('#p2-recebidas-soma').classList.toggle('oculto', !porUnidade && !antes);
+    q('#p2-recebidas-soma').textContent = porUnidade ? somaUnidades() : recebido();
     var lista = comTermo(), total = recebido(), ent = soma(lista, conc);
     q('#p2-entregues').textContent = ent;
     pintar(q('#p2-entregues'), cor(total, lista));
     q('#p2-sobram').textContent = total - ent;
     q('#p2-sobram').classList.toggle('extrajornada-voluntarios-numero-valor--erro', total - ent < 0);
     q('#p2-na-escala').textContent = soma(lista, naGrade);
+    q('#p2-na-escala').parentNode.classList.toggle('oculto', antes);
 
-    /* a grade: um bloco por unidade nos dois jeitos */
+    /* a grade: um bloco por unidade nos dois jeitos (antes da escala no sistema, sem a Sugestão e o Na escala) */
     var sel = u().escolhidas();
     var visiveis = lista.filter(function (m) { return sel.indexOf(m.unidade_id) >= 0; });
     var alvo = q('#p2-lista');
     alvo.textContent = '';
-    if (visiveis.length) alvo.appendChild(RW.tpl('tpl-extrajornada-p2-cab'));
+    alvo.classList.toggle('extrajornada-grade--antes', antes);
+    if (visiveis.length) {
+      var cab = RW.tpl('tpl-extrajornada-p2-cab');
+      cab.querySelector('.extrajornada-p2-col-sug').classList.toggle('oculto', antes);
+      cab.querySelector('.extrajornada-p2-col-escala').classList.toggle('oculto', antes);
+      alvo.appendChild(cab);
+    }
     var ajuste = d.iniciado && !!d.lancamento;
     d.unidades.forEach(function (un) {
       if (sel.indexOf(un.id) < 0) return;
@@ -163,9 +181,10 @@
       var bloco = RW.tpl('tpl-extrajornada-p2-bloco');
       bloco.querySelector('.extrajornada-voluntarios-bloco-nome').textContent = un.nome;
       bloco.querySelector('.extrajornada-voluntarios-bloco-detalhe').textContent = un.cidade || '';
-      /* o Recebeu: o campo da unidade (por unidades) ou a parte que a fila da companhia dá a ela (entre todos) */
+      /* o Recebeu: o campo da unidade (por unidades) ou a parte que a fila da companhia dá a ela (entre todos); antes da
+         escala no sistema, a soma do que os militares dela receberam */
       var inp = bloco.querySelector('.extrajornada-voluntarios-bloco-total'), texto = bloco.querySelector('.extrajornada-bloco-recebeu');
-      var recebeu = porUnidade ? (+p2.unidades[un.id] || 0) : soma(daqui, sugestao);
+      var recebeu = porUnidade ? (+p2.unidades[un.id] || 0) : soma(daqui, antes ? conc : sugestao);
       inp.classList.toggle('oculto', !porUnidade);
       texto.classList.toggle('oculto', porUnidade);
       texto.textContent = recebeu;
@@ -201,10 +220,11 @@
     q('#p2-mudancas').classList.toggle('extrajornada-negativo', !!erro);
     q('#p2-salvar').disabled = !p2.sujo || !!erro;
     q('#p2-desfazer').classList.toggle('oculto', !p2.antes);
-    /* com os pedidos abertos, o aviso no alto e os campos travados (o banco também recusa) */
+    /* com os pedidos abertos, o aviso no alto e os campos travados (o banco também recusa); antes da escala no sistema,
+       travados também (só para ver) */
     var aberto = d.mes.estado !== 'encerrado';
     q('#p2-topo').classList.toggle('oculto', !aberto);
-    todos('[data-aba-painel="cotas"] input, .extrajornada-voluntarios-conc-gatilho, #p2-pares', function (e) { e.disabled = aberto; });
+    todos('[data-aba-painel="cotas"] input, .extrajornada-voluntarios-conc-gatilho, #p2-pares', function (e) { e.disabled = aberto || antes; });
   }
 
   /* um voluntário: a fila, o militar, o pedido, o atendido em 12 meses, a sugestão, o Recebe e o que já está na escala */
@@ -224,11 +244,18 @@
     sug.textContent = sugestao(m);
     /* a sugestão parou no que cabe nos dias livres dele: a dica diz quanto cabe */
     if (m.cabem != null && m.cabem < (m.cotas || 0)) sug.setAttribute('data-dica', msg().sugCabe(m.cabem));
+    /* antes da escala no sistema, só para ver: sem a Sugestão e o Na escala, e o Recebe em texto no lugar do campo */
+    var antes = antesDaEscala();
+    sug.classList.toggle('oculto', antes);
+    l.querySelector('.extrajornada-voluntarios-na-escala').classList.toggle('oculto', antes);
+    l.querySelector('.extrajornada-voluntarios-conc').classList.toggle('oculto', antes);
+    l.querySelector('.extrajornada-p2-recebe-texto').classList.toggle('oculto', !antes);
+    l.querySelector('.extrajornada-p2-recebe-texto').textContent = conc(m);
     l.querySelector('.extrajornada-voluntarios-conc-texto').textContent = conc(m);
     l.querySelector('.extrajornada-voluntarios-conc').classList.toggle('campo--alterado', conc(m) !== (m.concedidas || 0));
-    l.querySelector('.extrajornada-p2-cadeado').classList.toggle('oculto', !manual(m));
+    l.querySelector('.extrajornada-p2-cadeado').classList.toggle('oculto', !manual(m) || antes);
     RW.dropdownNumeros.preencher(l.querySelector('.extrajornada-voluntarios-conc-menu'), {
-      opcoes: opcoes(m), valor: conc(m),
+      opcoes: opcoes(), valor: conc(m),
       aoEscolher: function (n) { p2.conc[m.cpf] = n; p2.manual[m.cpf] = true; p2.sujo = true; desenhar(); }
     });
     l.querySelector('.extrajornada-voluntarios-na-escala').textContent = msg().deCotas(naGrade(m), conc(m));

@@ -14,7 +14,9 @@
    fica pronta; o dia que o Salvar acabou de gravar (certo na tela) vem
    do dado real, numa leitura à parte. A grade sai como sempre e a
    linha chega logo depois. Sem a leitura (o banco falhou), a linha não
-   aparece.
+   aparece. A folha das grades (o Imprimir, com a opção marcada) pede a
+   mesma conta por paraImpressao, com o dado real, como a leitura da
+   impressão.
    Não cria HTML (o componente clona o molde) nem escreve estilo.
    RosterWork.escalasFalta.
    ============================================================ */
@@ -125,9 +127,31 @@
     Array.prototype.forEach.call(celulas(), function (cel) { if (sim) pedir(cel); else desenhar(cel); });
   }
 
+  /* a conta para a folha das grades (escalas-impressao-grade.js): a falta das unidades e dos dias que saem, lida no banco
+     com o dado real, as extras de cada horário e a cor de cada hora do gráfico da folha. dados = a leitura da escala da
+     impressão. Devolve a promessa de { unidade: { dia: os horários (geral-falta-gente) } }; a leitura que falha rejeita
+     (a prévia mostra o aviso dela) */
+  function paraImpressao(ids, inicio, fim, dados) {
+    return RW.rpc('escala_falta_mes', { p_unidade_ids: ids, p_inicio: inicio, p_fim: fim }).then(function (r) {
+      if (!r) throw new Error('falha');
+      var falta = {};
+      ids.forEach(function (uid) {
+        var sem = (r.sem || {})[uid] || {}, com = (r.com || {})[uid] || {};
+        falta[uid] = {};
+        /* os dias com gráfico (a linha fica embaixo dele) */
+        Object.keys((dados.cobertura || {})[uid] || {}).forEach(function (dia) {
+          falta[uid][dia] = RW.faltaGente.porHorario(sem[dia] || {}, com[dia] || {}, extrasDe(((dados.militares || {})[uid] || {})[dia]),
+            ((dados.erro || {})[uid] || {})[dia] || null);
+        });
+      });
+      return falta;
+    });
+  }
+
   RW.escalasFalta = {
     decorar: decorar,
     atualizar: atualizar,
+    paraImpressao: paraImpressao,
     /* a cópia dos dias ficou pronta (escalas-atualizando.js): a célula refeita lê a conta de novo. chaves = ['unidade|dia'] */
     esquecer: function (chaves) { (chaves || []).forEach(function (k) { delete dados[k]; }); },
     /* a página é nova (a visita): esquece a conta guardada e confere a opção */

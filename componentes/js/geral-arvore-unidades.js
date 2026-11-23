@@ -309,5 +309,15 @@
     });
   }
 
-  window.RosterWork.arvoreUnidades = { montar: montar, atualizar: renderizar, recarregar: recarregar, pai: pai, trilha: trilha };
+  /* o que a árvore já leu de uma unidade, marcada ou não: a unidade da hierarquia e os itens dela (só leitura; o
+     Imprimir dos Afastamentos, para a unidade marcada no painel que não está na tela); null antes de chegar */
+  function conteudoDe(unidadeId) {
+    var lista = conteudoPorRpc[rpcConteudo()];
+    if (!lista || !unidades) return null;
+    var id = String(unidadeId);
+    var unidade = unidades.filter(function (u) { return String(u.unidade_id) === id; })[0] || null;
+    return { unidade: unidade, itens: lista.filter(function (item) { return String(item[chaveUnidade()]) === id; }) };
+  }
+
+  window.RosterWork.arvoreUnidades = { montar: montar, atualizar: renderizar, recarregar: recarregar, pai: pai, trilha: trilha, conteudoDe: conteudoDe };
 })();

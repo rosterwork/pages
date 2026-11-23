@@ -14,10 +14,13 @@
    escalas-impressao-grade-pdf.js. O Colunas fica com a folha dele, com
    as unidades uma embaixo da outra no Colunas › Dias. As unidades
    começam marcadas com as da tela; o Mostrar (gráfico e ícones), a
-   prévia e o Gerar PDF são do painel comum.
+   prévia e o Gerar PDF são do painel comum. Com a Falta de gente
+   marcada nos Filtros da tela (falta), a linha dela sai embaixo do
+   gráfico (a conta lida à parte, escalas-falta.js).
    Quem imprime outra grade (a Extrajornada) passa a leitura dela no
-   lugar da escala (dados, no mesmo formato), o título do arquivo e
-   a conferência (null: sem o aviso do erro grave da escala).
+   lugar da escala (dados, no mesmo formato, já com a falta quando a
+   tela a mostra), o título do arquivo e a conferência (null: sem o
+   aviso do erro grave da escala).
    ============================================================ */
 (function () {
   'use strict';
@@ -37,6 +40,7 @@
 
   var form = null;          // o painel aberto: as escolhas desta impressão (formato e período) e as peças delas
   var cacheDados = null;    // { chave, promessa }: mudar o formato, o Mostrar ou o período não busca de novo
+  var cacheFalta = null;    // { chave, promessa }: a conta da Falta de gente, do mesmo jeito
 
   function msg() { return RW.mensagens.escala.impressao.grade; }
 
@@ -184,9 +188,10 @@
   }
 
   /* ---------- a orientação ---------- */
-  /* o que vale do molde: as caixas das grades, a do período da grade e, na Agenda e no Calendário, a orientação */
+  /* o que vale do molde: as caixas das grades (ou as de quem abriu, opcoes.marcas), a do período da grade e, na Agenda
+     e no Calendário, a orientação */
   function marcas() {
-    return ['grade', FORMATOS[form.formato].periodo].concat(form.comOrientacao ? ['orientacao'] : []);
+    return form.marcas.concat([FORMATOS[form.formato].periodo], form.comOrientacao ? ['orientacao'] : []);
   }
 
   /* a orientação trocou a grade (Retrato: a agenda; Paisagem: o calendário): a caixa do período (os botões das semanas
@@ -210,6 +215,19 @@
     return promessa;
   }
 
+  /* a escala com a Falta de gente marcada nos Filtros (comFalta) e o gráfico na folha: os dados com a conta de cada
+     horário (escalas-falta.js), lida uma vez para o mesmo pedido; sem ela, os dados como vieram */
+  function comFaltaDeGente(comFalta, ids, inicio, fim, dados) {
+    if (!comFalta || !RW.escalasFalta) return Promise.resolve(dados);
+    var chave = ids.join(',') + '|' + inicio + '|' + fim;
+    if (!cacheFalta || cacheFalta.chave !== chave) {
+      var promessa = RW.escalasFalta.paraImpressao(ids, inicio, fim, dados);
+      cacheFalta = { chave: chave, promessa: promessa };
+      promessa.catch(function () { if (cacheFalta && cacheFalta.promessa === promessa) cacheFalta = null; });
+    }
+    return cacheFalta.promessa.then(function (falta) { return Object.assign({}, dados, { falta: falta }); });
+  }
+
   /* a nota do alto: "Calendário de outubro de 2026, 2ªCIBM e 2ºPEL, sem filtros." */
   function resumo(unidades) {
     var periodo = FORMATOS[form.formato].periodo === 'semana'
@@ -230,6 +248,8 @@
        dados dela, e a página Sobreaviso não o mostra); as unidades sempre uma embaixo da outra no calendário, seja qual for
        a tela (cabe na A4) */
     var comOficial = !form.dados && !form.semOficial;
+    /* a Falta de gente da escala (a linha fica embaixo do gráfico: sem ele, não sai) */
+    var comFalta = form.falta && !form.dados && mostrar.grafico;
     return {
       resumo: resumo(escolhas.unidades),
       inicio: iso(dentro[0].data),
@@ -237,7 +257,10 @@
       chave: [escolhas.ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, p.dias.length,
         iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto].join('|'),
       montar: function () {
-        return carregarDados(escolhas.ids, iso(p.busca.inicio), iso(p.busca.fim)).then(function (dados) {
+        var inicio = iso(p.busca.inicio), fim = iso(p.busca.fim);
+        return carregarDados(escolhas.ids, inicio, fim).then(function (dados) {
+          return comFaltaDeGente(comFalta, escolhas.ids, inicio, fim, dados);
+        }).then(function (dados) {
           return RW.escalasImpressaoGradePdf.gerar({ formato: formato, paisagem: paisagem, continua: continua, mostrar: mostrar,
             diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados, titulo: titulo, prefixo: prefixo,
             comOficial: comOficial });
@@ -257,20 +280,24 @@
      filtros (os ligados na tela, em texto); de outra grade: dados(ids, inicio, fim) (a promessa no formato do
      RosterWork.escalasDados.carregar), titulo (o do alto da folha), prefixo (o começo do nome do arquivo) e conferir
      (null: sem a conferência da escala); da página Sobreaviso, também semOficial (sem o Oficial de Área no título do dia)
-     e mostrar (as caixas do Mostrar já marcadas) } */
+     e mostrar (as caixas do Mostrar já marcadas); da Escala, falta (a Falta de gente marcada nos Filtros); da página
+     Afastamentos, marcas (as caixas do molde que valem, no lugar das das grades) e semOrientacao (sem a Orientação) } */
   function abrir(opcoes) {
     if (!RW.painel || !RW.impressao || !FORMATOS[opcoes.formato]) return;
     var formato = opcoes.formato;
     var periodo = FORMATOS[formato].periodo;
     var data = opcoes.data || new Date();
     cacheDados = null;
+    cacheFalta = null;
     RW.painel.abrir({ titulo: msg().titulos[formato], subtitulo: msg().subtitulo(FORMATOS[formato].paisagem, false),
-      aoFechar: function () { RW.impressao.esquecer(); form = null; cacheDados = null; } });
+      aoFechar: function () { RW.impressao.esquecer(); form = null; cacheDados = null; cacheFalta = null; } });
     /* as escolhas desta impressão (o formato e o período) e o que vem da tela */
     form = {
-      formato: formato, comOrientacao: formato === ORIENTACOES.retrato || formato === ORIENTACOES.paisagem,
+      formato: formato, marcas: opcoes.marcas || ['grade'],
+      comOrientacao: !opcoes.semOrientacao && (formato === ORIENTACOES.retrato || formato === ORIENTACOES.paisagem),
       continua: false, diasPorLinha: opcoes.diasPorLinha || 3, filtros: opcoes.filtros || [],
       dados: opcoes.dados || null, titulo: opcoes.titulo || null, prefixo: opcoes.prefixo || null, semOficial: !!opcoes.semOficial,
+      falta: !!opcoes.falta,
       data: new Date(data.getFullYear(), data.getMonth(), data.getDate()), mes: new Date(data.getFullYear(), data.getMonth(), 1),
       mesTodo: true, semanas: [], de: 1, ate: 1
     };

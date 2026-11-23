@@ -1303,10 +1303,10 @@
   }
 
   /* uma função de um bloco só para ver (o Oficial de Área, o Chefe de Socorro, o Cabo de Dia, a Extrajornada, o
-     estagiário): a pessoa está no posto dela, então o Chefe de Socorro e o Oficial de Área de quem serve nesta unidade
-     no dia têm o lápis só com a parte do dia do menu (os outros, sem lápis); o Oficial de Área da companhia, para quem
-     administra a companhia, traz o Ver o dia na companhia (o dia dele mora lá; a aba Funções de lá abre com o menu
-     dele); o Cabo de Dia sem ninguém, só para quem administra, em amarelo */
+     estagiário): a pessoa está no posto dela, onde a função muda, então quem serve nesta unidade no dia tem o lápis só
+     com a parte do dia do menu; o Oficial de Área da companhia, para quem administra a companhia, traz o Ver o dia na
+     companhia (o dia dele mora lá; a aba Funções de lá abre com o menu dele); o Cabo de Dia sem ninguém, só para quem
+     administra, em amarelo */
   function linhasExibida(caixa, f) {
     var grupo = novoGrupo([f.nome], f.semNinguem.length ? 'alerta' : null);
     if (!grupo) return;

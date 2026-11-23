@@ -11,7 +11,9 @@
    lançado sem mudança por salvar no dia), o que sobra é o da escala
    de hoje: a falta "real" do banco e a cor da barra da Escala.
    A linha da Falta de gente (o Exibir) usa a base e o total daqui
-   no componente geral-falta-gente (extrajornada-por-dia.js).
+   no componente geral-falta-gente (horarios: a mesma conta para a
+   tela, extrajornada-por-dia.js, e para a folha,
+   extrajornada-imprimir-grade.js).
    Só conta: não cria HTML nem escreve estilo.
    RosterWork.extrajornadaFalta.
    ============================================================ */
@@ -83,6 +85,14 @@
       r.niveis[b] = corDoHorario(erroReal, b);
     });
   }
+  /* a linha da Falta de gente de um pelotão no dia (a conta de cada horário de 6 h do geral-falta-gente): a falta do dia
+     (f, de doDia), as extras de cada horário (as do pelotão no dia, só os horários que cada uma cobre inteiros) e a cor de
+     cada hora do gráfico (erro) */
+  function horarios(f, uid, k, alocs, erro) {
+    var extras = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    alocs.forEach(function (a) { if (+a.unidade === +uid && a.data === k) blocos(a).forEach(function (b) { extras[b]++; }); });
+    return RW.faltaGente.porHorario(f.base, f.total, extras, erro);
+  }
   function soma(f) { return f.total[1] + f.total[2] + f.total[3] + f.total[4]; }
   /* a cor do dia de um pelotão: 'erro' ou 'alerta' se ainda sobra; 'ok' se tinha erro e as extras cobriram. No dia de
      verdade, a cor da barra da Escala */
@@ -100,5 +110,5 @@
     });
   }
 
-  RW.extrajornadaFalta = { doDia: doDia, soma: soma, cor: cor, situacao: situacao, conduz: conduz };
+  RW.extrajornadaFalta = { doDia: doDia, horarios: horarios, soma: soma, cor: cor, situacao: situacao, conduz: conduz };
 })();

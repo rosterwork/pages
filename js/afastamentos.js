@@ -12,8 +12,9 @@
    periodo.js), os Filtros (Situação no período, que some no
    Calendário; Afastamento: escolher um nome esconde os outros), a
    busca e, depois do traço, as unidades lado a lado e o tamanho (só no
-   Calendário, os da Escala) e a Ordem (a busca e a ordem vêm do
-   usuarios-exibir.js). O clique no militar abre o painel dele
+   Calendário, os da Escala), a Ordem (a busca e a ordem vêm do
+   usuarios-exibir.js) e o Imprimir (o painel da aba, com o que a tela
+   mostra: afastamentos-impressao.js). O clique no militar abre o painel dele
    (afastamentos-painel.js); quem administra edita na caixa da grade
    (afastamentos-celula.js) ou no painel; o rascunho é um só.
    ============================================================ */
@@ -45,6 +46,10 @@
   var siglas = {};           // cpf -> a sigla da unidade (ao lado do nome, no painel)
   var setores = {};          // cpf -> o setor (Operacional, Administrativo, Aluno): o Salvar sabe se refaz a escala
   var nomes = {};            // cpf -> o posto e o nome de guerra (na frente do motivo do rodapé)
+  var cargas = {};           // ano -> a promessa da leitura dele (o Imprimir espera o ano chegar)
+  var unidadesNaTela = [];   // as unidades do último desenho ([{ unidade_id, nome }]: as marcadas no começo do Imprimir)
+  var passadaNaTela = [];    // as da passada da árvore em curso
+  var paginaEl = null;       // o fragmento da página (a linha dos filtros ligados)
 
   function M() { return RW.mensagens.afastamentos; }
   function R() { return RW.afastamentosRascunho; }
@@ -102,15 +107,19 @@
     return modoBusca === 'filtrar' ? 'esconder' : '';
   }
 
-  /* o militar entra? a busca e a situação no período (pelos afastamentos à vista; no Calendário não vale: ali só
-     aparece quem tem afastamento). O da caixa aberta fica enquanto ela está aberta (a data mudada não o tira da grade) */
-  function passa(pessoa) {
+  /* a vista da tela: a aba, o ano e o mês e o período (o Imprimir guarda a de quando abriu) */
+  function vistaDaTela() { return { aba: aba, ano: ano, mes: mes, periodo: periodo() }; }
+
+  /* o militar entra na vista? a busca e a situação no período (pelos afastamentos à vista; no Calendário não vale: ali
+     só aparece quem tem afastamento). O da caixa aberta fica enquanto ela está aberta (a data mudada não o tira da grade) */
+  function passaNa(pessoa, vista) {
     if (busca(pessoa) === 'esconder') return false;
-    if (lendo() || noCalendario()) return true;
+    if (!lidos[vista.ano] || vista.aba === 'calendario') return true;
     var caixa = Cx() ? Cx().aberta() : null;
     if (caixa && caixa.cpf === String(pessoa.usuario_id)) return true;
-    return !filtros || filtros.passa('situacao', visiveis(pessoa).length ? 'com' : 'sem');
+    return !filtros || filtros.passa('situacao', visiveisEm(pessoa, vista.periodo).length ? 'com' : 'sem');
   }
+  function passa(pessoa) { return passaNa(pessoa, vistaDaTela()); }
 
   /* ---------- o painel do militar e o realce da peça dele ---------- */
 
@@ -163,6 +172,7 @@
   /* a unidade: a grade do ano ou do mês (no celular, a lista); no Calendário, ela só entra na lista da passada (o
      calendário se desenha no fim, com todas); sem ninguém pelos filtros, o aviso */
   function renderConteudo(container, unidade, pessoas) {
+    passadaNaTela.push({ unidade_id: unidade.unidade_id, nome: unidade.nome });
     pessoas.forEach(function (p) {
       siglas[String(p.usuario_id)] = unidade.nome || '';
       setores[String(p.usuario_id)] = p.tipo || '';
@@ -192,6 +202,8 @@
   /* depois de desenhar: os nomes do período nos Filtros; no Calendário, o calendário com as unidades da
      passada; a caixa aberta acompanha a grade nova; e a contagem do título */
   function aoRenderizar(pessoas) {
+    unidadesNaTela = passadaNaTela;
+    passadaNaTela = [];
     if (filtros) {
       var tem = {};
       (pessoas || []).forEach(function (p) { doPeriodo(p).forEach(function (af) { tem[chaveFiltro(af)] = true; }); });
@@ -295,7 +307,7 @@
     if (!faltam.length) return;
     var meu = ++token;
     faltam.forEach(function (esse) {
-      RW.etapas.segurarDesde(performance.now(), RW.afastamentosDados.listarAno(esse)).then(function (lista) {
+      cargas[esse] = RW.etapas.segurarDesde(performance.now(), RW.afastamentosDados.listarAno(esse)).then(function (lista) {
         if (meu !== token || !naTela()) return;
         if (lista == null) {
           if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(M().falhaCarregar) });
@@ -317,6 +329,52 @@
       return;
     }
     atualizar();
+  }
+
+  /* ---------- o Imprimir ---------- */
+
+  /* o ano chegou? true quando ele está no rascunho; espera a leitura em curso (a que foi pedida de novo, se a primeira
+     ficou para trás); false se não há leitura (a que falhou) */
+  function anoPronto(a) {
+    if (lidos[a]) return Promise.resolve(true);
+    var carga = cargas[a];
+    if (!carga) return Promise.resolve(false);
+    return carga.then(function () { return lidos[a] ? true : (cargas[a] !== carga ? anoPronto(a) : false); });
+  }
+
+  /* a unidade na vista: a contagem do bloco e os militares que a tela mostraria, na ordem da tela (também a que não está
+     na tela, do efetivo que a árvore já leu); null sem ela */
+  function unidadeNaVista(id, vista) {
+    var c = RW.arvoreUnidades.conteudoDe(id);
+    if (!c || !c.unidade) return null;
+    var n = c.itens.filter(function (p) { return doPeriodo(p, vista.periodo).length; }).length;
+    return {
+      unidade: c.unidade,
+      contagem: vista.aba === 'ano' ? M().contagem(n) : M().contagemMes(n),
+      pessoas: X().ordenar(c.itens).filter(function (p) { return passaNa(p, vista); })
+    };
+  }
+
+  /* os filtros ligados, como na linha "Filtros:" ("Situação: Com afastamento no mês") */
+  function filtrosLigados() {
+    if (!paginaEl) return [];
+    return Array.prototype.map.call(paginaEl.querySelectorAll('.filtros-ativos:not(.oculto) .filtro-ativo'), function (e) {
+      return e.querySelector('.filtro-ativo-tipo').textContent + ': ' + e.querySelector('.filtro-ativo-valor').textContent;
+    });
+  }
+
+  /* o painel de impressão da aba, com a vista de agora e as unidades da tela */
+  function abrirImpressao() {
+    if (!RW.afastamentosImpressao) return;
+    var vista = vistaDaTela();
+    RW.afastamentosImpressao.abrir({
+      aba: vista.aba, ano: vista.ano, mes: vista.mes, inicio: vista.periodo.inicio, fim: vista.periodo.fim,
+      naTela: unidadesNaTela.slice(),
+      filtros: filtrosLigados(),
+      pronto: function () { return anoPronto(vista.ano); },
+      unidade: function (id) { return unidadeNaVista(id, vista); },
+      afastamentos: function (pessoa, inicio, fim) { return visiveisEm(pessoa, { inicio: inicio, fim: fim }); }
+    });
   }
 
   /* ---------- a página ---------- */
@@ -342,7 +400,11 @@
     corpoArvore = conteudo.querySelector('.afastamentos-corpo');
     corpoCalendario = conteudo.querySelector('#afastamentos-calendario');
     elContagem = conteudo.querySelector('.pagina-titulo-contagem');
+    paginaEl = conteudo;
     lidos = {};
+    cargas = {};
+    unidadesNaTela = [];
+    passadaNaTela = [];
     token++;
     ano = anoAtual();
     mes = new Date().getMonth();
@@ -386,6 +448,8 @@
 
     ligarBusca(conteudo);
     X().ligarOrdem(conteudo, atualizar);
+    var btnImprimir = conteudo.querySelector('#afastamentos-imprimir');
+    if (btnImprimir) btnImprimir.addEventListener('click', abrirImpressao);
 
     /* as unidades lado a lado e o tamanho do calendário: os da Escala (a escolha é uma só para as telas) */
     barra.disposicao = conteudo.querySelector('#afastamentos-disposicao');

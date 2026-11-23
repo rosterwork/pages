@@ -11,9 +11,11 @@
    todo num mês só, os dias: "Atestado 10 a 12"). No Mês, os
    dias (a sigla do dia da semana e o número; hoje no círculo escuro;
    sábado e domingo sombreados) e cada afastamento numa barra contínua,
-   do primeiro ao último dia dele no mês, com o nome e os dias (o de 1
-   ou 2 dias só com o listrado). Nos dois, dois que se cruzam ficam um
-   embaixo do outro, e o que ainda não foi salvo leva a borda tracejada.
+   do primeiro ao último dia dele no mês, com o nome e as datas inteiras,
+   sempre com o dia e o mês ("18/12 a 14/02/27": só a data de outro ano
+   leva o ano, com 2 dígitos; o de 1 ou 2 dias só com o listrado). Nos
+   dois, dois que se cruzam ficam um embaixo do outro, e o que ainda não
+   foi salvo leva a borda tracejada.
    O clique no militar abre o painel dele; na célula e na barra, a caixa
    (quem administra o militar; afastamentos-celula.js). No celular, a
    lista: o militar e, embaixo, um afastamento do período por linha.
@@ -37,11 +39,13 @@
   }
   function p2(n) { return (n < 10 ? '0' : '') + n; }
 
-  /* "02/10 a 30/11" no ano de referência; a data de outro ano leva o ano ("15/12 a 05/01/2027") */
-  function textoDatas(inicio, fim, ano) {
+  /* "02/10 a 30/11" no ano de referência; a data de outro ano leva o ano ("15/12 a 05/01/2027"; com anoCurto, o ano com
+     2 dígitos, "15/12 a 05/01/27") */
+  function textoDatas(inicio, fim, ano, anoCurto) {
     function uma(iso) {
       var br = D().isoParaBR(iso);
-      return Number(String(iso).slice(0, 4)) === ano ? br.slice(0, 5) : br;
+      if (Number(String(iso).slice(0, 4)) === ano) return br.slice(0, 5);
+      return anoCurto ? br.slice(0, 6) + br.slice(8) : br;
     }
     return uma(inicio) + ' a ' + uma(fim);
   }
@@ -266,7 +270,7 @@
       desenharBarras(linha, afs.map(function (af) {
         var de = af.inicio > ini ? af.inicio : ini, ate = af.fim < fim ? af.fim : fim;
         return { af: af, de: Number(de.slice(8, 10)), ate: Number(ate.slice(8, 10)),
-          datas: M().diasDoMes(de.slice(8, 10), ate.slice(8, 10)), atributo: 'data-dia', valor: de };
+          datas: textoDatas(af.inicio, af.fim, c.ano, true), atributo: 'data-dia', valor: de };
       }), p, c, true);
       grade.appendChild(linha);
       c.contar();

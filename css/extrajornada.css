@@ -331,6 +331,9 @@
   align-items: start;
 }
 
+/* o mês antes da escala no sistema: sem o prazo e o mínimo, a lista dos Pedidos com a largura toda */
+.extrajornada-duas--so-lista { grid-template-columns: 1fr; }
+
 
 .extrajornada-col {
   display: flex;
@@ -546,6 +549,21 @@
 .extrajornada-grade .extrajornada-voluntarios-bloco-titulo {
   grid-template-columns: minmax(48px, 0.6fr) minmax(220px, 3fr) minmax(56px, 1fr) minmax(176px, 1.6fr) minmax(72px, 1fr) minmax(104px, 1fr) minmax(80px, 1fr);
   gap: 16px;
+}
+
+/* o mês antes da escala no sistema, só para ver: sem as colunas Sugestão e Na escala (extrajornada-cotas.js) */
+.extrajornada-grade--antes .extrajornada-voluntarios-linha,
+.extrajornada-grade--antes .extrajornada-voluntarios-bloco-titulo {
+  grid-template-columns: minmax(48px, 0.6fr) minmax(220px, 3fr) minmax(56px, 1fr) minmax(176px, 1.6fr) minmax(104px, 1fr);
+}
+
+/* as Extras do mês no mês antes da escala no sistema: os blocos das Cotas na coluna de leitura, com Militar · Pediu ·
+   Recebeu, um bloco colado no outro como nas Cotas (extrajornada-organizar.js) */
+.extrajornada-grade--resumo { gap: 0; }
+
+.extrajornada-grade--resumo .extrajornada-voluntarios-linha,
+.extrajornada-grade--resumo .extrajornada-voluntarios-bloco-titulo {
+  grid-template-columns: minmax(160px, 3fr) minmax(56px, 1fr) minmax(64px, 1fr);
 }
 
 .extrajornada-grade .extrajornada-voluntarios-bloco-titulo {

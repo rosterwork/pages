@@ -2,14 +2,17 @@
    ESCALAS — a célula no PDF das grades (unidade × dia)
    O bloquinho branco de uma unidade num dia, como na tela: o nome da
    unidade (só no calendário), o gráfico de cobertura (24 barras, na
-   cor do estado), e uma linha por militar com os ícones de origem, a
+   cor do estado) com, quando a tela mostra a Falta de gente, a linha
+   dela embaixo (uma casinha por horário de 6 h, as do
+   geral-falta-gente), e uma linha por militar com os ícones de origem, a
    graduação (no calendário, o posto curto), o nome (riscado na folga,
    na troca, no remanejado e na mudança de dia; sem caber, cortado com
    "…", como na tela) e o horário. O "Mostrar" do painel liga e
    desliga o gráfico e os ícones. As origens, a situação e a hora vêm
    do escalas-celula.js (a mesma fonte da tela). Também diz quem
-   aparece no dia (pelos filtros da tela) e que ícones saem no arquivo
-   (para a legenda do pé da folha).
+   aparece no dia (pelos filtros da tela) e que ícones e casinhas saem
+   no arquivo (para a legenda do pé da folha, que desenha a casinha de
+   exemplo com a daqui).
    Desenhado com a biblioteca do PDF (exceção REGRAS §3/§4):
    medidas em pontos nas constantes abaixo, cores --impressao-* do tema.
    ============================================================ */
@@ -30,6 +33,9 @@
   var FOLGA_CORTE = 1;                     // sobra na conta do corte do nome (a medida do canvas × a da biblioteca)
   var MARGEM = { icone: [0, 0.8, 0, 0], hora: [0, 0.9, 0, 0], seta: [0, 0.6, 0, 0] };   // alinham ao nome
   var GRAFICO = { altura: 10, vao: 0.6, linha: 1, minima: 1.2, corpo: 0.3, corpoProblema: 0.4, raio: 1 };
+  /* a casinha da Falta de gente: altura, vão entre elas, letras (o número, o "+1"), o certo, o canto e o fundo claro
+     (a transparência da cor; a vazia, da cor suave) */
+  var FALTA = { altura: 7, entre: 1.5, numero: 5.5, mais: 4, certo: 4.5, raio: 1, fundo: 0.16, vazia: 0.1 };
 
   var FONTE_MEDIDA = 'Montserrat PDF';     // a fonte do PDF, para medir o nome
   var medidor = null;                      // o canvas fora da tela que mede o texto (sem ele, o nome não é cortado)
@@ -74,16 +80,23 @@
     return '…';
   }
 
-  /* as cores das grades, os ícones de origem (e o cadeado), no traço do tema, e a fonte de medida; uma vez por PDF */
+  /* a largura (pt) de um texto na fonte do PDF, para quem arruma linhas (a legenda do pé e as barras da folha dos
+     Afastamentos); sem o medidor, null */
+  function medirTexto(texto, tamanho, negrito) { return medidor ? larguraTexto(texto, tamanho, !!negrito) : null; }
+
+  /* as cores das grades, os ícones de origem (e o cadeado), no traço do tema, o certo da Falta de gente (verde) e a fonte
+     de medida; uma vez por PDF */
   function preparar(c) {
     var pdf = RW.escalasImpressaoPdf;
     c.sucesso = pdf.cor('--impressao-sucesso');
     c.alerta = pdf.cor('--impressao-alerta');
     c.erro = pdf.cor('--impressao-erro');
-    var nomes = (escalasCelula().iconesDasOrigens ? escalasCelula().iconesDasOrigens() : []).concat(['icone-cadeado']);
-    return Promise.all([Promise.all(nomes.map(pdf.buscarIcone)), carregarFontesMedida()]).then(function (r) {
+    var nomes = escalasCelula().iconesDasOrigens ? escalasCelula().iconesDasOrigens() : [];
+    if (nomes.indexOf('icone-cadeado') < 0) nomes.push('icone-cadeado');
+    return Promise.all([Promise.all(nomes.map(pdf.buscarIcone)), pdf.buscarIcone('icone-check'), carregarFontesMedida()]).then(function (r) {
       c.icones = {};
       nomes.forEach(function (nome, i) { c.icones[nome] = pdf.svgDeTraco(r[0][i], c.suave); });
+      c.certoFalta = pdf.svgDeTraco(r[1], c.sucesso);
       return c;
     });
   }
@@ -109,6 +122,60 @@
       formas.push({ type: 'rect', x: x, y: y, w: w, h: Math.min(GRAFICO.linha, altura), color: corBarra });
     }
     return { canvas: formas, margin: [0, 0, 0, 2] };
+  }
+
+  /* o gráfico sai na célula: com o Mostrar dele, a cobertura do dia e alguém de serviço no período (sem ninguém, só com
+     erro vermelho, como na tela) */
+  function comGrafico(mostrar, cobertura, erro, max) {
+    return !!(mostrar.grafico && cobertura && (max > 0 || (erro || []).some(vermelho)));
+  }
+
+  /* uma casinha da Falta de gente (h = um horário da conta do geral-falta-gente), como na tela: vermelha com quantos ainda
+     faltam ("1 de 2" quando as extras cobriram parte); verde com o certo e, no canto direito, o "+1" das extras a mais; sem
+     nada, clara. O fundo é desenhado e o texto vai por cima dele */
+  function casinha(h, largura, c) {
+    var cor = h.estado === 'falta' ? c.erro : h.estado === 'coberta' ? c.sucesso : c.suave;
+    var r = RW.faltaGente.rotulos(h);
+    var fundo = { canvas: [{ type: 'rect', x: 0, y: 0, w: largura, h: FALTA.altura, r: FALTA.raio, color: cor, fillOpacity: h.estado ? FALTA.fundo : FALTA.vazia }] };
+    var dentro;
+    if (h.estado === 'coberta') {
+      dentro = { columns: [
+        { width: '*', text: '', fontSize: FALTA.mais },
+        { svg: c.certoFalta, width: FALTA.certo, height: FALTA.certo, margin: [0, (FALTA.altura - FALTA.certo) / 2, 0, 0] },
+        { width: '*', text: r.mais, fontSize: FALTA.mais, bold: true, color: cor, alignment: 'right', margin: [0, 0.4, 1, 0] }
+      ], columnGap: 0, margin: [0, -FALTA.altura, 0, 0] };
+    } else {
+      dentro = { text: r.numero || ' ', fontSize: FALTA.numero, bold: true, color: cor, alignment: 'center', margin: [0, 0.6 - FALTA.altura, 0, 0] };
+    }
+    return { width: largura, stack: [fundo, dentro] };
+  }
+
+  /* a linha da Falta de gente embaixo do gráfico: as 4 casinhas, cada uma embaixo das suas 6 barras; sem nada em nenhum
+     horário, null */
+  function faixaDaFalta(horarios, largura, c) {
+    if (!horarios || !horarios.some(function (h) { return h.estado; })) return null;
+    var w = (largura - 3 * FALTA.entre) / 4;
+    return { columns: horarios.map(function (h) { return casinha(h, w, c); }), columnGap: FALTA.entre };
+  }
+
+  /* as casinhas que saem no arquivo ({ falta, coberta, mais }: o vermelho, o certo e o certo com o "+1"), para a legenda do
+     pé da folha; nenhuma, null. cfg: o do escalas-impressao-grade-pdf.js */
+  function faltaDoArquivo(cfg) {
+    var tipos = {}, alguma = false;
+    cfg.dias.forEach(function (d) {
+      if (d.fora) return;
+      var dia = RW.data.paraIsoDeData(d.data);
+      cfg.unidades.forEach(function (u) {
+        var uid = u.unidade_id, horarios = ((cfg.dados.falta || {})[uid] || {})[dia];
+        if (!horarios || !comGrafico(cfg.mostrar, (cfg.dados.cobertura[uid] || {})[dia], (cfg.dados.erro[uid] || {})[dia], cfg.max[uid])) return;
+        horarios.forEach(function (h) {
+          if (!h.estado) return;
+          tipos[h.estado === 'falta' ? 'falta' : h.mais ? 'mais' : 'coberta'] = true;
+          alguma = true;
+        });
+      });
+    });
+    return alguma ? tipos : null;
   }
 
   function soHora(h) { return escalasCelula().soHora ? escalasCelula().soHora(h) : (h || ''); }
@@ -159,21 +226,24 @@
     return maior;
   }
 
-  /* os ícones de uma pessoa na célula: a origem de base (por baixo de uma troca), a origem, o cadeado e o remanejado */
+  /* os ícones de uma pessoa na célula: a origem de base (por baixo de uma troca), a origem (a extra do sistema, na
+     Extrajornada, fica sem), o cadeado e o remanejado */
   function iconesDaPessoa(p) {
     var nomes = [];
     if (p.origem_base) nomes.push(escalasCelula().iconeDaOrigem(p.origem_base));
     nomes.push(escalasCelula().iconeDaOrigem(escalasCelula().origemDoIcone(p)));
     if (p.fixado) nomes.push('icone-cadeado');
     if (p.remanejado) nomes.push('icone-remanejado');
-    return nomes;
+    return nomes.filter(Boolean);
   }
 
   /* quem aparece no dia, nos grupos da tela (escalas-celula-grupos.js): os de serviço, o sobreaviso da companhia, no lugar
      em que ele aparece, a autorização de viagem (com o filtro dela) e o Fora da escala (os afastados dele, com o filtro
-     Afastamentos), pelos filtros da tela */
+     Afastamentos), pelos filtros da tela; a leitura que já vem filtrada pela tela dela (jaFiltrada: a página
+     Afastamentos) entra inteira */
   function pessoasDoDia(dados, uid, dia) {
-    var passa = RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return !semHorario(p); };
+    var passa = dados.jaFiltrada ? function () { return true; }
+      : (RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return !semHorario(p); });
     function noGrupo(lista, grupo) { return lista.map(function (p) { return Object.assign({}, p, { grupo: grupo }); }); }
     var sobreaviso = RW.escalasCelulaSobreaviso ? RW.escalasCelulaSobreaviso.pessoas(uid, dia) : [];
     var fora = ((dados.fora || {})[uid] || {})[dia] || [];
@@ -206,14 +276,15 @@
   }
 
   /* uma linha de militar: ícones · graduação e nome · horário. curto: o posto curto (calendário);
-     o nome que não cabe no meio sai cortado com "…", numa linha só */
+     o nome que não cabe no meio sai cortado com "…", numa linha só. O afastado sai riscado, menos o que vem marcado
+     semRisco (o calendário da página Afastamentos, que não risca) */
   function linha(p, largura, mostrar, c, curto) {
     var riscada = p.origem === 'folga' || p.origem === 'troca_saida' || p.origem === 'remanejado_saida' || p.origem === 'mudanca_saida' || p.origem === 'saida_guarnicao'
-      || p.origem === 'afastamento';
+      || (p.origem === 'afastamento' && !p.semRisco);
     var colunas = [];
     var livre = largura;
-    if (mostrar.icones) {
-      var icones = iconesDaPessoa(p);
+    var icones = mostrar.icones ? iconesDaPessoa(p) : [];
+    if (icones.length) {
       colunas.push({ columns: icones.map(function (n) { return { svg: c.icones[n], width: ICONE, height: ICONE }; }), columnGap: ENTRE_ICONES, width: 'auto', margin: MARGEM.icone });
       livre -= icones.length * ICONE + (icones.length - 1) * ENTRE_ICONES + ENTRE_COLUNAS;
     }
@@ -260,17 +331,20 @@
     };
   }
 
-  /* o bloquinho de uma unidade num dia. o = { largura, unidade (nome, só no calendário), cobertura, erro, max,
-     pessoas, postoCurto (só no calendário), mostrar, c, preencher } */
+  /* o bloquinho de uma unidade num dia. o = { largura, unidade (nome, só no calendário), cobertura, erro, falta (os
+     horários da Falta de gente, quando a tela a mostra), max, pessoas, postoCurto (só no calendário), mostrar, c, preencher } */
   function bloco(o) {
     var interna = o.largura - 2 * BLOQUINHO.lado;
     var corpo = [];
     if (o.unidade) {
       corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), fontSize: FONTE.unidade, bold: true, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
     }
-    /* a unidade sem ninguém de serviço no período: o gráfico só com erro vermelho, na régua de 1 (como na tela) */
-    var comVermelho = (o.erro || []).some(vermelho);
-    if (o.mostrar.grafico && o.cobertura && (o.max > 0 || comVermelho)) corpo.push([grafico(o.cobertura, o.erro, o.max > 0 ? o.max : 1, interna, o.c)]);
+    /* a unidade sem ninguém de serviço no período: o gráfico só com erro vermelho, na régua de 1 (como na tela); embaixo
+       dele, a linha da Falta de gente */
+    if (comGrafico(o.mostrar, o.cobertura, o.erro, o.max)) {
+      var g = grafico(o.cobertura, o.erro, o.max > 0 ? o.max : 1, interna, o.c), faixa = faixaDaFalta(o.falta, interna, o.c);
+      corpo.push([faixa ? { stack: [g, faixa] } : g]);
+    }
     /* um grupo novo depois de outro: a linha tracejada entre eles */
     var antes = null;
     (o.pessoas || []).forEach(function (p) {
@@ -282,5 +356,6 @@
     return { table: { widths: [interna], body: corpo, dontBreakRows: true }, layout: layoutBloquinho(o.c, o.preencher) };
   }
 
-  RW.escalasImpressaoGradeCelula = { preparar: preparar, bloco: bloco, pessoasDoDia: pessoasDoDia, iconesDoArquivo: iconesDoArquivo, oficial: oficial };
+  RW.escalasImpressaoGradeCelula = { preparar: preparar, bloco: bloco, pessoasDoDia: pessoasDoDia, iconesDoArquivo: iconesDoArquivo, oficial: oficial,
+    faltaDoArquivo: faltaDoArquivo, casinhaFalta: casinha, alturaFalta: FALTA.altura, medirTexto: medirTexto };
 })();

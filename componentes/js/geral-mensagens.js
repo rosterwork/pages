@@ -341,7 +341,17 @@
       itemContinuaFora: function (data) { return 'Continua fora da escala desde ' + data + '. A volta é pela aba Guarnições da Escala.'; },
       /* sai da guarnição: a saída da escala, antes das trocas e folgas que ela cancela */
       itemSaiDaEscala: function (data) { return 'Sai da escala em ' + data + '. As extras dele continuam, e a volta é pela aba Guarnições da Escala.'; },
-      notaConfirmar: 'Se você continuar, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada.'
+      notaConfirmar: 'Se você continuar, nada disso é desfeito: o serviço fica em amarelo na escala e a folga continua marcada.',
+      /* o Imprimir da barra (afastamentos-impressao.js e -impressao-pdf.js): o título do painel no Ano e no Mês (o do
+         Calendário é o das grades da Escala), o nome da grade (na nota, no alto da folha e no arquivo), o título da folha,
+         o começo do nome do arquivo e a frase sem ninguém para imprimir */
+      impressao: {
+        titulos: { ano: 'Imprimir ano', mes: 'Imprimir mês' },
+        nomes: { ano: 'Ano', mes: 'Mês' },
+        titulo: 'Afastamentos',
+        arquivo: 'Afastamentos',
+        vazio: 'Nenhum militar para imprimir com os filtros da tela.'
+      }
     },
 
     /* ajustes (a Distribuição e o ritmo, bloco 1 dela, ficam em mensagens.novaDistribuicao) */
@@ -534,8 +544,9 @@
       /* Relatórios › Imprimir: o painel Imprimir relatório (extrajornada-imprimir.js) */
       imprimir: {
         titulo: 'Imprimir relatório',
-        /* o Imprimir da grade (extrajornada-imprimir-grade.js): o título do alto da folha e o começo do nome do arquivo */
-        grade: { titulo: 'Escala de extrajornada', arquivo: 'Extrajornada', escalaCompleta: 'Escala completa' },
+        /* o Imprimir da grade (extrajornada-imprimir-grade.js): o título do alto da folha, o começo do nome do arquivo e as
+           opções do Exibir que entram na nota do painel */
+        grade: { titulo: 'Escala de extrajornada', arquivo: 'Extrajornada', escalaCompleta: 'Escala completa', faltaDeGente: 'Falta de gente' },
         indisponivel: {
           pedidos: 'Libera quando os pedidos fecharem.',
           termos: 'Libera quando as cotas forem repartidas.',
@@ -614,6 +625,8 @@
           + '. Termo ' + (p.termo ? 'recebido em ' + p.termo_em : 'pendente') + '.';
       },
       naoQuer: function (em) { return 'Respondeu que não quer extra (' + em + ').'; },
+      /* o mês antes da escala no sistema: só quantas cotas pediu */
+      pediuCotas: function (n) { return 'Pediu ' + n + (n === 1 ? ' cota.' : ' cotas.'); },
       fazer: 'Fazer o pedido',
       mudar: 'Mudar o pedido',
       ver: 'Ver o pedido',
@@ -646,6 +659,10 @@
           return abre + ' a ' + fecha + ' · ' + resp + ' de ' + total + ' responderam · ' + vol + (vol === 1 ? ' voluntário' : ' voluntários') +
             ' · ' + nao + (nao === 1 ? ' não quer' : ' não querem') + ' · ' + sem + ' sem resposta';
         },
+        /* o mês antes da escala no sistema (antes de outubro de 2026): o resumo dos Pedidos e o aviso da Distribuição, dos
+           Ajustes e dos Relatórios */
+        p1Antes: function (vol) { return vol + (vol === 1 ? ' voluntário' : ' voluntários'); },
+        antesDaEscala: 'Mês antes da escala no sistema.',
         p2: function (rec, rep) { return rec + ' recebidas · ' + rep + ' repartidas'; },
         p2Depois: 'Depois do pedido',
         p3: function (g, c) { return g + ' de ' + c + ' cotas colocadas'; },
@@ -732,8 +749,8 @@
         faltaCoberta: 'As extras cobrem a falta deste dia.',
         grupos: { neste: 'Neste dia', querem: 'Querem este dia', disp: 'Sem preferência', naoQuerem: 'Não querem este dia', indisp: 'Indisponíveis' },
         /* o relatório do dia */
-        /* a dica do ícone de quem inseriu a extra (calendário, Agenda e Neste dia) */
-        origemSistema: 'Inserido pelo sistema', origemAdmin: 'Inserido pelo administrador',
+        /* a dica do cadeado da extra que o administrador pôs ou mudou (calendário, Agenda e Neste dia) */
+        origemAdmin: 'Inserido pelo administrador',
         rdSistema: 'O sistema colocou',
         rdAdmin: function (quem) { return (quem || 'O administrador') + ' colocou'; },
         rdHoras: function (h, para) { return 'das ' + h + (para ? ', para ' + para : '') + '.'; },

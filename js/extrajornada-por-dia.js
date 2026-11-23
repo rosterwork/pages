@@ -205,15 +205,12 @@
     if (marcados[un.id + '|' + k]) cel.classList.add('escala-celula--nao-salvo');
   }
 
-  /* a linha da Falta de gente embaixo do gráfico (o Exibir; o componente geral-falta-gente, o mesmo da Escala): a falta
-     sem e com as extras vem da conta do dia (extrajornada-falta.js) e as extras de cada horário, das vagas do pelotão no
-     dia (só os horários que cada uma cobre inteiros) */
+  /* a linha da Falta de gente embaixo do gráfico (o Exibir; o componente geral-falta-gente, o mesmo da Escala), com a
+     conta de cada horário do extrajornada-falta.js (a mesma da folha) */
   function faixaDaFalta(cel, uid, k, alocs, falta) {
     var grafico = cel.querySelector('.escala-mes-grafico');
     if (!grafico) return;
-    var extras = { 1: 0, 2: 0, 3: 0, 4: 0 };
-    alocs.forEach(function (a) { if (+a.unidade === +uid && a.data === k) u().cheios(a).forEach(function (b) { extras[b]++; }); });
-    RW.faltaGente.linha(grafico, RW.faltaGente.porHorario(falta.base, falta.total, extras, grafico.dataset.erro));
+    RW.faltaGente.linha(grafico, RW.extrajornadaFalta.horarios(falta, uid, k, alocs, grafico.dataset.erro));
   }
 
   /* o militar em foco no bloco de cada pelotão, em todos os dias: onde ele tem extra, o cartão de sempre (posto por

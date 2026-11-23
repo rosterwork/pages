@@ -21,7 +21,7 @@
 
   <!-- barra: à esquerda o período (o ano, #tpl-afastamentos-ano, na aba Ano; o mês, #tpl-afastamentos-periodo-mes, no Mês
        e no Calendário; postos pelo JS); à direita o botão Filtros (componente geral-filtros), a busca e, depois do traço,
-       as unidades lado a lado e o tamanho (só no Calendário) e a Ordem -->
+       as unidades lado a lado e o tamanho (só no Calendário), a Ordem e o Imprimir -->
   <div class="pagina-subcabecalho">
     <span class="espacador-flex"></span>
 
@@ -82,6 +82,11 @@
         </button>
       </div>
     </div>
+
+    <!-- imprimir: abre o painel de impressão da aba (afastamentos-impressao.js) -->
+    <button type="button" class="botao botao--quadrado" id="afastamentos-imprimir" aria-label="Imprimir" data-dica="Imprimir">
+      <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-imprimir"/></svg>
+    </button>
   </div>
 
   <!-- as abas Ano e Mês: a árvore de unidades, na largura toda (a grade rola para o lado por dentro) -->

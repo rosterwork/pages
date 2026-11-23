@@ -3,7 +3,8 @@
    Monta o PDF que o painel das grades pede (escalas-impressao-grade.js),
    no formato da tela e no padrão de blocos do PDF do Dia: a logo, o
    título e o período no alto; o site e "Página X de Y" no pé (com os
-   ícones, a legenda deles logo acima: escalas-impressao-legenda.js).
+   ícones ou a Falta de gente, a legenda deles logo acima:
+   escalas-impressao-legenda.js).
    - Calendário e Colunas › Dias (A4 paisagem): uma linha por semana
      (ou de N dias), cada dia um bloco cinza com o número e, embaixo,
      uma célula por unidade. A linha nunca se parte: a que não cabe vai
@@ -65,6 +66,7 @@
       unidade: comNome ? u.nome : null,
       cobertura: (cfg.dados.cobertura[uid] || {})[dia] || null,
       erro: (cfg.dados.erro[uid] || {})[dia] || null,
+      falta: ((cfg.dados.falta || {})[uid] || {})[dia] || null,
       max: cfg.max[uid],
       pessoas: celula().pessoasDoDia(cfg.dados, uid, dia),
       postoCurto: cfg.formato === 'calendario',   // a célula pequena do calendário, como na tela
@@ -296,9 +298,12 @@
       defaultStyle: { font: 'Montserrat', fontSize: 9, color: c.texto },
       info: { title: (cfg.titulo || txt().titulo) + ' · ' + msg().nomes[cfg.formato] + ' · ' + cfg.texto, author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' }
     };
-    /* com os ícones, a legenda deles (escalas-impressao-legenda.js), montada a cada uso (a biblioteca anota medidas) */
+    /* com os ícones ou a Falta de gente, a legenda (escalas-impressao-legenda.js), montada a cada uso (a biblioteca anota
+       medidas) */
     var rodape = RW.escalasImpressaoPdf.medidas.FONTE.rodape;
-    function legenda() { return c.legendaUsados && RW.escalasImpressaoLegenda ? RW.escalasImpressaoLegenda.peca(c, c.legendaUsados) : null; }
+    function legenda() {
+      return (c.legendaUsados || c.legendaFalta) && RW.escalasImpressaoLegenda ? RW.escalasImpressaoLegenda.peca(c, c.legendaUsados || {}, c.legendaFalta) : null;
+    }
     if (cfg.continua) {
       doc.pageSize = { width: geo.paginaLargura, height: 'auto' };
       doc.pageMargins = [LADO, CONTINUA.topo, LADO, CONTINUA.base];
@@ -400,10 +405,13 @@
     return RW.escalasImpressaoPdf.preparar().then(function (c) {
       return celula().preparar(c);
     }).then(function (c) {
-      /* com os ícones, a legenda no pé da folha: os que saem no arquivo e o espaço que ela pede */
-      if (cfg.mostrar.icones && RW.escalasImpressaoLegenda) {
-        c.legendaUsados = celula().iconesDoArquivo(cfg);
-        c.legendaAltura = RW.escalasImpressaoLegenda.altura(c.legendaUsados);
+      /* a legenda no pé da folha: os ícones que saem no arquivo (com o Mostrar deles) e as casinhas da Falta de gente que
+         saem (nas linhas da largura da folha), e o espaço que ela pede */
+      var L = RW.escalasImpressaoLegenda;
+      if (L) {
+        if (cfg.mostrar.icones) c.legendaUsados = celula().iconesDoArquivo(cfg);
+        c.legendaFalta = L.linhasFalta(celula().faltaDoArquivo(cfg), geometria(cfg).largura, celula().medirTexto);
+        c.legendaAltura = L.altura(c.legendaUsados || {}, c.legendaFalta);
       }
       return desenharArquivo(cfg, c);
     }).then(function (d) {

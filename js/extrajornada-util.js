@@ -89,17 +89,17 @@
         b.style.setProperty('--vaga-ate', ((Math.max.apply(null, aqui) + 1 - i * 6) / 6 * 100) + '%');
       });
       v.querySelector('.extrajornada-vaga-baixo').classList.toggle('oculto', !outro);
-      v.insertBefore(util.origem(a), bol);
+      var cadeado = util.origem(a);
+      if (cadeado) v.insertBefore(cadeado, bol);
       return v;
     },
-    /* quem inseriu a extra: o ícone do sistema (o Preencher refaz) ou o do administrador (pôs ou mudou; o sistema nunca
-       muda), com a dica de quem inseriu */
+    /* a extra que o administrador pôs ou mudou: o cadeado (o sistema nunca a muda), com a dica de quem inseriu; a do
+       sistema (o Preencher refaz) fica sem ícone (null) */
     origem: function (a) {
-      var i = RW.tpl('tpl-extrajornada-origem'), sistema = a.origem === 'sugestao';
-      var texto = sistema ? msg().origemSistema : msg().origemAdmin;
-      i.querySelector('use').setAttribute('href', 'icones/todos.svg#' + (sistema ? 'icone-extra-sistema' : 'icone-extra-administrador'));
-      i.setAttribute('data-dica', texto);
-      i.setAttribute('aria-label', texto);
+      if (a.origem === 'sugestao') return null;
+      var i = RW.tpl('tpl-extrajornada-origem');
+      i.setAttribute('data-dica', msg().origemAdmin);
+      i.setAttribute('aria-label', msg().origemAdmin);
       return i;
     },
     /* as unidades da página: todas as da companhia (o seletor de unidades do topo não filtra a Extrajornada) */

@@ -54,9 +54,10 @@
     viagem: 'icone-mapa-pin',
     /* o guarda-vidas da página Op. Verão (op-verao-celula.js) */
     'op-verao': 'icone-boia',
-    /* quem inseriu a extra, no PDF da grade da Extrajornada (a escala nunca traz estas origens) */
-    extra_sistema: 'icone-extra-sistema',
-    extra_admin: 'icone-extra-administrador'
+    /* quem inseriu a extra, no PDF da grade da Extrajornada (a escala nunca traz estas origens): a do sistema fica sem
+       ícone; a do administrador, o cadeado */
+    extra_sistema: null,
+    extra_admin: 'icone-cadeado'
   };
 
   /* origem -> situação do filtro da barra (escalas-filtros.js): o ciclo é a Prontidão */
@@ -468,11 +469,11 @@
     }
   }
 
-  /* o ícone de cada origem e todos eles (o PDF das grades carrega os arquivos uma vez) */
-  function iconeDaOrigem(origem) { return ICONE_ORIGEM[origem] || ICONE_ORIGEM.sistema; }
+  /* o ícone de cada origem (null: a origem sem ícone) e todos eles (o PDF das grades carrega os arquivos uma vez) */
+  function iconeDaOrigem(origem) { return Object.prototype.hasOwnProperty.call(ICONE_ORIGEM, origem) ?ICONE_ORIGEM[origem] : ICONE_ORIGEM.sistema; }
   function iconesDasOrigens() {
     var nomes = [];
-    Object.keys(ICONE_ORIGEM).forEach(function (k) { if (nomes.indexOf(ICONE_ORIGEM[k]) < 0) nomes.push(ICONE_ORIGEM[k]); });
+    Object.keys(ICONE_ORIGEM).forEach(function (k) { if (ICONE_ORIGEM[k] && nomes.indexOf(ICONE_ORIGEM[k]) < 0) nomes.push(ICONE_ORIGEM[k]); });
     return nomes;
   }
 

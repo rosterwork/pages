@@ -146,6 +146,8 @@
     var feito = [], agora = -1;
     ok.forEach(function (x, i) { feito[i] = x && (i === 0 || feito[i - 1]); if (!feito[i] && agora < 0) agora = i; });
     vez = agora + 1;
+    /* o mês antes da escala no sistema: os Pedidos e as Cotas feitos, nenhum passo da vez, e abre nas Cotas */
+    if (d.antes_da_escala) { feito = [true, true, false, false, false]; agora = -1; vez = 2; }
     todos('#extrajornada-passos [data-passo]', function (b) {
       var i = +b.getAttribute('data-passo') - 1, num = b.querySelector('.extrajornada-aba-num');
       num.classList.toggle('extrajornada-aba-num--feito', feito[i]);
@@ -155,7 +157,7 @@
     var resp = lista.filter(function (m) { return m.respondeu; }).length;
     var vol = lista.filter(function (m) { return m.voluntario; }).length;
     var textos = {
-      1: msg().p1(br(d.mes.abre), br(d.mes.fecha), resp, lista.length, vol, resp - vol, lista.length - resp),
+      1: d.antes_da_escala ? msg().p1Antes(vol) : msg().p1(br(d.mes.abre), br(d.mes.fecha), resp, lista.length, vol, resp - vol, lista.length - resp),
       5: d.lancamento ? msg().p5(d.ajustes.length) : msg().p4Nao
     };
     todos('[data-passo-resumo]', function (r) { r.textContent = textos[r.getAttribute('data-passo-resumo')]; });
@@ -167,8 +169,10 @@
     if (n !== passoAberto && RW.painel.estaAberto()) RW.painel.fechar();
     passoAberto = n;
     var calendario = n === 3 || n === 4;
-    /* a Legenda de cada etapa (as regras), menos nos Relatórios */
-    RW.extrajornada.legenda({ 1: 'tpl-extrajornada-legenda-pedidos', 2: 'tpl-extrajornada-legenda-cotas', 3: 'tpl-extrajornada-legenda-dist', 4: 'tpl-extrajornada-legenda-ajustes' }[n] || null);
+    /* a Legenda de cada etapa (as regras), menos nos Relatórios e no mês antes da escala no sistema (só para ver) */
+    RW.extrajornada.legenda(d.antes_da_escala ? null : { 1: 'tpl-extrajornada-legenda-pedidos', 2: 'tpl-extrajornada-legenda-cotas', 3: 'tpl-extrajornada-legenda-dist', 4: 'tpl-extrajornada-legenda-ajustes' }[n] || null);
+    /* no mês antes da escala no sistema, a Distribuição, os Ajustes e os Relatórios ficam com o aviso (extrajornada.js) */
+    if (d.antes_da_escala && n >= 3) return;
     if (n === 1) passo1();
     else if (n === 2 && RW.extrajornadaCotas) RW.extrajornadaCotas.mostrar(d, el, carregar, function (novo) { if (novo) { d = novo; util.usar(d); } passosTopo(); });
     else if (calendario && RW.extrajornadaMontar) RW.extrajornadaMontar.mostrar(d, el, carregar, n === 4 ? 'ajustes' : 'distribuicao');
@@ -191,6 +195,12 @@
   /* ---------- passo 1: prazo, mínimo e termos ---------- */
   function passo1() {
     if (!p1) { p1 = { lista: 'vol', termos: {} }; RW.extrajornadaMinimo.iniciar(d); }
+    /* o mês antes da escala no sistema, só para ver: os voluntários, sem o prazo, o mínimo, o filtro e a marca do termo */
+    var antes = !!d.antes_da_escala;
+    if (antes) p1.lista = 'vol';
+    q('#p1-prazo-minimo').classList.toggle('oculto', antes);
+    q('#p1-duas').classList.toggle('extrajornada-duas--so-lista', antes);
+    q('#p1-filtro').classList.toggle('oculto', antes);
     /* as unidades da companhia */
     var todosDaqui = daqui();
     /* fechados pelo Ações › Fechar os pedidos agora: quando e quem */
@@ -223,7 +233,8 @@
         var marcado = m.cpf in p1.termos ? p1.termos[m.cpf] : m.termo;
         t.setAttribute('aria-checked', marcado ? 'true' : 'false');
         t.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', marcado);
-        t.addEventListener('click', function () {
+        t.disabled = antes;
+        if (!antes) t.addEventListener('click', function () {
           var v = !(m.cpf in p1.termos ? p1.termos[m.cpf] : m.termo);
           if (v === m.termo) delete p1.termos[m.cpf]; else p1.termos[m.cpf] = v;
           passo1();
@@ -292,6 +303,10 @@
   /* as unidades que têm extra no mês: na Agenda, uma coluna por unidade; no Calendário, o bloco da Escala, cada uma na
      mesma altura em todos os dias (a vazia fica invisível); sem nenhuma, o vazio no lugar. Só para ler */
   function desenharCalendario() {
+    /* a barra da aba segue o mês (no mês antes da escala no sistema, sem as ferramentas do calendário) */
+    RW.extrajornada.barra();
+    q('#extrajornada-cal-antes').classList.toggle('oculto', !d.antes_da_escala);
+    if (d.antes_da_escala) { desenharAntes(); return; }
     q('#extrajornada-cal-aviso').classList.toggle('oculto', !!d.lancamento);
     var alocs = d.alocacoes;
     var unidades = util.doCalendario(alocs).filter(function (un) { return alocs.some(function (a) { return +a.unidade === un.id; }); });
@@ -325,6 +340,41 @@
         cel.appendChild(b);
       });
     } });
+  }
+
+  /* o mês antes da escala no sistema, sem calendário: um bloco por unidade com quanto cada voluntário pediu e recebeu,
+     pela antiguidade; sem nenhum voluntário, o vazio no lugar */
+  function desenharAntes() {
+    q('#extrajornada-cal-aviso').classList.add('oculto');
+    q('#extrajornada-cal-mes').classList.add('oculto');
+    RW.extrajornada.grade.unidades(null);
+    var lista = d.militares.filter(function (m) { return m.voluntario; }).sort(function (a, b) {
+      return (a.grau_ordem || 0) - (b.grau_ordem || 0) || (a.antig || 0) - (b.antig || 0);
+    });
+    var alvo = q('#extrajornada-cal-antes-lista');
+    alvo.textContent = '';
+    q('#extrajornada-cal-vazio').classList.toggle('oculto', lista.length > 0);
+    q('#extrajornada-cal-antes').classList.toggle('oculto', !lista.length);
+    if (!lista.length) return;
+    alvo.appendChild(RW.tpl('tpl-extrajornada-antes-cab'));
+    d.unidades.forEach(function (un) {
+      var daqui = lista.filter(function (m) { return m.unidade_id === un.id; });
+      if (!daqui.length) return;
+      var bloco = RW.tpl('tpl-extrajornada-p2-bloco');
+      bloco.querySelector('.extrajornada-voluntarios-bloco-nome').textContent = un.nome;
+      bloco.querySelector('.extrajornada-voluntarios-bloco-detalhe').textContent = un.cidade || '';
+      bloco.querySelector('.extrajornada-titulo-totais').classList.add('oculto');
+      var linhas = bloco.querySelector('.extrajornada-voluntarios-bloquinho');
+      daqui.forEach(function (m) {
+        var l = RW.tpl('tpl-extrajornada-antes-linha');
+        l.querySelector('.extrajornada-voluntarios-grad').textContent = m.grad;
+        l.querySelector('.extrajornada-voluntarios-nome').textContent = m.nome;
+        l.querySelector('.extrajornada-antes-pediu').textContent = m.cotas;
+        l.querySelector('.extrajornada-antes-recebeu').textContent = m.concedidas || 0;
+        linhas.appendChild(l);
+      });
+      alvo.appendChild(bloco);
+    });
   }
 
   /* ---------- entrada ---------- */

@@ -13,7 +13,8 @@
    quem tem autorização de viagem, só com Incluir autorizações de viagem.
    A última opção, Incluir falta de gente (desmarcada ao abrir), não esconde
    ninguém: liga a linha dos horários embaixo do gráfico das grades
-   (escalas-falta.js; fica fora da nota do PDF).
+   (escalas-falta.js) e da folha delas, e entra na nota do painel de
+   impressão como os outros filtros.
    A escolha fica guardada na sessão (geral-filtros, chave 'escala'),
    menos nas páginas filtradas (Sobreaviso, Estágios e Op. Verão).
    A linha de quem está logado ganha o realce claro (--voce) nas
@@ -79,10 +80,7 @@
      para a nota do painel de impressão */
   function resumo() {
     if (!conteudo || !filtrosValem() || (window.RosterWork.paginaFiltrada && RosterWork.paginaFiltrada())) return [];
-    /* a Falta de gente não sai no PDF, então não entra na nota */
-    return Array.prototype.filter.call(conteudo.querySelectorAll('.filtros-ativos:not(.oculto) .filtro-ativo'), function (etiqueta) {
-      return etiqueta.querySelector('.filtro-ativo-valor').textContent !== FALTA.rotulo;
-    }).map(function (etiqueta) {
+    return Array.prototype.map.call(conteudo.querySelectorAll('.filtros-ativos:not(.oculto) .filtro-ativo'), function (etiqueta) {
       return etiqueta.querySelector('.filtro-ativo-tipo').textContent + ': ' + etiqueta.querySelector('.filtro-ativo-valor').textContent;
     });
   }

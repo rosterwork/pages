@@ -4,7 +4,8 @@
    regras da companhia dos Ajustes › Extrajornada), monta as extras
    possíveis e as regras fixas como um problema de programação inteira
    e o placar em níveis de verdade: a falta vermelha e a amarela (na
-   ordem dos pelotões), colocar todas as cotas (a sobra vai para a
+   ordem dos pelotões; fora da cidade da companhia, só até o mínimo:
+   o amarelo de lá só junto com o vermelho), colocar todas as cotas (a sobra vai para a
    cidade da companhia), cada um no próprio pelotão, quem vai para outro
    pelotão (o mais moderno ou em rodízio), não passar do necessário fora da cidade da companhia, quem fica com o
    lugar (a fila das Cotas ou a antiguidade) e a balança (Pouco, Normal
@@ -98,6 +99,13 @@
     function necDe(k) { return nec[k] || (nec[k] = { vg: 0, ag: 0, vc: [], ac: [] }); }
     D.falta.forEach(function (f) { var x = necDe(chave(f.uid, f.data, f.b)); if (f.nivel === 1) x.vg += f.n; else x.ag += f.n; });
     (D.condutor || []).forEach(function (c) { var x = necDe(chave(c.uid, c.data, c.b)); (c.nivel === 1 ? x.vc : x.ac).push(c.cnh); });
+    /* fora da cidade da companhia, só até o mínimo: o amarelo de lá não conta sozinho; fica só o do chefe que dirige, no
+       horário com vermelho, para quem completa o mínimo e conduz a viatura */
+    Object.keys(nec).forEach(function (k) {
+      if (sede.indexOf(+k.split('|')[0]) >= 0) return;
+      nec[k].ag = 0;
+      if (!nec[k].vg && !nec[k].vc.length) nec[k].ac = [];
+    });
     function vaga(k, u, d) { return (cap[u + '|' + d] || 0) - ((esc[k] || {}).mx || 0) - (fixas[k] || 0); }
     function conduz(m, lista) { return lista.length > 0 && (m.conduz || []).indexOf(lista[0]) >= 0; }
     var datas = Object.keys(D.dia.reduce(function (o, x) { o[x.data] = 1; return o; }, {})).sort();
@@ -172,7 +180,7 @@
         L.quem.push([-x.tam * custoSair(x.m), v, 1]);
       }
       /* a que começa no fim do expediente: fora da cidade da companhia, as duas metades passam do necessário */
-      if (x.inicio && !x.sede) L.passa.push([-1, v, 1]);
+      if (x.inicio && !x.sede) L.passa.push([-2, v, 1]);
       L.prio.push([x.tam * prio[x.m.cpf], v, 1]);
       /* na balança, o dia que ele quer vale um pouco mais para quem vem primeiro */
       var b = -peso('bloco') + (x.emenda ? peso('colado') : 0) + (x.inicio && x.tam === 2 ? peso('cedo') : 0) +
@@ -190,7 +198,10 @@
       [['cv', n.vc.length, vermPel], ['gv', n.vg, vermPel], ['ca', n.ac.length, amarPel], ['ga', n.ag, amarPel]].forEach(function (t) {
         if (t[1] <= 0) return;
         var nome = t[0] + s;
-        (t[2][u] = t[2][u] || []).push([1, nome, t[1]]);
+        /* fora da cidade da companhia, o chefe que sai da direção junto com o vermelho vale no nível do passar do
+           necessário (cada pessoa a mais custa 2, o chefe liberado vale 1: ninguém vai a mais só para liberar o chefe) */
+        if (t[0] === 'ca' && !ehSede) L.passa.push([1, nome, t[1]]);
+        else (t[2][u] = t[2][u] || []).push([1, nome, t[1]]);
         lim.push('0 <= ' + nome + ' <= ' + t[1]);
         /* o chefe que dirige sai da direção com quem conduz a viatura, que ainda conta como uma das pessoas */
         if (t[0] !== 'ca') partes.push(nome);
@@ -209,7 +220,7 @@
       var vg = Math.max(0, vaga(k, u, d));
       lim.push('0 <= s' + s + ' <= ' + vg); partes.push('s' + s);
       sDe[k] = 's' + s; vgDe[k] = vg;
-      if (!ehSede) L.passa.push([-1, 's' + s, vg]);
+      if (!ehSede) L.passa.push([-2, 's' + s, vg]);
       cons.push('c' + (c++) + ': ' + soma + ' - ' + partes.join(' - ') + ' = 0');
       if (!ehSede) return;
       var teto = n.vg + n.ag + n.vc.length + n.ac.length + vg, e = esc[k] || { n: 0, grupos: {} };
@@ -294,9 +305,11 @@
     L.amar = pa.termos;
     var partesDe = { verm: pv.partes, amar: pa.partes };
     /* o melhor que cada nível pode chegar: ninguém fora, nada passando, todas as cotas; com todas colocadas, a soma da
-       fila não muda (os outros, a soma dos positivos) */
+       fila não muda (os outros, a soma dos positivos; no passar do necessário, com o chefe liberado fora da cidade da
+       companhia) */
     var total = D.mil.reduce(function (t, m) { return t + m.resta; }, 0);
-    var melhor = { fora: 0, quem: 0, passa: 0, cotas: total, prio: D.mil.reduce(function (t, m) { return t + m.resta * prio[m.cpf]; }, 0) };
+    var melhor = { fora: 0, quem: 0, cotas: total, prio: D.mil.reduce(function (t, m) { return t + m.resta * prio[m.cpf]; }, 0) };
+    if (!L.passa.some(function (t) { return t[0] > 0; })) melhor.passa = 0;
     var niveis = NIVEIS.map(function (nome) { return { nome: nome, termos: L[nome], partes: partesDe[nome], teto: melhor[nome] }; })
                        .filter(function (n) { return n.termos.length; });
     return { niveis: niveis, base: { cons: cons, lim: lim, bins: bins }, xs: xs };

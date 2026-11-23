@@ -374,8 +374,9 @@
       aviso.classList.remove('oculto');
     }
     var a = G().vagaDe(m.cpf, k), marcados = a ? G().blocos(a) : [];
-    /* no Neste dia, quem pôs a extra, antes do nome (como a origem na Escala) */
-    if (a && +a.unidade === uid) linhaNome.insertBefore(u().origem(a), linhaNome.firstChild);
+    /* no Neste dia, o cadeado da extra que o administrador pôs ou mudou, antes do nome (como na Escala) */
+    var cadeado = a && +a.unidade === uid ? u().origem(a) : null;
+    if (cadeado) linhaNome.insertBefore(cadeado, linhaNome.firstChild);
     var usou = G().usadas(m.cpf, alocs);
     var cota = lin.querySelector('.extrajornada-painel-cota');
     cota.textContent = msg().deCotas(usou, m.concedidas);

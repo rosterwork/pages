@@ -4,9 +4,11 @@
    impressão das grades da Escala (escalas-impressao-grade.js) na grade
    da tela (Agenda ou Calendário), no mês da tela e com os pelotões da
    tela marcados. O que sai em cada dia é o que a tela mostra: as
-   extras (o posto, o nome, o horário e o ícone de quem inseriu) e, na
+   extras (o posto, o nome, o horário e o cadeado na que o administrador pôs) e, na
    Distribuição e nos Ajustes, o gráfico da cobertura com as extras e,
-   com a Escala completa, quem está de serviço. A leitura é a da tela
+   com a Escala completa, quem está de serviço; com a Falta de gente
+   marcada no Exibir, a linha dela embaixo do gráfico (a conta da
+   tela, extrajornada-falta.js). A leitura é a da tela
    (o rascunho também), sem buscar nada no banco, no formato da leitura
    da escala (RosterWork.escalasDados.carregar).
    RosterWork.extrajornadaImprimirGrade.
@@ -22,7 +24,8 @@
   function iso(x) { return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); }
   function primeiro(a) { return Math.min.apply(null, a.blocos.map(Number)); }
 
-  /* a extra como uma linha da escala: o posto, o nome, os horários (um trecho por horários seguidos) e quem inseriu */
+  /* a extra como uma linha da escala: o posto, o nome, os horários (um trecho por horários seguidos) e quem inseriu (a do
+     sistema sai sem ícone; a do administrador, com o cadeado: escalas-celula.js) */
   function pessoa(a) {
     var m = u().militar(a.cpf) || { grad: '', nome: a.cpf };
     var b = a.blocos.map(Number).sort(), periodos = [], ini = b[0];
@@ -40,26 +43,30 @@
     return { cpf: a.cpf, grad: m.grad, nome: m.nome, origem: a.origem === 'sugestao' ? 'extra_sistema' : 'extra_admin', periodos: periodos };
   }
 
-  /* a leitura da grade da tela, por unidade e dia: { militares, fora, cobertura, erro } (como a da escala) */
-  function leitura(extrasDoMes) {
+  /* a leitura da grade da tela, por unidade e dia: { militares, fora, cobertura, erro } (como a da escala) e, com a Falta
+     de gente (comFalta), falta: a conta de cada horário (geral-falta-gente) */
+  function leitura(extrasDoMes, comFalta) {
     return function (ids, inicio, fim) {
-      var r = { militares: {}, fora: {}, cobertura: {}, erro: {} };
+      var r = { militares: {}, fora: {}, cobertura: {}, erro: {}, falta: {} };
       var alocs = (extrasDoMes ? RW.extrajornadaOrg.dados().alocacoes : G().vagas()).filter(function (a) { return a.blocos.length; });
       var efetivas = extrasDoMes ? null : G().efetivas(), completa = !extrasDoMes && RW.extrajornadaFiltros.escalaCompleta();
       ids.forEach(function (uid) {
-        r.militares[uid] = {}; r.fora[uid] = {}; r.cobertura[uid] = {}; r.erro[uid] = {};
+        r.militares[uid] = {}; r.fora[uid] = {}; r.cobertura[uid] = {}; r.erro[uid] = {}; r.falta[uid] = {};
         for (var d = new Date(+inicio.slice(0, 4), +inicio.slice(5, 7) - 1, +inicio.slice(8, 10)); iso(d) <= fim; d.setDate(d.getDate() + 1)) {
           var k = iso(d);
           var aqui = alocs.filter(function (a) { return +a.unidade === +uid && a.data === k; })
             .sort(function (x, y) { return primeiro(x) - primeiro(y) || u().nome(x.cpf).localeCompare(u().nome(y.cpf)); });
           var pessoas = aqui.map(pessoa);
-          /* na Distribuição e nos Ajustes, o gráfico do dia com as extras e, com a Escala completa, quem está de serviço */
+          /* na Distribuição e nos Ajustes, o gráfico do dia com as extras (com a Falta de gente, a linha dela) e, com a
+             Escala completa, quem está de serviço */
           if (!extrasDoMes) {
             var antes = G().antesDe(uid, k);
             if (antes) {
-              var dep = aqui.length ? G().depoisDe(uid, k, efetivas, G().faltaDoDia(uid, k, efetivas)) : null;
+              var falta = aqui.length || comFalta ? G().faltaDoDia(uid, k, efetivas) : null;
+              var dep = aqui.length ? G().depoisDe(uid, k, efetivas, falta) : null;
               r.cobertura[uid][k] = dep ? dep.cobertura : antes;
               r.erro[uid][k] = dep ? dep.erro : G().erroAntes(uid, k);
+              if (comFalta) r.falta[uid][k] = RW.extrajornadaFalta.horarios(falta, uid, k, efetivas, r.erro[uid][k]);
             }
             if (completa) pessoas = G().deServico(uid, k).concat(pessoas);
           }
@@ -78,14 +85,21 @@
     if (extrasDoMes) {
       unidades = u().doCalendario(d.alocacoes).filter(function (un) { return d.alocacoes.some(function (a) { return +a.unidade === un.id; }); });
     } else unidades = RW.extrajornadaPorDia.unidades();
+    /* a Falta de gente sai como na tela: só com ela marcada no Exibir (a aba Extras do mês não a tem). As opções marcadas
+       do Exibir entram na nota do painel, na ordem dele */
+    var M = RW.mensagens.extrajornada.imprimir.grade;
+    var comFalta = !extrasDoMes && RW.extrajornadaFiltros.faltaDeGente();
+    var filtros = [];
+    if (!extrasDoMes && RW.extrajornadaFiltros.escalaCompleta()) filtros.push(M.escalaCompleta);
+    if (comFalta) filtros.push(M.faltaDeGente);
     RW.escalasImpressaoGrade.abrir({
       formato: modo,
       data: new Date(+comp.slice(0, 4), +comp.slice(5, 7) - 1, 1),
       unidades: unidades.map(function (un) { return { unidade_id: un.id, nome: un.nome }; }),
-      filtros: !extrasDoMes && RW.extrajornadaFiltros.escalaCompleta() ? [RW.mensagens.extrajornada.imprimir.grade.escalaCompleta] : [],
-      dados: leitura(extrasDoMes),
-      titulo: RW.mensagens.extrajornada.imprimir.grade.titulo,
-      prefixo: RW.mensagens.extrajornada.imprimir.grade.arquivo,
+      filtros: filtros,
+      dados: leitura(extrasDoMes, comFalta),
+      titulo: M.titulo,
+      prefixo: M.arquivo,
       conferir: null
     });
   }

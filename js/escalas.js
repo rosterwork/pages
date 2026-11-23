@@ -503,7 +503,9 @@
         data: new Date(refData.getFullYear(), refData.getMonth(), refData.getDate()),
         unidades: daTela.map(function (u) { return { unidade_id: u.id, nome: u.nome }; }),
         diasPorLinha: quantidadeColunas(),
-        filtros: RosterWork.escalasFiltros ? RosterWork.escalasFiltros.resumo() : []
+        filtros: RosterWork.escalasFiltros ? RosterWork.escalasFiltros.resumo() : [],
+        /* a Falta de gente sai como na tela: só com ela marcada nos Filtros */
+        falta: !pf && !!(RosterWork.escalasFiltros && RosterWork.escalasFiltros.faltaDeGente())
       }, pf ? { titulo: M.titulo, prefixo: M.arquivo, semOficial: true, conferir: null,
         mostrar: { grafico: false, icones: true } } : {}, aviso));
       return;

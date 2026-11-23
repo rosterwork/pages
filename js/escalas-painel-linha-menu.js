@@ -21,10 +21,11 @@
      para outra função (o papel vai junto com ele) e Remover desta
      função (vai para Sem função, ainda com o papel); o papel é sempre
      o mais antigo do dia, que nunca muda à mão; na linha do papel que
-     foi junto com ele para outro posto e nas Funções especiais, só a
-     parte do dia;
-   - as outras linhas que a Central só exibe não têm lápis; a exceção é
-     o Oficial de Área da companhia na Central do pelotão, para quem
+     foi junto com ele para outro posto, só a parte do dia;
+   - os blocos só para ver (as Funções especiais, com o Cabo de Dia,
+     a Extrajornada e os Estagiários): só a parte do dia, porque a
+     função de cada um muda na linha do posto dele; a exceção é o
+     Oficial de Área da companhia na Central do pelotão, para quem
      administra a companhia: o Ver o dia na companhia ("Ver o dia na
      2ªCIBM") abre o dia da companhia na aba Funções, já com o menu
      dele aberto.
@@ -97,15 +98,15 @@
    sentido, senao) larga a mudança de dia do rascunho; cancelarFolga(cfg),
    desfazerMudanca(cfg), cancelarSaida(cfg) e mudarSaida(cfg, opcoes)
    (a célula usa as mesmas).
-   cfg = { tipo: 'funcao' | 'papel' | 'exibida' (as outras linhas que a Central
-   só exibe: sem lápis) | 'vaga' | 'sem' | 'folga' | 'militar'
+   cfg = { tipo: 'funcao' | 'papel' | 'exibida' (as outras linhas dos blocos só
+   para ver: só a parte do dia) | 'vaga' | 'sem' | 'folga' | 'militar'
    (a linha da aba Estagiários) | 'fora' (remanejado daqui para outra
    unidade) | 'saida' (quem saiu da guarnição; saida = a data da saída; ultimo e dias = o último serviço e os dias do
    Mudar a saída, só na saída à mão) | 'trocado' (quem saiu numa troca, na célula; trocas = as trocas dele no dia, a lista
    trocados da leitura do dia) | 'companhia' (o Oficial de Área da companhia na Central do
    pelotão), visao: 'funcoes' | 'militares' (a aba Estagiários: só o dia
-   da pessoa), exibida (no papel: a linha das
-   Funções especiais), levado (no papel: a linha do papel que foi junto com
+   da pessoa), exibida (a linha de um bloco só
+   para ver), levado (no papel: a linha do papel que foi junto com
    ele para outra função do posto), grupo() (o bloco da função
    na lista), posto, funcao, rotulo, militar, periodos, folga (na De
    folga: a linha da folga, com o lancamento_id e a mudança), origem (no
@@ -234,6 +235,10 @@
         /* sai da cadeira e fica em Sem função definida, ainda com o papel */
         r['remover-funcao'] = true;
       }
+      itensDoDia(m.cpf, r);
+    } else if (cfg.tipo === 'exibida' && m) {
+      /* as outras linhas dos blocos só para ver (o Cabo de Dia, sempre o cabo ou soldado mais antigo de serviço; a
+         Extrajornada; os Estagiários): só o dia, porque a função de cada um muda na linha do posto dele */
       itensDoDia(m.cpf, r);
     } else if (cfg.tipo === 'vaga') {
       r['por-aqui'] = true;
@@ -444,7 +449,7 @@
     if (RosterWork.escalasPainelRemanejar && !RosterWork.escalasPainelRemanejar.unidadesProntas()) {
       RosterWork.escalasPainelRemanejar.prepararUnidades();
     }
-    /* sem nenhum item (o papel especial e a linha que a Central exibe, na aba Funções), a linha fica sem o lápis */
+    /* sem nenhum item que valha, a linha fica sem o lápis */
     var vale = itens(cfg);
     if (!Object.keys(vale).some(function (k) { return vale[k]; })) return;
     var dd = RosterWork.tpl('tpl-escala-edicao-opcoes');
@@ -454,7 +459,8 @@
     lugar.appendChild(dd);
     linha.classList.add('escala-edicao-linha--menu');
     linha.setAttribute('data-linha', cfg.tipo);   // o tipo da linha (o passo a passo acha a linha certa por ele)
-    if (cfg.militar) linha.setAttribute('data-cpf', cfg.militar.cpf);   // o Ver o dia e o Ver as funções acham a linha dele
+    /* o Ver o dia e o Ver as funções acham a linha dele; a do bloco só para ver não, para o menu abrir na do posto */
+    if (cfg.militar && cfg.tipo !== 'exibida') linha.setAttribute('data-cpf', cfg.militar.cpf);
     cfg.linha = linha;
     cfgs.set(linha, cfg);
     /* o clique no lápis chega aqui antes do ouvinte do document, que abre o menu: antes, só os itens que valem */
