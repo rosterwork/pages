@@ -1751,9 +1751,10 @@
         grade: {
           titulos: { agenda: 'Imprimir agenda', calendario: 'Imprimir calendário', 'colunas-dias': 'Imprimir colunas', 'colunas-unidades': 'Imprimir colunas' },
           nomes: { agenda: 'Agenda', calendario: 'Calendário', 'colunas-dias': 'Colunas', 'colunas-unidades': 'Colunas' },
-          subtitulo: function (paisagem, continua) {
-            var folha = 'A4 ' + (paisagem ? 'paisagem' : 'retrato');
-            return continua ? 'PDF em página contínua, na largura da ' + folha : 'Arquivo em PDF, ' + folha;
+          /* tamanho: a largura da página contínua ('A4', o padrão, ou, com as unidades lado a lado, 'A2', 'A1'...) */
+          subtitulo: function (paisagem, continua, tamanho) {
+            var lado = paisagem ? ' paisagem' : ' retrato';
+            return continua ? 'PDF em página contínua, na largura da ' + (tamanho || 'A4') + lado : 'Arquivo em PDF, A4' + lado;
           },
           /* as datas: "4 a 10 de outubro", "1 a 3, 11 a 17 e 25 a 31 de outubro", "outubro de 2026" */
           trecho: function (inicio, fim) { return inicio === fim ? inicio : inicio + ' a ' + fim; },

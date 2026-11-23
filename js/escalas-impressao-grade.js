@@ -6,21 +6,24 @@
    é desta impressão: a grade e o mês da tela (no Colunas › Unidades,
    a semana) e os filtros ligados, no resumo da nota do alto; a
    orientação (só na Agenda e no Calendário: Retrato sai como a
-   agenda; Paisagem, como o calendário, com as unidades uma embaixo da
-   outra, seja qual for a tela, para caber na A4; vem marcada pela
-   aba); o período (no Calendário, o "Mês todo" ou as semanas
-   escolhidas; na Agenda e no Colunas › Dias, do dia ao dia); o
-   formato (Folhas A4 ou Página contínua) e o arquivo, desenhado no
-   escalas-impressao-grade-pdf.js. O Colunas fica com a folha dele, com
-   as unidades uma embaixo da outra no Colunas › Dias. As unidades
-   começam marcadas com as da tela; o Mostrar (gráfico e ícones), a
-   prévia e o Gerar PDF são do painel comum. Com a Falta de gente
-   marcada nos Filtros da tela (falta), a linha dela sai embaixo do
-   gráfico (a conta lida à parte, escalas-falta.js).
-   Quem imprime outra grade (a Extrajornada) passa a leitura dela no
-   lugar da escala (dados, no mesmo formato, já com a falta quando a
-   tela a mostra), o título do arquivo e a conferência (null: sem o
-   aviso do erro grave da escala).
+   agenda; Paisagem, como o calendário; vem marcada pela aba); o
+   período (no Calendário, o "Mês todo" ou as semanas escolhidas; na
+   Agenda e no Colunas › Dias, do dia ao dia); o formato (Folhas A4 ou
+   Página contínua) e o arquivo, desenhado no
+   escalas-impressao-grade-pdf.js. No Calendário e no Colunas › Dias,
+   as Folhas A4 saem com as unidades uma embaixo da outra, seja qual
+   for a tela (cabe na A4), e a Página contínua sai como a tela (lado
+   a lado ou uma embaixo da outra; lado a lado, mais larga que a A4, e
+   o subtítulo diz a largura). As unidades começam marcadas com as da
+   tela; o Mostrar (gráfico e ícones), a prévia e o Gerar PDF são do
+   painel comum. Com a Falta de gente marcada nos Filtros da tela
+   (falta), a linha dela sai embaixo do gráfico, ou no lugar dele com
+   o gráfico desmarcado (a conta lida à parte, escalas-falta.js).
+   Quem imprime outra grade (a Extrajornada, os Afastamentos) passa a
+   leitura dela no lugar da escala (dados, no mesmo formato, já com a
+   falta quando a tela a mostra), o título do arquivo e a conferência
+   (null: sem o aviso do erro grave da escala); a folha dela sai sem
+   o sobreaviso, que só a Escala mostra.
    ============================================================ */
 (function () {
   'use strict';
@@ -244,18 +247,28 @@
     var formato = form.formato, continua = form.continua, paisagem = FORMATOS[formato].paisagem, diasPorLinha = form.diasPorLinha, titulo = form.titulo, prefixo = form.prefixo;
     var unidades = escolhas.unidades.map(function (u) { return { unidade_id: u.unidade_id, nome: u.nome }; });
     var mostrar = escolhas.mostrar;
-    /* como a tela, o Oficial de Área no título do dia, só na escala (a grade de outra tela, como a Extrajornada, vem com os
-       dados dela, e a página Sobreaviso não o mostra); as unidades sempre uma embaixo da outra no calendário, seja qual for
-       a tela (cabe na A4) */
+    /* como a tela, o Oficial de Área no título do dia e o sobreaviso, só na escala (a grade de outra tela, como a
+       Extrajornada, vem com os dados dela, e a página Sobreaviso não mostra o Oficial) */
     var comOficial = !form.dados && !form.semOficial;
-    /* a Falta de gente da escala (a linha fica embaixo do gráfico: sem ele, não sai) */
-    var comFalta = form.falta && !form.dados && mostrar.grafico;
+    var comSobreaviso = !form.dados;
+    /* a Falta de gente da escala (embaixo do gráfico ou, sem ele, no lugar dele) */
+    var comFalta = form.falta && !form.dados;
+    /* no calendário, as unidades lado a lado só na página contínua, como a tela (a escolha da pessoa, geral-visao-grade.js);
+       nas Folhas A4, sempre uma embaixo da outra (cabe na A4). Lado a lado, a página fica mais larga, e o subtítulo diz a
+       largura */
+    var ladoALado = continua && (formato === 'calendario' || formato === 'colunas-dias') && !!(RW.visaoGrade && RW.visaoGrade.disposicao() === 'lado');
+    var tamanho = RW.escalasImpressaoGradePdf.tamanho({ formato: formato, paisagem: paisagem, diasPorLinha: diasPorLinha,
+      unidades: unidades, ladoALado: ladoALado });
+    if (form.tamanho !== tamanho) {
+      form.tamanho = tamanho;
+      RW.painel.definirTitulos(null, subtitulo());
+    }
     return {
       resumo: resumo(escolhas.unidades),
       inicio: iso(dentro[0].data),
       fim: iso(dentro[dentro.length - 1].data),
       chave: [escolhas.ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, p.dias.length,
-        iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto].join('|'),
+        iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto, ladoALado].join('|'),
       montar: function () {
         var inicio = iso(p.busca.inicio), fim = iso(p.busca.fim);
         return carregarDados(escolhas.ids, inicio, fim).then(function (dados) {
@@ -263,7 +276,7 @@
         }).then(function (dados) {
           return RW.escalasImpressaoGradePdf.gerar({ formato: formato, paisagem: paisagem, continua: continua, mostrar: mostrar,
             diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados, titulo: titulo, prefixo: prefixo,
-            comOficial: comOficial });
+            comOficial: comOficial, comSobreaviso: comSobreaviso, ladoALado: ladoALado });
         }).then(function (r) {
           return { arquivo: r.arquivo, nome: r.nome, folhas: RW.mensagens.impressao.folhas(r.folhas, continua, paisagem) };
         }, function (e) {
@@ -274,7 +287,8 @@
   }
 
   /* ---------- abrir ---------- */
-  function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua); }
+  /* na página contínua, a largura da folha (lado a lado, maior que a A4: estado()) */
+  function subtitulo() { return msg().subtitulo(FORMATOS[form.formato].paisagem, form.continua, form.continua ? form.tamanho : null); }
 
   /* opcoes: { formato, data (a da tela), unidades ([{ unidade_id, nome }] da tela: as marcadas no começo), diasPorLinha,
      filtros (os ligados na tela, em texto); de outra grade: dados(ids, inicio, fim) (a promessa no formato do

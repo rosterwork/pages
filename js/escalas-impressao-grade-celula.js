@@ -4,7 +4,8 @@
    unidade (só no calendário), o gráfico de cobertura (24 barras, na
    cor do estado) com, quando a tela mostra a Falta de gente, a linha
    dela embaixo (uma casinha por horário de 6 h, as do
-   geral-falta-gente), e uma linha por militar com os ícones de origem, a
+   geral-falta-gente; sem o gráfico, ela sai no lugar dele), e uma
+   linha por militar com os ícones de origem, a
    graduação (no calendário, o posto curto), o nome (riscado na folga,
    na troca, no remanejado e na mudança de dia; sem caber, cortado com
    "…", como na tela) e o horário. O "Mostrar" do painel liga e
@@ -124,10 +125,11 @@
     return { canvas: formas, margin: [0, 0, 0, 2] };
   }
 
-  /* o gráfico sai na célula: com o Mostrar dele, a cobertura do dia e alguém de serviço no período (sem ninguém, só com
-     erro vermelho, como na tela) */
-  function comGrafico(mostrar, cobertura, erro, max) {
-    return !!(mostrar.grafico && cobertura && (max > 0 || (erro || []).some(vermelho)));
+  /* a célula tem o gráfico na tela (e a linha da Falta de gente embaixo dele): a cobertura do dia e alguém de serviço no
+     período (sem ninguém, só com erro vermelho, como na tela). No papel, o gráfico ainda pede o Mostrar dele; a linha da
+     falta, não */
+  function comCobertura(cobertura, erro, max) {
+    return !!(cobertura && (max > 0 || (erro || []).some(vermelho)));
   }
 
   /* uma casinha da Falta de gente (h = um horário da conta do geral-falta-gente), como na tela: vermelha com quantos ainda
@@ -167,7 +169,7 @@
       var dia = RW.data.paraIsoDeData(d.data);
       cfg.unidades.forEach(function (u) {
         var uid = u.unidade_id, horarios = ((cfg.dados.falta || {})[uid] || {})[dia];
-        if (!horarios || !comGrafico(cfg.mostrar, (cfg.dados.cobertura[uid] || {})[dia], (cfg.dados.erro[uid] || {})[dia], cfg.max[uid])) return;
+        if (!horarios || !comCobertura((cfg.dados.cobertura[uid] || {})[dia], (cfg.dados.erro[uid] || {})[dia], cfg.max[uid])) return;
         horarios.forEach(function (h) {
           if (!h.estado) return;
           tipos[h.estado === 'falta' ? 'falta' : h.mais ? 'mais' : 'coberta'] = true;
@@ -238,14 +240,14 @@
   }
 
   /* quem aparece no dia, nos grupos da tela (escalas-celula-grupos.js): os de serviço, o sobreaviso da companhia, no lugar
-     em que ele aparece, a autorização de viagem (com o filtro dela) e o Fora da escala (os afastados dele, com o filtro
-     Afastamentos), pelos filtros da tela; a leitura que já vem filtrada pela tela dela (jaFiltrada: a página
-     Afastamentos) entra inteira */
-  function pessoasDoDia(dados, uid, dia) {
+     em que ele aparece (comSobreaviso: só a folha da Escala, a única tela que o mostra), a autorização de viagem (com o
+     filtro dela) e o Fora da escala (os afastados dele, com o filtro Afastamentos), pelos filtros da tela; a leitura que
+     já vem filtrada pela tela dela (jaFiltrada: a página Afastamentos) entra inteira */
+  function pessoasDoDia(dados, uid, dia, comSobreaviso) {
     var passa = dados.jaFiltrada ? function () { return true; }
       : (RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return !semHorario(p); });
     function noGrupo(lista, grupo) { return lista.map(function (p) { return Object.assign({}, p, { grupo: grupo }); }); }
-    var sobreaviso = RW.escalasCelulaSobreaviso ? RW.escalasCelulaSobreaviso.pessoas(uid, dia) : [];
+    var sobreaviso = comSobreaviso && RW.escalasCelulaSobreaviso ? RW.escalasCelulaSobreaviso.pessoas(uid, dia) : [];
     var fora = ((dados.fora || {})[uid] || {})[dia] || [];
     var lista = ((dados.militares[uid] || {})[dia] || []).concat(noGrupo(sobreaviso, 'sobreaviso'),
       noGrupo(fora.filter(function (p) { return p.origem === 'viagem'; }), 'viagem'),
@@ -267,7 +269,7 @@
       if (d.fora) return;
       var dia = RW.data.paraIsoDeData(d.data);
       cfg.unidades.forEach(function (u) {
-        pessoasDoDia(cfg.dados, u.unidade_id, dia).forEach(function (p) {
+        pessoasDoDia(cfg.dados, u.unidade_id, dia, cfg.comSobreaviso).forEach(function (p) {
           iconesDaPessoa(p).forEach(function (n) { usados[n] = true; });
         });
       });
@@ -332,18 +334,21 @@
   }
 
   /* o bloquinho de uma unidade num dia. o = { largura, unidade (nome, só no calendário), cobertura, erro, falta (os
-     horários da Falta de gente, quando a tela a mostra), max, pessoas, postoCurto (só no calendário), mostrar, c, preencher } */
+     horários da Falta de gente, quando a tela a mostra), max, pessoas, postoCurto (só no calendário), centro (o nome da
+     unidade no centro: as unidades lado a lado), mostrar, c, preencher } */
   function bloco(o) {
     var interna = o.largura - 2 * BLOQUINHO.lado;
     var corpo = [];
     if (o.unidade) {
-      corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), fontSize: FONTE.unidade, bold: true, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
+      corpo.push([{ text: o.unidade.toLocaleUpperCase('pt-BR'), alignment: o.centro ? 'center' : undefined, fontSize: FONTE.unidade, bold: true,
+        characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: o.c.suave }]);
     }
     /* a unidade sem ninguém de serviço no período: o gráfico só com erro vermelho, na régua de 1 (como na tela); embaixo
-       dele, a linha da Falta de gente */
-    if (comGrafico(o.mostrar, o.cobertura, o.erro, o.max)) {
-      var g = grafico(o.cobertura, o.erro, o.max > 0 ? o.max : 1, interna, o.c), faixa = faixaDaFalta(o.falta, interna, o.c);
-      corpo.push([faixa ? { stack: [g, faixa] } : g]);
+       dele, a linha da Falta de gente, que sai também com o gráfico desmarcado no Mostrar, no lugar dele */
+    if (comCobertura(o.cobertura, o.erro, o.max)) {
+      var g = o.mostrar.grafico ? grafico(o.cobertura, o.erro, o.max > 0 ? o.max : 1, interna, o.c) : null;
+      var pecas = [g, faixaDaFalta(o.falta, interna, o.c)].filter(Boolean);
+      if (pecas.length) corpo.push([pecas.length > 1 ? { stack: pecas } : pecas[0]]);
     }
     /* um grupo novo depois de outro: a linha tracejada entre eles */
     var antes = null;

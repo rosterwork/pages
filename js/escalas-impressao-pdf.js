@@ -391,8 +391,9 @@
   }
 
   /* camada de fundo de uma folha: os blocos arredondados nas posições lidas do desenho de cantos retos
-     (cinza da unidade embaixo; bloquinhos brancos com contorno por cima); com "contorno" (só o PDF do dia), o cinza
-     também ganha o contorno fino, por dentro dele: o limite da unidade no papel */
+     (cinza da unidade embaixo; bloquinhos brancos com contorno por cima); com "contorno" (o PDF do dia e, com as
+     unidades lado a lado, a página contínua das grades), o cinza também ganha o contorno fino, por dentro dele: o limite
+     da unidade (ou do dia) no papel */
   function blocosArredondados(caixas, c, contorno) {
     if (!caixas) return null;
     var formas = caixas.cinza.map(function (b) {
