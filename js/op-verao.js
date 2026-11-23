@@ -17,7 +17,9 @@
      quem administra a companhia, também onde ligar);
    - a célula e o título do dia são os da Op. Verão
      (op-verao-celula.js) e o clique abre as caixas dela
-     (op-verao-caixa.js), nunca o painel do dia.
+     (op-verao-caixa.js), nunca o painel do dia;
+   - o Imprimir (só no Mês) sai como a tela: as companhias, os postos
+     e os Oficiais de Praia (imprimir).
    RosterWork.paginas['op-verao']
    ============================================================ */
 (function () {
@@ -39,6 +41,29 @@
     });
     C.colunas(saida);
     return saida;
+  }
+
+  /* ---------- o Imprimir (escalas.js › abrirImpressaoAgora e escalas-impressao-grade.js) ---------- */
+
+  /* as unidades da folha: a companhia de cada unidade ([{ unidade_id, nome }]), uma vez, com o nome dela; a Operação Verão
+     é da companhia (marcar um pelotão no painel vale a companhia dele) */
+  function companhias(lista) {
+    var E = RW.paginas.escalas, vistas = {}, saida = [];
+    (lista || []).forEach(function (u) {
+      var info = E && E.companhiaDe ? E.companhiaDe(u.unidade_id) : null;
+      var cia = info ? { unidade_id: info.id, nome: info.nome } : u;
+      if (vistas[cia.unidade_id]) return;
+      vistas[cia.unidade_id] = true;
+      saida.push(cia);
+    });
+    return saida;
+  }
+
+  /* o que o Imprimir leva desta página: as companhias da grade, a leitura da Op. Verão (op-verao-celula.js), os Oficiais
+     de Praia no título do dia e, no painel, as caixas dela (a Mostrar só com os ícones: a página não tem gráfico) */
+  function imprimir(unidades) {
+    return { unidades: companhias(unidades), unidadesDaFolha: companhias, dados: RW.opVeraoCelula.paraImpressao,
+      comOficial: true, marcas: ['op-verao'] };
   }
 
   /* ---------- a frase do mês sem nenhum dia da Operação Verão ---------- */
@@ -111,7 +136,8 @@
     semColunas: true,
     colunas: colunas,
     vazia: vazia,
-    impressao: function () { return RW.mensagens.opVerao.impressao; }
+    impressao: function () { return RW.mensagens.opVerao.impressao; },
+    imprimir: imprimir
   };
   RW.paginas['op-verao'] = { iniciar: iniciar };
 })();

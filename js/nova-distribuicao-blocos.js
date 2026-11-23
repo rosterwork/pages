@@ -109,7 +109,8 @@
      Quem escolher vem do rascunho (quem_escolher) ou, sem ele, da conta do banco; mexer copia o da conta para o rascunho,
      e a tela manda só o quem_escolher (nova-distribuicao-dados.js tira o critério de cada lugar, que é o jeito de antes) */
 
-  /* uma linha do cartão fechado por informação: o critério, o aviso, a CNH (Condutor) e o rodízio */
+  /* uma linha do cartão fechado por informação: o critério, o aviso, a CNH (Condutor), o rodízio e, no Rancheiro, o
+     "Sempre com um militar do efetivo" */
   function resumoCriterio(k, base) {
     var linhas = [];
     if (k && k.tipo != null) {
@@ -119,6 +120,7 @@
       if (k.tipo >= 2 && k.aviso != null) linhas.push(M().avisoLinha[k.aviso]);
       if (base === 'Condutor') linhas.push(M().comCarteira);
       if (k.rodizio) linhas.push(M().comRodizio);
+      if (base === 'Rancheiro' && k.sempre_efetivo) linhas.push(M().comSempreEfetivo);
     }
     return linhas;
   }
@@ -132,8 +134,8 @@
   }
 
   /* as escolhas de um critério (a regra de todos ou uma exceção); mudar(fn) muda o critério no rascunho; nome = o grupo
-     das bolinhas (um por critério, porque o cartão pode ter vários) */
-  function opcoesCriterio(lugar, ctx, k, mudar, falta, nome) {
+     das bolinhas (um por critério, porque o cartão pode ter vários); base = a função da regra de todos (na exceção, vazia) */
+  function opcoesCriterio(lugar, ctx, k, mudar, falta, nome, base) {
     var graus = (ctx.calc && ctx.calc.graus) || {};
     var listaGraus = ctx.ehCia ? (graus['praça'] || []).concat(graus.oficial || []) : (graus['praça'] || []);
     var opcoes = P().bolinhas(P().tpl('criterio'), nome, function (v) { return Number(v) === k.tipo; }, function (v) {
@@ -162,6 +164,14 @@
     P().marcar(opcoes.querySelector('.nova-distribuicao-rodizio'), !!k.rodizio, function (marcado) {
       mudar(function (c) { c.rodizio = marcado; });
     }, ctx.soLeitura);
+    /* só no Rancheiro: o estagiário entra junto de alguém do efetivo, nunca sozinho nem no lugar dele */
+    var sempre = opcoes.querySelector('.nova-distribuicao-sempre-efetivo');
+    sempre.classList.toggle('oculto', base !== 'Rancheiro');
+    if (base === 'Rancheiro') {
+      P().marcar(sempre, !!k.sempre_efetivo, function (marcado) {
+        mudar(function (c) { if (marcado) c.sempre_efetivo = true; else delete c.sempre_efetivo; });
+      }, ctx.soLeitura);
+    }
     lugar.appendChild(opcoes);
   }
 
@@ -219,13 +229,13 @@
     var nome = 'nova-distribuicao-criterio-' + g.grupo;
     var mudarRegra = function (fn) { mudarQuem(ctx, api, g.grupo, function (x) { fn(x.regra); }); };
     if (g.lugares.length < 2) {
-      opcoesCriterio(lugar, ctx, q.regra, mudarRegra, faltaRegra, nome);
+      opcoesCriterio(lugar, ctx, q.regra, mudarRegra, faltaRegra, nome, g.base);
       return;
     }
     var titulo = P().tpl('quem-todos');
     titulo.textContent = P().texto(M().quemTodos, { plural: M().plurais[g.base] || g.base });
     lugar.appendChild(titulo);
-    opcoesCriterio(lugar, ctx, q.regra, mudarRegra, faltaRegra, nome);
+    opcoesCriterio(lugar, ctx, q.regra, mudarRegra, faltaRegra, nome, g.base);
     var bloco = P().tpl('quem-excecoes');
     bloco.querySelector('.nova-distribuicao-quem-ajuda').textContent = P().texto(M().quemAjuda, { funcao: g.base });
     var lista = bloco.querySelector('.nova-distribuicao-quem-lista');

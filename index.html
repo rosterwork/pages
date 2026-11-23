@@ -4964,12 +4964,12 @@
 
   <!-- as caixas das impressões da escala, no painel de impressão comum (componentes/js/geral-impressao.js, que põe a
        nota, o aviso, a Prévia e o rodapé do index.html): o Imprimir escala (escalas-impressao.js: o painel do dia e o
-       Militares), o das grades (escalas-impressao-grade.js: Agenda, Calendário, Colunas) e o da página Afastamentos
-       (afastamentos-impressao.js: Ano, Mês e Calendário, marca afastamentos). A orientação (só na Agenda
-       e no Calendário), o período, as unidades (a árvore, marcada com as unidades pedidas, como estão; para quem é de
-       companhia ou pelotão, começa na companhia e a seta do título abre a árvore toda), o formato (só nas grades) e o
-       que mostrar. O que é de uma impressão só leva data-impressao-so com as marcas dela (dia, grade, afastamentos,
-       orientacao, semanas, dias); o JS mostra só o que vale -->
+       Militares), o das grades (escalas-impressao-grade.js: Agenda, Calendário, Colunas; na página Op. Verão, marca
+       op-verao) e o da página Afastamentos (afastamentos-impressao.js: Ano, Mês e Calendário, marca afastamentos). A
+       orientação (só na Agenda e no Calendário), o período, as unidades (a árvore, marcada com as unidades pedidas, como
+       estão; para quem é de companhia ou pelotão, começa na companhia e a seta do título abre a árvore toda), o formato
+       (só nas grades) e o que mostrar. O que é de uma impressão só leva data-impressao-so com as marcas dela (dia, grade,
+       op-verao, afastamentos, orientacao, semanas, dias); o JS mostra só o que vale -->
   <template id="tpl-escala-impressao">
     <!-- a orientação (Agenda e Calendário, da Escala e da Extrajornada): Retrato sai como a agenda; Paisagem, como o
          calendário, com as unidades uma embaixo da outra nas Folhas A4 e como na tela na Página contínua. Vem marcada
@@ -5046,7 +5046,7 @@
         <span class="campo-erro-texto"></span>
       </div>
     </div>
-    <div class="grupo-caixa" data-impressao-so="grade afastamentos">
+    <div class="grupo-caixa" data-impressao-so="grade afastamentos op-verao">
       <span class="rotulo-secao"><span data-impressao-num></span>. Formato</span>
       <div class="impressao-linha">
         <span class="impressao-rotulo">Arquivo</span>
@@ -5057,9 +5057,10 @@
       </div>
       <span class="campo-ajuda">Folhas A4 para imprimir. Página contínua para ver na tela: uma página só, sem quebras.</span>
     </div>
-    <!-- o que mostrar: nas grades, o gráfico e os ícones de cada célula; no dia, os ícones. Com os ícones, o pé da
-         folha leva a legenda deles. Nos Afastamentos não aparece (a folha não tem gráfico nem ícones) -->
-    <div class="grupo-caixa" data-impressao-so="dia grade">
+    <!-- o que mostrar: nas grades, o gráfico e os ícones de cada célula; no dia e na Op. Verão (sem gráfico), os ícones.
+         Com os ícones, o pé da folha leva a legenda deles. Nos Afastamentos não aparece (a folha não tem gráfico nem
+         ícones) -->
+    <div class="grupo-caixa" data-impressao-so="dia grade op-verao">
       <span class="rotulo-secao"><span data-impressao-num></span>. Mostrar</span>
       <button type="button" class="arvore-linha impressao-marcar" role="checkbox" aria-checked="true" data-impressao-so="grade" data-mostrar="grafico">
         <span class="caixa-selecao caixa-selecao--marcada" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>

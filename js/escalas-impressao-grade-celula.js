@@ -13,7 +13,10 @@
    do escalas-celula.js (a mesma fonte da tela). Também diz quem
    aparece no dia (pelos filtros da tela) e que ícones e casinhas saem
    no arquivo (para a legenda do pé da folha, que desenha a casinha de
-   exemplo com a daqui).
+   exemplo com a daqui). A leitura da Op. Verão traz também o título
+   de cada posto (o Sem posto em amarelo, a linha tracejada entre os
+   postos), a frase do dia sem ninguém e o Oficial de Praia do título
+   do dia em linhas prontas.
    Desenhado com a biblioteca do PDF (exceção REGRAS §3/§4):
    medidas em pontos nas constantes abaixo, cores --impressao-* do tema.
    ============================================================ */
@@ -23,8 +26,8 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   /* medidas em pontos */
-  var FONTE = { unidade: 6, grad: 6, nome: 7, hora: 6 };
-  var ESPACAMENTO_CAIXA_ALTA = 0.4;        // entre letras do nome da unidade (caixa alta)
+  var FONTE = { unidade: 6, posto: 6, grad: 6, nome: 7, hora: 6 };
+  var ESPACAMENTO_CAIXA_ALTA = 0.4;        // entre letras do nome da unidade e do posto (caixa alta)
   var BLOQUINHO = { lado: 2.5, topo: 2.5, linha: 0.6, base: 3 };
   var ICONE = 7;                           // ícone de origem
   var ENTRE_ICONES = 1;                    // entre os ícones de uma linha
@@ -152,10 +155,10 @@
     return { width: largura, stack: [fundo, dentro] };
   }
 
-  /* a linha da Falta de gente embaixo do gráfico: as 4 casinhas, cada uma embaixo das suas 6 barras; sem nada em nenhum
-     horário, null */
+  /* a linha da Falta de gente embaixo do gráfico: as 4 casinhas, cada uma embaixo das suas 6 barras, como na tela (o
+     horário sem nada com a casinha vazia, e a linha mesmo sem nada no dia); sem a conta do dia, null */
   function faixaDaFalta(horarios, largura, c) {
-    if (!horarios || !horarios.some(function (h) { return h.estado; })) return null;
+    if (!horarios) return null;
     var w = (largura - 3 * FALTA.entre) / 4;
     return { columns: horarios.map(function (h) { return casinha(h, w, c); }), columnGap: FALTA.entre };
   }
@@ -255,6 +258,18 @@
     return lista.filter(passa);
   }
 
+  /* a linha da célula é de uma pessoa (não o título de um posto nem a frase do dia sem ninguém, da Op. Verão) */
+  function ehPessoa(p) { return p.titulo == null && p.frase == null; }
+
+  /* o título de um posto (a Op. Verão), como na tela: caixa alta; o Sem posto, em amarelo */
+  function tituloPosto(p, c) {
+    return { text: p.titulo.toLocaleUpperCase('pt-BR'), fontSize: FONTE.posto, bold: true, characterSpacing: ESPACAMENTO_CAIXA_ALTA,
+      color: p.sem ? c.alerta : c.suave };
+  }
+
+  /* a frase do dia sem ninguém (a Op. Verão) */
+  function frase(p, c) { return { text: p.frase, fontSize: FONTE.nome, color: c.suave }; }
+
   /* a linha tracejada entre dois grupos da célula (a mesma da tela) */
   function separador(largura, c) {
     return { canvas: [{ type: 'line', x1: 0, y1: 0, x2: largura, y2: 0, lineWidth: 0.4, dash: { length: 1.5, space: 1 }, lineColor: c.borda }],
@@ -270,6 +285,7 @@
       var dia = RW.data.paraIsoDeData(d.data);
       cfg.unidades.forEach(function (u) {
         pessoasDoDia(cfg.dados, u.unidade_id, dia, cfg.comSobreaviso).forEach(function (p) {
+          if (!ehPessoa(p)) return;
           iconesDaPessoa(p).forEach(function (n) { usados[n] = true; });
         });
       });
@@ -303,17 +319,19 @@
 
   /* o Oficial de Área do dia no título (as linhas da tela, escalas-celula.js › linhasDoOficial): uma linha por Oficial, o
      posto e o nome e, quando não é o dia todo, o horário; o dia com escala e ninguém na função, e cada pedaço do dia sem
-     ninguém, "Sem Oficial de Área" em vermelho; sem a chave (o dia sem escala), null */
+     ninguém, "Sem Oficial de Área" em vermelho; sem a chave (o dia sem escala), null. A leitura que já traz as linhas
+     prontas (a Op. Verão: { pessoa, hora, vermelho, sem }, o Oficial de Praia) sai como veio */
   function oficial(oficiais, dia, c, tamanho) {
     if (!oficiais || !Object.prototype.hasOwnProperty.call(oficiais, dia)) return null;
-    var linhas = RW.escalasCelula ? RW.escalasCelula.linhasDoOficial(oficiais[dia]) : [{ pessoa: oficiais[dia], hora: '' }];
+    var linhas = Array.isArray(oficiais[dia]) ? oficiais[dia]
+      : RW.escalasCelula ? RW.escalasCelula.linhasDoOficial(oficiais[dia]) : [{ pessoa: oficiais[dia], hora: '' }];
     var partes = [];
     linhas.forEach(function (l, i) {
       if (i) partes.push({ text: '\n', fontSize: tamanho });
       if (l.pessoa) {
         partes.push({ text: (l.pessoa.grad || '') + ' ', color: c.suave, fontSize: tamanho },
-          { text: l.pessoa.nome || '', bold: true, color: c.forte, fontSize: tamanho });
-      } else partes.push({ text: RW.mensagens.escala.semOficial, bold: true, color: c.erro, fontSize: tamanho });
+          { text: l.pessoa.nome || '', bold: true, color: l.vermelho ? c.erro : c.forte, fontSize: tamanho });
+      } else partes.push({ text: l.sem || RW.mensagens.escala.semOficial, bold: true, color: c.erro, fontSize: tamanho });
       if (l.hora) partes.push({ text: '  ' + l.hora, color: l.pessoa ? c.suave : c.erro, fontSize: tamanho });
     });
     return partes;
@@ -354,7 +372,7 @@
     var antes = null;
     (o.pessoas || []).forEach(function (p) {
       if (antes && p.grupo && antes.grupo && p.grupo !== antes.grupo) corpo.push([separador(interna, o.c)]);
-      corpo.push([linha(p, interna, o.mostrar, o.c, o.postoCurto)]);
+      corpo.push([p.titulo != null ? tituloPosto(p, o.c) : p.frase != null ? frase(p, o.c) : linha(p, interna, o.mostrar, o.c, o.postoCurto)]);
       antes = p;
     });
     if (!corpo.length) corpo.push([{ text: ' ', fontSize: FONTE.nome }]);

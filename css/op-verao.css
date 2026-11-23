@@ -3,8 +3,8 @@
    A mesma Escala (escalas.html e os mesmos arquivos), com a marca
    .escala-pagina--op-verao na página (js/op-verao.js). Aqui o que ela
    esconde ou troca (os textos, a Minha escala, o Colunas, o Filtros,
-   a Legenda e o Imprimir, as notas embaixo da barra e a borda amarela
-   do dia que ainda pode mudar) e as peças
+   a Legenda, o Imprimir na aba Guarda-vidas, as notas embaixo da
+   barra e a borda amarela do dia que ainda pode mudar) e as peças
    dela (o título de cada posto e o Sem posto são o
    .escala-mes-posto do escalas-mes.css): o dia vazio, os Oficiais
    de Praia no título do dia (um embaixo do outro, com o horário), o
@@ -24,12 +24,12 @@
   display: inline;
 }
 
-/* as abas: Mês e Guarda-vidas; a barra, sem o Filtros, a Legenda e o Imprimir; embaixo dela, sem as notas */
+/* as abas: Mês e Guarda-vidas; a barra, sem o Filtros e a Legenda (o Imprimir só no Mês); embaixo dela, sem as notas */
 .escala-pagina--op-verao #escala-modo-minha,
 .escala-pagina--op-verao [data-modo="colunas"],
 .escala-pagina--op-verao #escala-filtros,
 .escala-pagina--op-verao #escala-legenda-grade,
-.escala-pagina--op-verao #escala-imprimir,
+.escala-pagina--op-verao .escala-barra:has(#escala-sub-militares:not(.oculto)) #escala-imprimir,
 .escala-pagina--op-verao #escala-volta-aviso,
 .escala-pagina--op-verao #escala-cotas-aviso,
 .escala-pagina--op-verao #escala-extra-servico-aviso,

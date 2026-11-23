@@ -3,8 +3,11 @@
    Pede ao banco os dados (extrajornada_sugerir com p_so_dados, com as
    regras da companhia dos Ajustes › Extrajornada), monta as extras
    possíveis e as regras fixas como um problema de programação inteira
-   e o placar em níveis de verdade: a falta vermelha e a amarela (na
-   ordem dos pelotões), colocar as cotas, cada um no próprio pelotão,
+   e o placar em níveis de verdade: a falta vermelha (na ordem dos
+   pelotões), onde falta mais primeiro (no mesmo pelotão, o horário que
+   falta 2 antes do que falta 1), a amarela, colocar as cotas, a extra
+   inteira fora da cidade da companhia (quem é de outro pelotão só
+   quebra sem outro jeito), cada um no próprio pelotão,
    quem vai para outro pelotão (o mais moderno ou em rodízio), o que
    passa do necessário, quem fica com o lugar (a fila das Cotas ou a
    antiguidade) e a balança (Pouco, Normal ou Muito). Nunca a mais: a
@@ -44,9 +47,9 @@
   var JANELAS = [{ ini: 1, tam: 4 }, { ini: 1, tam: 3 }, { ini: 2, tam: 3 }, { ini: 1, tam: 2 }, { ini: 2, tam: 2 }, { ini: 3, tam: 2 }];
   var ADMINISTRATIVO = 'Administrativo';   // o Setor da ficha
   /* os níveis, do que vale mais ao que vale menos (a ordem fixa dos Ajustes), e a etapa da janela de cada um */
-  var NIVEIS = ['verm', 'amar', 'cotas', 'fora', 'quem', 'passa', 'prio', 'balanca'];
-  var ETAPA = { verm: 1, amar: 2, cotas: 3, fora: 4, quem: 5, passa: 6, prio: 7, balanca: 8 };
-  var CONFERINDO = 9;
+  var NIVEIS = ['verm', 'fundo', 'amar', 'cotas', 'inteira', 'fora', 'quem', 'passa', 'prio', 'balanca'];
+  var ETAPA = { verm: 1, fundo: 2, amar: 3, cotas: 4, inteira: 5, fora: 6, quem: 7, passa: 8, prio: 9, balanca: 10 };
+  var CONFERINDO = 11;
   /* a balança (Normal = os pesos de antes do placar novo): três dias seguidos, cada extra (menos extras = blocos maiores),
      colado ao serviço, o administrativo que sai à meia-noite (vai com o colado) e o dia que ele quer (por horário); Pouco
      é a metade e Muito, o dobro */
@@ -163,7 +166,7 @@
     });
 
     /* os níveis: cada termo é [coeficiente, variável, teto da variável] (maior vale mais) */
-    var L = { verm: [], amar: [], fora: [], quem: [], cotas: [], passa: [], prio: [], balanca: [] };
+    var L = { verm: [], fundo: [], amar: [], cotas: [], inteira: [], fora: [], quem: [], passa: [], prio: [], balanca: [] };
     var cons = [], lim = [], bins = [], c = 0, vermPel = {}, amarPel = {};
     xs.forEach(function (x, i) {
       var v = 'x' + i;
@@ -172,6 +175,8 @@
       if (x.u !== x.m.uid) {
         L.fora.push([-x.tam, v, 1]);
         L.quem.push([-x.tam * custoSair(x.m), v, 1]);
+        /* fora da cidade da companhia, quem é de outro pelotão vai com a extra inteira (24 h): a quebrada só sem outro jeito */
+        if (!x.sede && x.tam < 4) L.inteira.push([-1, v, 1]);
       }
       /* a que começa no fim do expediente: fora da cidade da companhia, as duas metades passam do necessário */
       if (x.inicio && !x.sede) L.passa.push([-2, v, 1]);
@@ -198,6 +203,19 @@
            de gente no horário, quem conduz é a pessoa) */
         if (t[0] !== 'ca' || n.vg + n.ag === 0) partes.push(nome);
       });
+      /* no vermelho, onde falta mais vem primeiro: cada pessoa que falta é um pedaço, e o que leva a falta de n para n - 1
+         vale 2n - 1 (o resto ao quadrado). No mesmo pelotão, cobrir o horário que falta 2 vale mais que o que falta 1 */
+      var nv = n.vc.length + n.vg;
+      if (nv > 0) {
+        var pedacos = [];
+        for (var j = 0; j < nv; j++) {
+          pedacos.push('fd' + s + '_' + j);
+          lim.push('0 <= fd' + s + '_' + j + ' <= 1');
+          L.fundo.push([2 * (nv - j) - 1, 'fd' + s + '_' + j, 1]);
+        }
+        var cobertos = (n.vc.length ? ['cv' + s] : []).concat(n.vg ? ['gv' + s] : []);
+        cons.push('c' + (c++) + ': ' + pedacos.join(' + ') + ' - ' + cobertos.join(' - ') + ' = 0');
+      }
       /* quem conduz a viatura sem condutor não tira, ao mesmo tempo, o chefe da direção de outra */
       if (n.vc.length && n.ac.length) {
         var algum = lista.filter(function (i) { return conduz(xs[i].m, n.vc) || conduz(xs[i].m, n.ac); });
@@ -274,10 +292,10 @@
     L.verm = pv.termos;
     L.amar = pa.termos;
     var partesDe = { verm: pv.partes, amar: pa.partes };
-    /* o melhor que cada nível pode chegar: ninguém fora, nada passando, todas as cotas; com todas colocadas, a soma da
+    /* o melhor que cada nível pode chegar: nenhuma quebrada, ninguém fora, nada passando, todas as cotas; com todas colocadas, a soma da
        fila não muda (os outros, a soma dos positivos; no passar do necessário, com o chefe liberado) */
     var total = D.mil.reduce(function (t, m) { return t + m.resta; }, 0);
-    var melhor = { fora: 0, quem: 0, cotas: total, prio: D.mil.reduce(function (t, m) { return t + m.resta * prio[m.cpf]; }, 0) };
+    var melhor = { inteira: 0, fora: 0, quem: 0, cotas: total, prio: D.mil.reduce(function (t, m) { return t + m.resta * prio[m.cpf]; }, 0) };
     if (!L.passa.some(function (t) { return t[0] > 0; })) melhor.passa = 0;
     var niveis = NIVEIS.map(function (nome) { return { nome: nome, termos: L[nome], partes: partesDe[nome], teto: melhor[nome] }; })
                        .filter(function (n) { return n.termos.length; });

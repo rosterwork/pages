@@ -76,7 +76,7 @@
 
   /* a página filtrada aberta: o Sobreaviso, os Estágios ou a Op. Verão, a mesma Escala só com uma situação (sobreaviso.js,
      estagios.js e op-verao.js se registram em RosterWork.paginasFiltradas: { situacao, militares, colunas(lista),
-     impressao(), moldePelotao, semColunas }); null na Escala */
+     impressao(), imprimir(unidades) (só a Op. Verão), moldePelotao, semColunas }); null na Escala */
   function paginaFiltrada() {
     var atual = RosterWork.paginaAtual && RosterWork.paginaAtual();
     return (RosterWork.paginasFiltradas || {})[atual] || null;
@@ -498,16 +498,18 @@
       var pf = paginaFiltrada();
       if (pf) daTela = pf.colunas(daTela);
       var M = pf ? pf.impressao() : null;
+      var unidades = daTela.map(function (u) { return { unidade_id: u.id, nome: u.nome }; });
+      /* a Op. Verão ainda manda o que é só dela (pf.imprimir: as companhias, a leitura e o Oficial de Praia) */
       RosterWork.escalasImpressaoGrade.abrir(Object.assign({
         formato: formato,
         data: new Date(refData.getFullYear(), refData.getMonth(), refData.getDate()),
-        unidades: daTela.map(function (u) { return { unidade_id: u.id, nome: u.nome }; }),
+        unidades: unidades,
         diasPorLinha: quantidadeColunas(),
         filtros: RosterWork.escalasFiltros ? RosterWork.escalasFiltros.resumo() : [],
         /* a Falta de gente sai como na tela: só com ela marcada nos Filtros */
         falta: !pf && !!(RosterWork.escalasFiltros && RosterWork.escalasFiltros.faltaDeGente())
       }, pf ? { titulo: M.titulo, prefixo: M.arquivo, semOficial: true, conferir: null,
-        mostrar: { grafico: false, icones: true } } : {}, aviso));
+        mostrar: { grafico: false, icones: true } } : {}, pf && pf.imprimir ? pf.imprimir(unidades) : {}, aviso));
       return;
     }
     if (RosterWork.escalasImpressao) RosterWork.escalasImpressao.abrir(Object.assign({ data: dataPadraoImpressao() }, aviso));

@@ -23,7 +23,9 @@
    leitura dela no lugar da escala (dados, no mesmo formato, já com a
    falta quando a tela a mostra), o título do arquivo e a conferência
    (null: sem o aviso do erro grave da escala); a folha dela sai sem
-   o sobreaviso, que só a Escala mostra.
+   o sobreaviso, que só a Escala mostra. A Op. Verão também passa a
+   leitura dela, com o título do dia (os Oficiais de Praia), e troca
+   as unidades marcadas pela companhia de cada uma.
    ============================================================ */
 (function () {
   'use strict';
@@ -246,10 +248,13 @@
     var iso = RW.data.paraIsoDeData;
     var formato = form.formato, continua = form.continua, paisagem = FORMATOS[formato].paisagem, diasPorLinha = form.diasPorLinha, titulo = form.titulo, prefixo = form.prefixo;
     var unidades = escolhas.unidades.map(function (u) { return { unidade_id: u.unidade_id, nome: u.nome }; });
+    if (form.unidadesDaFolha) unidades = form.unidadesDaFolha(unidades);
+    var ids = unidades.map(function (u) { return u.unidade_id; });
     var mostrar = escolhas.mostrar;
     /* como a tela, o Oficial de Área no título do dia e o sobreaviso, só na escala (a grade de outra tela, como a
-       Extrajornada, vem com os dados dela, e a página Sobreaviso não mostra o Oficial) */
-    var comOficial = !form.dados && !form.semOficial;
+       Extrajornada, vem com os dados dela, e a página Sobreaviso não mostra o Oficial); a leitura de outra tela que traz o
+       título do dia (a Op. Verão, com o Oficial de Praia) também o mostra */
+    var comOficial = form.dados ? form.comOficial : !form.semOficial;
     var comSobreaviso = !form.dados;
     /* a Falta de gente da escala (embaixo do gráfico ou, sem ele, no lugar dele) */
     var comFalta = form.falta && !form.dados;
@@ -264,15 +269,15 @@
       RW.painel.definirTitulos(null, subtitulo());
     }
     return {
-      resumo: resumo(escolhas.unidades),
+      resumo: resumo(unidades),
       inicio: iso(dentro[0].data),
       fim: iso(dentro[dentro.length - 1].data),
-      chave: [escolhas.ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, p.dias.length,
+      chave: [ids.join(','), formato, continua, mostrar.grafico, mostrar.icones, p.dias.length,
         iso(p.dias[0].data), iso(p.dias[p.dias.length - 1].data), p.texto, ladoALado].join('|'),
       montar: function () {
         var inicio = iso(p.busca.inicio), fim = iso(p.busca.fim);
-        return carregarDados(escolhas.ids, inicio, fim).then(function (dados) {
-          return comFaltaDeGente(comFalta, escolhas.ids, inicio, fim, dados);
+        return carregarDados(ids, inicio, fim).then(function (dados) {
+          return comFaltaDeGente(comFalta, ids, inicio, fim, dados);
         }).then(function (dados) {
           return RW.escalasImpressaoGradePdf.gerar({ formato: formato, paisagem: paisagem, continua: continua, mostrar: mostrar,
             diasPorLinha: diasPorLinha, unidades: unidades, dias: p.dias, texto: p.texto, dados: dados, titulo: titulo, prefixo: prefixo,
@@ -295,7 +300,9 @@
      RosterWork.escalasDados.carregar), titulo (o do alto da folha), prefixo (o começo do nome do arquivo) e conferir
      (null: sem a conferência da escala); da página Sobreaviso, também semOficial (sem o Oficial de Área no título do dia)
      e mostrar (as caixas do Mostrar já marcadas); da Escala, falta (a Falta de gente marcada nos Filtros); da página
-     Afastamentos, marcas (as caixas do molde que valem, no lugar das das grades) e semOrientacao (sem a Orientação) } */
+     Afastamentos, marcas (as caixas do molde que valem, no lugar das das grades) e semOrientacao (sem a Orientação); da
+     página Op. Verão, comOficial (a leitura dela traz o título do dia, em linhas prontas) e unidadesDaFolha(unidades)
+     (as marcadas no painel viram as da folha: a companhia de cada uma) } */
   function abrir(opcoes) {
     if (!RW.painel || !RW.impressao || !FORMATOS[opcoes.formato]) return;
     var formato = opcoes.formato;
@@ -311,6 +318,7 @@
       comOrientacao: !opcoes.semOrientacao && (formato === ORIENTACOES.retrato || formato === ORIENTACOES.paisagem),
       continua: false, diasPorLinha: opcoes.diasPorLinha || 3, filtros: opcoes.filtros || [],
       dados: opcoes.dados || null, titulo: opcoes.titulo || null, prefixo: opcoes.prefixo || null, semOficial: !!opcoes.semOficial,
+      comOficial: !!opcoes.comOficial, unidadesDaFolha: opcoes.unidadesDaFolha || null,
       falta: !!opcoes.falta,
       data: new Date(data.getFullYear(), data.getMonth(), data.getDate()), mes: new Date(data.getFullYear(), data.getMonth(), 1),
       mesTodo: true, semanas: [], de: 1, ate: 1

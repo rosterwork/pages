@@ -1970,6 +1970,7 @@
       avisoLinha: ['Sem aviso', 'Com aviso amarelo', 'Com erro vermelho'],
       comCarteira: 'Com a CNH',
       comRodizio: 'Com rodízio',
+      comSempreEfetivo: 'Sempre com um militar do efetivo, o estagiário só junto',
       /* a função com dois ou mais lugares no posto: a regra de todos e as exceções */
       quemTodos: 'Todos os {plural}',
       quemAjuda: 'Um lugar com escolha própria. O 1º é o primeiro {funcao} a encher na Ordem de importância.',
@@ -3018,8 +3019,9 @@
       pdfGerar: { titulo: 'Preparando o PDF', passos: ['Montando as páginas'] },
       /* o Preencher pela sugestão: a leitura, um nível do placar por etapa (extrajornada-otimizador.js) e a conferência */
       sugestao: { titulo: 'Calculando a melhor distribuição',
-        passos: ['Lendo os voluntários, as cotas e os dias', 'Cobrindo a falta vermelha', 'Cobrindo a falta amarela', 'Colocando todas as cotas',
-                 'Deixando cada um no próprio pelotão', 'Escolhendo quem vai para outro pelotão', 'Evitando passar do necessário', 'Escolhendo quem fica com cada lugar',
+        passos: ['Lendo os voluntários, as cotas e os dias', 'Cobrindo a falta vermelha', 'Cobrindo primeiro onde falta mais', 'Cobrindo a falta amarela',
+                 'Colocando todas as cotas', 'Evitando quebrar a extra fora da cidade da companhia', 'Deixando cada um no próprio pelotão',
+                 'Escolhendo quem vai para outro pelotão', 'Evitando passar do necessário', 'Escolhendo quem fica com cada lugar',
                  'Pesando a balança', 'Conferindo as regras de cada extra'],
         pe: 'Isso pode levar alguns minutos. Não feche esta página.', demora: 'Está demorando mais que o normal. Não feche esta página.' },
       imprimir: function (v) {

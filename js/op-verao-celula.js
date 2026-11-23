@@ -13,10 +13,12 @@
    Quem está afastado ou de serviço na escala no mesmo horário fica
    com o nome em vermelho e o porquê na dica.
    A mudança ainda não salva (op-verao-rascunho.js) aparece na hora,
-   com a borda tracejada do dia. Não cria HTML (clona os moldes do
-   escalas.html) nem escreve estilo.
+   com a borda tracejada do dia. O Imprimir da página leva o mesmo
+   dia para a folha (paraImpressao: os postos e os Oficiais de Praia,
+   montados pelo mesmo código da tela). Não cria HTML (clona os moldes
+   do escalas.html) nem escreve estilo.
    RosterWork.opVeraoCelula.{ ativa, guardar, preencher,
-   preencherTitulo, doDia, companhia, linhasDoDia, gravadas, rascunho, temRascunho,
+   preencherTitulo, paraImpressao, doDia, companhia, linhasDoDia, gravadas, rascunho, temRascunho,
    colunas, pode, limite, limpar, diasComRascunho, gravou, esperarLeitura }
    ============================================================ */
 (function () {
@@ -125,17 +127,35 @@
     return el;
   }
 
-  /* o título de um posto (sem: o Sem posto, em amarelo) e as linhas dele, na ordem do horário */
+  /* o título de um posto (sem: o Sem posto, em amarelo) e as linhas dele */
   function bloco(celula, titulo, linhas, curto, sem) {
     var t = RW.escalasCelulaGrupos.tituloPosto(titulo, sem);
     if (!t) return;
     celula.appendChild(t);
-    linhas.slice().sort(function (a, b) { return a.inicio < b.inicio ? -1 : a.inicio > b.inicio ? 1 : 0; })
-      .forEach(function (l) { var el = linha(l, curto); if (el) celula.appendChild(el); });
+    linhas.forEach(function (l) { var el = linha(l, curto); if (el) celula.appendChild(el); });
   }
 
-  /* o miolo da célula (curto: o posto curto das células pequenas): os postos dos Ajustes na ordem deles, depois um posto
-     que saiu dos Ajustes e ainda tem gente no dia, e o Sem posto */
+  /* os postos do dia s com quem está neles (as linhas de agora, com o rascunho): os postos dos Ajustes na ordem deles,
+     depois um posto que saiu dos Ajustes e ainda tem gente no dia, e o Sem posto (o título com quantos); dentro do posto,
+     na ordem do horário. [{ nome, sem, linhas }]; ninguém no dia: []. A célula da tela e a da folha (paraImpressao) */
+  function postosDoDia(s, linhas) {
+    var todas = linhas.filter(function (l) { return !l.oficial; });
+    var postos = (s.postos || []).map(function (p) { return { id: p.id, nome: p.nome }; });
+    todas.forEach(function (l) {
+      if (l.posto_id && !postos.some(function (p) { return p.id === l.posto_id; })) postos.push({ id: l.posto_id, nome: l.posto_nome || '' });
+    });
+    function porHorario(lista) { return lista.sort(function (a, b) { return a.inicio < b.inicio ? -1 : a.inicio > b.inicio ? 1 : 0; }); }
+    var saida = [];
+    postos.forEach(function (p) {
+      var deles = todas.filter(function (l) { return l.posto_id === p.id; });
+      if (deles.length) saida.push({ nome: p.nome, sem: false, linhas: porHorario(deles) });
+    });
+    var sem = todas.filter(function (l) { return !l.posto_id; });
+    if (sem.length) saida.push({ nome: RW.mensagens.escala.semPosto(sem.length), sem: true, linhas: porHorario(sem) });
+    return saida;
+  }
+
+  /* o miolo da célula (curto: o posto curto das células pequenas): os postos do dia ou, sem ninguém, a frase */
   function preencher(celula, curto) {
     celula.textContent = '';
     curtoDa.set(celula, !!curto);
@@ -143,25 +163,19 @@
     celula.classList.toggle('op-verao-celula--edita', !!s && pode(s.companhia_id));
     celula.classList.toggle('escala-celula--nao-salvo', !!s && temRascunho(s.companhia_id, iso));
     if (!s) return;
-    var todas = linhasDoDia(s.companhia_id, iso).filter(function (l) { return !l.oficial; });
-    if (!todas.length) {
+    var postos = postosDoDia(s, linhasDoDia(s.companhia_id, iso));
+    if (!postos.length) {
       var vazio = RW.tpl('tpl-op-verao-vazio');
       if (vazio) celula.appendChild(vazio);
       return;
     }
-    var postos = (s.postos || []).map(function (p) { return { id: p.id, nome: p.nome }; });
-    todas.forEach(function (l) {
-      if (l.posto_id && !postos.some(function (p) { return p.id === l.posto_id; })) postos.push({ id: l.posto_id, nome: l.posto_nome || '' });
-    });
-    postos.forEach(function (p) {
-      var deles = todas.filter(function (l) { return l.posto_id === p.id; });
-      if (deles.length) bloco(celula, p.nome, deles, curto, false);
-    });
-    var sem = todas.filter(function (l) { return !l.posto_id; });
-    if (sem.length) bloco(celula, RW.mensagens.escala.semPosto(sem.length), sem, curto, true);
+    postos.forEach(function (p) { bloco(celula, p.nome, p.linhas, curto, p.sem); });
   }
 
   /* ---------- o título do dia ---------- */
+
+  /* os Oficiais de Praia do dia da companhia (as linhas de agora, com o rascunho); a tela e a folha */
+  function oficiaisDoDia(cia, iso) { return linhasDoDia(cia, iso).filter(function (l) { return l.oficial; }); }
 
   /* um Oficial de Praia (l; null: o "Sem Oficial de Praia") no título: de que companhia, dia e linha ele é, e a mão para
      quem mexe */
@@ -196,7 +210,7 @@
       var s = doDia(c.id, iso);
       if (!s || feitas[s.companhia_id]) return;
       feitas[s.companhia_id] = true;
-      var ofs = linhasDoDia(s.companhia_id, iso).filter(function (l) { return l.oficial; });
+      var ofs = oficiaisDoDia(s.companhia_id, iso);
       (ofs.length ? ofs : [null]).forEach(function (l) {
         var no = oficial(s.companhia_id, iso, l);
         if (no) lugar.appendChild(no);
@@ -205,6 +219,64 @@
     var tem = !!lugar.firstChild;
     lugar.classList.toggle('oculto', !tem);
     return tem;
+  }
+
+  /* ---------- a folha (o Imprimir das grades, escalas-impressao-grade.js) ---------- */
+
+  function textoDoMolde(id) { var el = RW.tpl(id); return el ? el.textContent.trim() : ''; }
+
+  /* as linhas do dia s na folha: as de agora (o rascunho que a tela mostra) ou as da leitura da folha */
+  function linhasNaFolha(s, iso) { return temRascunho(s.companhia_id, iso) ? rascunhos[s.companhia_id + '|' + iso] : (s.linhas || []); }
+
+  /* os postos na célula da folha (escalas-impressao-grade-celula.js): o título de cada um e quem está nele, no grupo dele
+     (a linha tracejada entre dois postos, como na tela); o nome em vermelho de quem tem conflito */
+  function pessoasNaFolha(postos) {
+    var saida = [];
+    postos.forEach(function (p, i) {
+      var grupo = 'posto-' + i;
+      saida.push({ grupo: grupo, titulo: p.nome, sem: p.sem });
+      p.linhas.forEach(function (l) {
+        saida.push({ grupo: grupo, cpf: l.cpf || null, grad: l.grad, nome: l.nome, origem: 'op-verao',
+          periodos: [{ inicio: l.inicio, fim: l.fim }], vermelho: !!l.conflito });
+      });
+    });
+    return saida;
+  }
+
+  /* um Oficial de Praia no título do dia da folha, em linha pronta: o posto e o nome (em vermelho no conflito) e o horário,
+     que nunca se parte (os espaços dele não quebram a linha) */
+  function oficialNaFolha(l) {
+    return { pessoa: { grad: l.grad, nome: l.nome }, hora: msg().horas(curta(l.inicio), curta(l.fim)).replace(/ /g, ' '),
+      vermelho: !!l.conflito };
+  }
+
+  /* a leitura da folha, no formato da leitura da escala (RosterWork.escalasDados.carregar): lê o mês das unidades marcadas
+     (a mesma RPC da tela, sem mexer no que a tela guardou) e devolve, por unidade e dia do período, o que a célula da tela
+     mostra (os postos ou a frase do dia sem ninguém, com o rascunho) e, no título do dia, os Oficiais de Praia de cada
+     companhia (ou o "Sem Oficial de Praia"), na largura toda depois do número, como na tela. Já vem filtrada: a página
+     não tem os Filtros */
+  function paraImpressao(ids, inicio, fim) {
+    return RW.rpc('ler_escala_mes', { p_unidade_ids: ids.map(Number), p_inicio: inicio, p_fim: fim }).then(function (grade) {
+      if (!grade) throw new Error('falha');
+      var r = { militares: {}, fora: {}, cobertura: {}, erro: {}, oficial: {}, oficialLargo: true, jaFiltrada: true };
+      var semNinguem = textoDoMolde('tpl-op-verao-vazio'), semOficial = textoDoMolde('tpl-op-verao-sem-oficial');
+      var feitas = {};   // 'dia|companhia' já no título
+      ids.forEach(function (uid) {
+        var dias = grade[uid] || {};
+        r.militares[uid] = {};
+        Object.keys(dias).forEach(function (iso) {
+          var s = dias[iso] && dias[iso].op_verao;
+          if (!s) return;
+          var postos = postosDoDia(s, linhasNaFolha(s, iso));
+          r.militares[uid][iso] = postos.length ? pessoasNaFolha(postos) : [{ frase: semNinguem }];
+          if (feitas[iso + '|' + s.companhia_id]) return;
+          feitas[iso + '|' + s.companhia_id] = true;
+          var ofs = linhasNaFolha(s, iso).filter(function (l) { return l.oficial; });
+          r.oficial[iso] = (r.oficial[iso] || []).concat(ofs.length ? ofs.map(oficialNaFolha) : [{ pessoa: null, hora: '', sem: semOficial }]);
+        });
+      });
+      return r;
+    });
   }
 
   /* ---------- o rascunho ---------- */
@@ -226,7 +298,7 @@
   /* a página abre limpa (o que não foi salvo ficou para trás) */
   function limpar() { rascunhos = {}; pendentes = {}; }
 
-  RW.opVeraoCelula = { ativa: ativa, guardar: guardar, preencher: preencher, preencherTitulo: preencherTitulo, doDia: doDia,
+  RW.opVeraoCelula = { ativa: ativa, guardar: guardar, preencher: preencher, preencherTitulo: preencherTitulo, paraImpressao: paraImpressao, doDia: doDia,
     companhia: companhia, linhasDoDia: linhasDoDia, gravadas: gravadas, rascunho: rascunho, temRascunho: temRascunho, colunas: colunas, pode: pode,
     limite: limite, limpar: limpar, diasComRascunho: diasComRascunho, gravou: gravou, esperarLeitura: esperarLeitura };
 })();

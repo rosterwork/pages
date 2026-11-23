@@ -10,7 +10,7 @@
    do gráfico).
    porHorario(antes, resta, extras, erro): a conta de cada horário;
    linha(grafico, horarios): o molde #tpl-falta-gente logo depois do
-   gráfico (sem nada em nenhum horário, não entra); rotulos(horario):
+   gráfico (sempre, com a casinha vazia no horário sem nada); rotulos(horario):
    o que vai escrito na casinha (a tela e a folha das grades,
    escalas-impressao-grade-celula.js).
    Não cria HTML (clona o molde) nem escreve estilo.
@@ -68,10 +68,10 @@
              mais: h.estado === 'coberta' && h.mais ? M.mais(h.mais) : '' };
   }
 
-  /* a linha logo depois do gráfico, com o número, o certo, o "+1" e a dica de cada horário; sem nada em nenhum horário,
-     nada entra. Devolve a linha ou null */
+  /* a linha logo depois do gráfico, com o número, o certo, o "+1" e a dica de cada horário; o horário sem nada fica com a
+     casinha vazia, e a linha entra mesmo sem nada no dia (as colunas do dia ficam alinhadas). Devolve a linha ou null */
   function linha(grafico, horarios) {
-    if (!grafico || !grafico.parentNode || !horarios.some(function (h) { return h.estado; })) return null;
+    if (!grafico || !grafico.parentNode) return null;
     var faixa = RW.tpl('tpl-falta-gente'), M = msg();
     if (!faixa) return null;
     Array.prototype.forEach.call(faixa.querySelectorAll('.falta-gente-hora'), function (casa, i) {

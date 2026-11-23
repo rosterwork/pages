@@ -100,7 +100,11 @@
     var oa = cfg.comOficial && !d.fora ? celula().oficial(cfg.dados.oficial, iso(d.data), c, DIA.oficial) : null;
     if (!oa) return { text: partes };
     var lado = cfg.formato === 'calendario' ? DIA.titulo.calendario : DIA.titulo.colunas;
-    return { columns: [{ width: lado, text: partes }, { width: '*', text: oa, alignment: 'center', margin: [0, 1, 0, 0] }, { width: lado, text: '' }] };
+    var colunas = [{ width: lado, text: partes }, { width: '*', text: oa, alignment: 'center', margin: [0, 1, 0, 0] }];
+    /* a leitura com o título largo (a Op. Verão, com o horário de cada Oficial de Praia) usa a largura toda depois do
+       número, como na tela; senão, o mesmo espaço do outro lado deixa o Oficial no centro */
+    if (!cfg.dados.oficialLargo) colunas.push({ width: lado, text: '' });
+    return { columns: colunas };
   }
 
   /* uma linha do calendário (os dias e, por unidade, as células); so = as unidades desta parte (a linha
