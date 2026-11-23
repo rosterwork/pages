@@ -561,7 +561,9 @@
             </div>
             <ol class="ajustes-regras ajustes-regras--numeradas">
               <li class="ajustes-regras-item">Cobrir a falta dos pelotões, na ordem escolhida abaixo.</li>
+              <li class="ajustes-regras-item">Onde falta mais vem primeiro: no mesmo pelotão, o dia que falta 2 antes do dia que falta 1.</li>
               <li class="ajustes-regras-item">Só onde falta gente. A cota que não fecha falta fica para o administrador.</li>
+              <li class="ajustes-regras-item">Fora da cidade da companhia, quem é de outro pelotão vai com a extra inteira, de 24 horas, e só quebra quando não há outro jeito.</li>
               <li class="ajustes-regras-item">Cada um no próprio pelotão.</li>
               <li class="ajustes-regras-item">Nunca passar do necessário.</li>
               <li class="ajustes-regras-item">Quando dois querem o mesmo lugar, fica quem vem primeiro, como escolhido abaixo.</li>
@@ -1537,7 +1539,7 @@
   </div>
 </template>
 
-<!-- quem escolher: as quatro formas, o aviso, o rodízio e, só no Rancheiro, o "Sempre com um militar do efetivo" -->
+<!-- quem escolher: as quatro formas, o aviso e o rodízio -->
 <template id="tpl-nova-distribuicao-criterio">
   <div class="nova-distribuicao-opcoes">
     <label class="geral-opcao"><input type="radio" data-valor="0" /><span>O</span><span class="nova-distribuicao-espaco" data-espaco="perfil"></span><span>mais antigo que ainda não tem função</span></label>
@@ -1548,10 +1550,6 @@
     <button type="button" class="geral-opcao nova-distribuicao-marca nova-distribuicao-rodizio" role="checkbox" aria-checked="false">
       <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
       <span>Rodízio</span>
-    </button>
-    <button type="button" class="geral-opcao nova-distribuicao-marca nova-distribuicao-sempre-efetivo oculto" role="checkbox" aria-checked="false">
-      <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
-      <span>Sempre com um militar do efetivo</span>
     </button>
   </div>
 </template>

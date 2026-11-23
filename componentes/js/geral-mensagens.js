@@ -1970,7 +1970,6 @@
       avisoLinha: ['Sem aviso', 'Com aviso amarelo', 'Com erro vermelho'],
       comCarteira: 'Com a CNH',
       comRodizio: 'Com rodízio',
-      comSempreEfetivo: 'Sempre com um militar do efetivo, o estagiário só junto',
       /* a função com dois ou mais lugares no posto: a regra de todos e as exceções */
       quemTodos: 'Todos os {plural}',
       quemAjuda: 'Um lugar com escolha própria. O 1º é o primeiro {funcao} a encher na Ordem de importância.',
