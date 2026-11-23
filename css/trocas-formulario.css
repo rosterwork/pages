@@ -179,6 +179,12 @@
   color: var(--texto-forte);
 }
 
+/* no Registrar troca, quem já está em outra troca no dia (pode entrar, com o aviso amarelo na escala) */
+.trocas-dia-opcao-conflito {
+  font-size: 12px;
+  color: var(--alerta);
+}
+
 /* o resumo: os grupos (Duplas, cada Roda, Sem devolução) e as notas do saldo */
 .trocas-varias-vazio {
   font-size: 12px;

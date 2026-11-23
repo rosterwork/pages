@@ -148,6 +148,18 @@
 .extrajornada-voluntarios-conc {
   width: 72px;
 }
+/* o cadeado do Recebe escolhido no campo: à direita do campo, sem tirar o campo do centro da coluna */
+.extrajornada-voluntarios-concedido {
+  position: relative;
+}
+.extrajornada-p2-cadeado {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin-left: 4px;
+  transform: translateY(-50%);
+  color: var(--texto-suave);
+}
 
 @media (max-width: 767px) {
 

@@ -59,13 +59,30 @@
     });
   }
 
-  /* ---------- registrar: confirma (avisando quando a análise apontou problema) e grava já aprovado ---------- */
+  /* quem entra em cima de outra troca (os pares com a marca de conflito): [{ nome, dias: ['28/11'] }] */
+  function conflitos() {
+    var porCpf = {}, ordem = [];
+    est.pares.forEach(function (p) {
+      (p.conflitoDe || []).forEach(function (c) {
+        if (!porCpf[c]) { porCpf[c] = []; ordem.push(c); }
+        porCpf[c].push(p.data);
+      });
+    });
+    return ordem.map(function (c) {
+      var m = est.militares.filter(function (x) { return x.cpf === c; })[0];
+      return { nome: m ? m.nome : '', dias: porCpf[c].sort().map(function (d) { return d.slice(8, 10) + '/' + d.slice(5, 7); }) };
+    });
+  }
+
+  /* ---------- registrar: confirma (avisando quando a análise apontou problema ou quando alguém já está em outra
+     troca no dia) e grava já aprovado ---------- */
   function registrar(parte, ano) {
-    var problema = !!(analise && analise.veredito === 'problema');
+    var problema = !!(analise && analise.veredito === 'problema'), emOutra = conflitos();
     if (!RW.confirmar) { gravar(parte, ano); return; }
     RW.confirmar({
-      tipo: 'aviso', mensagem: problema ? M().confirmarRegistrarComProblema : M().varias.confirmarRegistrar,
-      confirmarPerigo: problema, aoConfirmar: function () { gravar(parte, ano); }
+      tipo: 'aviso',
+      mensagem: problema ? M().confirmarRegistrarComProblema : emOutra.length ? M().varias.confirmarConflito(emOutra) : M().varias.confirmarRegistrar,
+      confirmarPerigo: problema || emOutra.length > 0, aoConfirmar: function () { gravar(parte, ano); }
     });
   }
   /* grava e refaz a escala de todos os dias (o cartão das etapas); o resumo traz o Desfazer, que apaga o registro inteiro.

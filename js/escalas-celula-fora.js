@@ -16,14 +16,18 @@
    de viagem no dia (a chave "viagens", que a leitura junta a esta
    lista) fica no grupo dela, logo antes: sem riscar, com "Viagem até
    DD/MM" (só com o filtro Incluir autorizações de viagem).
-   Para quem administra o dia, o nome em vermelho ou em amarelo abre a caixa dele
-   (escalas-celula-editar.js): Adicionar neste dia e Adicionar à
-   guarnição do dia, os do pelotão já com ele (escalas-celula-editar-
-   acoes.js › nesteDia e naGuarnicao: vão para o rascunho e o Salvar do
-   rodapé grava), o Cancelar a saída da guarnição de quem saiu à mão
-   nos últimos 7 dias (a linha leva a data da saída, data-saida; o
-   mesmo do menu da linha, escalas-painel-linha-menu.js › cancelarSaida,
-   na hora, com o Desfazer) e Abrir o painel do dia.
+   Para quem administra o dia, o nome em vermelho ou em amarelo, ou com
+   a entrada marcada (a linha leva a data dela, data-entra), abre a
+   caixa dele (escalas-celula-editar.js): Adicionar neste dia e
+   Adicionar à guarnição do dia, os do pelotão já com ele
+   (escalas-celula-editar-acoes.js › nesteDia e naGuarnicao: vão para o
+   rascunho e o Salvar do rodapé grava), o Cancelar a saída da
+   guarnição de quem saiu à mão nos últimos 7 dias (a linha leva a data
+   da saída, data-saida; o mesmo do menu da linha,
+   escalas-painel-linha-menu.js › cancelarSaida, na hora, com o
+   Desfazer), com a entrada marcada o Mudar e o Cancelar a entrada no
+   lugar do Adicionar à guarnição (os do primeiro serviço,
+   escalas-painel-mudar-entrada.js) e Abrir o painel do dia.
    Não cria HTML nem escreve estilo.
    RosterWork.escalasCelulaFora.{ preencher, menu }
    ============================================================ */
@@ -63,6 +67,8 @@
         else if (p.vermelho) hora.textContent = RW.mensagens.escala.foraDaEscala;
         /* quem saiu à mão: a data da saída (o Cancelar a saída da caixa dele) */
         if (p.fora_motivo === 'saida' && p.fora_desde) linha.setAttribute('data-saida', p.fora_desde);
+        /* quem tem a entrada marcada: a linha abre a caixa (o Mudar e o Cancelar a entrada) */
+        if (p.entra_em) linha.setAttribute('data-entra', p.entra_em);
       }
       grupo.appendChild(linha);
     });
@@ -78,6 +84,12 @@
     el.querySelector('.escala-celula-sem-letra').classList.toggle('oculto', !!letra);
     /* o Cancelar a saída: só a saída à mão dos últimos 7 dias (antes, o banco não deixa; o caminho é o Adicionar) */
     el.querySelector('[data-acao="cancelar-saida"]').classList.toggle('oculto', !(c.a.saida && c.a.saida >= RW.escalasPainelCiclo.limite()));
+    /* com a entrada marcada (a leitura do dia), o Mudar e o Cancelar a entrada no lugar do Adicionar à guarnição, que o
+       banco recusa para quem já tem a entrada */
+    var E = RW.escalasPainelMudarEntrada, entrada = !!E && !!E.marcada(c.a.cpf);
+    el.querySelector('[data-acao="guarnicao"]').classList.toggle('oculto', entrada);
+    el.querySelector('[data-acao="mudar-entrada"]').classList.toggle('oculto', !entrada);
+    el.querySelector('[data-acao="cancelar-entrada"]').classList.toggle('oculto', !entrada);
     [].forEach.call(el.querySelectorAll('[data-acao]'), function (b) {
       b.addEventListener('click', function () { fazer(b.getAttribute('data-acao'), b, c); });
     });
@@ -94,7 +106,11 @@
     if (acao === 'painel') { c.fecharTudo('guardar'); c.abrirPainel(null); }
     else if (acao === 'neste-dia') A.nesteDia(botao, c, null, a.cpf);
     else if (acao === 'guarnicao') A.naGuarnicao(botao, c, a.cpf);
-    else if (acao === 'cancelar-saida') {
+    else if (acao === 'mudar-entrada') A.mudarEntrada(botao, c, a.cpf);
+    else if (acao === 'cancelar-entrada') {
+      RW.escalasPainelMudarEntrada.cancelar({ cpf: a.cpf });
+      c.fecharTudo();
+    } else if (acao === 'cancelar-saida') {
       RW.escalasPainelLinhaMenu.cancelarSaida({ tipo: 'saida', militar: { cpf: a.cpf }, saida: a.saida });
       c.fecharTudo();
     }

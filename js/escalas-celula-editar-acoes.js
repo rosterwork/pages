@@ -434,8 +434,8 @@
 
   /* Remover da guarnição, Mudar a saída, Mudar de guarnição e Mudar a entrada: a pergunta do painel (o Último serviço e,
      no Mudar de guarnição e no Mudar a entrada, o Quando entra), dentro da caixa 2 (o Cancelar dela volta e fecha a
-     caixa 2) */
-  function ultimoServico(botao, c, acao) {
+     caixa 2). militar: quem não tem a linha do dia (o "Entra em" do Fora da escala, escalas-celula-fora.js) */
+  function ultimoServico(botao, c, acao, militar) {
     var a = c.a, caixa = RW.tpl('tpl-escala-celula-perguntas');
     if (!caixa) return;
     a.acao = acao;
@@ -443,7 +443,7 @@
     var opcoes = { dentro: caixa, aoCancelar: function () { if (c.a === a) { a.acao = null; a.caixa.fecharSegunda(); } } };
     if (acao === 'mudar-saida') RW.escalasPainelLinhaMenu.mudarSaida(a.cfg, opcoes);
     else if (acao === 'mudar-guarnicao') RW.escalasPainelMudarGuarnicao.perguntar(a.cfg.militar, null, opcoes);
-    else if (acao === 'mudar-entrada') RW.escalasPainelMudarEntrada.perguntar(a.cfg.militar, null, opcoes);
+    else if (acao === 'mudar-entrada') RW.escalasPainelMudarEntrada.perguntar(militar || a.cfg.militar, null, opcoes);
     else RW.escalasPainelCiclo.perguntarSaida(a.cfg.militar, null, opcoes);
     a.caixa.segunda(botao, caixa, textoDo(botao));
   }
@@ -978,6 +978,8 @@
     /* o Adicionar à guarnição do dia e o Adicionar neste dia, também com quem está fora da escala já escolhido
        (escalas-celula-fora.js) */
     naGuarnicao: naGuarnicao, nesteDia: nesteDia,
+    /* o Mudar a entrada de quem tem a entrada marcada, na caixa 2 (o "Entra em" do Fora da escala) */
+    mudarEntrada: function (botao, c, cpf) { ultimoServico(botao, c, 'mudar-entrada', { cpf: cpf }); },
     /* e o que o Oficial de Área do título usa (escalas-celula-oficial.js) */ entrada: entrada, pergunta: pergunta, vivo: vivo
   };
 })();

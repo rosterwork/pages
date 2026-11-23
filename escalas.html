@@ -741,15 +741,19 @@
   </div>
 </template>
 
-<!-- a caixa 1 de quem está fora da escala, em vermelho (escalas-celula-fora.js): o Adicionar neste dia e o Adicionar à
-     guarnição do dia (os mesmos do pelotão, já com ele, com a setinha da caixa 2), o Cancelar a saída da guarnição (só
-     quando a saída foi à mão e é dos últimos 7 dias; o mesmo do menu da linha) e o Abrir o painel do dia. A letra é a da
-     guarnição do dia -->
+<!-- a caixa 1 de quem está fora da escala, em vermelho ou amarelo, ou com a entrada marcada (escalas-celula-fora.js): o
+     Adicionar neste dia e o Adicionar à guarnição do dia (os mesmos do pelotão, já com ele, com a setinha da caixa 2), o
+     Cancelar a saída da guarnição (só quando a saída foi à mão e é dos últimos 7 dias; o mesmo do menu da linha) e o
+     Abrir o painel do dia. Com a entrada marcada ("Entra em"), o Mudar a entrada na guarnição (a setinha da caixa 2) e o
+     Cancelar a entrada na guarnição, por último, no lugar do Adicionar à guarnição (os mesmos do primeiro serviço). A
+     letra é a da guarnição do dia -->
 <template id="tpl-escala-celula-fora">
   <div class="escala-celula-fora">
     <button type="button" class="dropdown-item" data-acao="neste-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item" data-acao="guarnicao"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-usuarios"/></svg><span>Adicionar à guarnição <span class="escala-celula-letra"></span><span class="escala-celula-sem-letra oculto">do dia</span></span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item oculto" data-acao="mudar-entrada"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-base"/></svg><span>Mudar a entrada na guarnição</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="cancelar-saida"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span>Cancelar a saída da guarnição</span></button>
+    <button type="button" class="dropdown-item dropdown-item--perigo oculto" data-acao="cancelar-entrada"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-saida"/></svg><span>Cancelar a entrada na guarnição</span></button>
     <div class="dropdown-divisor"></div>
     <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
   </div>

@@ -951,7 +951,10 @@
            guarnição e pela extra" (as palavras em entradasDuasVezes); {faixas} = ", das 08h às 20h" quando é só parte do dia */
         duasVezes:           { texto: '{militar} está duas vezes no mesmo horário, {entradas}{faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'erro' },
         /* de serviço num dia em que tem autorização de viagem (não impede nada); {destinos} = "Curitiba e Joinville" */
-        viagem:              { texto: '{militar} de serviço com autorização de viagem ({destinos})', icone: 'icone-alerta', nivel: 'erro' }
+        viagem:              { texto: '{militar} de serviço com autorização de viagem ({destinos})', icone: 'icone-alerta', nivel: 'erro' },
+        /* o mesmo serviço trocado duas vezes (o administrador registrou uma troca em cima de outra; amarelo até cancelar
+           ou mudar uma delas); {quem} = "Sd.1ªCl. Dal Pozzo e Sd.1ªCl. Vartha"; {faixas} = ", das 08h às 20h" quando é só parte do dia */
+        trocaDupla:          { texto: 'O serviço de {militar} foi trocado duas vezes ({quem}){faixas}', faixa: 'das {hi} às {hf}', icone: 'icone-alerta', nivel: 'alerta' }
       },
       /* de onde vem cada linha do militar que está duas vezes no mesmo horário (o erro duasVezes; o banco manda
          "guarnicao+extra") */
@@ -2579,6 +2582,15 @@
         confirmarCancelar: function (rw) { return 'Cancelar as trocas do ' + rw + '?'; },
         /* o Registrar troca (só admin): as trocas entram já aprovadas */
         confirmarRegistrar: 'Registrar estas trocas? Elas já entram aprovadas e a escala é atualizada na hora, em todos os dias.',
+        /* o Registrar com quem já está em outra troca no dia (em cima de outra troca): itens = [{ nome, dias: ['28/11'] }] */
+        confirmarConflito: function (itens) {
+          var junta = function (l) { return l.length < 2 ? (l[0] || '') : l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1]; };
+          if (itens.length === 1) {
+            return itens[0].nome + ' já está em outra troca em ' + junta(itens[0].dias) + '. Registrar mesmo assim? Fica em amarelo na escala até uma das trocas ser cancelada ou mudada.';
+          }
+          return junta(itens.map(function (i) { return i.nome + ' (' + junta(i.dias) + ')'; }))
+            + ' já estão em outra troca nesses dias. Registrar mesmo assim? Ficam em amarelo na escala até uma das trocas ser cancelada ou mudada.';
+        },
         /* o Editar do administrador de fora, nas trocas aprovadas */
         confirmarEditar: 'Salvar a alteração? Ela entra no lugar das trocas de antes e a escala é atualizada na hora, nos dias que mudam.',
         /* a alteração de outro registro: o aviso nas trocas que têm uma esperando, quem sai da troca nos aceites e as confirmações */

@@ -519,13 +519,16 @@
       });
     }
 
-    /* militar duas vezes no mesmo horário (vermelho): uma linha por militar e par de origens ("pela guarnição e pela
-       extra"), juntando as faixas */
-    function linhasDuasVezes(def) {
+    /* militar duas vezes no mesmo horário: uma linha por militar e par de origens ("pela guarnição e pela extra"),
+       juntando as faixas. Com o nível, só as ocorrências dele e na cor dele (de troca com troca é amarelo: o
+       administrador registrou uma troca em cima de outra) */
+    function linhasDuasVezes(def, nivel) {
       if (!def || !tem('duas_vezes')) return;
+      if (nivel === 2) def = { texto: def.texto, faixa: def.faixa, icone: def.icone, nivel: 'alerta' };
       var nomes = RosterWork.mensagens.escala.entradasDuasVezes || {}, curta = RosterWork.horario.curta;
       var ordem = [], porMilitar = {};
       por.duas_vezes.forEach(function (p) {
+        if (nivel && p.nivel !== nivel) return;
         var k = p.cpf + '|' + (p.funcao || '');
         if (!porMilitar[k]) { porMilitar[k] = []; ordem.push(k); }
         porMilitar[k].push(p);
@@ -536,6 +539,23 @@
         var faixas = (diaTodo || semFaixas) ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: curta(p.hi), hf: curta(p.hf) }); }).join(' e ');
         var entradas = String(itens[0].funcao || '').split('+').map(function (t) { return nomes[t] || t; }).join(' e ');
         linha(def, preencher(def.texto, { militar: militar(itens[0]), entradas: entradas, faixas: faixas }));
+      });
+    }
+
+    /* o mesmo serviço trocado duas vezes (amarelo): uma linha por militar, com quem entrou e as faixas */
+    function linhasTrocaDupla(def) {
+      if (!def || !tem('troca_dupla')) return;
+      var curta = RosterWork.horario.curta, ordem = [], porMilitar = {};
+      por.troca_dupla.forEach(function (p) {
+        var k = p.cpf + '|' + (p.funcao || '');
+        if (!porMilitar[k]) { porMilitar[k] = []; ordem.push(k); }
+        porMilitar[k].push(p);
+      });
+      ordem.forEach(function (k) {
+        var itens = porMilitar[k];
+        var diaTodo = itens.length === 1 && itens[0].hi === '08:00' && itens[0].hf === '08:00';
+        var faixas = (diaTodo || semFaixas) ? '' : ', ' + itens.map(function (p) { return preencher(def.faixa, { hi: curta(p.hi), hf: curta(p.hf) }); }).join(' e ');
+        linha(def, preencher(def.texto, { militar: militar(itens[0]), quem: itens[0].funcao || '', faixas: faixas }));
       });
     }
 
@@ -585,7 +605,7 @@
     porOcorrencia('cnh_incompativel', cat.cnhIncompativel, function (p) { return p.cpf + '|' + p.posto_id; },
       function (p) { return { militar: militar(p), posto: p.posto || '' }; });
     linhasDuasUnidades(cat.duasUnidades);   // o mesmo militar em duas unidades ao mesmo tempo não pode
-    linhasDuasVezes(cat.duasVezes);         // nem duas vezes no mesmo horário
+    linhasDuasVezes(cat.duasVezes, 1);      // nem duas vezes no mesmo horário
     /* de serviço num dia em que tem autorização de viagem (não impede nada), um por militar, com os destinos */
     porOcorrencia('viagem', cat.viagem, function (p) { return p.cpf; },
       function (p) { return { militar: militar(p), destinos: RosterWork.mensagens.escala.listaDestinos(p.destinos) }; });
@@ -618,6 +638,10 @@
     /* o Chefe de Socorro posto de Condutor pelo administrador contra a regra da Distribuição (uma linha por viatura) */
     porOcorrencia('chefe_dirige_regra', cat.chefeDirigeRegra, function (p) { return p.cpf + '|' + p.posto_id; },
       function () { return {}; });
+    /* troca em cima de troca (o administrador registrou uma troca em conflito): o militar duas vezes por troca e o
+       serviço trocado duas vezes, até cancelar ou mudar uma das trocas */
+    linhasDuasVezes(cat.duasVezes, 2);
+    linhasTrocaDupla(cat.trocaDupla);
     var det = detalharAvisosMotor(postos, presentes, lista);   // quem + vaga + motivo, para o detalhe expansível
     [['grau_por_falta', 'grauRebaixado'], ['rodizio_quebrado', 'rodizioRepetido'],
      ['afastado', 'afastadoTroca'], ['regra_graduacao', 'regraGraduacao']].forEach(function (par) {

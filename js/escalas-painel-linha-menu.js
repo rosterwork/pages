@@ -52,7 +52,8 @@
    pergunta Último serviço com os dias de serviço dele) e o Cancelar
    a saída no lugar dele; no primeiro serviço de quem estava fora da
    escala, o Mudar a entrada (a pergunta Quando entra) e o Cancelar a
-   entrada, por último (escalas-painel-mudar-entrada.js); quem foi
+   entrada, por último, no lugar do Remover e do Mudar de guarnição
+   (escalas-painel-mudar-entrada.js); quem foi
    remanejado daqui para outra unidade (a caixa Em outra unidade da
    aba Funções), o Devolver; quem saiu da guarnição (a linha riscada da
    caixa Saiu da guarnição), o Mudar a saída e o Cancelar a saída. No
@@ -68,7 +69,9 @@
    saiu numa troca: o Cancelar a troca (no painel, o Remover deste dia
    de quem entrou no lugar dele, já nessa troca) e este dia como o
    último serviço dele: o Mudar e o Remover da guarnição ou, com a
-   saída marcada depois dele, o Mudar e o Cancelar a saída.
+   saída marcada depois dele, o Mudar e o Cancelar a saída; no dia da
+   entrada dele, o Mudar e o Cancelar a entrada no lugar do Remover e
+   do Mudar de guarnição.
    Na Estagiários, embaixo do traço, o Ver as funções troca de aba já
    com o menu da linha dele aberto.
    A mudança de dia ainda não salva (só no rascunho, sem número no
@@ -152,10 +155,12 @@
     r['mudar-guarnicao'] = r['remover-guarnicao'] && !!RW.escalasPainelMudarGuarnicao && RW.escalasPainelMudarGuarnicao.pode();
     r['mudar-saida'] = !!marcada && (marcada.dias || []).length > 1;
     r['cancelar-saida'] = !!marcada;
-    /* o primeiro serviço depois de estar fora da escala: o Mudar e o Cancelar a entrada na guarnição */
+    /* o primeiro serviço depois de estar fora da escala: o Mudar e o Cancelar a entrada na guarnição, no lugar do Remover
+       e do Mudar de guarnição (sair no dia em que entra não tem sentido; a partir do segundo serviço eles voltam) */
     var entrada = !!RW.escalasPainelMudarEntrada && !!RW.escalasPainelMudarEntrada.primeiro(cpf);
     r['mudar-entrada'] = entrada;
     r['cancelar-entrada'] = entrada;
+    if (entrada) { r['remover-guarnicao'] = false; r['mudar-guarnicao'] = false; }
     /* o estagiário: o Mudar onde fica (os postos do estágio dele), sem troca de serviço e sem mudar de unidade (ele é do
        estágio desta unidade) */
     var dd = ed().dados() || {};
@@ -176,7 +181,11 @@
     var C = RW.escalasPainelCiclo;
     if (!C || ed().iso() < C.limite()) return;
     var marcada = C.saidaMarcada(cpf);
-    r['remover-guarnicao'] = !marcada && trocas.some(function (x) { return x.guarnicao; });
+    /* o dia trocado era o da entrada dele: o Mudar e o Cancelar a entrada no lugar do Remover e do Mudar de guarnição */
+    var entrada = !!RW.escalasPainelMudarEntrada && !!RW.escalasPainelMudarEntrada.primeiro(cpf);
+    r['mudar-entrada'] = entrada;
+    r['cancelar-entrada'] = entrada;
+    r['remover-guarnicao'] = !entrada && !marcada && trocas.some(function (x) { return x.guarnicao; });
     r['mudar-guarnicao'] = r['remover-guarnicao'] && !!RW.escalasPainelMudarGuarnicao && RW.escalasPainelMudarGuarnicao.pode();
     r['mudar-saida'] = !!marcada && (marcada.dias || []).length > 1;
     r['cancelar-saida'] = !!marcada;

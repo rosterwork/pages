@@ -13,9 +13,10 @@
    na repartição, sem salvar (extrajornada_mes com p_so_sugestao). O
    Recebe é o campo de seleção (de 0 até o que ele pediu; quem só
    aceita 24 h, de 4 em 4), com a borda forte quando difere do
-   salvo. O Preencher põe a Sugestão em todos, com o Desfazer no
-   rodapé; com algum Recebe mudado e não salvo, ele trava (apagaria a
-   mudança). Cota abaixo do que ele já tem na distribuição avisa
+   salvo, e o cadeado ao lado quando o número foi escolhido no campo
+   (a marca é guardada no salvar). O Preencher põe a Sugestão em todos
+   e tira o cadeado, com o Desfazer no rodapé; com algum Recebe mudado
+   e não salvo, ele trava (apagaria a mudança). Cota abaixo do que ele já tem na distribuição avisa
    embaixo da linha: as extras dele saem ao salvar. Tudo fica no
    rascunho até o Salvar (extrajornada_cotas_salvar), que abre o resumo.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
@@ -27,7 +28,7 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var d = null, el = null, aoSalvar = null;
-  var p2 = null;           // o rascunho: { modo, recebidas, unidades, conc, sujo, sug, antes, pares }
+  var p2 = null;           // o rascunho: { modo, recebidas, unidades, conc, manual, sujo, sug, antes, pares }
   var guardaLigada = false;
   var pedidoSug = 0;       // latest-wins da sugestão
   var esperaSug = null;    // o intervalo antes de pedir a sugestão (enquanto digita)
@@ -41,6 +42,8 @@
   /* os voluntários com termo, na fila da companhia (a menor porcentagem atendida nos 12 meses e, no empate, o mais antigo) */
   function comTermo() { return vols().filter(function (m) { return m.termo; }).sort(function (a, b) { return a.ordem - b.ordem; }); }
   function conc(m) { return m.cpf in p2.conc ? p2.conc[m.cpf] : (m.concedidas || 0); }
+  /* o cadeado: o Recebe foi escolhido no campo (o do Preencher fica sem) */
+  function manual(m) { return m.cpf in p2.manual ? p2.manual[m.cpf] : !!m.manual; }
   /* algum Recebe difere do salvo (o total não conta: é o que a sugestão usa na conta) */
   function recebeMudado() { return !!p2 && comTermo().some(function (m) { return conc(m) !== (m.concedidas || 0); }); }
   function sugestao(m) { return p2.sug[m.cpf] || 0; }
@@ -79,7 +82,7 @@
 
   function iniciarRascunho() {
     p2 = { modo: d.mes.repartir_por || 'grupo', recebidas: d.mes.cotas_recebidas, unidades: Object.assign({}, d.mes.cotas_unidades || {}),
-      conc: {}, sujo: false, sug: {}, antes: null, pares: !!d.mes.sugestao_pares };
+      conc: {}, manual: {}, sujo: false, sug: {}, antes: null, pares: !!d.mes.sugestao_pares };
     d.militares.forEach(function (m) { if (m.sugerido) p2.sug[m.cpf] = m.sugerido; });
   }
 
@@ -223,17 +226,21 @@
     if (m.cabem != null && m.cabem < (m.cotas || 0)) sug.setAttribute('data-dica', msg().sugCabe(m.cabem));
     l.querySelector('.extrajornada-voluntarios-conc-texto').textContent = conc(m);
     l.querySelector('.extrajornada-voluntarios-conc').classList.toggle('campo--alterado', conc(m) !== (m.concedidas || 0));
+    l.querySelector('.extrajornada-p2-cadeado').classList.toggle('oculto', !manual(m));
     RW.dropdownNumeros.preencher(l.querySelector('.extrajornada-voluntarios-conc-menu'), {
       opcoes: opcoes(m), valor: conc(m),
-      aoEscolher: function (n) { p2.conc[m.cpf] = n; p2.sujo = true; desenhar(); }
+      aoEscolher: function (n) { p2.conc[m.cpf] = n; p2.manual[m.cpf] = true; p2.sujo = true; desenhar(); }
     });
     l.querySelector('.extrajornada-voluntarios-na-escala').textContent = msg().deCotas(naGrade(m), conc(m));
     return l;
   }
 
   function salvar() {
-    var concedidas = {}, btn = q('#p2-salvar');
-    comTermo().forEach(function (m) { concedidas[m.cpf] = conc(m); });
+    var concedidas = {}, manuais = [], btn = q('#p2-salvar');
+    comTermo().forEach(function (m) {
+      concedidas[m.cpf] = conc(m);
+      if (manual(m)) manuais.push(m.cpf);
+    });
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s; com o mês lançado, a extra que sai vai
        para a escala, que pode ser refeita: a fila do recálculo no fim */
     var lancado = !!d.lancamento && !d.lancamento.reaberto;
@@ -241,7 +248,7 @@
     RW.rpc('extrajornada_cotas_salvar', {
       p_competencia: d.competencia, p_cotas_recebidas: p2.modo === 'por_unidade' ? somaUnidades() : (p2.recebidas === '' || p2.recebidas == null ? null : +p2.recebidas),
       p_repartir_por: p2.modo, p_cotas_unidades: p2.modo === 'por_unidade' ? p2.unidades : null, p_concedidas: concedidas,
-      p_sugestao_pares: p2.pares
+      p_sugestao_pares: p2.pares, p_manuais: manuais
     }).then(function (r) {
       espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
@@ -260,17 +267,17 @@
     q('#p2-pares').addEventListener('click', function () {
       p2.pares = !p2.pares; p2.sujo = true; desenhar(); pedirSugestao();
     });
-    /* Preencher pela sugestão: a Sugestão no Recebe de todos, na hora; o Desfazer volta ao de antes. Com algum Recebe
-       mudado e não salvo, não preenche (o menu Ações mostra o motivo) */
+    /* Preencher pela sugestão: a Sugestão no Recebe de todos, na hora, sem o cadeado; o Desfazer volta ao de antes. Com
+       algum Recebe mudado e não salvo, não preenche (o menu Ações mostra o motivo) */
     q('#p2-sugestao').addEventListener('click', function () {
       if (recebeMudado()) return;
-      p2.antes = { conc: Object.assign({}, p2.conc), sujo: p2.sujo };
-      comTermo().forEach(function (m) { p2.conc[m.cpf] = sugestao(m); });
+      p2.antes = { conc: Object.assign({}, p2.conc), manual: Object.assign({}, p2.manual), sujo: p2.sujo };
+      comTermo().forEach(function (m) { p2.conc[m.cpf] = sugestao(m); p2.manual[m.cpf] = false; });
       p2.sujo = true; desenhar();
     });
     q('#p2-desfazer').addEventListener('click', function () {
       if (!p2.antes) return;
-      p2.conc = p2.antes.conc; p2.sujo = p2.antes.sujo; p2.antes = null; desenhar();
+      p2.conc = p2.antes.conc; p2.manual = p2.antes.manual; p2.sujo = p2.antes.sujo; p2.antes = null; desenhar();
     });
     q('#p2-cancelar').addEventListener('click', function () { p2 = null; desenhar(); });
     q('#p2-salvar').addEventListener('click', salvar);

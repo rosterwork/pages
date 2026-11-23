@@ -3,7 +3,11 @@
    militar no primeiro serviço: o lápis da aba Funções do painel e a
    caixa da célula da grade; só admin)
    Valem para quem estava fora da escala antes da entrada (a chave
-   primeiro_servico da leitura do dia: { cpf, entrada, desde, ate }).
+   primeiro_servico da leitura do dia: { cpf, entrada, desde, ate }, a
+   entrada deste dia ou a próxima marcada): no primeiro serviço, no
+   lugar do Remover e do Mudar de guarnição (também na linha riscada de
+   quem trocou o dia da entrada), e no "Entra em" do Fora da escala,
+   no lugar do Adicionar à guarnição (escalas-celula-fora.js).
    - Mudar a entrada na guarnição: a pergunta Quando entra embaixo da
      linha (na célula, na caixa 2), o campo de data padrão já com a
      entrada de agora, de digitar ou escolher no calendário, com
@@ -18,7 +22,7 @@
    Nada grava até o Salvar do rodapé largo. A pergunta aberta é a do
    rascunho das guarnições (abrirPergunta): o fechar, o voltar e o X
    da caixa da célula são os dele.
-   RosterWork.escalasPainelMudarEntrada: primeiro(cpf), perguntar(m, linha, opcoes), cancelar(m)
+   RosterWork.escalasPainelMudarEntrada: primeiro(cpf), marcada(cpf), perguntar(m, linha, opcoes), cancelar(m)
    ============================================================ */
 (function () {
   'use strict';
@@ -33,22 +37,32 @@
   function utc(iso) { var p = iso.split('-'); return Date.UTC(Number(p[0]), Number(p[1]) - 1, Number(p[2])); }
   function dias(de, ate) { return Math.round((utc(ate) - utc(de)) / 86400000); }
 
-  /* a entrada de quem faz neste dia o primeiro serviço depois de estar fora da escala ({ entrada, desde, ate }); nula sem
-     ela e no dia de mais de 7 dias atrás */
+  /* a entrada dele que a leitura do dia traz ({ entrada, desde, ate }): a deste dia ou a próxima marcada; nula sem ela e
+     no dia de mais de 7 dias atrás */
+  function daLeitura(cpf) {
+    var api = ed(), dd = api.dados() || {}, iso = api.iso();
+    if (!C() || iso < C().limite()) return null;
+    return (dd.primeiro_servico || []).filter(function (x) { return x.cpf === cpf && x.entrada >= iso; })[0] || null;
+  }
+  /* quem faz neste dia o primeiro serviço depois de estar fora da escala (o menu da linha dele) */
   function primeiro(cpf) {
-    var api = ed(), dd = api.dados() || {};
-    if (!C() || api.iso() < C().limite()) return null;
-    return (dd.primeiro_servico || []).filter(function (x) { return x.cpf === cpf; })[0] || null;
+    var x = daLeitura(cpf);
+    return x && x.entrada === ed().iso() ? x : null;
+  }
+  /* quem está fora da escala neste dia e tem a entrada marcada depois dele (o "Entra em" do Fora da escala) */
+  function marcada(cpf) {
+    var x = daLeitura(cpf);
+    return x && x.entrada > ed().iso() ? x : null;
   }
 
-  /* o Mudar a entrada de quem faz neste dia o primeiro serviço (m; linha = a linha dele na aba Funções). Na caixa
-     flutuante da célula: opcoes = { dentro (a caixa 2, no lugar da linha), aoCancelar() } */
+  /* o Mudar a entrada (m; linha = a linha dele na aba Funções): a deste dia (o primeiro serviço) ou a marcada depois dele
+     (o Fora da escala). Na caixa flutuante da célula: opcoes = { dentro (a caixa 2, no lugar da linha), aoCancelar() } */
   function perguntar(m, linha, opcoes) {
     opcoes = opcoes || {};
     if (RW.escalasPainelRemover) RW.escalasPainelRemover.fecharPergunta('guardar');
     C().fecharPergunta('guardar');
     var el = RW.tpl('tpl-escala-mudar-entrada');
-    var api = ed(), dd = api.dados() || {}, uid = api.unidadeId(), iso = api.iso(), cpf = m.cpf, pri = primeiro(cpf);
+    var api = ed(), dd = api.dados() || {}, uid = api.unidadeId(), iso = api.iso(), cpf = m.cpf, pri = daLeitura(cpf);
     if (!el || !pri || !(linha || opcoes.dentro)) return;
     var letra = dd.guarnicao || '', n = dd.intervalo || 1;
     var p = { el: el, pedido: 0, passos: 0, cpf: cpf, antes: C().marcado(uid, iso, cpf) };
@@ -86,7 +100,8 @@
     function aplicar() {
       var meu = ++p.pedido, entra = est.entra, nova = entra ? letraDe(entra) : '';
       ver.esconder();
-      var outra = !!entra && !!letra && nova !== letra;
+      /* a guarnição nova contra a da entrada de agora (no Fora da escala, o dia aberto é outro) */
+      var outra = !!entra && !!letra && nova !== letraDe(pri.entrada);
       nota.classList.toggle('oculto', !outra);
       nota.querySelector('.nota-texto').textContent = outra ? L().entraNaGuarnicao(nova) : '';
       if (!entra || entra === pri.entrada) { if (p.passos) C().voltarDa(p); return; }
@@ -112,15 +127,15 @@
     C().abrirPergunta(p);
   }
 
-  /* o Cancelar a entrada: o tirar na data da entrada (o banco desfaz a entrada inteira e a saída dela), na hora, no
-     rascunho, com o Desfazer; a lista se refaz sem ele */
+  /* o Cancelar a entrada (a deste dia ou a marcada depois dele): o tirar na data da entrada (o banco desfaz a entrada
+     inteira e a saída dela), na hora, no rascunho, com o Desfazer; a lista se refaz sem ele */
   function cancelar(m) {
-    var api = ed(), pri = primeiro(m.cpf);
+    var api = ed(), pri = daLeitura(m.cpf);
     if (!pri) return;
     C().fecharPergunta('guardar');
     C().marcarPasso(api.unidadeId(), api.iso(), { cpf: m.cpf, acao: 'tirar', tipo: 'cancelar_entrada', data: pri.entrada, itens: [] });
     api.redesenhar();
   }
 
-  window.RosterWork.escalasPainelMudarEntrada = { primeiro: primeiro, perguntar: perguntar, cancelar: cancelar };
+  window.RosterWork.escalasPainelMudarEntrada = { primeiro: primeiro, marcada: marcada, perguntar: perguntar, cancelar: cancelar };
 })();

@@ -41,13 +41,13 @@
 
   var RW = window.RosterWork = window.RosterWork || {};
 
-  /* as linhas riscadas e as do Fora da escala: o tipo do menu delas (as outras são 'militar'); o nome em vermelho do Fora
-     da escala tem a caixa dele (escalas-celula-fora.js) */
+  /* as linhas riscadas e as do Fora da escala: o tipo do menu delas (as outras são 'militar'); o nome em vermelho ou em
+     amarelo do Fora da escala, e o de quem tem a entrada marcada, tem a caixa dele (escalas-celula-fora.js) */
   var TIPOS = [
     ['.linha-escalado--folga, .linha-escalado--mudou-dia', 'folga'],
     ['.linha-escalado--saiu', 'saida'],
     ['.linha-escalado--remanejado', 'fora'],
-    ['.linha-escalado--fora-vermelho, .linha-escalado--fora-aviso', 'fora-escala'],
+    ['.linha-escalado--fora-vermelho, .linha-escalado--fora-aviso, .linha-escalado--fora[data-entra]', 'fora-escala'],
     ['.linha-escalado--trocado', 'trocado'],
     ['.linha-escalado--afastamento, .linha-escalado--viagem, .linha-escalado--fora', 'nada']
   ];

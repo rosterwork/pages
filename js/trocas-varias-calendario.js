@@ -10,7 +10,9 @@
    "Quem folga?", marca direto; senão abre o quadro do dia (um
    .dropdown: o botão do dia é o gatilho), com as duas perguntas em
    bolinhas e, no dia marcado, os pares com Tirar. Cada militar
-   entra uma vez por dia.
+   entra uma vez por dia. No Registrar (não no Editar), quem só está
+   preso por outra troca no dia também aparece, com a nota "em outra
+   troca", e o par leva a marca de conflito (o Registrar pergunta antes).
    O dia escolhido na Escala (est.escolhido, o Registrar troca de
    serviço do menu do nome) vem com a moldura do dia escolhido e, quando
    o outro militar está livre nele, já marcado (o outro trabalha, ele
@@ -55,13 +57,25 @@
     return new Date(d.getFullYear(), d.getMonth(), 1);
   }
 
+  /* no Registrar (não no Editar), quem só está preso por outra troca no dia: pode entrar, com a marca de conflito
+     (o banco aceita e a escala mostra o aviso amarelo até cancelar ou mudar uma das trocas) */
+  function emConflito(dia, papel, cpf) {
+    if (!est.registrar || est.editar) return false;
+    return ((disp[dia] || {})[papel + '_conflito'] || []).indexOf(cpf) >= 0;
+  }
+
   /* quem ainda pode entrar num par novo do dia: tira quem já está num par dele (cada militar entra uma vez por dia) */
   function opcoesDoDia(dia) {
     var usados = [];
     paresDoDia(dia).forEach(function (p) { usados.push(p.trabalha, p.folga); });
     var d = disp[dia] || { folga: [], trabalha: [] };
     var livre = function (c) { return usados.indexOf(c) < 0 && !!militar(c); };
-    return { trabalha: (d.trabalha || []).filter(livre), folga: (d.folga || []).filter(livre) };
+    var op = { trabalha: (d.trabalha || []).filter(livre), folga: (d.folga || []).filter(livre) };
+    if (est.registrar && !est.editar) {
+      op.trabalha = op.trabalha.concat((d.trabalha_conflito || []).filter(livre));
+      op.folga = op.folga.concat((d.folga_conflito || []).filter(livre));
+    }
+    return op;
   }
 
   /* ---------- os dias do mês, do banco ---------- */
@@ -130,15 +144,23 @@
     var op = opcoesDoDia(e.dia);
     if (op.folga.indexOf(e.cpf) < 0 || op.trabalha.length !== 1) return;
     e.feito = true;
-    est.pares.push({ data: e.dia, trabalha: op.trabalha[0], folga: e.cpf });
+    est.pares.push(novoPar(e.dia, op.trabalha[0], e.cpf));
     if (aoMudar) aoMudar();
   }
 
   /* ---------- o clique no dia ---------- */
+  /* o par novo; com quem já está em outra troca no dia, leva a marca de conflito (o banco confere) e quem é
+     (conflitoDe, para a pergunta do Registrar) */
+  function novoPar(dia, trabalha, folga) {
+    var par = { data: dia, trabalha: trabalha, folga: folga };
+    var quem = [trabalha, folga].filter(function (c, i) { return emConflito(dia, i === 0 ? 'trabalha' : 'folga', c); });
+    if (quem.length) { par.conflito = true; par.conflitoDe = quem; }
+    return par;
+  }
   function marcar(dia, trabalha, folga) {
     if (RW.fecharDropdowns) RW.fecharDropdowns();
     if (est.escolhido) est.escolhido.feito = true;
-    est.pares.push({ data: dia, trabalha: trabalha, folga: folga });
+    est.pares.push(novoPar(dia, trabalha, folga));
     desenhar();
     if (aoMudar) aoMudar();
   }
@@ -150,8 +172,10 @@
   }
   function aoClicarDia(ev, dia, menu) {
     var pares = paresDoDia(dia), op = opcoesDoDia(dia);
-    /* uma opção só em cada pergunta, no dia ainda sem par: marca direto (o quadro nem abre) */
-    if (!pares.length && op.trabalha.length === 1 && op.folga.length === 1) {
+    /* uma opção só em cada pergunta, no dia ainda sem par: marca direto (o quadro nem abre); quem está em outra troca
+       abre o quadro, para a nota aparecer */
+    if (!pares.length && op.trabalha.length === 1 && op.folga.length === 1
+        && !emConflito(dia, 'trabalha', op.trabalha[0]) && !emConflito(dia, 'folga', op.folga[0])) {
       ev.stopPropagation();
       marcar(dia, op.trabalha[0], op.folga[0]);
       return;
@@ -186,6 +210,7 @@
           var inp = o.querySelector('input');
           inp.name = nomeGrupo + '-' + papel;
           o.querySelector('span').textContent = militar(cpf).nome;
+          o.querySelector('.trocas-dia-opcao-conflito').classList.toggle('oculto', !emConflito(dia, papel, cpf));
           /* com uma opção só, ela já vem marcada e falta um clique na outra pergunta
              (com uma só nas duas, nenhuma vem marcada: o clique nas duas marca o par) */
           var outro = papel === 'trabalha' ? 'folga' : 'trabalha';
