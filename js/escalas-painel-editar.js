@@ -1302,6 +1302,21 @@
     return caixa.children.length > antes ? caixa : null;
   }
 
+  /* a Operação Verão do dia (ler_distribuicao_dia › op_verao: só na unidade marcada no Ajustes › Op. Verão › Onde
+     aparece), depois das viaturas, só para ver (quem lança é a página Op. Verão): o Oficial de Praia e cada posto, na ordem
+     do banco (os Oficiais de Praia, os postos na ordem dos Ajustes e o Sem posto), com o nome e o horário */
+  function caixaOpVerao(op) {
+    var linhas = (op && op.linhas) || [], funcoes = [], de = {};
+    var semPosto = linhas.filter(function (l) { return !l.oficial && !l.posto_id; }).length;
+    linhas.forEach(function (l) {
+      var nome = l.oficial ? RosterWork.mensagens.opVerao.oficialDica : l.posto_id ? (l.posto_nome || '') : msg().semPosto(semPosto);
+      if (!de[nome]) { de[nome] = { nome: nome, militares: [], semNinguem: [], soVer: true }; funcoes.push(de[nome]); }
+      de[nome].militares.push({ cpf: l.cpf || null, grad: l.grad, nome: l.nome, nome_completo: l.nome_completo, origem: 'op-verao',
+        periodos: [{ hi: l.inicio, hf: l.fim }] });
+    });
+    return caixaExibida(msg().blocoOpVerao, funcoes);
+  }
+
   /* uma função de um bloco só para ver (o Oficial de Área, o Chefe de Socorro, o Cabo de Dia, a Extrajornada, o
      estagiário): a pessoa está no posto dela, onde a função muda, então quem serve nesta unidade no dia tem o lápis só
      com a parte do dia do menu; o Oficial de Área da companhia, para quem administra a companhia, traz o Ver o dia na
@@ -1317,6 +1332,11 @@
     var papel = /^(chefe de socorro|chef\. soc\.|oficial de área|of\. área)$/i.test(f.nome || '');
     f.militares.forEach(function (m) {
       var linha = linhaMilitar(m, {});
+      /* f.soVer (a Operação Verão): sem lápis */
+      if (f.soVer) {
+        if (linha) grupo.linhas.appendChild(linha);
+        return;
+      }
       if (linha && (funcoesDoMilitar(m.cpf).length || semFuncao.indexOf(m.cpf) >= 0)) {
         menuNaLinha(linha, { tipo: papel ? 'papel' : 'exibida', exibida: true, militar: m, periodos: m.periodos || [] });
       } else if (linha && cia && String(cia.id) !== String(ctx.unidadeId)) {
@@ -1576,7 +1596,7 @@
       else por(caixa);
     }
     /* a ordem: Funções especiais, as instalações (Central, Rancho, Almoxarifado e as outras), Extrajornada,
-       Estagiários, Sobreaviso, as viaturas, Sem função, De folga, Em outra unidade e Saiu da guarnição */
+       Estagiários, Sobreaviso, as viaturas, Operação Verão, Sem função, De folga, Em outra unidade e Saiu da guarnição */
     var blocos = p.blocosDoDia(dados.postos, ctx.admin);
     por(caixaExibida(msg().blocoEspeciais, blocos.especiais));
     blocos.instalacoes.forEach(porPosto);
@@ -1586,6 +1606,9 @@
     /* o sobreaviso da companhia (escalas-painel-sobreaviso.js) */
     if (RosterWork.escalasPainelSobreaviso && !ctx.comparar) RosterWork.escalasPainelSobreaviso.montar(corpo, dados, ctx);
     blocos.viaturas.forEach(porPosto);
+    /* a Operação Verão, como o sobreaviso, não tira o "Sem distribuição" do dia vazio */
+    var opVerao = ctx.comparar ? null : caixaOpVerao(dados.op_verao);
+    if (opVerao) corpo.appendChild(opVerao);
     por(caixaSemFuncao(dados.sem_funcao || []));
     por(caixaFolgas(dados.folgas || []));
     /* quem foi remanejado daqui e quem saiu da guarnição (escalas-painel-militares.js), com o lápis de cada um */

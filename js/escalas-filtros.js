@@ -10,7 +10,9 @@
    Filtro e busca se aplicam juntos nas linhas de militar já
    desenhadas: cada linha traz a situação (escalas-celula.js).
    Os afastados vêm escondidos e só aparecem com Incluir afastados marcado;
-   quem tem autorização de viagem, só com Incluir autorizações de viagem.
+   quem tem autorização de viagem, só com Incluir autorizações de viagem;
+   os guarda-vidas da Operação Verão (o grupo dela, op-verao-celula.js),
+   só com Incluir operação verão.
    A última opção, Incluir falta de gente (desmarcada ao abrir), não esconde
    ninguém: liga a linha dos horários embaixo do gráfico das grades
    (escalas-falta.js) e da folha delas, e entra na nota do painel de
@@ -37,6 +39,7 @@
     { rotulo: 'Fora da escala', valor: 'fora' },
     { rotulo: 'Incluir afastados', valor: 'afastamento', separado: true },
     { rotulo: 'Incluir autorizações de viagem', valor: 'viagem', separado: true },
+    { rotulo: 'Incluir operação verão', valor: 'op-verao', separado: true },
     { rotulo: 'Incluir falta de gente', valor: 'falta-gente', separado: true }
   ];
   /* a última opção não filtra ninguém: liga a linha da Falta de gente embaixo do gráfico (escalas-falta.js) */
@@ -66,7 +69,7 @@
     /* a página filtrada (o Sobreaviso e os Estágios): o filtro fica preso nela (RosterWork.paginaFiltrada) */
     var pf = window.RosterWork.paginaFiltrada && RosterWork.paginaFiltrada();
     if (pf) return situacao === pf.situacao;
-    if (!filtros || !filtrosValem()) return situacao !== 'afastamento' && situacao !== 'viagem';
+    if (!filtros || !filtrosValem()) return situacao !== 'afastamento' && situacao !== 'viagem' && situacao !== 'op-verao';
     return filtros.passa('situacao', situacao);
   }
 

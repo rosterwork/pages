@@ -2,7 +2,7 @@
    AJUSTES — aba Sobreaviso: as regras do sobreaviso da companhia
    As perguntas (ajustes_sobreaviso_ler): de quem é (da companhia ou
    de cada pelotão), onde aparece (só no da companhia: uma caixa de
-   marcar por unidade, do molde tpl-sobreaviso-onde; sem resposta, o
+   marcar por unidade, do molde tpl-ajustes-onde; sem resposta, o
    pelotão de número menor), quantos por dia, quem entra na fila
    (postos e graduações; setores) e se cada dia mistura antigos e
    modernos (as metades da antiguidade). As outras caixas, as bolinhas
@@ -146,7 +146,7 @@
   function montarOnde() {
     el.onde.querySelectorAll('[role="checkbox"][data-unidade]').forEach(function (b) { b.remove(); });
     (dados.unidades || []).forEach(function (u) {
-      var b = RW.tpl('tpl-sobreaviso-onde');
+      var b = RW.tpl('tpl-ajustes-onde');
       if (!b) return;
       b.setAttribute('data-unidade', String(u.id));
       b.querySelector('.nova-distribuicao-marca-texto').textContent = u.nome;

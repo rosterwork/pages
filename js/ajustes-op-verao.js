@@ -2,6 +2,9 @@
    AJUSTES — aba Op. Verão: a Operação Verão da companhia
    As perguntas (ajustes_op_verao_ler): se a companhia tem Operação
    Verão e, só com o Sim, o período (de/até, o campo de data padrão),
+   onde ela aparece na Escala e no painel do dia (uma caixa de marcar
+   por unidade da companhia, do molde tpl-ajustes-onde, o mesmo do
+   Sobreaviso; sem resposta, o pelotão de número menor; pelo menos uma),
    os postos dos guarda-vidas (uma linha por posto, do molde
    tpl-op-verao-posto, com a lixeira e o Adicionar posto) e os turnos
    (Manhã, Tarde e Dia todo, com o horário do site em horas inteiras,
@@ -21,7 +24,7 @@
 
   var el = {};
   var dados = null;      // a resposta do ajustes_op_verao_ler
-  var cfg = null;        // as respostas em edição: { ativa, inicio, fim, turnos: [{chave, inicio, fim}], postos: [{id, nome}] }
+  var cfg = null;        // as respostas em edição: { ativa, inicio, fim, exibir: [ids], turnos: [{chave, inicio, fim}], postos: [{id, nome}] }
   var inicial = '';      // as gravadas, para saber se mudou
   var pedido = 0;        // latest-wins
   var guardaLigada = false;
@@ -42,24 +45,32 @@
     return lista;
   }
 
-  /* respondida: o Sim/Não; com o Sim, as duas datas (o fim no início ou depois), os nomes dos postos sem repetir e cada
-     turno terminando depois de começar */
+  /* respondida: o Sim/Não; com o Sim, as duas datas (o fim no início ou depois), pelo menos uma unidade no Onde aparece,
+     os nomes dos postos sem repetir e cada turno terminando depois de começar */
   function respondida() {
     if (!cfg || typeof cfg.ativa !== 'boolean') return false;
     if (!cfg.ativa) return true;
-    if (!cfg.inicio || !cfg.fim || cfg.fim < cfg.inicio) return false;
+    if (!cfg.inicio || !cfg.fim || cfg.fim < cfg.inicio || !cfg.exibir.length) return false;
     var nomes = cfg.postos.map(function (p) { return p.nome.trim().toLowerCase(); });
     if (nomes.some(function (n, i) { return !n || nomes.indexOf(n) !== i; })) return false;
     return cfg.turnos.every(function (t) { return t.fim > t.inicio; });
   }
 
-  /* a configuração gravada na forma da tela (sem resposta ainda: o Sim/Não vazio e os turnos de sempre) */
+  /* as unidades da companhia, na ordem da leitura (a companhia, depois os pelotões pelo número) */
+  function ordemUnidades() { return ((dados && dados.unidades) || []).map(function (u) { return u.id; }); }
+
+  /* a configuração gravada na forma da tela (sem resposta ainda: o Sim/Não vazio e os turnos de sempre; sem o Onde
+     aparece, o pelotão de número menor) */
   function daLeitura(r) {
     var c = r.config || {};
+    var primeiro = (r.unidades || []).filter(function (u) { return u.tipo === 'PEL'; })[0];
     return {
       ativa: typeof c.ativa === 'boolean' ? c.ativa : null,
       inicio: c.inicio || null,
       fim: c.fim || null,
+      exibir: Array.isArray(c.exibir)
+        ? ordemUnidades().filter(function (id) { return c.exibir.indexOf(id) >= 0; })
+        : (primeiro ? [primeiro.id] : []),
       turnos: (r.turnos || []).map(function (t) { return { chave: t.chave, inicio: t.inicio, fim: t.fim }; }),
       postos: (r.postos || []).map(function (p) { return { id: p.id, nome: p.nome }; })
     };
@@ -86,6 +97,7 @@
       dados = r;
       cfg = daLeitura(r);
       inicial = JSON.stringify(cfg);
+      montarOnde();
       desenhar();
     }, function () {
       if (meu !== pedido) return;
@@ -107,17 +119,41 @@
       inp.checked = cfg.ativa === (inp.getAttribute('data-valor') === 'sim');
       inp.disabled = travado;
     });
-    /* o período, os postos e os turnos só com o Sim */
-    [el.periodo, el.postos, el.turnos].forEach(function (caixa) { caixa.classList.toggle('oculto', cfg.ativa !== true); });
+    /* o período, onde aparece, os postos e os turnos só com o Sim */
+    [el.periodo, el.onde, el.postos, el.turnos].forEach(function (caixa) { caixa.classList.toggle('oculto', cfg.ativa !== true); });
 
     if (document.activeElement !== el.inicio) el.inicio.value = cfg.inicio ? RW.data.isoParaBR(cfg.inicio) : '';
     if (document.activeElement !== el.fim) el.fim.value = cfg.fim ? RW.data.isoParaBR(cfg.fim) : '';
     el.inicio.disabled = travado;
     el.fim.disabled = travado;
 
+    el.onde.querySelectorAll('[role="checkbox"][data-unidade]').forEach(function (b) {
+      var marcado = cfg.exibir.indexOf(Number(b.getAttribute('data-unidade'))) >= 0;
+      b.setAttribute('aria-checked', marcado ? 'true' : 'false');
+      b.querySelector('.caixa-selecao').classList.toggle('caixa-selecao--marcada', marcado);
+      b.disabled = travado;
+    });
+
     desenharPostos(travado);
     desenharTurnos(travado);
     desenharRodape();
+  }
+
+  /* as caixas do Onde aparece: uma por unidade da companhia (a cada leitura; o clique liga e desliga a unidade) */
+  function montarOnde() {
+    el.onde.querySelectorAll('[role="checkbox"][data-unidade]').forEach(function (b) { b.remove(); });
+    (dados.unidades || []).forEach(function (u) {
+      var b = RW.tpl('tpl-ajustes-onde');
+      if (!b) return;
+      b.setAttribute('data-unidade', String(u.id));
+      b.querySelector('.nova-distribuicao-marca-texto').textContent = u.nome;
+      b.addEventListener('click', function () {
+        var ligado = cfg.exibir.indexOf(u.id) < 0;
+        cfg.exibir = ordemUnidades().filter(function (id) { return id === u.id ? ligado : cfg.exibir.indexOf(id) >= 0; });
+        desenhar();
+      });
+      el.onde.appendChild(b);
+    });
   }
 
   /* os postos: uma linha por posto (o campo do nome e a lixeira); a lista é refeita a cada desenho, menos o campo em uso */
@@ -221,7 +257,7 @@
      novo; no fim, o resumo. Com o Não, só ele vai (o período, os postos e os turnos ficam como estavam) */
   function enviar() {
     var corpo = cfg.ativa
-      ? { ativa: true, inicio: cfg.inicio, fim: cfg.fim, turnos: cfg.turnos,
+      ? { ativa: true, inicio: cfg.inicio, fim: cfg.fim, exibir: cfg.exibir, turnos: cfg.turnos,
           postos: cfg.postos.map(function (p) { return { id: p.id, nome: p.nome.trim() }; }) }
       : { ativa: false };
     var etapas = RW.etapas.acao('ajustesOpVerao', {}, { doServidor: 1, atraso: true, botao: el.salvar });
@@ -245,7 +281,7 @@
 
   /* ---------- entrada (a cada visita à página) e a aba ---------- */
   function montar(cont) {
-    ['conteudo', 'carregando', 'companhia', 'trava', 'rodape', 'cancelar', 'salvar', 'ativa', 'periodo', 'inicio', 'fim',
+    ['conteudo', 'carregando', 'companhia', 'trava', 'rodape', 'cancelar', 'salvar', 'ativa', 'periodo', 'inicio', 'fim', 'onde',
      'postos', 'postos-lista', 'postos-vazio', 'adicionar-posto', 'turnos'].forEach(function (nome) {
       el[nome.replace(/-(\w)/g, function (x, l) { return l.toUpperCase(); })] = cont.querySelector('#op-verao-' + nome);
     });

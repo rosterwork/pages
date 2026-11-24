@@ -402,9 +402,11 @@
     if (RosterWork.escalasCelulaErros) RosterWork.escalasCelulaErros.decorar(celula, opcoes ? opcoes.erros : undefined);
     var D =RosterWork.escalasCelulaDica && RosterWork.escalasCelulaDica.ligada() ? RosterWork.escalasCelulaDica : null;
     /* quem está no dia, nos grupos da Escala (escalas-celula-grupos.js); embaixo, o sobreaviso da companhia, no lugar em
-       que ele aparece (escalas-celula-sobreaviso.js), e o Fora da escala (escalas-celula-fora.js) */
+       que ele aparece (escalas-celula-sobreaviso.js), a Operação Verão, também no lugar dela (op-verao-celula.js), e o
+       Fora da escala (escalas-celula-fora.js) */
     RosterWork.escalasCelulaGrupos.preencher(celula, pessoas, curto, D);
     if (RosterWork.escalasCelulaSobreaviso) RosterWork.escalasCelulaSobreaviso.preencher(celula, curto, D);
+    if (RosterWork.opVeraoCelula) RosterWork.opVeraoCelula.grupo(celula, curto);
     if (RosterWork.escalasCelulaFora) RosterWork.escalasCelulaFora.preencher(celula, fora, curto, D);
     if (D) D.celula(celula);   // a dica de cada linha: por que ela está na escala
     /* na Escala, o que está aberto na célula (o cartão do militar, as ações do pelotão) volta depois de refeita */

@@ -362,7 +362,7 @@
             <label class="geral-opcao"><input type="radio" name="sobreaviso-de" data-valor="companhia" /><span>Da companhia: uma escala só, com os militares de todos os pelotões</span></label>
             <label class="geral-opcao"><input type="radio" name="sobreaviso-de" data-valor="pelotao" /><span>De cada pelotão: cada um tem a sua, só com os militares dele</span></label>
           </div>
-          <!-- só no sobreaviso da companhia: uma caixa de marcar por unidade (molde tpl-sobreaviso-onde) -->
+          <!-- só no sobreaviso da companhia: uma caixa de marcar por unidade (molde tpl-ajustes-onde) -->
           <div class="grupo-caixa subtela-pergunta oculto" id="sobreaviso-onde">
             <span class="rotulo-secao">Onde aparece</span>
             <span class="subtela-ajuda">Na Escala, no painel do dia e na escala que vai para o SYSBM.</span>
@@ -476,6 +476,11 @@
               <input type="text" class="campo-entrada" id="op-verao-fim" inputmode="numeric" maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" aria-label="Fim da Operação Verão" />
             </div>
             <span class="subtela-ajuda">Fora do período, a página Op. Verão fica vazia.</span>
+          </div>
+          <!-- onde aparece: uma caixa de marcar por unidade (molde tpl-ajustes-onde, o mesmo do Sobreaviso) -->
+          <div class="grupo-caixa subtela-pergunta oculto" id="op-verao-onde">
+            <span class="rotulo-secao">Onde aparece</span>
+            <span class="subtela-ajuda">Na Escala, com o filtro Incluir operação verão, e no painel do dia, depois das viaturas.</span>
           </div>
           <!-- os postos: uma linha por posto (molde tpl-op-verao-posto) -->
           <div class="grupo-caixa subtela-pergunta oculto" id="op-verao-postos">
@@ -2055,9 +2060,9 @@
   <div class="ajustes-estagios-traco"></div>
 </template>
 
-<!-- ===== SOBREAVISO (aba Sobreaviso; ajustes-sobreaviso.js) ===== -->
+<!-- ===== SOBREAVISO E OP. VERÃO (ajustes-sobreaviso.js e ajustes-op-verao.js) ===== -->
 <!-- Onde aparece: a caixa de marcar de uma unidade da companhia -->
-<template id="tpl-sobreaviso-onde">
+<template id="tpl-ajustes-onde">
   <button type="button" class="geral-opcao nova-distribuicao-marca" role="checkbox" aria-checked="false">
     <span class="caixa-selecao" aria-hidden="true"><svg class="icone" width="10" height="10" aria-hidden="true"><use href="icones/todos.svg#icone-check"/></svg></span>
     <span class="nova-distribuicao-marca-texto"></span>

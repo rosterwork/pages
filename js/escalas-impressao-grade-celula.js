@@ -242,17 +242,19 @@
     return nomes.filter(Boolean);
   }
 
-  /* quem aparece no dia, nos grupos da tela (escalas-celula-grupos.js): os de serviço, o sobreaviso da companhia, no lugar
-     em que ele aparece (comSobreaviso: só a folha da Escala, a única tela que o mostra), a autorização de viagem (com o
-     filtro dela) e o Fora da escala (os afastados dele, com o filtro Afastamentos), pelos filtros da tela; a leitura que
-     já vem filtrada pela tela dela (jaFiltrada: a página Afastamentos) entra inteira */
+  /* quem aparece no dia, nos grupos da tela (escalas-celula-grupos.js): os de serviço, o sobreaviso da companhia e a
+     Operação Verão, no lugar em que eles aparecem (comSobreaviso: só a folha da Escala, a única tela que os mostra; a
+     Operação Verão com o filtro dela), a autorização de viagem (com o filtro dela) e o Fora da escala (os afastados dele,
+     com o filtro Afastamentos), pelos filtros da tela; a leitura que já vem filtrada pela tela dela (jaFiltrada: a página
+     Afastamentos) entra inteira */
   function pessoasDoDia(dados, uid, dia, comSobreaviso) {
     var passa = dados.jaFiltrada ? function () { return true; }
       : (RW.escalasFiltros ? RW.escalasFiltros.passaPessoa : function (p) { return !semHorario(p); });
     function noGrupo(lista, grupo) { return lista.map(function (p) { return Object.assign({}, p, { grupo: grupo }); }); }
     var sobreaviso = comSobreaviso && RW.escalasCelulaSobreaviso ? RW.escalasCelulaSobreaviso.pessoas(uid, dia) : [];
+    var opVerao = comSobreaviso && RW.opVeraoCelula ? RW.opVeraoCelula.naFolha(uid, dia) : [];
     var fora = ((dados.fora || {})[uid] || {})[dia] || [];
-    var lista = ((dados.militares[uid] || {})[dia] || []).concat(noGrupo(sobreaviso, 'sobreaviso'),
+    var lista = ((dados.militares[uid] || {})[dia] || []).concat(noGrupo(sobreaviso, 'sobreaviso'), opVerao,
       noGrupo(fora.filter(function (p) { return p.origem === 'viagem'; }), 'viagem'),
       noGrupo(fora.filter(function (p) { return p.origem !== 'viagem'; }), 'fora'));
     return lista.filter(passa);

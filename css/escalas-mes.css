@@ -828,6 +828,13 @@
   color: var(--alerta);
 }
 
+/* o guarda-vidas da Operação Verão (a página Op. Verão e o grupo dela na Escala, op-verao-celula.js) afastado ou de
+   serviço na escala no mesmo horário: a graduação e o nome em vermelho (o porquê na dica) */
+.linha-escalado--op-verao-conflito .linha-escalado-grad,
+.linha-escalado--op-verao-conflito .linha-escalado-nome {
+  color: var(--erro);
+}
+
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
    Na Escala, a Agenda mostra uma unidade por tela: a coluna dela

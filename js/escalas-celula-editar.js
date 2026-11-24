@@ -351,9 +351,10 @@
     var sob = RW.escalasCelulaSobreavisoCaixa ? RW.escalasCelulaSobreavisoCaixa.alvo(ev, cel) : null;
     if (sob && !sob.pode) return false;
     if (pode === 'antigo') { avisoAntigo(cel); return true; }
-    if (pode === 'atualizando') { avisoAtualizando(cel, ev.target.closest('.linha-escalado[data-cpf]')); return true; }
+    /* o nome da Operação Verão (op-verao-celula.js) não é da escala: vale como o espaço vazio do dia */
+    var linha = ev.target.closest('.linha-escalado[data-cpf]:not([data-op-verao])');
+    if (pode === 'atualizando') { avisoAtualizando(cel, linha); return true; }
     if (sob) { cliqueNoSobreaviso(cel, sob); return true; }
-    var linha = ev.target.closest('.linha-escalado[data-cpf]');
     if (!linha || linha.closest('.escala-mes-celula') !== cel) cliqueNoBloco(cel);
     else if (!(linha.getAttribute('data-situacao') === 'extra' && RW.escalasCelulaExtra && RW.escalasCelulaExtra.clique(cel, linha))) cliqueNoNome(cel, linha);
     return true;

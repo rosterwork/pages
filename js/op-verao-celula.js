@@ -15,9 +15,14 @@
    A mudança ainda não salva (op-verao-rascunho.js) aparece na hora,
    com a borda tracejada do dia. O Imprimir da página leva o mesmo
    dia para a folha (paraImpressao: os postos e os Oficiais de Praia,
-   montados pelo mesmo código da tela). Não cria HTML (clona os moldes
-   do escalas.html) nem escreve estilo.
-   RosterWork.opVeraoCelula.{ ativa, guardar, preencher,
+   montados pelo mesmo código da tela).
+   Na Escala (o arquivo carrega com ela), a mesma leitura desenha o
+   grupo da Operação Verão embaixo do Sobreaviso (grupo), só na
+   unidade marcada no Ajustes › Op. Verão › Onde aparece (o "exibe"
+   do banco): só os nomes, com a boia; a folha da grade leva o mesmo
+   (naFolha). Não cria HTML (clona os moldes do escalas.html) nem
+   escreve estilo.
+   RosterWork.opVeraoCelula.{ ativa, guardar, preencher, grupo, naFolha,
    preencherTitulo, paraImpressao, doDia, companhia, linhasDoDia, gravadas, rascunho, temRascunho,
    colunas, pode, limite, limpar, diasComRascunho, gravou, esperarLeitura }
    ============================================================ */
@@ -221,6 +226,41 @@
     return tem;
   }
 
+  /* ---------- a Escala: o grupo da Operação Verão ---------- */
+
+  /* quem aparece no dia da Escala, na ordem da célula: os Oficiais de Praia e os guarda-vidas na ordem dos postos (o Sem
+     posto por último), cada um com o lugar dele (o posto ou o Oficial de Praia). Só na unidade marcada no Ajustes › Op.
+     Verão › Onde aparece (o "exibe" do banco); fora dela ou do período, []. [{ l (a linha do banco), lugar }] */
+  function naEscala(uid, iso) {
+    var s = doDia(uid, iso);
+    if (!s || !s.exibe) return [];
+    var linhas = s.linhas || [];
+    var saida = linhas.filter(function (l) { return l.oficial; }).map(function (l) { return { l: l, lugar: msg().oficialDica }; });
+    postosDoDia(s, linhas).forEach(function (p) {
+      p.linhas.forEach(function (l) { saida.push({ l: l, lugar: p.nome }); });
+    });
+    return saida;
+  }
+
+  /* o grupo da Operação Verão na célula da Escala (escalas-celula.js, depois do Sobreaviso e antes do Fora da escala): só os
+     nomes, com a boia e o horário, na caixa do grupo (a linha tracejada, escalas-celula-grupos.js); a dica diz o lugar de
+     cada um e, no conflito, o porquê. A situação "op-verao" fica escondida até o Incluir operação verão
+     (escalas-filtros.js). Fora da Escala e nas páginas filtradas (Sobreaviso, Estágios e a própria Op. Verão), nada */
+  function grupo(celula, curto) {
+    if (ativa() || !RW.escalasCelulaGrupos.naEscala(celula) || (RW.paginaFiltrada && RW.paginaFiltrada())) return;
+    var lista = naEscala(celula.dataset.unidadeId, celula.dataset.iso);
+    if (!lista.length) return;
+    var caixa = RW.escalasCelulaGrupos.caixa('op-verao');
+    if (!caixa) return;
+    lista.forEach(function (x) {
+      var el = linha(x.l, curto);
+      if (!el) return;
+      el.setAttribute('data-dica', x.l.conflito ? x.lugar + '\n' + dicaConflito(x.l.conflito) : x.lugar);
+      caixa.appendChild(el);
+    });
+    celula.appendChild(caixa);
+  }
+
   /* ---------- a folha (o Imprimir das grades, escalas-impressao-grade.js) ---------- */
 
   function textoDoMolde(id) { var el = RW.tpl(id); return el ? el.textContent.trim() : ''; }
@@ -235,12 +275,21 @@
     postos.forEach(function (p, i) {
       var grupo = 'posto-' + i;
       saida.push({ grupo: grupo, titulo: p.nome, sem: p.sem });
-      p.linhas.forEach(function (l) {
-        saida.push({ grupo: grupo, cpf: l.cpf || null, grad: l.grad, nome: l.nome, origem: 'op-verao',
-          periodos: [{ inicio: l.inicio, fim: l.fim }], vermelho: !!l.conflito });
-      });
+      p.linhas.forEach(function (l) { saida.push(pessoaNaFolha(l, grupo)); });
     });
     return saida;
+  }
+
+  /* um guarda-vidas na linha da folha, no grupo dele; o nome em vermelho de quem tem conflito */
+  function pessoaNaFolha(l, grupo) {
+    return { grupo: grupo, cpf: l.cpf || null, grad: l.grad, nome: l.nome, origem: 'op-verao',
+      periodos: [{ inicio: l.inicio, fim: l.fim }], vermelho: !!l.conflito };
+  }
+
+  /* o grupo da Operação Verão na folha da grade da Escala (escalas-impressao-grade-celula.js): os mesmos nomes da tela
+     (naEscala), no grupo "op-verao"; os Filtros da tela dizem se ele vai */
+  function naFolha(uid, iso) {
+    return naEscala(uid, iso).map(function (x) { return pessoaNaFolha(x.l, 'op-verao'); });
   }
 
   /* um Oficial de Praia no título do dia da folha, em linha pronta: o posto e o nome (em vermelho no conflito) e o horário,
@@ -299,6 +348,7 @@
   function limpar() { rascunhos = {}; pendentes = {}; }
 
   RW.opVeraoCelula = { ativa: ativa, guardar: guardar, preencher: preencher, preencherTitulo: preencherTitulo, paraImpressao: paraImpressao, doDia: doDia,
+    grupo: grupo, naFolha: naFolha,
     companhia: companhia, linhasDoDia: linhasDoDia, gravadas: gravadas, rascunho: rascunho, temRascunho: temRascunho, colunas: colunas, pode: pode,
     limite: limite, limpar: limpar, diasComRascunho: diasComRascunho, gravou: gravou, esperarLeitura: esperarLeitura };
 })();

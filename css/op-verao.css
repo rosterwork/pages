@@ -72,9 +72,8 @@
   color: var(--texto-suave);
 }
 
-/* afastado ou de serviço na escala no mesmo horário: a graduação e o nome em vermelho (o porquê na dica) */
-.linha-escalado--op-verao-conflito .linha-escalado-grad,
-.linha-escalado--op-verao-conflito .linha-escalado-nome,
+/* o Oficial de Praia afastado ou de serviço na escala no mesmo horário: a graduação e o nome em vermelho (o porquê na
+   dica); o da linha da célula fica no escalas-mes.css, que a Escala também usa */
 .op-verao-oficial--conflito .escala-oficial-grad,
 .op-verao-oficial--conflito .escala-oficial-nome {
   color: var(--erro);

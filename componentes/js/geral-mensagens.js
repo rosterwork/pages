@@ -1181,6 +1181,8 @@
       blocoExtra: 'Extrajornada',
       blocoEstagiarios: 'Estagiários',
       rotuloEstagiario: 'Estagiário',
+      /* a Operação Verão do dia, depois das viaturas (escalas-painel-editar.js › caixaOpVerao) */
+      blocoOpVerao: 'Operação Verão',
       /* as caixas da aba Funções depois do De folga: quem foi remanejado daqui e quem saiu da guarnição (a linha riscada,
          com o Cancelar a saída; o texto embaixo do nome também é a dica na grade) */
       blocoOutraUnidade: 'Em outra unidade',
@@ -1608,7 +1610,8 @@
       },
       /* os grupos da célula da Escala (escalas-celula-grupos.js): a dica da linha tracejada diz o grupo de baixo */
       grupoCelula: { guarnicao: 'Guarnição', troca: 'Trocas', pontual: 'Pontual', remanejado: 'Remanejados', extra: 'Extrajornada',
-        estagio: 'Estágio', sobreaviso: 'Sobreaviso', viagem: 'Autorização de viagem', fora: 'Fora da escala' },
+        estagio: 'Estágio', sobreaviso: 'Sobreaviso', 'op-verao': 'Operação Verão', viagem: 'Autorização de viagem',
+        fora: 'Fora da escala' },
       /* o título de quem não está em nenhum posto, com quantos (Op. Verão e Estágios, o .escala-mes-posto--sem) */
       semPosto: function (n) { return 'Sem posto (' + n + ')'; },
       /* no lugar do horário de quem está fora da escala: a entrada na guarnição já marcada; o amarelo (a volta de um
