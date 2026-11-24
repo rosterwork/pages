@@ -274,7 +274,7 @@
 
   /* a linha tracejada entre dois grupos da célula (a mesma da tela) */
   function separador(largura, c) {
-    return { canvas: [{ type: 'line', x1: 0, y1: 0, x2: largura, y2: 0, lineWidth: 0.4, dash: { length: 1.5, space: 1 }, lineColor: c.borda }],
+    return { canvas: [{ type: 'line', x1: 0, y1: 0, x2: largura, y2: 0, lineWidth: 0.5, dash: { length: 1.5, space: 1 }, lineColor: c.borda }],
       margin: [0, 1, 0, 1] };
   }
 

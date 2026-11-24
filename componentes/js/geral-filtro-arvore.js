@@ -23,11 +23,15 @@
      divisória, fora do "Todos", e é um ACRÉSCIMO: "Todos" + ela = tudo e mais ela. O "Todos"
      marcado não se desmarca: a seleção nunca fica vazia.
      Só com opções separadas, o "Todos" e as divisórias somem e fica só a caixa de cada uma.
+     A separada com `padrao: true` (ex.: Incluir operação verão, na Escala) começa marcada e
+     marcada é o normal: não conta como filtro; desmarcada, a etiqueta diz `rotuloSem` (ex.: "Sem
+     operação verão") e o "x" dela e o Limpar a marcam de novo. A escolha guardada na sessão
+     (restaurar) vale no lugar do padrão.
      Com mais de OPCOES_PARA_PROCURAR opções, os grupos começam fechados e o campo Procurar
      (procurarEl) aparece no alto.
      Usado pelo botão Filtros (geral-filtros), uma coluna por filtro.
      config: { arvoreEl, mestreEl, procurarEl, colapsarTudo, onChange }
-     Devolve { definir(arvore), passa(valor), temFiltro(), desmarcar(valores), limpar(), resumo(),
+     Devolve { definir(arvore), passa(valor), temFiltro(), tirar(valores), limpar(), resumo(),
      selecao(), restaurar(valores) }. */
   function criar(config) {
     var arvoreEl = config.arvoreEl;
@@ -40,6 +44,8 @@
     var pintores = [];     /* repintam as caixas da árvore conforme a seleção */
     var totalFolhas = 0;   /* folhas normais (as que contam para "Todos") */
     var separadas = new Set();   /* valores fora do "Todos" (ex.: Incluir inativos) — divisória acima */
+    var padroes = new Set();     /* as separadas marcadas por padrão (padrao: true) */
+    var escolhida = false;       /* a escolha guardada já veio (restaurar) ou o padrão já entrou: o padrão não entra de novo */
     var colapsarTudo = !!config.colapsarTudo;   /* marcar todas as normais = "Todos" (elas se desmarcam) */
     var assinatura = '';   /* evita reconstruir o DOM quando a árvore não muda */
     var arvoreAtual = [];  /* a última árvore definida (o resumo agrupa por ela) */
@@ -50,10 +56,9 @@
       return n;
     }
 
-    function separadasMarcadas() {
-      var n = 0;
-      selecionados.forEach(function (v) { if (separadas.has(v)) n++; });
-      return n;
+    /* as separadas estão como o padrão (as de padrão marcadas, as outras não) */
+    function separadasNoPadrao() {
+      return Array.from(separadas).every(function (v) { return selecionados.has(v) === padroes.has(v); });
     }
 
     function tirarNormais() {
@@ -76,9 +81,9 @@
       return tpl ? tpl.content.cloneNode(true).firstElementChild : null;
     }
 
-    /* há filtro de fato quando não é o padrão ("Todos", sem separada) */
+    /* há filtro de fato quando não é o padrão ("Todos", só com as separadas de padrão marcadas) */
     function temFiltro() {
-      return !(todosNormais() && separadasMarcadas() === 0);
+      return !(todosNormais() && separadasNoPadrao());
     }
 
     /* um valor passa no filtro? (separada: só marcada; normal: "Todos" ou escolhida) */
@@ -89,7 +94,8 @@
     }
 
     /* o que está marcado, para as etiquetas da linha "Filtros:": um grupo inteiro marcado vira um
-       item só (ex.: "Praças"); as separadas vêm por último. [{ rotulo, valores }] na ordem da árvore */
+       item só (ex.: "Praças"); as separadas vêm por último (a de padrão, só desmarcada, com o rotuloSem).
+       [{ rotulo, valores }] na ordem da árvore */
     function resumo() {
       var lista = [];
       function visitar(no) {
@@ -106,8 +112,8 @@
       }
       if (!todosNormais()) arvoreAtual.forEach(function (no) { if (!no.separado) visitar(no); });
       arvoreAtual.forEach(function (no) {
-        if (!no.separado || !selecionados.has(no.valor)) return;
-        lista.push({ rotulo: no.rotulo, valores: [no.valor] });
+        if (!no.separado || selecionados.has(no.valor) === padroes.has(no.valor)) return;
+        lista.push({ rotulo: padroes.has(no.valor) ? (no.rotuloSem || no.rotulo) : no.rotulo, valores: [no.valor] });
       });
       return lista;
     }
@@ -147,10 +153,10 @@
       mudou();
     }
 
-    /* volta ao padrão: "Todos", sem separada */
+    /* volta ao padrão: "Todos", só com as separadas de padrão marcadas */
     function limpar() {
       if (!temFiltro()) return;
-      selecionados.clear();
+      selecionados = new Set(padroes);
       pintar();
       onChange();
     }
@@ -164,6 +170,7 @@
        próximo definir com opções) */
     function restaurar(valores) {
       selecionados = new Set(valores || []);
+      escolhida = true;
       pintar();
     }
 
@@ -194,10 +201,14 @@
       Array.prototype.forEach.call(arvoreEl.querySelectorAll(':scope > .arvore-grupo'), function (el) { visitar(el, false); });
     }
 
-    /* desmarca os valores (o "x" da etiqueta na linha "Filtros:") */
-    function desmarcar(valores) {
+    /* tira o filtro da etiqueta (o "x" na linha "Filtros:"): desmarca os valores; a separada de padrão desmarcada volta a
+       ficar marcada */
+    function tirar(valores) {
       var tirou = false;
-      (valores || []).forEach(function (v) { if (selecionados.delete(v)) tirou = true; });
+      (valores || []).forEach(function (v) {
+        if (padroes.has(v) && !selecionados.has(v)) { selecionados.add(v); tirou = true; }
+        else if (selecionados.delete(v)) tirou = true;
+      });
       if (tirou) mudou();
     }
 
@@ -251,7 +262,16 @@
         assinatura = ass;
         var folhas = folhasDe({ filhos: arvore }, []);
         separadas = new Set();
-        arvore.forEach(function (no) { if (no.separado && no.valor != null) separadas.add(no.valor); });
+        padroes = new Set();
+        arvore.forEach(function (no) {
+          if (no.separado && no.valor != null) separadas.add(no.valor);
+          if (no.separado && no.padrao && no.valor != null) padroes.add(no.valor);
+        });
+        /* as primeiras opções: sem escolha guardada, as separadas de padrão entram marcadas */
+        if (folhas.length && !escolhida) {
+          padroes.forEach(function (v) { selecionados.add(v); });
+          escolhida = true;
+        }
         totalFolhas = folhas.filter(function (v) { return !separadas.has(v); }).length;
         var validos = {};
         folhas.forEach(function (v) { validos[v] = true; });
@@ -306,7 +326,7 @@
       definir: definir,
       passa: passa,
       temFiltro: temFiltro,
-      desmarcar: desmarcar,
+      tirar: tirar,
       limpar: limpar,
       resumo: resumo,
       selecao: selecao,

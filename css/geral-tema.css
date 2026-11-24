@@ -48,6 +48,7 @@
   --cinza-920: rgb(33,  33,  33);
   --cinza-940: rgb(26,  26,  26);
   --cinza-950: rgb(14,  14,  14);
+  --cinza-1000: rgb(0,  0,   0);     /* o preto puro, só da impressão */
 
   /* -------------------------------------------------------
      Papéis de fundo
@@ -100,14 +101,17 @@
      (igual nos dois temas, porque as imagens não mudam com o tema) */
   --anotacao:            rgb(40,  96,  232);
   --anotacao-texto:      var(--cinza-0);
-  /* cores do PDF da escala (escalas-impressao-pdf.js lê daqui): papel é sempre claro,
-     então são iguais nos dois temas; preto e cinza, para sair bem em impressora comum.
+  /* cores do PDF (escalas-impressao-pdf.js lê daqui): papel é sempre claro, então são
+     iguais nos dois temas. Linhas e texto em preto puro, que a impressora comum imprime
+     inteiro (o cinza ela faz com pontinhos: a linha fina cinza falha ou some); o fundo
+     é só enfeite e a listra dos afastados, cinza médio, não apaga o nome por cima.
      As grades (Agenda, Calendário, Colunas) usam também as cores do gráfico de
      cobertura (as do tema claro) */
-  --impressao-texto-forte: var(--cinza-950);
-  --impressao-texto:       var(--cinza-900);
+  --impressao-texto-forte: var(--cinza-1000);
+  --impressao-texto:       var(--cinza-1000);
   --impressao-texto-suave: var(--cinza-750);
-  --impressao-borda:       var(--cinza-300);
+  --impressao-borda:       var(--cinza-1000);
+  --impressao-listra:      var(--cinza-550);
   --impressao-fundo:       var(--cinza-150);
   --impressao-papel:       var(--cinza-0);
   --impressao-sucesso:     rgb(38,  110, 60);

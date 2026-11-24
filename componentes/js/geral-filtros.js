@@ -13,7 +13,9 @@
    Com `guardar` (a chave da tela, ex.: 'escala'), a escolha fica na sessão
    (rosterwork_preferencias.filtros, nunca no banco) e volta quando a pessoa volta à tela.
    Opção com `separado: true` (ex.: Incluir afastados, Incluir inativos) fica fora do
-   "Todos", depois de uma divisória, e é um acréscimo (ver geral-filtro-arvore).
+   "Todos", depois de uma divisória, e é um acréscimo (ver geral-filtro-arvore); com
+   `padrao: true` (ex.: Incluir operação verão), começa marcada e só conta como filtro
+   desmarcada.
    ============================================================ */
 (function () {
   'use strict';
@@ -62,7 +64,7 @@
           etiqueta.querySelector('.filtro-ativo-valor').textContent = item.rotulo;
           var tirar = etiqueta.querySelector('.filtro-ativo-tirar');
           tirar.setAttribute('aria-label', RosterWork.mensagens.geral.tirarFiltro(f.nome, item.rotulo));
-          tirar.addEventListener('click', function () { f.api.desmarcar(item.valores); });
+          tirar.addEventListener('click', function () { f.api.tirar(item.valores); });
           lista.appendChild(etiqueta);
         });
       });
@@ -71,13 +73,14 @@
       if (linha) linha.classList.toggle('oculto', !n || !visivel);
     }
 
-    /* a escolha de cada coluna (só as que têm escolha) vai para a sessão */
+    /* a escolha de cada coluna (só as que têm escolha, ou que saíram do padrão: a opção marcada por padrão desmarcada
+       fica guardada vazia) vai para a sessão */
     function guardarEscolha() {
       if (!guardar) return;
       var escolha = {};
       ordem.forEach(function (chave) {
         var valores = filtros[chave].api.selecao();
-        if (valores.length) escolha[chave] = valores;
+        if (valores.length || filtros[chave].api.temFiltro()) escolha[chave] = valores;
       });
       var p = lerPrefs();
       p.filtros = p.filtros || {};

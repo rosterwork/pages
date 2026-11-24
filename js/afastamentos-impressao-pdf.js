@@ -34,7 +34,7 @@
   var CABECALHO = { logo: 74, topo: 20, titulo: 15, subtitulo: 9.5 };
   var MILITAR = 128;                               // a coluna do militar, com o respiro dos lados
   var RESPIRO = { militar: 5, dia: 1.5, alto: 5 };
-  var LINHA = 0.4;
+  var LINHA = 0.5;
   var FONTE = { unidade: 9, sigla: 6.5, contagem: 6.5, diaSemana: 5, dia: 7.5, mes: 7, grad: 6.5, nome: 7.5, cpf: 5.5, total: 7,
     barra: 6.5, datas: 5.5 };
   var ALTURA = { faixa: 20, dias: 20, militar: 17 };   // a faixa de barras, a linha dos dias e o texto do militar (nome e CPF)
@@ -257,7 +257,7 @@
     return pdf.preparar().then(function (c) {
       return celula().preparar(c);
     }).then(function (c) {
-      c.listra = pdf.cor('--impressao-borda');
+      c.listra = pdf.cor('--impressao-listra');
       c.fds = pdf.cor('--impressao-fundo');
       var cols = colunas(cfg);
       var geo = geometria(cols.length);
