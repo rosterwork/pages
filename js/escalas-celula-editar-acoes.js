@@ -586,7 +586,8 @@
       c.fecharTudo('guardar');
       c.abrirPainel(null, { secao: 'extra' });
     },
-    'abrir-painel': function (botao, c) { var cpf = c.a.cpf; c.fecharTudo('guardar'); c.abrirPainel(cpf); }
+    /* só o painel do dia, na aba Funções: o menu dele abre pelo lápis, se a pessoa quiser */
+    'abrir-painel': function (botao, c) { c.fecharTudo('guardar'); c.abrirPainel(null, { secao: 'distribuicao' }); }
   };
 
   /* o painel do dia, já na tela do item, com ele */
