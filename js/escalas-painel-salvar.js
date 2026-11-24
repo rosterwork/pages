@@ -518,15 +518,14 @@
           || ds.some(function (x) { return x.dia && noDia(x.dia, E().refazDiasSeguintes); }));
     atualizar();
     if (botao) RW.iniciarCarregando(botao);
-    /* o fim: a linha do rodapé completa em segundo plano os dias distantes do recálculo (a fila em blocos), como o cartão */
+    /* o fim: os dias seguintes o banco refaz sozinho, na rotina de fundo (a grade mostra a borda amarela até ficarem
+       prontos, escalas-atualizando.js) */
     function terminar() {
       salvando = false;
       etapas.parar();
       if (naLinha) {
         linhaNoRodape = null;
         RW.escalasDiaNaGrade.parou(alvo.unidadeId, alvo.iso);
-        RW.marcarRecalculoPendente();
-        RW.drenarRecalculo();
       }
       if (botao) RW.pararCarregando(botao);
     }

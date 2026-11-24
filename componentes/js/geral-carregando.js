@@ -81,11 +81,6 @@
     var alvo = document.querySelector('.conteudo');
     if (alvo) esconderVeu(alvo);
     liberarTela();
-    /* completa em segundo plano os dias distantes do recálculo (fila em blocos),
-       para que nenhuma requisição carregue a escala inteira. A pendência garante
-       que, ao abrir a Escala, ela espere o esvaziar antes de mostrar (dado fresco). */
-    if (window.RosterWork.marcarRecalculoPendente) window.RosterWork.marcarRecalculoPendente();
-    if (window.RosterWork.drenarRecalculo) window.RosterWork.drenarRecalculo();
   }
 
   window.RosterWork = window.RosterWork || {};

@@ -7,7 +7,7 @@
      à vista. Na gravação que refaz a escala, na hora; no resto (a
      prévia, a gravação que não refaz a escala), o botão clicado mostra
      os pontinhos na hora e o cartão só entra se passar de 1,5 s
-     (opcoes.botao, opcoes.atraso, opcoes.semFila);
+     (opcoes.botao, opcoes.atraso);
    - janela: o cartão no meio da tela escurecida, com o Cancelar, e a
      tela de trás desligada (o cálculo que trava a tela);
    - linha: uma frase com a barra, no rodapé ou no painel;
@@ -141,11 +141,11 @@
   }
 
   /* a ação que trava a tela: o cartão sobre a tela, com o clique travado. A gravação que refaz a escala mostra o cartão
-     na hora e, no fim, completa em segundo plano os dias distantes do recálculo (a fila em blocos, geral-recalculo.js).
+     na hora; os dias seguintes dela o banco refaz sozinho, na rotina de fundo (a tela só mostra a borda amarela).
      opcoes.botao: o botão clicado mostra os pontinhos na hora (geral-carregando.js), e eles saem no parar, na resposta.
      opcoes.atraso: o cartão só aparece se a ação passar disso (true: o mesmo 1,5 s do cartão das leituras; a rápida
-     não mostra o cartão, e nada pisca; a tela trava do mesmo jeito). opcoes.semFila: a ação não refaz a escala (sem a
-     fila no fim). parar() devolve uma promessa que se cumpre quando o cartão sai e a tela volta a responder */
+     não mostra o cartão, e nada pisca; a tela trava do mesmo jeito). parar() devolve uma promessa que se cumpre quando o
+     cartão sai e a tela volta a responder */
   function acao(chave, valores, opcoes) {
     opcoes = opcoes || {};
     var camada = document.getElementById('etapas-camada');
@@ -186,10 +186,6 @@
         clearTimeout(aparecer);
         passos.parar();
         clearTimeout(demora);
-        if (!opcoes.semFila) {
-          if (RW.marcarRecalculoPendente) RW.marcarRecalculoPendente();
-          if (RW.drenarRecalculo) RW.drenarRecalculo();
-        }
         /* o cartão que apareceu fica o mínimo para ler o título, com a tela ainda travada */
         var resta = falta(null, mostradoEm);
         parado = new Promise(function (ok) {

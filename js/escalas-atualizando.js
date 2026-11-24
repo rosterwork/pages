@@ -178,9 +178,7 @@
     marcar();
     mostrarNota();
     esperas = esperas.filter(function (e) { if (e.vale()) return true; e.resolver(); return false; });
-    /* com fila, quem está com a tela aberta ajuda a esvaziar (a tarefa de cada minuto também esvazia); a falha de um bloco
-       não some da tela: a próxima conferência ainda vê a fila e tenta de novo */
-    if (temFila() && RosterWork.drenarRecalculo && !RosterWork.temRecalculoPendente()) RosterWork.drenarRecalculo();
+    /* a fila o banco esvazia sozinho (a rotina de fundo, a cada 20 s): a tela só confere e mostra */
   }
 
   function agendar() {
@@ -274,7 +272,6 @@
     corpo.appendChild(RosterWork.painel.criarAtualizando(RosterWork.mensagens.escala.imprimirAtualizando));
     if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     var limite = Date.now() + IMPRIMIR_LIMITE_MS;
-    if (RosterWork.drenarRecalculo) RosterWork.drenarRecalculo();
     (function conferirFila() {
       setTimeout(function () {
         if (meu !== esperaImpressao || !ativa()) return;
