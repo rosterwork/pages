@@ -111,7 +111,7 @@
 
   /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s (também no cancelar) */
   function gerar(atual, botao) {
-    var espera = RosterWork.etapas.acao('linkCriar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    var espera = RosterWork.etapas.acao('linkCriar', null, { doServidor: 1, botao: botao, atraso: true });
     RosterWork.apiFetch('/rest/v1/rpc/acesso_link_gerar', { metodo: 'POST', corpo: { p_cpf: atual.pessoa.usuario_id } })
       .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
       .then(function (r) {
@@ -144,7 +144,7 @@
       textoCancelar: B.manter,
       confirmarPerigo: true,
       aoConfirmar: function () {
-        var espera = RosterWork.etapas.acao('linkCancelar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+        var espera = RosterWork.etapas.acao('linkCancelar', null, { doServidor: 1, botao: botao, atraso: true });
         RosterWork.apiFetch('/rest/v1/rpc/acesso_link_cancelar', { metodo: 'POST', corpo: { p_cpf: atual.pessoa.usuario_id } })
           .then(function (resp) { return resp.ok ? resp.json() : { _falha: 'servidor' }; })
           .then(function (r) {

@@ -78,7 +78,7 @@
 
     /* grava (o cadastro novo, a mudança ou a remoção) e, no fim, o resumo */
     function enviar(corpoCivil, quem) {
-      var espera = RW.etapas.acao('opVeraoCivil', { remover: !!corpoCivil.remover }, { doServidor: 1, botao: quem, atraso: true, semFila: true });
+      var espera = RW.etapas.acao('opVeraoCivil', { remover: !!corpoCivil.remover }, { doServidor: 1, botao: quem, atraso: true });
       RW.rpc('guarda_vidas_civis_salvar', { p_unidade: opcoes.unidade, p_civil: corpoCivil }).then(function (r) {
         espera.parar();
         if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }

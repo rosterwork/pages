@@ -2929,7 +2929,7 @@
         var passos = ['Gravando as alterações de ' + v.dia];
         if (v.refaz) passos.push('Refazendo a distribuição do ' + v.unidade);
         passos.push('Atualizando o dia na grade');
-        return { passos: passos };
+        return { titulo: 'Salvando a escala de ' + v.dia, passos: passos };
       },
       /* o rascunho de vários dias (v.dias: as datas, 'DD/MM'; v.refaz: algum deles muda os dias seguintes, que vão para a fila) */
       salvarDias: function (v) {

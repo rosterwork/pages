@@ -31,7 +31,7 @@
       if (nova.value === atual.value) { if (erro) erro.textContent = M.senhaIgual; return; }
 
       /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s (conferir a atual e gravar a nova) */
-      var espera = RosterWork.etapas.acao('senhaTrocar', null, { doServidor: 2, botao: salvar, atraso: true, semFila: true });
+      var espera = RosterWork.etapas.acao('senhaTrocar', null, { doServidor: 2, botao: salvar, atraso: true });
       /* o endereço de login da conta (vem do login; não muda quando o e-mail da ficha muda) */
       var email = ((RosterWork.sessao && RosterWork.sessao.perfil()) || usuario).email;
       RosterWork.trocarSenha(email, atual.value, nova.value).then(function (retorno) {
@@ -68,7 +68,7 @@
           mensagem: RosterWork.mensagens.sessao.sairTodosConfirmar,
           textoConfirmar: RosterWork.mensagens.botoes.sairDeTodos,
           aoConfirmar: function () {
-            var espera = RosterWork.etapas.acao('sairTodos', null, { doServidor: 1, botao: sairTodos, atraso: true, semFila: true });
+            var espera = RosterWork.etapas.acao('sairTodos', null, { doServidor: 1, botao: sairTodos, atraso: true });
             RosterWork.sairDeTodos().then(function (saiu) {
               if (saiu) return;
               espera.parar();

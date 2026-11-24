@@ -80,7 +80,7 @@
   function executar(promessa, btn, ctx, extra, recalcula, frase) {
     var espera = recalcula
       ? RW.etapas.acao(frase.chave, frase.valores, { doServidor: 3 })
-      : RW.etapas.acao(frase.chave, frase.valores, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+      : RW.etapas.acao(frase.chave, frase.valores, { doServidor: 1, botao: btn, atraso: true });
     function parar() { espera.parar(); }
     promessa.then(function (r) {
       parar();

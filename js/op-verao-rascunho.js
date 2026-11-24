@@ -135,7 +135,7 @@
     var cias = Object.keys(porCia), logs = [];
     salvando = true;
     atualizar();
-    var etapas = RW.etapas.acao('opVeraoSalvar', {}, { doServidor: 1, atraso: true, semFila: true,
+    var etapas = RW.etapas.acao('opVeraoSalvar', {}, { doServidor: 1, atraso: true,
       botao: rodape() && rodape().querySelector('.op-verao-salvar') });
     function falhou(texto) {
       salvando = false;

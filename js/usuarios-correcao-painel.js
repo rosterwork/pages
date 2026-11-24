@@ -40,7 +40,7 @@
     if (!ids.length) return;
     var espera = sairDesde
       ? RW.etapas.acao('correcao', null, { doServidor: 2 })
-      : RW.etapas.acao('correcaoDecidir', { aprovar: aprovar }, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+      : RW.etapas.acao('correcaoDecidir', { aprovar: aprovar }, { doServidor: 1, botao: botao, atraso: true });
     function parar() { espera.parar(); }
     RW.rpc('perfil_decidir', { p_ids: ids, p_aprovar: aprovar, p_motivo: motivo || null, p_sair_desde: sairDesde || null })
       .then(function (r) {

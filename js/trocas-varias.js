@@ -172,7 +172,7 @@
     if (est.registrar) { Reg().registrar(parte, ano); return; }   // confirma e grava já aprovado (trocas-varias-registrar.js)
     if (est.editar) { est.editar.aoEnviar(est.pares.slice(), parte, ano, btn); return; }   // o Editar grava (trocas-varias-editar.js)
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RW.etapas.acao('trocaSolicitarVarias', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    var espera = RW.etapas.acao('trocaSolicitarVarias', null, { doServidor: 1, botao: btn, atraso: true });
     RW.trocasDados.variasSolicitar(est.pares, parte, ano).then(function (r) {
       espera.parar();
       if (!r || !r.ok) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: (r && r.erro) || RW.mensagens.trocas.falhaAcao }); return; }

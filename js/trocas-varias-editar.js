@@ -49,7 +49,7 @@
     if (!meu) return;
     var espera = comVeu
       ? RW.etapas.acao('trocaEditar', null, { doServidor: 2 })
-      : RW.etapas.acao('trocaEditarRapido', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+      : RW.etapas.acao('trocaEditarRapido', null, { doServidor: 1, botao: btn, atraso: true });
     function parar() { espera.parar(); }
     RW.trocasDados.variasEditar(meu.troca.registro_id, pares, parte, ano, false, meu.motivo ? meu.motivo.valor() : null).then(function (r) {
       parar();

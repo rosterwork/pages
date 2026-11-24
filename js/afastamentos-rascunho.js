@@ -392,7 +392,7 @@
     var espera = refaz
       ? RW.etapas.acao('afastamentosSalvar', { refaz: true }, { doServidor: 2 })
       : RW.etapas.acao('afastamentosSalvar', { refaz: false },
-        { doServidor: 1, botao: el('afastamentos-salvar'), atraso: true, semFila: true });
+        { doServidor: 1, botao: el('afastamentos-salvar'), atraso: true });
     function soltar() {
       var saiu = espera.parar();
       salvando = false;

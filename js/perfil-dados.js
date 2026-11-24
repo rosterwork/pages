@@ -219,7 +219,7 @@
     if (!alteracoes.length) return;
 
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RosterWork.etapas.acao('pedidoEnviar', null, { doServidor: 1, botao: enviar, atraso: true, semFila: true });
+    var espera = RosterWork.etapas.acao('pedidoEnviar', null, { doServidor: 1, botao: enviar, atraso: true });
     RosterWork.apiFetch('/rest/v1/rpc/perfil_solicitar', { metodo: 'POST', corpo: { p_alteracoes: alteracoes } })
       .then(function (resposta) { return resposta.ok ? resposta.json() : { _falha: true }; })
       .then(function (retorno) {

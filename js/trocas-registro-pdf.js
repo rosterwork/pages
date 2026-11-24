@@ -224,7 +224,7 @@
   function imprimir(trocaId, botao) {
     var m = RW.mensagens.trocas;
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s (ler o registro e desenhar o PDF) */
-    var espera = RW.etapas.acao('trocaRegistroPdf', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    var espera = RW.etapas.acao('trocaRegistroPdf', null, { doServidor: 1, botao: botao, atraso: true });
     function parar() { espera.parar(); }
     function avisar(texto) { if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: texto }); }
     return sequencia(trocaId).then(function (registros) {

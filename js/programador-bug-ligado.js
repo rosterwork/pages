@@ -82,7 +82,7 @@
   function ligar(rec, bugId, botao, opcoes) {
     if (RosterWork.fecharDropdowns) RosterWork.fecharDropdowns();
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RosterWork.etapas.acao('bugLigar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    var espera = RosterWork.etapas.acao('bugLigar', null, { doServidor: 1, botao: botao, atraso: true });
     RosterWork.rpc('recado_ligar_bug', { p_recado_id: rec.id, p_bug_id: bugId }).then(function (r) {
       espera.parar();
       if (!(r && r.success) && RosterWork.avisar) {

@@ -144,7 +144,7 @@
 
     var botao = document.getElementById('nu-salvar');   // no computador, o rodapé fica fora do painel
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = window.RosterWork.etapas.acao('usuarioNovo', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    var espera = window.RosterWork.etapas.acao('usuarioNovo', null, { doServidor: 1, botao: botao, atraso: true });
 
     window.RosterWork.novoUsuarioDados.inserir(coletar(raiz)).then(function (resp) {
       espera.parar();

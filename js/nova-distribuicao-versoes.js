@@ -38,7 +38,7 @@
   /* o que costuma ser rápido (a prévia, a gravação que não refaz a escala): os pontinhos no botão na hora e o cartão só
      se passar de 1,5 s */
   function rapido(chave, valores, noBanco, botao) {
-    return RosterWork.etapas.acao(chave, valores, { doServidor: noBanco, atraso: true, semFila: true, botao: botao });
+    return RosterWork.etapas.acao(chave, valores, { doServidor: noBanco, atraso: true, botao: botao });
   }
 
   /* gravou: a tela lê de novo com o cartão na frente (o que está na tela fica até o novo chegar) e, no fim, o resumo. A

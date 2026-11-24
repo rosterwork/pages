@@ -157,7 +157,7 @@
   function gravar(datas, botao) {
     var atual = ctx;
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RosterWork.etapas.acao('promocoesSalvar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    var espera = RosterWork.etapas.acao('promocoesSalvar', null, { doServidor: 1, botao: botao, atraso: true });
     RosterWork.apiFetch('/rest/v1/rpc/promocoes_salvar', {
       metodo: 'POST',
       corpo: { p_cpf: atual.pessoa.usuario_id, p_datas: datas }

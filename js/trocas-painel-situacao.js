@@ -28,7 +28,7 @@
   /* abre o painel da troca que vale agora (lida na lista das trocas, como as da página) */
   function abrirQueVale(trocaId, ctx, botao) {
     /* os pontinhos no botão na hora e o cartão das etapas só se a leitura passar de 1,5 s */
-    var espera = RW.etapas.acao('trocaAbrir', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    var espera = RW.etapas.acao('trocaAbrir', null, { doServidor: 1, botao: botao, atraso: true });
     function parar() { espera.parar(); }
     function falhou() { parar(); if (RW.avisar) RW.avisar({ tipo: 'erro', mensagem: m().ocorrencia.falhaAbrir }); }
     RW.trocasDados.listar(unidades()).then(function (todas) {

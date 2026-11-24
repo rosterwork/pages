@@ -277,9 +277,8 @@
   function salvarP1() {
     var botao = q('#p1-salvar');
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s; com o mês lançado, a extra que sai vai
-       para a escala, que pode ser refeita: a fila do recálculo no fim */
-    var lancado = !!d.lancamento && !d.lancamento.reaberto;
-    var espera = RW.etapas.acao('extraPedidosMes', null, { doServidor: 1, botao: botao, atraso: true, semFila: !lancado });
+       para a escala, e os dias seguintes o banco refaz sozinho (a rotina de fundo) */
+    var espera = RW.etapas.acao('extraPedidosMes', null, { doServidor: 1, botao: botao, atraso: true });
     RW.rpc('extrajornada_pedidos_salvar', Object.assign({ p_competencia: d.competencia, p_termos: p1.termos }, RW.extrajornadaMinimo.parametros())).then(function (r) {
       espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }

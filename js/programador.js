@@ -294,7 +294,7 @@
   function salvarEdicao(rec, assunto, mensagem, btn) {
     if (!assunto || !mensagem) return;
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RosterWork.etapas.acao('recadoSalvar', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    var espera = RosterWork.etapas.acao('recadoSalvar', null, { doServidor: 1, botao: btn, atraso: true });
     RosterWork.rpc('recado_salvar', { p_id: rec.id, p_assunto: assunto, p_mensagem: mensagem }).then(function (r) {
       espera.parar();
       if (r && r.success) {
@@ -362,7 +362,7 @@
       var a = inA.value.trim(), m = inM.value.trim();
       if (!a) { campos.marcarErro(inA, M().assuntoVazio); return; }
       if (!m) { campos.marcarErro(inM, M().mensagemVazia); return; }
-      var criando = RosterWork.etapas.acao('lembreteCriar', null, { doServidor: 1, botao: btnSalvar, atraso: true, semFila: true });
+      var criando = RosterWork.etapas.acao('lembreteCriar', null, { doServidor: 1, botao: btnSalvar, atraso: true });
       RosterWork.rpc('recado_criar_lembrete', { p_assunto: a, p_mensagem: m }).then(function (r) {
         criando.parar();
         if (r && r.success) {

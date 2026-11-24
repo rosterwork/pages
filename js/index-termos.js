@@ -32,7 +32,7 @@
 
   function darCiencia(botao) {
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RosterWork.etapas.acao('cienciaRegistrar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    var espera = RosterWork.etapas.acao('cienciaRegistrar', null, { doServidor: 1, botao: botao, atraso: true });
     RosterWork.rpc('termos_dar_ciencia')
       .then(function (r) {
         espera.parar();

@@ -171,7 +171,7 @@
      no fim, o resumo */
   function salvar() {
     if (!sujo() || !conferir()) return;
-    var etapas = RW.etapas.acao('ajustesHorario', null, { doServidor: 1, atraso: true, semFila: true, botao: el.salvar });
+    var etapas = RW.etapas.acao('ajustesHorario', null, { doServidor: 1, atraso: true, botao: el.salvar });
     RW.rpc('expediente_horario_salvar', { p_unidade: dados.companhia.id, p_semana: semana }).then(function (r) {
       if (!r || !r.success) {
         etapas.parar();

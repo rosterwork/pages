@@ -230,7 +230,7 @@
   function enviar(comp, aoSalvar) {
     var v = ed.v, btn = ed.btn;
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RW.etapas.acao('extraPedido', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+    var espera = RW.etapas.acao('extraPedido', null, { doServidor: 1, botao: btn, atraso: true });
     RW.rpc('extrajornada_pedido_salvar', {
       p_competencia: ed.r.competencia, p_voluntario: v.vol, p_cotas: v.vol ? v.cotas : 0, p_so_24h: !!(v.vol && v.cotas === 4 && v.so24),
       p_datas: v.vol ? Object.keys(v.dias).sort().map(function (k) { return { data: k, tipo: v.dias[k] }; }) : []

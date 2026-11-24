@@ -105,7 +105,7 @@
 
       enviando = true;
       /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-      var espera = RosterWork.etapas.acao('mensagemEnviar', null, { doServidor: 1, botao: btnEnviar, atraso: true, semFila: true });
+      var espera = RosterWork.etapas.acao('mensagemEnviar', null, { doServidor: 1, botao: btnEnviar, atraso: true });
       RosterWork.rpc('recado_enviar', { p_tipo: tipoEscolhido, p_assunto: a, p_mensagem: m, p_contexto: contexto() })
         .then(function (r) {
           enviando = false;

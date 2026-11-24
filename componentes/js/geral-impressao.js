@@ -288,7 +288,7 @@
     if (!r) return;
     if (form.quadroChave === r.estado.chave && form.quadroPronto) { mandarImprimir(); return; }
     var ref = form;
-    var espera = RW.etapas.acao('pdfGerar', null, { doServidor: 1, botao: peca('imprimir'), atraso: true, semFila: true });
+    var espera = RW.etapas.acao('pdfGerar', null, { doServidor: 1, botao: peca('imprimir'), atraso: true });
     esperarQuadro(r.estado).then(function () {
       return espera.parar().then(function () { if (form === ref) mandarImprimir(); });
     }, function (e) {
@@ -316,7 +316,7 @@
     var ref = form;
     var botao = peca('gerar');
     /* os pontinhos no Gerar PDF na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RW.etapas.acao('pdfGerar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    var espera = RW.etapas.acao('pdfGerar', null, { doServidor: 1, botao: botao, atraso: true });
     function terminar() { espera.parar(); }
     pedirArquivo(r.estado).then(function (a) {
       terminar();

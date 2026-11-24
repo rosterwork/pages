@@ -133,7 +133,7 @@
     var meu = ctx;
     var espera = comVeu
       ? RW.etapas.acao('trocaEditar', null, { doServidor: 2 })
-      : RW.etapas.acao('trocaEditarRapido', null, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+      : RW.etapas.acao('trocaEditarRapido', null, { doServidor: 1, botao: btn, atraso: true });
     function parar() { espera.parar(); }
     RW.trocasDados.editar(montarCorpo()).then(function (r) {
       parar();

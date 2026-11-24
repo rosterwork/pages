@@ -189,7 +189,7 @@
     if (salvar) salvar.addEventListener('click', function () {
       if (salvar.disabled) return;
       /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-      var espera = RW.etapas.acao('comunicadoPublicar', null, { doServidor: 1, botao: salvar, atraso: true, semFila: true });
+      var espera = RW.etapas.acao('comunicadoPublicar', null, { doServidor: 1, botao: salvar, atraso: true });
       RW.apiFetch('/rest/v1/rpc/fn_avisos_criar', {
         metodo: 'POST',
         corpo: {

@@ -132,7 +132,7 @@
     var m = msg();
     var t = m.termo;
     /* os pontinhos no Enviar na hora e o cartão das etapas só se passar de 1,5 s (também na ciência e na leitura) */
-    var espera = RW.etapas.acao('sysbmPreparar', { termo: true }, { doServidor: 1, botao: partes.enviar, atraso: true, semFila: true });
+    var espera = RW.etapas.acao('sysbmPreparar', { termo: true }, { doServidor: 1, botao: partes.enviar, atraso: true });
     return RW.escalasDados.sysbmTermo().then(function (r) {
       espera.parar();
       if (!r) {
@@ -149,7 +149,7 @@
           semIcone: true,
           textoConfirmar: t.concordo,
           aoConfirmar: function () {
-            var ciencia = RW.etapas.acao('cienciaRegistrar', null, { doServidor: 1, botao: partes.enviar, atraso: true, semFila: true });
+            var ciencia = RW.etapas.acao('cienciaRegistrar', null, { doServidor: 1, botao: partes.enviar, atraso: true });
             RW.escalasDados.sysbmDarCiencia(unidadeId, t.versao).then(function (d) {
               ciencia.parar();
               if (d && d.success) { ciente = true; resolver(true); return; }
@@ -168,7 +168,7 @@
      falha na leitura, o Enviar lê de novo */
   function enviar(partes, unidadeId, iso) {
     if (!partes.dados) {
-      var lendo = RW.etapas.acao('sysbmPreparar', { termo: false }, { doServidor: 1, botao: partes.enviar, atraso: true, semFila: true });
+      var lendo = RW.etapas.acao('sysbmPreparar', { termo: false }, { doServidor: 1, botao: partes.enviar, atraso: true });
       ler(partes, unidadeId, iso).then(function () { lendo.parar(); });
       return;
     }

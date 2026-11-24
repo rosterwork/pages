@@ -267,7 +267,7 @@
     function iniciar() {
       espera = recalcula
         ? RosterWork.etapas.acao('dadosMilitar', null, { doServidor: 2 })
-        : RosterWork.etapas.acao('dadosSalvar', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+        : RosterWork.etapas.acao('dadosSalvar', null, { doServidor: 1, botao: botao, atraso: true });
     }
     function parar() { if (espera) espera.parar(); }
     iniciar();

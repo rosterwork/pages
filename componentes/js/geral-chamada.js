@@ -154,7 +154,7 @@
   function comTroca(g, botao, acao) {
     var f = g.faixa.primeiro || {};
     /* os pontinhos no botão na hora e o cartão das etapas só se a leitura passar de 1,5 s */
-    var espera = RW.etapas.acao('trocaAbrir', null, { doServidor: 1, botao: botao, atraso: true, semFila: true });
+    var espera = RW.etapas.acao('trocaAbrir', null, { doServidor: 1, botao: botao, atraso: true });
     var pecas = RW.carregarPecas ? RW.carregarPecas('pendencias') : Promise.resolve();
     pecas.then(function () { return RW.trocasDados.listar([]); }).then(function (todas) {
       espera.parar();

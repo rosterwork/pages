@@ -340,7 +340,7 @@
     var marcar = acao === 'marcar';
     var parte = marcar && v.parte;
     var etapas = RW.etapas.acao('ajustesFeriado', { dia: RW.data.isoParaBR(k).slice(0, 5), remover: !marcar },
-      { doServidor: 1, atraso: true, semFila: true, botao: botao });
+      { doServidor: 1, atraso: true, botao: botao });
     RW.rpc('expediente_salvar', {
       p_unidades: v.unidades, p_data: k, p_acao: acao,
       p_tipo: marcar ? v.tipo : null, p_nome: marcar && v.tipo !== 'recesso' ? v.nome : null,

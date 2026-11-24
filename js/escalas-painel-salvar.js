@@ -387,9 +387,10 @@
   function nomeCurto(c) { return (c.unidadeNome || '').split('/').pop().trim(); }
 
   /* o que aparece enquanto grava: só o Dia (também o que muda os dias seguintes, que o banco põe na fila sem refazer na
-     hora), as etapas no rodapé, com o dia sendo refeito na grade ("Refazendo a distribuição" só quando o banco refaz); com
-     o Ciclo ou a Extrajornada, que mudam muitos dias, o cartão sobre a tela. naLinha = só o Dia; refaz = o Dia refaz a
-     distribuição do dia */
+     hora), as etapas no rodapé, com o dia sendo refeito na grade ("Refazendo a distribuição" só quando o banco refaz) e,
+     passando de 1,5 s, o cartão com as mesmas etapas sobre a tela (a ação que trava a tela), as duas juntas; com o Ciclo
+     ou a Extrajornada, que mudam muitos dias, o cartão na hora. naLinha = só o Dia; refaz = o Dia refaz a distribuição do
+     dia */
   function mostrarEtapas(c, ciclo, naLinha, extra, refaz) {
     if (linhaNoRodape) linhaNoRodape.parar();
     linhaNoRodape = null;
@@ -397,9 +398,15 @@
     if (!naLinha && extra) return RW.etapas.acao('salvarExtra', null, { doServidor: 2 });
     /* o sobreaviso refaz a fila dos dias seguintes: o período é lido de novo */
     if (!naLinha) return RW.etapas.acao('salvarSobreaviso', null, { doServidor: 2 });
-    linhaNoRodape = linhaDasEtapas(rodapePagina(), 'salvarDia',
-      { dia: RW.data.isoParaBR(c.iso).slice(0, 5), unidade: nomeCurto(c), refaz: refaz },
-      { doServidor: refaz ? 2 : 1, atraso: refaz ? 0 : 300 });
+    var valores = { dia: RW.data.isoParaBR(c.iso).slice(0, 5), unidade: nomeCurto(c), refaz: refaz };
+    var doServidor = refaz ? 2 : 1;
+    var linha = linhaDasEtapas(rodapePagina(), 'salvarDia', valores, { doServidor: doServidor, atraso: refaz ? 0 : 300 });
+    var cartao = RW.etapas.acao('salvarDia', valores, { doServidor: doServidor, atraso: true });
+    linhaNoRodape = {
+      ir: function (n) { linha.ir(n); cartao.ir(n); },
+      ultima: function () { linha.ultima(); cartao.ultima(); },
+      parar: function () { linha.parar(); return cartao.parar(); }
+    };
     RW.escalasDiaNaGrade.refazendo(c.unidadeId, c.iso);
     return linhaNoRodape;
   }

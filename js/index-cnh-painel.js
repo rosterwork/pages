@@ -63,7 +63,7 @@
     if (!atual || !valor) return;
     var M = RW.mensagens;
     /* os pontinhos no botão na hora e o cartão das etapas só se passar de 1,5 s */
-    var espera = RW.etapas.acao('cnhEnviar', null, { doServidor: 1, botao: atual.btnSalvar, atraso: true, semFila: true });
+    var espera = RW.etapas.acao('cnhEnviar', null, { doServidor: 1, botao: atual.btnSalvar, atraso: true });
     RW.rpc('perfil_solicitar', { p_alteracoes: [{ campo: 'cnh', valor: valor }] }).then(function (r) {
       espera.parar();
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || M.perfil.falhaDados }); return; }

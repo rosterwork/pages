@@ -237,7 +237,7 @@
   /* o Salvar: grava as respostas (sem data: valem no próximo Preencher pela sugestão); no fim, o resumo */
   function salvar() {
     if (!sujo()) return;
-    var etapas = RW.etapas.acao('ajustesExtrajornada', null, { doServidor: 1, atraso: true, semFila: true, botao: el.salvar });
+    var etapas = RW.etapas.acao('ajustesExtrajornada', null, { doServidor: 1, atraso: true, botao: el.salvar });
     RW.rpc('extrajornada_regras_salvar', { p_regras: JSON.parse(texto(regras)) }).then(function (r) {
       if (!r || !r.success) {
         etapas.parar();

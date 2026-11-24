@@ -159,7 +159,7 @@
 
   function lancar() {
     var d = org().dados(), btn = RW.painel.rodape().querySelector('#p4-lancar');
-    /* lançar põe as extras na escala e a refaz: o cartão das etapas na hora, e a fila do recálculo no fim */
+    /* lançar põe as extras na escala e a refaz: o cartão das etapas na hora; os dias seguintes, o banco refaz sozinho */
     var espera = RW.etapas.acao('extraLancar', null, { doServidor: 2, botao: btn });
     RW.rpc('extrajornada_lancar', { p_competencia: d.competencia }).then(function (r) {
       espera.parar();

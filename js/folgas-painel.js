@@ -113,7 +113,7 @@
         /* a folga dada ou aprovada volta à escala: o cartão das etapas na hora; o pedido em aberto não mexe na escala: o
            cartão só se demorar */
         var espera = situacao === 'pendente'
-          ? RW.etapas.acao('folgaCancelarPedido', null, { doServidor: 1, atraso: true, semFila: true })
+          ? RW.etapas.acao('folgaCancelarPedido', null, { doServidor: 1, atraso: true })
           : RW.etapas.acao('folgaCancelar', { dia: diaMes(dia) }, { doServidor: 3 });
         RW.folgasDados.cancelar(lancamentoId).then(function (r) {
           espera.parar();
@@ -516,7 +516,7 @@
   function finalizar(promessa, btn, recalcula, chave, valores) {
     var espera = recalcula
       ? RW.etapas.acao(chave, valores, { doServidor: 3 })
-      : RW.etapas.acao(chave, valores, { doServidor: 1, botao: btn, atraso: true, semFila: true });
+      : RW.etapas.acao(chave, valores, { doServidor: 1, botao: btn, atraso: true });
     function parar() { espera.parar(); }
     promessa.then(function (r) {
       parar();
