@@ -129,10 +129,11 @@
   }
 
   /* a leitura do dia (ou a prévia) chegou ao rascunho: a caixa que esperava mostra o menu; a que está sem a caixa 2 refaz o
-     menu (o dia mudou); null: a leitura falhou */
+     menu (o dia mudou); null: a leitura falhou (a caixa que esperava fica aberta, com o aviso e o Tentar de novo) */
   function chegou(dados) {
-    if (!dados) { RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(msg().falhaCarregar) }); fecharTudo('largar'); return; }
     var a = aberto;
+    if (!dados && a && a.caixa && a.esperando) { a.caixa.falha(); return; }
+    if (!dados) { RW.avisar({ tipo: 'erro', mensagem: RW.falha.frase(msg().falhaCarregar) }); fecharTudo('largar'); return; }
     if (!a || !a.caixa) return;
     if (a.esperando || !a.acao) mostrar();
     else A().chegou(contexto());
@@ -163,7 +164,10 @@
       /* a resposta pela metade: o clique fora (e o rodapé largo, fora o Cancelar) espera, com a pergunta que falta marcada */
       aoClicarFora: function (alvo) { return aberto !== a || A().podeFechar(contexto(), alvo); },
       /* no celular, o Voltar da folha: a pergunta pela metade sai e o menu volta */
-      aoVoltar: function () { if (aberto === a) A().encerrar(contexto(), true); }
+      aoVoltar: function () { if (aberto === a) A().encerrar(contexto(), true); },
+      /* a espera do dia (1 s, 10 s e o aviso em 25 s); o Tentar de novo pede o dia de novo (a leitura em curso é a mesma) */
+      fraseEspera: msg().carregandoDia, fraseDemora: msg().caixaDemoraDia, falhaTitulo: msg().falhaCarregarDia,
+      aoTentar: function () { if (aberto === a) api().lerDeNovo(); }
     });
     if (!a.caixa) { aberto = null; return; }
     mostrar();

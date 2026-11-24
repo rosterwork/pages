@@ -380,6 +380,6 @@
 
   RW.etapas = {
     area: area, acao: acao, janela: janela, linha: linha, frase: frase, segurarDesde: segurarDesde, falta: falta, abrindoDaCasca: abrindoDaCasca,
-    atrasoCaixa: CAIXA_FORMA_MS, faltaCaixa: faltaCaixa
+    atrasoCaixa: CAIXA_FORMA_MS, faltaCaixa: faltaCaixa, demoraMs: DEMORA_MS
   };
 })();

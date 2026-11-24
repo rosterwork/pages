@@ -925,6 +925,10 @@
     escala: {
       falhaCarregar: 'Não foi possível carregar.',
       falhaCarregarMes: 'Não foi possível carregar a escala.',
+      /* a caixa da célula esperando o dia (escalas-celula-editar.js): em 1 s, na demora (10 s) e o aviso de falha (25 s) */
+      carregandoDia: 'Carregando o dia…',
+      caixaDemoraDia: 'Está demorando mais que o normal. A caixa abre sozinha assim que o dia chegar.',
+      falhaCarregarDia: 'Não foi possível carregar o dia.',
       /* a página Estágios (estagios.js e escalas-militares.js): sem estágio em vigor; o estágio sem ninguém; o Imprimir */
       estagiarios: {
         nenhum: 'Nenhum estágio neste mês.',
@@ -2880,6 +2884,9 @@
       demoraLeitura: 'Está demorando mais que o normal. A tela abre sozinha assim que os dados chegarem.',
       demoraAcao: 'Está demorando mais que o normal. A gravação continua.',
       demoraCurta: 'Está demorando mais que o normal.',
+      /* a caixa ao lado da peça esperando o conteúdo (geral-caixa-flutuante.js): em 1 s e na demora; a página pode dar as dela */
+      caixaCarregando: 'Carregando…',
+      caixaDemora: 'Está demorando mais que o normal. A caixa abre sozinha assim que os dados chegarem.',
       /* a prévia do rascunho */
       previaDia: { passos: ['Mostrando como o dia vai ficar'] },
       previaGuarnicoes: { passos: ['Mostrando como as guarnições vão ficar'] },

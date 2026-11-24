@@ -12,6 +12,11 @@
    que chega em até 0,2 s aparece direto; passando disso, a forma (as
    faixas do esqueleto, molde #tpl-caixa-flutuante-forma) aparece e fica
    o mínimo na tela (0,2 s; atrasoCaixa e faltaCaixa, geral-etapas.js).
+   A espera do conteúdo nunca fica muda: em 1 s, a frase de carregando
+   embaixo das faixas; em 10 s (a demora das etapas, geral-etapas.js),
+   a de demora, com o Fechar; em 25 s, o aviso de falha (geral-falha.js)
+   com o Tentar de novo da página, que volta às faixas e pede de novo. O
+   conteúdo que chega depois entra no lugar do aviso.
    Enquanto ela não apareceu, o clique fora fecha e segue para onde foi
    (ninguém viu a caixa), e, no celular, o véu espera com a folha. Um item
    escolhido abre a caixa 2 ao lado da caixa 1, cobrindo 4px da borda
@@ -46,9 +51,12 @@
                    do navegador ou pela peça que saiu: como = 'fora', 'esc', 'x', 'voltar' ou 'peca'), aoVoltar() (o Voltar da folha), aoClicarFora(alvo) (false: a caixa fica, e o clique não faz
                    mais nada; o alvo é o que foi clicado, também no rodapé largo), aoTentarFechar(alvo) (o mesmo para o
                    X e o Esc; o alvo é o X, ou null no Esc), preferirEsquerda (a caixa 1 abre à
-                   esquerda da peça quando cabe: booleano ou função, como no geral-flutuante) }
+                   esquerda da peça quando cabe: booleano ou função, como no geral-flutuante), fraseEspera e
+                   fraseDemora (as frases da espera; sem elas, as gerais), falhaTitulo (o título do aviso de falha),
+                   aoTentar() (o Tentar de novo do aviso: pede o conteúdo de novo; sem ele, o aviso vem sem o botão) }
         caixa = { conteudo(el), faltaForma() (quantos ms a forma à vista ainda fica), segunda(item, el, titulo),
-                  fecharSegunda(), trocarPeca(peca, junto), fechar(), aberta() }
+                  fecharSegunda(), trocarPeca(peca, junto), fechar(), aberta(), falha() (a leitura falhou: o aviso
+                  já, no lugar das faixas), esperar() (as faixas de novo, com a espera contada do zero) }
    ============================================================ */
 (function () {
   'use strict';
@@ -57,6 +65,10 @@
 
   var SAIDA = 100;   // a saída do CSS (0.1s): depois dela, as caixas saem da página
   var ESCOLHIDA = 'caixa-flutuante-escolhida';
+  /* a espera do conteúdo, contada desde que a caixa abriu: a frase de carregando e o fim da espera (a demora, 10 s, é a
+     das etapas, geral-etapas.js); passando de DESISTE_MS, o aviso de falha */
+  var FRASE_MS = 1000;
+  var DESISTE_MS = 25000;
   /* o que é da caixa (o clique ali não fecha): ela, as listas que abrem dentro dela, o aviso e o passo a passo */
   var DENTRO = '.caixa-flutuante, .dropdown-menu, .modal-veu, .guia-balao, .guia-vidro, .treino-barra';
   /* o clique fora que fecha e segue para o botão: o rodapé largo (o Salvar, o Cancelar, o Desfazer e o Refazer) */
@@ -175,8 +187,8 @@
     c.esperando = !!opcoes.esperar && !opcoes.conteudo;
     if (c.esperando) {
       c.c1.classList.add('caixa-flutuante--esperando');
-      var forma = RW.tpl('tpl-caixa-flutuante-forma');
-      if (forma) c.c1.querySelector('.caixa-flutuante-corpo').appendChild(forma);
+      var forma = porForma(c);
+      contarEspera(c);
       c.relogioForma = setTimeout(function () {
         if (atual !== c || !c.esperando || !forma) return;
         c.formaEm = performance.now();
@@ -211,6 +223,68 @@
     reposicionar(c);
     if (c.folha) porVeu(c);
     depois(function () { if (atual === c) c.c1.classList.add('caixa-flutuante--aberta'); });
+  }
+
+  /* ---------- a espera do conteúdo (nunca muda) ---------- */
+
+  /* os relógios da espera, do zero: a frase de carregando, a de demora com o Fechar e, no fim, o aviso de falha */
+  function contarEspera(c) {
+    pararEspera(c);
+    c.aguardando = true;
+    var demora = (RW.etapas && RW.etapas.demoraMs) || 10000;
+    c.relogios = [
+      setTimeout(function () { dizerEspera(c, c.opcoes.fraseEspera || RW.mensagens.etapas.caixaCarregando, false); }, FRASE_MS),
+      setTimeout(function () { dizerEspera(c, c.opcoes.fraseDemora || RW.mensagens.etapas.caixaDemora, true); }, demora),
+      setTimeout(function () { if (atual === c && c.aguardando) mostrarFalha(c); }, DESISTE_MS)
+    ];
+  }
+  function pararEspera(c) {
+    (c.relogios || []).forEach(function (r) { clearTimeout(r); });
+    c.relogios = null;
+    c.aguardando = false;
+  }
+
+  /* a frase embaixo das faixas (na demora, com o Fechar, que fecha como o Esc) */
+  function dizerEspera(c, texto, demora) {
+    if (atual !== c || !c.aguardando) return;
+    var forma = c.c1.querySelector('.caixa-flutuante-corpo > .caixa-flutuante-forma');
+    if (!forma) return;
+    var frase = forma.querySelector('.caixa-flutuante-forma-frase');
+    frase.textContent = texto;
+    frase.classList.remove('oculto');
+    if (demora) forma.querySelector('.caixa-flutuante-forma-fechar').classList.remove('oculto');
+    revelar(c);
+  }
+
+  /* as faixas no corpo da caixa 1, com o Fechar ligado */
+  function porForma(c) {
+    var forma = RW.tpl('tpl-caixa-flutuante-forma');
+    if (!forma) return null;
+    forma.querySelector('.caixa-flutuante-forma-fechar').addEventListener('click', function () { fecharDe(c, 'x'); });
+    c.c1.querySelector('.caixa-flutuante-corpo').appendChild(forma);
+    return forma;
+  }
+
+  /* a espera acabou sem o conteúdo: o aviso de falha no lugar das faixas; o Tentar de novo volta às faixas e pede de novo
+     (a página, opcoes.aoTentar) */
+  function mostrarFalha(c) {
+    pararEspera(c);
+    var tentar = c.opcoes.aoTentar ? function () { esperarDeNovo(c); c.opcoes.aoTentar(); } : null;
+    var aviso = RW.falha && RW.falha.bloco(c.opcoes.falhaTitulo || RW.mensagens.geral.falhaCarregar, tentar);
+    if (!aviso) return;
+    aviso.classList.add('falha-leitura--na-caixa');
+    var corpo = c.c1.querySelector('.caixa-flutuante-corpo');
+    corpo.textContent = '';
+    corpo.appendChild(aviso);
+    revelar(c);
+  }
+
+  /* as faixas de novo, com a espera contada do zero (o Tentar de novo) */
+  function esperarDeNovo(c) {
+    if (atual !== c) return;
+    c.c1.querySelector('.caixa-flutuante-corpo').textContent = '';
+    porForma(c);
+    contarEspera(c);
   }
 
   /* ---------- a caixa 2 ---------- */
@@ -324,6 +398,7 @@
     if (atual !== c) return;
     atual = null;
     clearTimeout(c.relogioForma);
+    pararEspera(c);
     marcar(c, false);
     [c.c1, c.c2, c.veu].forEach(function (e) {
       if (e) e.classList.remove('caixa-flutuante--aberta', 'caixa-flutuante-veu--aberto');
@@ -367,6 +442,7 @@
     return {
       conteudo: function (el) {
         if (atual !== c) return;
+        if (el) pararEspera(c);   // o conteúdo chegou (também depois do aviso de falha: ele entra no lugar)
         var corpo = c.c1.querySelector('.caixa-flutuante-corpo');
         c.formaEm = null;   // a forma sai com o conteúdo (o lugar se acerta pelo tamanho novo, geral-flutuante.js)
         if (c.guardado) { c.guardado.filhos = el ? [el] : []; return; }
@@ -381,6 +457,8 @@
       trocarPeca: function (nova, junto) { trocarPeca(c, nova, junto); },
       fechar: function () { fecharDe(c, false); },
       aberta: function () { return atual === c; },
+      falha: function () { if (atual === c) mostrarFalha(c); },
+      esperar: function () { esperarDeNovo(c); },
       /* a peça de agora (a página acha a linha nova por ela) */
       peca: function () { return c.peca; },
       item: function () { return c.item; },

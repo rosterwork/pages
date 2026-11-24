@@ -1319,12 +1319,17 @@
   </template>
 
   <!-- a forma da caixa flutuante enquanto o conteúdo chega (as faixas do esqueleto, geral-esqueleto.css): a caixa 1 mostra
-       duas, no lugar dos itens; a lista do campo de militar da caixa 2 (escalas-celula-editar-acoes.js), três -->
+       duas, no lugar dos itens; a lista do campo de militar da caixa 2 (escalas-celula-editar-acoes.js), três. Embaixo das
+       faixas (que respiram), a frase da espera e o Fechar, parados, que a caixa 1 mostra com o tempo (geral-caixa-flutuante.js) -->
   <template id="tpl-caixa-flutuante-forma">
-    <div class="caixa-flutuante-forma esqueleto-conjunto" role="status" aria-label="Carregando">
-      <span class="caixa-flutuante-forma-fila"><span class="esqueleto caixa-flutuante-forma-faixa"></span></span>
-      <span class="caixa-flutuante-forma-fila"><span class="esqueleto caixa-flutuante-forma-faixa"></span></span>
-      <span class="caixa-flutuante-forma-fila"><span class="esqueleto caixa-flutuante-forma-faixa"></span></span>
+    <div class="caixa-flutuante-forma" role="status" aria-label="Carregando">
+      <div class="caixa-flutuante-forma-faixas esqueleto-conjunto">
+        <span class="caixa-flutuante-forma-fila"><span class="esqueleto caixa-flutuante-forma-faixa"></span></span>
+        <span class="caixa-flutuante-forma-fila"><span class="esqueleto caixa-flutuante-forma-faixa"></span></span>
+        <span class="caixa-flutuante-forma-fila"><span class="esqueleto caixa-flutuante-forma-faixa"></span></span>
+      </div>
+      <p class="caixa-flutuante-forma-frase oculto"></p>
+      <button type="button" class="botao caixa-flutuante-forma-fechar oculto">Fechar</button>
     </div>
   </template>
 

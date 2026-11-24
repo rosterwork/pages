@@ -1964,6 +1964,8 @@
         if (ctx.emSub || vivo || (RosterWork.escalasPainelLinha && RosterWork.escalasPainelLinha.aberta())) desenhar();
       },
       carregando: function () { return !!ctx && !!ctx.carregando; },
+      /* o Tentar de novo da caixa da célula: o dia (ou a prévia) é pedido de novo; a leitura ainda em curso é a mesma */
+      lerDeNovo: function () { if (ctx) desenhar(); },
       abrirLugar: abrirLugar,
       /* o Voltar o dia ao automático (o do Editar o dia e o do pelotão na célula): vale agora? e a confirmação */
       podeVoltarAoAutomatico: function () { return !!ctx && podeVoltarAoAutomatico(); },

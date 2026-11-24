@@ -104,6 +104,33 @@
   display: none;
 }
 
+/* as faixas (o conjunto que respira, geral-esqueleto.css) e, embaixo, parados, a frase da espera (em 1 s) e o Fechar (na
+   demora, em 10 s), que a caixa 1 mostra com o tempo (geral-caixa-flutuante.js) */
+.caixa-flutuante-forma-faixas {
+  display: flex;
+  flex-direction: column;
+}
+
+.caixa-flutuante-forma-frase {
+  margin: 4px 8px 8px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.caixa-flutuante-forma-fechar {
+  align-self: flex-start;
+  margin: 0 8px 8px;
+}
+
+/* o aviso de falha (geral-falha.js) dentro da caixa 1, em 25 s: o mesmo aviso, sem a moldura, na largura da caixa das
+   opções */
+.falha-leitura.falha-leitura--na-caixa {
+  width: 200px;
+  padding: 12px 8px;
+  border: 0;
+  background-color: transparent;
+}
+
 .combo-militar-menu .caixa-flutuante-forma {
   width: auto;
 }
@@ -235,6 +262,15 @@
 
   html[data-celular] .caixa-flutuante--folha .caixa-flutuante-aviso,
   html[data-celular] .caixa-flutuante--folha .caixa-flutuante-forma {
+    width: auto;
+  }
+
+  /* a espera na folha: a frase na letra do celular e o aviso de falha na largura da folha */
+  html[data-celular] .caixa-flutuante-forma-frase {
+    font-size: var(--fonte-padrao-celular);
+  }
+
+  html[data-celular] .caixa-flutuante--folha .falha-leitura--na-caixa {
     width: auto;
   }
 
