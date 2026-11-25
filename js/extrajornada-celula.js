@@ -95,8 +95,13 @@
       topo: c.tipo === 'pelotao' ? TOPO_PELOTAO : null,
       /* o clique fora, o Esc ou a peça que saiu: o que está no rascunho fica */
       aoFechar: function () { if (a === c) fechar(); },
-      /* no celular, o Voltar da folha: o menu volta */
-      aoVoltar: function () { if (a === c) { c.acao = null; c.botao = null; } }
+      /* no celular, o Voltar da folha: o menu volta, já com os itens que valem agora (como se abrisse de novo) */
+      aoVoltar: function () {
+        if (a !== c) return;
+        c.acao = null;
+        c.botao = null;
+        if (c.tipo === 'nome') prepararMenu(c);
+      }
     });
     if (!c.caixa) a = null;
     soltar(antes);
@@ -143,7 +148,10 @@
 
   var ACOES = {
     horario: function (c, botao) { c.acao = 'horario'; c.botao = botao; desenharHorario(c); },
+    /* o menu parado pode mostrar o item depois de a barra tirar todas as horas dele: aí o menu se acerta e a lista não
+       abre */
     outro: function (c, botao) {
+      if (!podeOutro(c)) { prepararMenu(c); return; }
       c.acao = 'outro'; c.botao = botao;
       c.caixa.segunda(botao, campo(c.uid, c.k, function (x) { porOutro(c, x.cpf); }), textoDo(botao));
     },
@@ -175,13 +183,20 @@
     });
   }
 
-  /* os itens que valem agora (o menu fica o mesmo; só os itens aparecem ou somem): o Mudar o horário, quando a extra se
-     mexe ali; com horário neste pelotão, o Pôr outro (sem o pedido aberto) e o Remover */
+  /* ele tem horário neste pelotão no dia (o Remover vale; o Pôr outro também, sem o pedido aberto) */
+  function temHorario(c) {
+    var v = c.pode ? G().vagaDe(c.cpf, c.k) : null;
+    return !!v && +v.unidade === c.uid && G().blocos(v).length > 0;
+  }
+  function podeOutro(c) { return temHorario(c) && podePor(c.k); }
+
+  /* os itens que valem quando o menu abre (o menu fica o mesmo; só os itens aparecem ou somem, e não mudam enquanto a
+     caixa 2 está aberta): o Mudar o horário, quando a extra se mexe ali; com horário neste pelotão, o Pôr outro (sem o
+     pedido aberto) e o Remover */
   function prepararMenu(c) {
-    var v = c.pode ? G().vagaDe(c.cpf, c.k) : null, tem = !!v && +v.unidade === c.uid && G().blocos(v).length > 0;
     c.menu.querySelector('[data-acao="horario"]').classList.toggle('oculto', !c.pode);
-    c.menu.querySelector('[data-acao="outro"]').classList.toggle('oculto', !(tem && podePor(c.k)));
-    c.menu.querySelector('[data-acao="remover"]').classList.toggle('oculto', !tem);
+    c.menu.querySelector('[data-acao="outro"]').classList.toggle('oculto', !podeOutro(c));
+    c.menu.querySelector('[data-acao="remover"]').classList.toggle('oculto', !temHorario(c));
   }
 
   /* a barra da extra de um militar num dia, para uma caixa (a escolhida, com os campos e o cadeado; sem horário, os campos
@@ -331,8 +346,9 @@
 
   /* ---------- a tela refeita ---------- */
 
-  /* a peça de agora (a tela é refeita a cada mudança): a caixa segue a peça nova e a caixa 2 do horário se refaz; o
-     escolhido no Adicionar ganha a caixa quando aparece, já com a barra */
+  /* a peça de agora (a tela é refeita a cada mudança): a caixa segue a peça nova e a caixa 2 do horário se refaz; com a
+     caixa 2 aberta, o menu fica como abriu (os itens novos fariam a caixa 1 crescer e a caixa 2 andar); o escolhido no
+     Adicionar ganha a caixa quando aparece, já com a barra */
   function acharPeca() {
     procurando = false;
     var c = a;
@@ -350,7 +366,7 @@
     }
     if (!peca) { fechar(); return; }
     c.caixa.trocarPeca(peca, junto);
-    if (c.tipo === 'nome' && c.pode) prepararMenu(c);
+    if (c.tipo === 'nome' && c.pode && !c.acao) prepararMenu(c);
     if (c.acao === 'horario') desenharHorario(c);
   }
 

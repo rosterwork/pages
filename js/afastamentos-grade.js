@@ -39,6 +39,32 @@
   }
   function p2(n) { return (n < 10 ? '0' : '') + n; }
 
+  /* onde o nome de guerra começa dentro do nome completo (as palavras inteiras, sem diferença de maiúscula); -1 se
+     não estiver */
+  function posicaoDaGuerra(completo, guerra) {
+    var c = completo.toLowerCase(), g = guerra.toLowerCase();
+    if (!g) return -1;
+    for (var i = c.indexOf(g); i >= 0; i = c.indexOf(g, i + 1)) {
+      var inicio = i === 0 || c.charAt(i - 1) === ' ';
+      var fim = i + g.length === c.length || c.charAt(i + g.length) === ' ';
+      if (inicio && fim) return i;
+    }
+    return -1;
+  }
+
+  /* o nome completo com o nome de guerra em negrito; sem o de guerra dentro do completo, só o de guerra */
+  function preencherNome(el, p) {
+    var completo = String(p.nome_completo || '');
+    var guerra = String(p.nome_de_guerra || '');
+    var i = posicaoDaGuerra(completo, guerra);
+    if (i < 0) { completo = guerra; i = 0; }
+    var negrito = RW.tpl('tpl-afastamentos-nome-guerra');
+    el.textContent = '';
+    if (!negrito) { el.textContent = completo; return; }
+    negrito.textContent = completo.slice(i, i + guerra.length);
+    el.append(completo.slice(0, i), negrito, completo.slice(i + guerra.length));
+  }
+
   /* "02/10 a 30/11" no ano de referência; a data de outro ano leva o ano ("15/12 a 05/01/2027"; com anoCurto, o ano com
      2 dígitos, "15/12 a 05/01/27") */
   function textoDatas(inicio, fim, ano, anoCurto) {
@@ -148,7 +174,7 @@
     coluna.setAttribute('tabindex', '0');
     linha.querySelector('.escala-mil-avatar').textContent = iniciais(p.nome_de_guerra);
     linha.querySelector('.escala-mil-pessoa-grad').textContent = p.grau_abreviacao || '';
-    linha.querySelector('.escala-mil-pessoa-nome').textContent = p.nome_de_guerra || '';
+    preencherNome(linha.querySelector('.escala-mil-pessoa-nome'), p);
     linha.querySelector('.escala-mil-pessoa-cpf').textContent = formatarCpf(p.usuario_id);
     var dias = linha.querySelector('.escala-mil-pessoa-dias');
     dias.textContent = total ? String(total) : '';
@@ -287,7 +313,7 @@
       var item = RW.tpl('tpl-afastamentos-item');
       if (!item) return;
       item.querySelector('.linha-militar-grad').textContent = p.grau_abreviacao || '';
-      item.querySelector('.linha-militar-nome').textContent = p.nome_de_guerra || '';
+      preencherNome(item.querySelector('.linha-militar-nome'), p);
       var pilha = item.querySelector('.afastamentos-item-pilha');
       c.afastamentos(p).forEach(function (af) {
         var l = RW.tpl('tpl-afastamentos-item-linha');

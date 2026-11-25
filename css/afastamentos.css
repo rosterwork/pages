@@ -97,8 +97,27 @@
 
 .afastamentos-pessoa.linha-militar--marcada .escala-mil-pessoa-grad,
 .afastamentos-pessoa.linha-militar--marcada .escala-mil-pessoa-nome,
+.afastamentos-pessoa.linha-militar--marcada .afastamentos-nome-guerra,
 .afastamentos-pessoa.linha-militar--marcada .escala-mil-pessoa-cpf {
   color: var(--texto-invertido);
+}
+
+/* o nome completo (na coluna do militar e na lista do celular): o resto em peso normal e o nome de guerra em
+   negrito; o nome que não cabe passa para a linha de baixo (embaixo do posto, como numa frase), nunca cortado */
+.afastamentos-pessoa .escala-mil-pessoa-topo {
+  display: block;
+  font-size: 11px;
+}
+
+.afastamentos-pessoa .escala-mil-pessoa-nome,
+.afastamentos-item .linha-militar-nome {
+  font-weight: 400;
+  white-space: normal;
+}
+
+.afastamentos-nome-guerra {
+  font-weight: 700;
+  color: var(--texto-forte);
 }
 
 /* a célula do mês (ou do dia, na grade do mês): as barras passam por cima dela; com dois afastamentos que se cruzam,
@@ -436,19 +455,40 @@
    linha e os dias vão para baixo.
    ============================================================ */
 @media (max-width: 767px) {
+  /* cada militar separado do próximo por uma linha, com o mesmo espaço em cima e embaixo (o nome de quem não tem
+     afastamento fica no meio da altura de toque) */
+  html[data-celular] .afastamentos-item {
+    flex-wrap: wrap;
+    align-content: center;
+    row-gap: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    border-radius: 0;
+  }
+
+  html[data-celular] .afastamentos-item + .afastamentos-item {
+    border-top: 1px solid var(--borda);
+  }
+
+  /* o nome que não cabe passa para a linha de baixo, embaixo do posto (como na coluna do militar no computador) */
+  html[data-celular] .afastamentos-item > .linha-militar-pessoa {
+    display: block;
+    flex: 1 1 100%;
+  }
+
+  /* os afastamentos embaixo do nome, em cinza, com os dias numa coluna à direita */
   html[data-celular] .afastamentos-item-pilha {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    align-items: flex-start;
+    flex-basis: 100%;
+    align-items: stretch;
   }
 
   html[data-celular] .afastamentos-item-linha {
-    flex-wrap: wrap;
-    justify-content: flex-start;
+    justify-content: space-between;
   }
 
   html[data-celular] .afastamentos-item-texto {
     text-align: left;
+    color: var(--texto-suave);
   }
 
   /* a caixa do mês na folha: o título é o da folha */
