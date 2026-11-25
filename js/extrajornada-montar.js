@@ -172,9 +172,10 @@
     q('#p3-lateral').classList.toggle('oculto', semLancamento);
     if (semLancamento) { q('#p3-rodape').classList.add('oculto'); return; }
     var n = G().alteracoes().length;
-    /* o rodapé de salvar aparece com alteração e enquanto há o que refazer; nos Ajustes, com o "Salvar e enviar para a
-       escala". Quem passou da cota segura o Salvar, com o motivo escrito */
-    q('#p3-rodape').classList.toggle('oculto', !n && !G().podeRefazer());
+    /* o rodapé de salvar aparece com alteração e enquanto há o que desfazer ou refazer (sem nada a salvar, o Salvar
+       apagado); nos Ajustes, com o "Salvar e enviar para a escala". Quem passou da cota segura o Salvar, com o motivo
+       escrito */
+    q('#p3-rodape').classList.toggle('oculto', !n && !G().podeDesfazer() && !G().podeRefazer());
     var passou = n ? G().passaram()[0] : null, texto = q('#p3-texto');
     /* o que o rascunho faz com as cotas, em amarelo; quem passou da cota vem primeiro */
     var frase = !passou && n ? G().fraseDasCotas() : '';
