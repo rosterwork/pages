@@ -20,7 +20,8 @@
          painel (o painel do dia da Escala volta ao dia)
        mesInicial = um dia (aaaa-mm-dd): o calendário abre no mês dele
        com = { cpf, grad, nome, unidade, unidadeId } e diaEscolhido (aaaa-mm-dd): o Registrar troca de serviço do menu do
-         nome na Escala; ele já entra na lista, o campo de unidade vem com a dele e o dia vem escolhido no calendário
+         nome na Escala; ele já entra na lista, o campo de unidade vem com a dele e o dia vem escolhido no calendário;
+         sem com, diaEscolhido e unidadeId: o do pelotão (a lista vazia, o dia escolhido e o campo com a unidade dele)
        cobrar = { cpf, minutos }
        editar = { registroId, plano, admin, botao, alteracao, aoEnviar(pares, parte, ano, botao) }
    ============================================================ */
@@ -144,8 +145,9 @@
     });
   }
   function ligarAdicionar() {
-    /* a unidade do campo: a do militar do menu do nome, ou a de quem está logado */
-    var lotacao = est.com && est.com.unidadeId ? Number(est.com.unidadeId) : RW.sessao.perfil() ? RW.sessao.perfil().lotacao_id : null;
+    /* a unidade do campo: a do militar do menu do nome, a do pelotão da Escala, ou a de quem está logado */
+    var lotacao = est.com && est.com.unidadeId ? Number(est.com.unidadeId) : est.unidadeInicial ? Number(est.unidadeInicial)
+      : RW.sessao.perfil() ? RW.sessao.perfil().lotacao_id : null;
     est.combo = C().comboMilitar(q('#tv-militar'), q('#tv-militar-menu'), {
       atual: function () { return null; },   // nada fica escolhido no campo: quem é escolhido entra na troca
       aoEscolher: adicionar,
@@ -232,7 +234,8 @@
          Editar, o plano de hoje */
       militares: plano ? militaresDoPlano(plano) : (registrar ? (com ? [militarDe({ cpf: com.cpf, grau_abreviacao: com.grad, nome_de_guerra: com.nome }, com.unidade)] : []) : [eu()]),
       com: com,
-      escolhido: com && opcoes.diaEscolhido ? { dia: opcoes.diaEscolhido, cpf: com.cpf, feito: false } : null,
+      unidadeInicial: registrar && !ed ? opcoes.unidadeId || null : null,
+      escolhido: registrar && !ed && opcoes.diaEscolhido ? { dia: opcoes.diaEscolhido, cpf: com ? com.cpf : null, feito: false } : null,
       pares: plano ? (plano.dias || []).map(function (d) {
         return { data: String(d.data).slice(0, 10), trabalha: d.trabalha, folga: d.folga, inicio: d.inicio || null, fim: d.fim || null };
       }) : [],

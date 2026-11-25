@@ -17,6 +17,8 @@
    serviço do menu do nome) vem com a moldura do dia escolhido e, quando
    o outro militar está livre nele, já marcado (o outro trabalha, ele
    folga), uma vez só; marcar ou tirar um dia antes encerra a escolha.
+   O do pelotão (sem militar) vem só com a moldura, até marcar ou tirar
+   um dia.
    No Editar, o calendário é o de quem pode mudar (o militar, de
    amanhã em diante; o administrador de fora, de 7 dias atrás em
    diante), como se o registro não existisse; o dia do plano que já
@@ -137,10 +139,11 @@
     });
   }
 
-  /* o dia escolhido na Escala: com uma opção só de quem trabalha e ele podendo folgar, o par já vem marcado (uma vez) */
+  /* o dia escolhido na Escala: com uma opção só de quem trabalha e ele podendo folgar, o par já vem marcado (uma vez); o
+     do pelotão (sem militar) fica só com a moldura */
   function marcarEscolhido() {
     var e = est.escolhido;
-    if (!e || e.feito || paresDoDia(e.dia).length) return;
+    if (!e || e.feito || !e.cpf || paresDoDia(e.dia).length) return;
     var op = opcoesDoDia(e.dia);
     if (op.folga.indexOf(e.cpf) < 0 || op.trabalha.length !== 1) return;
     e.feito = true;

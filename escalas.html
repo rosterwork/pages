@@ -715,7 +715,10 @@
      outra unidade da companhia), com a setinha da caixa 2; o Voltar o dia ao
      automático, sem sinal (a confirmação e na hora; só com ajuste manual no dia); e o Abrir o painel do dia. A letra é a
      da guarnição do dia (sem ela, "do dia"). O Adicionar estagiário aparece quando a unidade tem estágio no dia. O Adicionar
-     extra neste dia aparece para o administrador da companhia, no mês lançado (escalas-celula-extra.js) -->
+     extra neste dia aparece para o administrador da companhia, no mês lançado (escalas-celula-extra.js). Depois de uma
+     linha, o Adicionar afastamento e o Adicionar autorização de viagem (a caixa 2 do afastamento, afastamentos-celula.js:
+     o Militar primeiro); depois de outra, o Registrar troca de serviço (o formulário da troca no painel do dia, sem
+     militar, com o dia escolhido) -->
 <template id="tpl-escala-celula-pelotao">
   <div class="escala-celula-pelotao">
     <button type="button" class="dropdown-item" data-acao="neste-dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-novo-usuario"/></svg><span>Adicionar neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
@@ -724,6 +727,11 @@
     <button type="button" class="dropdown-item oculto" data-acao="extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Adicionar extra neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="trazer"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Trazer de outra unidade</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
     <button type="button" class="dropdown-item oculto" data-acao="automatico"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span>Voltar o dia ao automático</span></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="afastamento"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-afastamentos"/></svg><span>Adicionar afastamento</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <button type="button" class="dropdown-item" data-acao="viagem"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-mapa-pin"/></svg><span>Adicionar autorização de viagem</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+    <div class="dropdown-divisor"></div>
+    <button type="button" class="dropdown-item" data-acao="registrar-troca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg><span>Registrar troca de serviço</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
     <div class="dropdown-divisor"></div>
     <button type="button" class="dropdown-item" data-acao="painel"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-escalas"/></svg><span>Abrir o painel do dia</span></button>
   </div>

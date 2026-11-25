@@ -9,10 +9,14 @@
    o menu delas (a de quem saiu numa troca: Cancelar a troca, que abre
    no painel o Remover deste dia de quem entrou, e Remover da guarnição,
    ou Mudar e Cancelar a saída, com este dia como o último serviço), o
-   afastamento e a autorização de viagem só o Abrir o painel, e a da
+   afastamento e a autorização de viagem, a caixa da página Afastamentos
+   (afastamentos-celula.js › abrirNaEscala, no rascunho dos afastamentos,
+   com o Abrir o painel do dia no fim), e a da
    extra, para o administrador da companhia, a caixa da extra
    (escalas-celula-extra.js). O pelotão abre Adicionar neste dia,
-   Adicionar à guarnição (a letra do dia) e Abrir o painel do dia; o
+   Adicionar à guarnição (a letra do dia), Adicionar afastamento,
+   Adicionar autorização de viagem, Registrar troca de serviço e Abrir o
+   painel do dia; o
    sobreaviso, a caixa dele (escalas-celula-sobreaviso-caixa.js); o nome
    em vermelho do Fora da escala, a dele (escalas-celula-fora.js); o
    Oficial de Área do título, o dia da companhia (escalas-celula-
@@ -52,12 +56,15 @@
     ['.linha-escalado--afastamento, .linha-escalado--viagem, .linha-escalado--fora', 'nada']
   ];
   var RISCADAS = '.linha-escalado--folga, .linha-escalado--trocado, .linha-escalado--remanejado, .linha-escalado--mudou-dia, .linha-escalado--saiu, .linha-escalado--afastamento, .linha-escalado--viagem, .linha-escalado--fora';
+  /* a linha do afastado e a da autorização de viagem: a caixa do afastamento (afastamentos-celula.js) */
+  var AFASTADO = '.linha-escalado--afastamento, .linha-escalado--viagem';
   /* a caixa do pelotão abre ao lado dele, com o topo 8px abaixo do topo do pelotão (na altura do nome e da faixa) */
   var TOPO_PELOTAO = 8;
 
   var dia = null;       // o dia da célula, com o rascunho no Dia: { unidadeId, iso, unidadeNome, unidadeCidade }
   var aberto = null;    // a caixa aberta: { tipo: 'nome' | 'pelotao' | 'oficial', unidadeId, iso, cpf, linha (o tipo), caixa, cfg, acao... }
   var refazer = false;  // a peça já vai ser achada de novo no próximo quadro
+  var refazerAfastamento = false;   // o mesmo, para a caixa do afastamento (afastamentos-celula.js)
 
   function E() { return RW.escalasPainelEditar; }
   function api() { return RW.escalasPainelEditar.sub; }
@@ -163,6 +170,8 @@
       aoFechar: function (como) { if (aberto === a) fecharTudo(como === 'x' || como === 'esc' ? 'desistir' : undefined); },
       /* a resposta pela metade: o clique fora (e o rodapé largo, fora o Cancelar) espera, com a pergunta que falta marcada */
       aoClicarFora: function (alvo) { return aberto !== a || A().podeFechar(contexto(), alvo); },
+      /* o X e o Esc: o erro de uma pergunta do Adicionar afastamento segura os dois (como na caixa da página Afastamentos) */
+      aoTentarFechar: function (alvo) { return aberto !== a || a.acao !== 'afastamento' || A().podeFechar(contexto(), alvo); },
       /* no celular, o Voltar da folha: a pergunta pela metade sai e o menu volta */
       aoVoltar: function () { if (aberto === a) A().encerrar(contexto(), true); },
       /* a espera do dia (1 s, 10 s e o aviso em 25 s); o Tentar de novo pede o dia de novo (a leitura em curso é a mesma) */
@@ -279,13 +288,15 @@
   /* ---------- o painel ---------- */
 
   /* o painel do dia (cpf: na aba Funções, com o menu da primeira linha dele, ou, com opcoes.fazerAcao, já na tela do item;
-     opcoes.secao: a aba); no mesmo dia, ele continua o que a célula mexeu */
+     sem cpf, opcoes.fazerAcao é do dia: o Registrar troca de serviço do pelotão; opcoes.secao: a aba); no mesmo dia, ele
+     continua o que a célula mexeu */
   function abrirPainel(cpf, opcoes) {
     var d = dia;
     opcoes = opcoes || {};
     if (!d) return;
-    RW.escalasPainel.abrirDia(d, opcoes.secao || (cpf ? 'distribuicao' : null),
-      cpf ? { abrirMenuDe: cpf, fazerAcao: opcoes.fazerAcao || null } : null);
+    var pedido = cpf || opcoes.fazerAcao;
+    RW.escalasPainel.abrirDia(d, opcoes.secao || (pedido ? 'distribuicao' : null),
+      pedido ? { abrirMenuDe: cpf || null, fazerAcao: opcoes.fazerAcao || null } : null);
   }
 
   /* ---------- o clique ---------- */
@@ -356,8 +367,18 @@
     if (pode === 'atualizando') { avisoAtualizando(cel, linha); return true; }
     if (sob) { cliqueNoSobreaviso(cel, sob); return true; }
     if (!linha || linha.closest('.escala-mes-celula') !== cel) cliqueNoBloco(cel);
+    else if (linha.matches(AFASTADO) && RW.afastamentosCelula) cliqueNoAfastamento(cel, linha);
     else if (!(linha.getAttribute('data-situacao') === 'extra' && RW.escalasCelulaExtra && RW.escalasCelulaExtra.clique(cel, linha))) cliqueNoNome(cel, linha);
     return true;
+  }
+
+  /* a linha do afastado ou da autorização de viagem: a caixa da página Afastamentos (afastamentos-celula.js), com o Abrir
+     o painel do dia no fim; com o painel aberto, ele vai junto para o dia clicado */
+  function cliqueNoAfastamento(cel, linha) {
+    var d = diaDe(cel);
+    fecharTudo();
+    painelNoDia(d);
+    RW.afastamentosCelula.abrirNaEscala(cel, linha, function () { RW.escalasPainel.abrirDia(d, null); });
   }
 
   /* o dia de mais de 7 dias atrás: a caixa do pelotão com o aviso; o painel abre só pelo item dela */
@@ -479,6 +500,11 @@
     cel.classList.toggle('escala-mes-celula--edita', pode);
     if (pode && RW.escalasCelulaAdiantar) RW.escalasCelulaAdiantar.aoEntrar(diaDe(cel));
     if (RW.extrajornadaCelula) RW.extrajornadaCelula.procurar(cel.dataset.unidadeId, cel.dataset.iso);
+    /* a caixa do afastamento acompanha a linha nova (uma vez por quadro) */
+    if (RW.afastamentosCelula && RW.afastamentosCelula.abertaNaEscala() && !refazerAfastamento) {
+      refazerAfastamento = true;
+      requestAnimationFrame(function () { refazerAfastamento = false; RW.afastamentosCelula.reancorar(); });
+    }
     var a = aberto;
     if (!a) return;
     var d = diaDe(cel);

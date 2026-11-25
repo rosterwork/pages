@@ -296,8 +296,8 @@
       .catch(function () { return null; });
   }
 
-  /* a prévia das telas (RPC escala_previa): com mudança do painel do dia esperando o Salvar (o Dia, o Ciclo e a
-     Extrajornada; escalas-painel-salvar.js), a leitura pedida já com o rascunho (o banco roda o Salvar num ensaio e desfaz
+  /* a prévia das telas (RPC escala_previa): com mudança do painel do dia esperando o Salvar (o Dia, o Ciclo, a
+     Extrajornada e os afastamentos mexidos na grade; escalas-painel-salvar.js), a leitura pedida já com o rascunho (o banco roda o Salvar num ensaio e desfaz
      tudo, nada é gravado). leitura = ler_escala_mes, ler_escala_militares, escala_dia_arvore, escala_minha_calendario,
      escala_guarnicoes_listar (a aba Guarnições) ou
      ler_distribuicao_dia (o painel do dia, com erro_simulacao e erro_parte na recusa). Sem mudança, devolve null (a tela lê
@@ -331,7 +331,8 @@
     else return null;
     if (!ids.length) return null;
     ids = ids.slice().sort(function (a, b) { return a - b; });
-    var chave = JSON.stringify([corpo.p_unidade_id, iso, corpo.p_dia, corpo.p_ciclo, corpo.p_extra || null, corpo.p_dias || null, ids]);
+    var chave = JSON.stringify([corpo.p_unidade_id, iso, corpo.p_dia, corpo.p_ciclo, corpo.p_extra || null, corpo.p_dias || null,
+      corpo.p_afastamentos || null, ids]);
     if (!junta || junta.chave !== chave) {
       var pedido = enfileirar('dia_e_grade', Object.assign({}, corpo, { p_leitura: 'dia_e_grade', p_args: { p_unidade_ids: ids } }));
       junta = { chave: chave,
@@ -379,6 +380,7 @@
       p_leitura: leitura, p_args: args || {} };
     if (p.extra) corpo.p_extra = p.extra;
     if (p.dias && p.dias.length) corpo.p_dias = p.dias;   // os outros dias com mudança (o rascunho de vários dias)
+    if (p.afastamentos && p.afastamentos.length) corpo.p_afastamentos = p.afastamentos;   // os afastamentos mexidos na grade
     return corpo;
   }
   /* o Salvar do rodapé do painel do dia (RPC escala_painel_salvar): o Dia (o rascunho, com o "antes"), o Ciclo (as
@@ -391,12 +393,15 @@
     if (sobreaviso) corpo.p_sobreaviso = sobreaviso;
     return gravarNoBanco('escala_painel_salvar', corpo);
   }
-  /* o Salvar de vários dias (RPC escala_painel_salvar_dias): dias = [{ unidade_id, data, dia, ciclo, sobreaviso, ler }] e a
-     Extrajornada do mês, tudo ou nada. Resolve como o painelSalvar ({success, logs, dias: [{unidade_id, data, mudou,
-     dia?}]}, ou {success:false, error, parte, unidade_id, data, desatualizado}, ou o marcador de falha) */
-  function painelSalvarDias(dias, extra) {
+  /* o Salvar de vários dias (RPC escala_painel_salvar_dias): dias = [{ unidade_id, data, dia, ciclo, sobreaviso, ler }], a
+     Extrajornada do mês e os afastamentos mexidos na grade (o pedido da afastamentos_salvar, com confirmar: o aviso dela
+     já confirmado), tudo ou nada. Resolve como o painelSalvar ({success, logs, dias: [{unidade_id, data, mudou,
+     dia?}]}, ou {success:false, error, parte, unidade_id, data, desatualizado}, ou {success:false, precisa_confirmar,
+     militares} dos afastamentos, ou o marcador de falha) */
+  function painelSalvarDias(dias, extra, afastamentos, confirmar) {
     var corpo = { p_dias: dias };
     if (extra) corpo.p_extra = extra;
+    if (afastamentos && afastamentos.length) { corpo.p_afastamentos = afastamentos; corpo.p_confirmar = !!confirmar; }
     return gravarNoBanco('escala_painel_salvar_dias', corpo);
   }
   /* a gravação: as leituras guardadas saem ao gravar e de novo com a resposta (o que quem chama lê depois já vem do banco) */

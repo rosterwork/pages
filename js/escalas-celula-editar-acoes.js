@@ -39,7 +39,13 @@
      Adicionar extra neste dia (escalas-celula-extra.js), Trazer de
      outra unidade (escalas-painel-remanejar › criar, no Trazer, na
      caixa 2), Voltar o dia ao automático
-     (a confirmação do painel) e Abrir o painel do dia. O Oficial de Área do título (escalas-celula-
+     (a confirmação do painel), Adicionar afastamento e Adicionar
+     autorização de viagem (a caixa 2 da página Afastamentos,
+     afastamentos-celula.js › adicionarNaEscala: o Militar primeiro e,
+     escolhido ele, as outras perguntas, no rascunho dos afastamentos;
+     o efetivo começa a ser lido quando a caixa 1 aparece), Registrar
+     troca de serviço (o formulário da troca no painel do dia, sem
+     militar, com o dia escolhido) e Abrir o painel do dia. O Oficial de Área do título (escalas-celula-
      oficial.js) usa o campo do Adicionar, o Remover e a pergunta, e o
      Pôr como Oficial de Área do nome vai para ele. A lista do campo de
      militar da caixa 2 mostra as faixas enquanto chega, e as do pelotão
@@ -91,6 +97,9 @@
      'desistir' (o X e o Esc da caixa): o que o item fez sai, e o dia e as guarnições voltam a como estavam antes dele */
   function terminar(a, modo) {
     var acao = a.acao, tinha = a.vivo, desistir = modo === 'desistir';
+    /* o Adicionar afastamento (ou autorização de viagem): o que foi respondido fica no rascunho dos afastamentos, e o novo
+       em branco sai (como na caixa da página Afastamentos) */
+    if (acao === 'afastamento' && RW.afastamentosCelula) RW.afastamentosCelula.fechar();
     if (acao === 'remover-guarnicao' || acao === 'mudar-saida' || acao === 'mudar-guarnicao' || acao === 'mudar-entrada') {
       RW.escalasPainelCiclo.fecharPergunta(modo === 'largar' || desistir ? modo : 'guardar');
     }
@@ -188,6 +197,8 @@
      marcada e a frase aparece embaixo (escalas-celula-editar.js › aoClicarFora). O Cancelar do rodapé fecha (desiste) */
   function podeFechar(c, alvo) {
     var a = c.a;
+    /* o Adicionar afastamento: o erro de uma pergunta dele segura o clique fora (afastamentos-celula.js) */
+    if (a && a.acao === 'afastamento' && RW.afastamentosCelula) return RW.afastamentosCelula.podeFecharNaEscala(alvo);
     if (!a || !a.acao || !a.vivo || (alvo && alvo.closest && alvo.closest('.escala-painel-cancelar'))) return true;
     if (!pelaMetade(a)) return true;
     mostrarFalta(a);
@@ -674,6 +685,10 @@
       RW.escalasDados.adiantarListas(c.a.unidadeId, c.a.iso, { disponiveis: aVista('[data-acao="neste-dia"]') || aVista('[data-acao="estagiario"]'),
         guarnicao: aVista('[data-acao="guarnicao"]') });
     }
+    /* o efetivo da unidade (o Militar do Adicionar afastamento) */
+    if (c.a && RW.afastamentosCelula && (aVista('[data-acao="afastamento"]') || aVista('[data-acao="viagem"]'))) {
+      RW.afastamentosCelula.adiantarEfetivo(c.a.unidadeId);
+    }
     [].forEach.call(el.querySelectorAll('[data-acao]'), function (b) {
       b.addEventListener('click', function () { fazerNoPelotao(b.getAttribute('data-acao'), b, c); });
     });
@@ -692,6 +707,19 @@
     else if (acao === 'estagiario') adicionarEstagiario(botao, c);
     else if (acao === 'guarnicao') naGuarnicao(botao, c);
     else if (acao === 'extra') RW.escalasCelulaExtra.adicionar(botao, c);
+    else if (acao === 'afastamento' || acao === 'viagem') adicionarAfastamento(botao, c, acao);
+    /* o formulário da troca no painel do dia, sem militar, com o dia escolhido (o mesmo Registrar troca de serviço do nome) */
+    else if (acao === 'registrar-troca') { c.fecharTudo('guardar'); c.abrirPainel(null, { fazerAcao: 'registrar-troca' }); }
+  }
+
+  /* o Adicionar afastamento e o Adicionar autorização de viagem: a caixa 2 da página Afastamentos (afastamentos-celula.js) */
+  function adicionarAfastamento(botao, c, acao) {
+    var a = c.a;
+    if (!RW.afastamentosCelula) return;
+    a.acao = 'afastamento';
+    a.botao = botao;
+    RW.afastamentosCelula.adicionarNaEscala(a.caixa, botao,
+      { unidadeId: a.unidadeId, iso: a.iso, unidadeNome: c.dia ? c.dia.unidadeNome : '' }, acao === 'viagem' ? 'viagem' : 'adicionar');
   }
 
   /* a lista do campo de militar da caixa 2 enquanto chega: o campo desligado e, se ela não chegou até a caixa 2 parar no

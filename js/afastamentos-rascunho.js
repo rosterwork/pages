@@ -14,6 +14,12 @@
    administrador decide se segue). Gravou: o que foi lido é esquecido,
    as telas releem e o resumo abre. Sair da página, fechar ou
    recarregar com algo não salvo avisa antes (guarda de saída).
+   Na Escala (a caixa da linha do afastado e o Adicionar do pelotão,
+   afastamentos-celula.js), o rascunho é o mesmo, sem o rodapé dele: o
+   rodapé largo da Escala (escalas-painel-salvar.js) conta, desfaz,
+   cancela e grava junto com o resto (escala_painel_salvar_dias), com a
+   mesma confirmação; cada mudança avisa a Escala
+   (rosterwork_escala_rascunho), que mostra a prévia.
    ============================================================ */
 (function () {
   'use strict';
@@ -35,6 +41,9 @@
   var nomeDe = null;        // cpf -> o posto e o nome de guerra (da página), na frente do motivo do rodapé
   var caixaAberta = null;   // () -> { cpf, chave } do afastamento da caixa da grade aberta, ou null
   var teclasLigadas = false;
+  var naEscala = false;     // a página é a Escala: o rodapé, o Desfazer e o Salvar são os dela
+  var onde = {};            // na Escala: cpf -> a unidade da célula em que ele foi mexido (a borda dos dias)
+  var ultimoOnde = null;    // na Escala: a última célula mexida, { unidadeId, iso, unidadeNome } (o dia da prévia)
 
   function M() { return RW.mensagens.afastamentos; }
   function D() { return RW.data; }
@@ -205,6 +214,8 @@
     ultimaChave = null;
     avisar(null);
   }
+  function podeDesfazer() { return !salvando && pilhaDesfazer.length > 0; }
+  function podeRefazer() { return !salvando && pilhaRefazer.length > 0; }
 
   /* quantos afastamentos mudaram (os novos em branco não contam) */
   function contar() {
@@ -428,12 +439,71 @@
     if (r && r.log && RW.resumo) RW.resumo.abrirModal(r.log, { pagina: 'Afastamentos' });
   }
 
+  /* ---------- na Escala ---------- */
+
+  /* o militar foi mexido nesta célula da Escala (d = { unidadeId, iso, unidadeNome }) */
+  function marcarOnde(cpf, d) {
+    if (!d) return;
+    onde[String(cpf)] = String(d.unidadeId);
+    ultimoOnde = { unidadeId: String(d.unidadeId), iso: d.iso, unidadeNome: d.unidadeNome || '' };
+  }
+  /* o dia da prévia e do rodapé quando só os afastamentos mudaram: a última célula mexida, ou null sem mudança */
+  function naCelula() { return contar() ? ultimoOnde : null; }
+  /* os dias que mudam em cada afastamento mexido: [{ cpf, unidadeId, inicio, fim }] (a borda dos dias da Escala). O novo e
+     o removido, os dias dele; o mudado só nas datas, os dias que entram ou saem; o que mudou outra coisa (o nome, o que
+     ele sai), os de antes e os de agora juntos */
+  function mexidos() {
+    var saida = [];
+    var DIA = /^\d{4}-\d{2}-\d{2}$/;
+    function somar(iso, n) {
+      var p = iso.split('-');
+      return D().paraIsoDeData(new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]) + n));
+    }
+    function trecho(cpf, ini, fim) {
+      if (DIA.test(ini || '') && DIA.test(fim || '') && ini <= fim) saida.push({ cpf: cpf, unidadeId: onde[cpf] || null, inicio: ini, fim: fim });
+    }
+    function por(cpf, a, b) {
+      if (!a || !b) { var x = a || b; trecho(cpf, x.inicio, x.fim); return; }
+      var soDatas = ['nome', 'padrao', 'gua', 'tro', 'ext', 'sob', 'destinos'].every(function (k) {
+        return JSON.stringify(a[k]) === JSON.stringify(b[k]);
+      });
+      if (!soDatas || !DIA.test(a.inicio + '') || !DIA.test(b.inicio + '') || !DIA.test(a.fim + '') || !DIA.test(b.fim + '')) {
+        trecho(cpf, [a.inicio, b.inicio].filter(Boolean).sort()[0], [a.fim, b.fim].filter(Boolean).sort().pop());
+        return;
+      }
+      if (a.inicio !== b.inicio) trecho(cpf, a.inicio < b.inicio ? a.inicio : b.inicio, somar(a.inicio < b.inicio ? b.inicio : a.inicio, -1));
+      if (a.fim !== b.fim) trecho(cpf, somar(a.fim < b.fim ? a.fim : b.fim, 1), a.fim < b.fim ? b.fim : a.fim);
+    }
+    Object.keys(mudancas).forEach(function (cpf) {
+      var x = mudancas[cpf];
+      Object.keys(x.mudados).forEach(function (id) { por(cpf, gravado(cpf, id), x.mudados[id]); });
+      Object.keys(x.removidos).forEach(function (id) { por(cpf, gravado(cpf, id), null); });
+      x.novos.forEach(function (a) { if (!vazio(a)) por(cpf, null, a); });
+    });
+    return saida;
+  }
+  /* a Escala gravou (escala_painel_salvar_dias): o que foi lido é esquecido, e as caixas leem de novo */
+  function esquecer() {
+    gravados = {};
+    mudancas = {};
+    pilhaDesfazer = [];
+    pilhaRefazer = [];
+    ultimaChave = null;
+    onde = {};
+    ultimoOnde = null;
+    avisar('gravou');
+  }
+  /* a Escala está gravando: o Desfazer espera */
+  function marcarSalvando(sim) { salvando = !!sim; }
+
   /* ---------- os avisos a quem redesenha ---------- */
 
   function ouvir(nome, fn) { ouvintes[nome] = fn; }
   function avisar(origem) {
     pintarRodape();
     Object.keys(ouvintes).forEach(function (k) { ouvintes[k](origem); });
+    /* na Escala, o rodapé largo e a prévia dela */
+    if (naEscala) window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho', { detail: { parte: 'afastamentos' } }));
   }
 
   /* com algo não salvo, pergunta antes de seguir (Descartar joga fora) */
@@ -448,7 +518,7 @@
 
   /* Ctrl+Z e Ctrl+Y com a página à mostra (no campo que se digita, ficam com o campo) */
   function teclas(ev) {
-    if (!raiz || !raiz.isConnected) return;
+    if (naEscala || !raiz || !raiz.isConnected) return;   // na Escala, as teclas são as do rodapé dela
     if (!(ev.ctrlKey || ev.metaKey) || ev.altKey) return;
     var alvo = ev.target;
     if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA')) return;
@@ -461,9 +531,11 @@
 
   /* a navegação abriu a página: o rascunho começa vazio e o rodapé é ligado (as abas mostram o mesmo rascunho);
      opcoes.setor(cpf) diz o setor de cada militar, opcoes.nome(cpf) o posto e o nome dele e opcoes.caixaAberta() o
-     afastamento da caixa da grade aberta ({ cpf, chave } ou null) */
+     afastamento da caixa da grade aberta ({ cpf, chave } ou null); opcoes.naEscala: a página é a Escala (sem o rodapé
+     daqui) */
   function iniciar(conteudo, opcoes) {
     raiz = conteudo;
+    naEscala = !!(opcoes && opcoes.naEscala);
     setorDe = (opcoes && opcoes.setor) || null;
     nomeDe = (opcoes && opcoes.nome) || null;
     caixaAberta = (opcoes && opcoes.caixaAberta) || null;
@@ -473,6 +545,8 @@
     pilhaRefazer = [];
     ultimaChave = null;
     salvando = false;
+    onde = {};
+    ultimoOnde = null;
     var ligar = function (id, fn) {
       var b = el(id);
       if (b && !b.dataset.ligado) { b.dataset.ligado = '1'; b.addEventListener('click', fn); }
@@ -488,15 +562,23 @@
     pintarRodape();
   }
 
-  /* fechar ou recarregar com algo não salvo: o navegador avisa */
+  /* fechar ou recarregar com algo não salvo: o navegador avisa (na Escala, pelo aviso dela) */
   if (RW.guardaSaida && RW.guardaSaida.registrar) {
-    RW.guardaSaida.registrar(function () { return !!raiz && raiz.isConnected && contar() > 0; });
+    RW.guardaSaida.registrar(function () { return !naEscala && !!raiz && raiz.isConnected && contar() > 0; });
   }
 
   window.RosterWork.afastamentosRascunho = {
     iniciar: iniciar, conhecer: conhecer, lista: lista, achar: achar, gravado: gravado, militares: militares,
     criar: criar, passarNovo: passarNovo, largar: largar, mudar: mudar, remover: remover, contar: contar, problemaDe: problemaDe,
     conferir: conferir,
-    isoLimite: isoLimite, ouvir: ouvir, perguntarAntes: perguntarAntes, salvando: function () { return salvando; }
+    isoLimite: isoLimite, ouvir: ouvir, perguntarAntes: perguntarAntes, salvando: function () { return salvando; },
+    /* na Escala (escalas-painel-salvar.js e afastamentos-celula.js): a página é ela? O que vai ao banco, o Desfazer e o
+       Refazer, o Cancelar, o primeiro problema (pular: o da caixa aberta), a confirmação do banco, se o Salvar refaz a
+       escala, o gravou, a célula mexida e os dias mexidos */
+    naEscala: function () { return naEscala && !!raiz && raiz.isConnected; },
+    pedido: pedido, desfazer: desfazer, refazer: refazer, podeDesfazer: podeDesfazer, podeRefazer: podeRefazer, limpar: limpar,
+    problema: problema, naCaixa: naCaixa, nomeDe: function (cpf) { return nomeDe ? nomeDe(cpf) : ''; },
+    confirmarAvisos: confirmarAvisos, refazEscala: refazEscala, esquecer: esquecer, marcarSalvando: marcarSalvando,
+    marcarOnde: marcarOnde, naCelula: naCelula, mexidos: mexidos
   };
 })();

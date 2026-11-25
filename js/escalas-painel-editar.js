@@ -1654,6 +1654,11 @@
       setTimeout(function () { RosterWork.escalasPainelAdicionar.abrir({ cpf: adicionar, estagiario: true }); }, 0);
       return;
     }
+    /* o Registrar troca de serviço do pelotão (a célula da grade): o formulário da troca, sem militar, com o dia */
+    if (acao === 'registrar-troca' && !cpf && ctx.admin) {
+      setTimeout(function () { if (ctx && !ctx.emSub) abrirTroca(true, null, true); }, 0);
+      return;
+    }
     if (!cpf || !RosterWork.escalasPainelLinhaMenu) return;
     setTimeout(function () {
       var linha = corpo.querySelector('.escala-edicao-linha--menu[data-cpf="' + cpf + '"]');
@@ -1770,8 +1775,9 @@
      salva (Dia ou Ciclo) o aviso pede o Salvar antes (o lápis aberto guarda a mudança dele e a lista mostra como fica);
      registrou, volta ao dia e lê de novo (também depois do Desfazer do resumo, se o painel segue no dia). O pedido do
      Solicitar não muda a escala: abre com o rascunho, que fica. com = o militar do menu do nome (o Registrar troca de
-     serviço dele: o formulário começa com ele e com o dia escolhido) */
-  function abrirTroca(registrar, com) {
+     serviço dele: o formulário começa com ele e com o dia escolhido); doDia = o Registrar troca de serviço do pelotão (sem
+     militar: o dia escolhido e a unidade dele no campo) */
+  function abrirTroca(registrar, com, doDia) {
     if (!ctx || ctx.salvando || ctx.carregando || !RosterWork.escalasPainelTroca || (registrar && !base)) return;
     if (registrar && RosterWork.escalasPainelSalvar && RosterWork.escalasPainelSalvar.contar()) {
       fecharLinha();
@@ -1786,7 +1792,7 @@
     montarSubcabecalho();
     var c = ctx, uid = ctx.unidadeId, iso = ctx.iso;
     RosterWork.escalasPainelTroca.abrir(ctx.corpo, ctx.rodape, {
-      registrar: registrar, iso: iso, com: com || null,
+      registrar: registrar, iso: iso, com: com || null, doDia: !!doDia, unidadeId: doDia ? uid : null,
       aoSair: function () { if (ctx === c) desenhar(); },
       aoRegistrar: function () { if (ctx && ctx.unidadeId === uid && ctx.iso === iso && !ctx.emSub) recarregar(); }
     });
@@ -1993,8 +1999,10 @@
       /* o Voltar o dia ao automático (o do Editar o dia e o do pelotão na célula): vale agora? e a confirmação */
       podeVoltarAoAutomatico: function () { return !!ctx && podeVoltarAoAutomatico(); },
       voltarAoAutomatico: voltarAoAutomatico,
-      /* o Registrar troca de serviço do menu do nome: o formulário da troca, já com ele e com o dia */
+      /* o Registrar troca de serviço do menu do nome: o formulário da troca, já com ele e com o dia; sem cpf (o pelotão), com
+         o dia escolhido e a unidade do dia */
       registrarTroca: function (cpf) {
+        if (!cpf) { abrirTroca(true, null, true); return; }
         var mil = militarDoDia(cpf);
         abrirTroca(true, mil ? { cpf: cpf, grad: mil.grad, nome: mil.nome, unidade: mil.unidade || '', unidadeId: ctx.unidadeId } : null);
       },

@@ -32,7 +32,13 @@
    com o dado real, nunca com a cópia guardada velha, e sem a borda
    amarela, em todas as unidades dele na tela (os dias certos,
    escalas-dados.js e escalas-atualizando.js).
-   Depois, o resumo com o que cada parte gravou. Enquanto há mudança,
+   Depois, o resumo com o que cada parte gravou. Os afastamentos mexidos
+   na grade (a caixa da linha do afastado e o Adicionar do pelotão, no
+   rascunho dos afastamentos, afastamentos-rascunho.js) também contam
+   aqui: entram na prévia e no Salvar de vários dias, antes dos dias,
+   com a confirmação da página Afastamentos quando o banco pede, e o
+   período é lido de novo; com o problema de um deles, o motivo em
+   vermelho no lugar da conta e o Salvar desligado. Enquanto há mudança,
    as telas da Escala mostram o rascunho
    (a prévia, escala_previa, pela escalas-dados.js) e o dia mudado
    leva a borda tracejada (na mudança de dia, os dois dias, e a grade
@@ -78,11 +84,14 @@
   function S() { return RW.escalasPainelSobreaviso; }
   /* a gaveta dos dias (escalas-rascunho-dias.js): o rascunho de cada dia */
   function G() { return RW.escalasRascunhoDias || null; }
-  /* o dia do rodapé: o do painel aberto ou, com ele fechado, o da célula da grade (escalas-celula-editar.js) ou o da que
-     mexeu na extra (escalas-celula-extra.js) */
+  /* os afastamentos mexidos na grade: o rascunho dos afastamentos, quando ele é o da Escala */
+  function F() { var R = RW.afastamentosRascunho; return R && R.naEscala && R.naEscala() ? R : null; }
+  /* o dia do rodapé: o do painel aberto ou, com ele fechado, o da célula da grade (escalas-celula-editar.js), o da que
+     mexeu na extra (escalas-celula-extra.js) ou o da que mexeu num afastamento */
   function contexto() {
     var p = RW.escalasPainel && RW.escalasPainel.contexto ? RW.escalasPainel.contexto() : null;
-    return p || (RW.escalasCelulaEditar ? RW.escalasCelulaEditar.contexto() : null) || (X() ? X().naCelula() : null);
+    return p || (RW.escalasCelulaEditar ? RW.escalasCelulaEditar.contexto() : null) || (X() ? X().naCelula() : null)
+      || (F() ? F().naCelula() : null);
   }
   function celula() { return RW.escalasCelulaEditar || null; }
 
@@ -110,20 +119,39 @@
     return noDia(item, function () { var r = E().previaDia(); r.antes = E().antesDoDia(); return r; });
   }
 
-  function contar() { return (G() ? G().contar() : 0) + (contexto() && X() ? X().contar() : 0); }
-  /* o Dia, o Ciclo e o Sobreaviso de todos os dias (trocar de dia não perde nada; fechar o painel, trocar de mês e sair da
+  function contar() { return (G() ? G().contar() : 0) + (contexto() && X() ? X().contar() : 0) + (F() ? F().contar() : 0); }
+  /* o Dia, o Ciclo e o Sobreaviso de todos os dias e os afastamentos (trocar de dia não perde nada; trocar de mês e sair da
      página perguntam antes); a Extrajornada é do mês */
-  function pendente() { return !!G() && G().contar() > 0; }
+  function pendente() { return (!!G() && G().contar() > 0) || (!!F() && F().contar() > 0); }
   /* o rascunho carregado em cada parte sai (o dia mudou no banco); o Salvar e o Cancelar tiram também os guardados */
   function descartar() {
     if (E()) E().descartar();
     if (S()) S().descartar();
     if (C()) C().limpar();
   }
-  /* o Cancelar, fechar o painel e trocar de mês: todos os dias */
+  /* o Cancelar e trocar de mês: todos os dias e os afastamentos */
   function descartarTudo() {
     if (G()) G().descartar(false);
     descartar();
+    if (F() && F().contar()) F().limpar();
+  }
+  /* os afastamentos para a prévia e para a marca dela: o pedido da afastamentos_salvar, ou null (sem mudança, ou com o
+     problema de um deles, que o banco recusaria) */
+  function afastamentosDaPrevia() {
+    var f = F();
+    if (!f || !f.contar() || f.problema()) return null;
+    var pedido = f.pedido();
+    return pedido.length ? pedido : null;
+  }
+  /* os dias que os afastamentos mudados tocam (o de antes e o de agora juntos), uma conta por vez de trabalho do navegador */
+  var mexidosNaVez = null;
+  function mexidos() {
+    if (!F()) return [];
+    if (!mexidosNaVez) {
+      mexidosNaVez = F().mexidos();
+      Promise.resolve().then(function () { mexidosNaVez = null; });
+    }
+    return mexidosNaVez;
   }
 
   /* o rascunho para a prévia das telas: { unidadeId, iso, dia, ciclo, extra, outros, dias } (cada parte nula sem mudança),
@@ -134,8 +162,8 @@
      cota fica fora: o banco recusaria */
   function paraPrevia(ate) {
     var lista = dias(), c = contexto() || lista[0];
-    var extra = X() ? X().paraPrevia() : null;
-    if (!c || (!lista.length && !extra)) return null;
+    var extra = X() ? X().paraPrevia() : null, afastamentos = afastamentosDaPrevia();
+    if (!c || (!lista.length && !extra && !afastamentos)) return null;
     var limite = ate || c.iso;
     var dia = null, ciclo = null, outros = [], resto = [];
     lista.forEach(function (d) {
@@ -148,8 +176,9 @@
         resto.push({ unidade_id: Number(d.unidadeId), data: d.iso, dia: esteDia, ciclo: esteCiclo });
       }
     });
-    if (!dia && !ciclo && !extra && !resto.length) return null;
-    return { unidadeId: c.unidadeId, iso: c.iso, dia: dia, ciclo: ciclo, extra: extra, outros: outros, dias: resto };
+    if (!dia && !ciclo && !extra && !resto.length && !afastamentos) return null;
+    return { unidadeId: c.unidadeId, iso: c.iso, dia: dia, ciclo: ciclo, extra: extra, outros: outros, dias: resto,
+      afastamentos: afastamentos };
   }
   /* a mudança de outro dia mexe no que se lê até limite? O dia dela, ou o outro dia da mudança de dia, até ele, ou as
      guarnições com data até ele (o rodízio conta os dias de antes; os de depois não mudam o dia lido) */
@@ -159,8 +188,8 @@
     return !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return C().desde(x, d.iso) <= limite; });
   }
   /* a borda tracejada: cada dia com mudança, o outro dia da mudança de dia, os dias da unidade que o rascunho das
-     guarnições muda (da primeira data dele em diante) e os dias do rascunho da Extrajornada; sem a unidade (null), em
-     qualquer unidade (a Minha escala) */
+     guarnições muda (da primeira data dele em diante), os dias do rascunho da Extrajornada e os dias dos afastamentos
+     mudados, na unidade de quem foi mexido; sem a unidade (null), em qualquer unidade (a Minha escala) */
   function marcado(unidadeId, iso) {
     var achou = dias().some(function (d) {
       if (unidadeId != null && String(d.unidadeId) !== String(unidadeId)) return false;
@@ -168,7 +197,9 @@
       if (d.dia && noDia(d.dia, E().outrosDias).indexOf(iso) >= 0) return true;
       return unidadeId != null && !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return iso >= C().desde(x, d.iso); });
     });
-    return achou || !!(X() && X().marcado(unidadeId, iso));
+    return achou || !!(X() && X().marcado(unidadeId, iso)) || mexidos().some(function (m) {
+      return (unidadeId == null || m.unidadeId == null || String(m.unidadeId) === String(unidadeId)) && m.inicio <= iso && iso <= m.fim;
+    });
   }
   /* uma mudança pendente toca este dia (a caixa da célula espera a prévia dele)? A mesma data em qualquer unidade (o banco
      refaz a companhia inteira no dia; a mudança de unidade mexe nas duas), o outro dia de uma mudança de dia, as guarnições
@@ -176,6 +207,8 @@
      dia gravado, que é o que a grade mostra nele */
   function tocaODia(iso) {
     if (marcado(null, iso)) return true;
+    /* o afastamento muda o rodízio do primeiro dia dele em diante */
+    if (mexidos().some(function (m) { return iso >= m.inicio; })) return true;
     return dias().some(function (d) {
       return !!d.ciclo && listaCiclo(d.ciclo).some(function (x) { return iso >= C().desde(x, d.iso); });
     });
@@ -198,10 +231,12 @@
     var c = contexto(), s = c && c.secao;
     var x = X() ? { podeDesfazer: X().podeDesfazer, podeRefazer: X().podeRefazer, desfazer: X().desfazer, refazer: X().refazer } : null;
     var dosDias = G() && E() && !E().emSub() ? { podeDesfazer: G().podeDesfazer, podeRefazer: G().podeRefazer, desfazer: G().desfazer, refazer: G().refazer } : null;
-    /* com o painel fechado (a célula da grade, a extra mexida nela, ou nada aberto, com o rascunho esperando o Salvar), os
-       passos dos dias; sem nada a desfazer neles, a extra */
-    if (!RW.painel.estaAberto()) return dosDias && (dosDias.podeDesfazer() || dosDias.podeRefazer()) ? dosDias : x;
-    if (s === 'distribuicao' || s === 'estagiarios') return dosDias;
+    var f = F() ? { podeDesfazer: F().podeDesfazer, podeRefazer: F().podeRefazer, desfazer: F().desfazer, refazer: F().refazer } : null;
+    function anda(h) { return !!h && (h.podeDesfazer() || h.podeRefazer()); }
+    /* com o painel fechado (a célula da grade, a extra mexida nela, um afastamento, ou nada aberto, com o rascunho esperando
+       o Salvar), os passos dos dias; sem nada a desfazer neles, os dos afastamentos; sem eles, a extra */
+    if (!RW.painel.estaAberto()) return anda(dosDias) ? dosDias : anda(f) ? f : x;
+    if (s === 'distribuicao' || s === 'estagiarios') return dosDias && (anda(dosDias) || !anda(f)) ? dosDias : f;
     if ((s === 'continuos' || s === 'volta') && C()) {
       return { podeDesfazer: function () { return C().podeDesfazer(c.unidadeId, c.iso); }, podeRefazer: function () { return C().podeRefazer(c.unidadeId, c.iso); },
         desfazer: C().desfazer, refazer: C().refazer };
@@ -236,6 +271,9 @@
     if (!el) return;
     var n = contar(), h = daAba();
     var passou = X() ? X().passou() : null;
+    /* o problema de um afastamento mexido (o da caixa aberta, ela mostra): o motivo em vermelho, com o nome na frente */
+    var af = F() && F().contar() ? F().problema(F().naCaixa) : null;
+    var afTravado = !!(F() && F().contar() && F().problema());
     /* enquanto grava, o rodapé fica (a conta das mudanças já pode ter zerado), e também enquanto há o que refazer */
     el.classList.toggle('oculto', !n && !salvando && !(h && h.podeRefazer()));
     el.querySelector('.escala-painel-desfazer').disabled = salvando || !h || !h.podeDesfazer();
@@ -247,33 +285,37 @@
       var frase = !passou && X() && X().contar() ? RW.extrajornadaGrade.fraseDasCotas() : '';
       /* com mais de um dia, quantos: "5 alterações não salvas em 3 dias" */
       var m = G() ? G().datas() : 0;
+      var quem = af ? F().nomeDe(af.cpf) : '';
       texto.textContent = passou ? RW.mensagens.extrajornada.org.passouRodape(passou.nome, passou.n)
+        : af ? (quem ? RW.mensagens.afastamentos.deQuem(quem, af.texto) : af.texto)
         : n ? msg().alteracoesNaoSalvas(n) + (m > 1 ? ' ' + msg().emDias(m) : '') + (frase ? '. ' + frase : '') : '';
-      texto.classList.toggle('extrajornada-painel-rodape-erro', !!passou);
-      texto.classList.toggle('extrajornada-painel-rodape-alerta', !!frase);
+      texto.classList.toggle('extrajornada-painel-rodape-erro', !!passou || !!af);
+      texto.classList.toggle('extrajornada-painel-rodape-alerta', !!frase && !af);
     }
     el.querySelector('.escala-painel-cancelar').disabled = salvando;
-    el.querySelector('.escala-painel-salvar').disabled = salvando || !!passou || !!(E() && E().travado());
+    el.querySelector('.escala-painel-salvar').disabled = salvando || !!passou || !!(E() && E().travado()) || afTravado;
   }
 
   /* o que as telas mostram do rascunho (vazio sem mudança): o Dia e o Ciclo de cada dia com mudança (unidade|dia: { dia,
      ciclo, outros }) e a Extrajornada, do mês (abrir ou trocar de dia sem mudança não muda as telas) */
   function marcaDaPrevia() {
-    var porDia = {}, extra = X() ? X().marca() : '';
+    var porDia = {}, extra = X() ? X().marca() : '', afastamentos = afastamentosDaPrevia();
     dias().forEach(function (d) {
       if (!d.dia && !d.ciclo) return;
       porDia[d.unidadeId + '|' + d.iso] = { dia: d.dia ? previaDe(d.dia) : null, ciclo: d.ciclo ? C().envio(listaCiclo(d.ciclo)) : null,
         outros: d.dia ? noDia(d.dia, E().outrosDias) : [] };
     });
-    if (!Object.keys(porDia).length && !extra) return '';
-    return JSON.stringify([porDia, extra]);
+    if (!Object.keys(porDia).length && !extra && !afastamentos) return '';
+    return JSON.stringify([porDia, extra, afastamentos]);
   }
 
   /* os dias que mudam nas telas de uma marca para a outra: [{ unidadeId, iso }] (só os dias cujo rascunho mudou, com o
-     outro dia da mudança de dia); com o Ciclo ou a Extrajornada, que mexem em muitos dias, null (o período todo) */
+     outro dia da mudança de dia); com o Ciclo, a Extrajornada ou os afastamentos, que mexem em muitos dias, null (o
+     período todo) */
   function diasDaPrevia(antes, agora) {
-    var a = antes ? JSON.parse(antes) : [{}, ''], b = agora ? JSON.parse(agora) : [{}, ''];
+    var a = antes ? JSON.parse(antes) : [{}, '', null], b = agora ? JSON.parse(agora) : [{}, '', null];
     if (a[1] || b[1]) return null;
+    if (JSON.stringify(a[2] || null) !== JSON.stringify(b[2] || null)) return null;
     var lista = [], muitos = false;
     function por(unidadeId, iso) {
       if (!lista.some(function (d) { return d.unidadeId === unidadeId && d.iso === iso; })) lista.push({ unidadeId: unidadeId, iso: iso });
@@ -471,6 +513,7 @@
     }
     if (C()) C().limpar();
     if (X()) X().descartar();   // gravou: a extra é lida de novo, com o que mudou
+    if (F()) F().esquecer();    // e os afastamentos, quando forem clicados
   }
   /* o dia que mudou no banco depois da leitura: o rascunho dele sai (o carregado lê o dia de novo); os outros dias ficam */
   function tirarDia(unidadeId, iso) {
@@ -504,10 +547,14 @@
   /* grava mostrando as etapas e, gravado, põe o dia gravado no painel e avisa as telas: um dia pelo escala_painel_salvar
      (o resumo traz a linha das escalas refeitas); vários dias pelo escala_painel_salvar_dias, tudo ou nada, com o cartão e o
      período lido de novo. ds = os dias (dias()), lista = o que vai ao banco (paraGravar). O clique fica travado até as
-     telas lerem (iniciarCarregando). Devolve uma Promise com { ok, r } ou { ok: false, erro, desatualizado } (quem chama
-     avisa). O dia que mudou depois da leitura (outro administrador ou o sistema) tira o rascunho daquele dia e lê de novo */
-  function enviar(c, ds, lista, extra, botao) {
-    var umDia = lista.length <= 1, e = lista[0] || null, d = ds[0] || null;
+     telas lerem (iniciarCarregando). afastamentos = o pedido dos afastamentos mexidos (vão sempre pelo
+     escala_painel_salvar_dias, antes dos dias, e o período é lido de novo), confirmar = o aviso deles já confirmado.
+     Devolve uma Promise com { ok, r }, { ok: false, erro, desatualizado } (quem chama avisa) ou { ok: false, confirmar,
+     militares } (o banco pede a confirmação dos afastamentos). O dia que mudou depois da leitura (outro administrador ou o
+     sistema) tira o rascunho daquele dia e lê de novo */
+  function enviar(c, ds, lista, extra, botao, afastamentos, confirmar) {
+    var comAfastamentos = !!afastamentos && afastamentos.length > 0;
+    var umDia = lista.length <= 1 && !comAfastamentos, e = lista[0] || null, d = ds[0] || null;
     var alvo = e ? diaDoItem(e, c) : c;
     var dia = e && e.dia, ciclo = e && e.ciclo, sobreaviso = e && e.sobreaviso;
     /* o Dia que muda a escala: o banco põe também os dias seguintes na fila (o rodízio conta o que cada um fez no dia),
@@ -520,8 +567,13 @@
     var doisDias = !umDia || (!!dia && noDia(d.dia, E().outrosDias).length > 0);
     var salvos = diasSalvos(ds, extra);   // antes de o rascunho sair
     salvando = true;
-    var etapas = umDia ? mostrarEtapas(alvo, !!ciclo, naLinha, extra, !!dia && noDia(d.dia, E().refazDistribuicao))
-      : mostrarEtapasDias(ds, lista.some(function (x) { return x.ciclo || x.sobreaviso; })
+    if (comAfastamentos) F().marcarSalvando(true);
+    /* só os afastamentos: as etapas da página Afastamentos (a caixa na hora quando refazem a escala) */
+    var refazAfastamentos = comAfastamentos && F().refazEscala();
+    var etapas = comAfastamentos && !lista.length
+      ? RW.etapas.acao('afastamentosSalvar', { refaz: refazAfastamentos }, refazAfastamentos ? { doServidor: 2 } : { doServidor: 1, atraso: true })
+      : umDia ? mostrarEtapas(alvo, !!ciclo, naLinha, extra, !!dia && noDia(d.dia, E().refazDistribuicao))
+      : mostrarEtapasDias(ds, refazAfastamentos || lista.some(function (x) { return x.ciclo || x.sobreaviso; })
           || ds.some(function (x) { return x.dia && noDia(x.dia, E().refazDiasSeguintes); }));
     atualizar();
     if (botao) RW.iniciarCarregando(botao);
@@ -529,6 +581,7 @@
        prontos, escalas-atualizando.js) */
     function terminar() {
       salvando = false;
+      if (comAfastamentos && F()) F().marcarSalvando(false);
       etapas.parar();
       if (naLinha) {
         linhaNoRodape = null;
@@ -537,10 +590,12 @@
       if (botao) RW.pararCarregando(botao);
     }
     var pedido = umDia ? RW.escalasDados.painelSalvar(alvo.unidadeId, alvo.iso, dia, ciclo, extra, sobreaviso)
-      : RW.escalasDados.painelSalvarDias(lista, extra);
+      : RW.escalasDados.painelSalvarDias(lista, extra, comAfastamentos ? afastamentos : null, confirmar);
     return pedido.then(function (r) {
       var geral = RW.mensagens.geral;
       if (r && r._falha) { terminar(); mudou(); return { ok: false, erro: r._falha === 'conexao' ? geral.semConexao : geral.falhaServidor }; }
+      /* os afastamentos mexem no que o militar já tem nesses dias: a confirmação da página Afastamentos, e nada foi gravado */
+      if (r && r.precisa_confirmar) { terminar(); mudou(); return { ok: false, confirmar: true, militares: r.militares || [] }; }
       if (!r || !r.success) {
         terminar();
         if (r && r.desatualizado) {
@@ -575,15 +630,20 @@
 
   function avisarFalha(res) { RW.avisar({ tipo: res.desatualizado ? 'aviso' : 'erro', mensagem: res.erro }); }
 
-  function gravar(botao) {
+  /* confirmar: o aviso dos afastamentos já confirmado (o Continuar da confirmação grava de novo, com ele) */
+  function gravar(botao, confirmar) {
     var c = contexto();
     if (salvando || (E() && E().travado())) return;
     var ds = dias(), lista = paraGravar(ds), extra = X() ? X().envio() : null;
-    if (!lista.length && (!extra || !c)) return;   // a extra sozinha vai pelo dia aberto
+    var afastamentos = F() && F().contar() ? F().pedido() : [];
+    if (afastamentos.length && F().problema()) return;
+    if (!lista.length && !afastamentos.length && (!extra || !c)) return;   // a extra sozinha vai pelo dia aberto
     var datas = G() ? G().datas() : 0;
-    enviar(c, ds, lista, extra, botao).then(function (res) {
+    enviar(c, ds, lista, extra, botao, afastamentos, confirmar).then(function (res) {
+      if (res.confirmar) { F().confirmarAvisos(res.militares, function () { gravar(botao, true); }); return; }
       if (!res.ok) { avisarFalha(res); return; }
-      var log = juntarLogs(res.r.logs || [], datas > 1);
+      /* com os afastamentos e os dias, cada bloco leva o título do registro dele (Afastamentos, Escala de 20/11) */
+      var log = juntarLogs(res.r.logs || [], datas > 1 || (afastamentos.length > 0 && lista.length > 0));
       if (log && RW.resumo) RW.resumo.abrirModal(log, { pagina: 'Escala' });
     });
   }
