@@ -169,8 +169,9 @@
   function preencher(cel, un, k, alocs, marcados, falta, curto) {
     var ab = dia().aberto();
     cel.classList.toggle('escala-mes-celula--selecionada', !!ab && ab.uid === un.id && ab.data === k);
-    /* as vagas do dia, inclusive as sem horário (vão para o fim), na ordem do primeiro horário */
-    var aqui = G().vagas().filter(function (a) { return +a.unidade === un.id && a.data === k; })
+    /* as vagas do dia, na ordem do primeiro horário, e no fim, em cinza, as salvas que saem ao salvar (quem entrou no
+       rascunho e ficou sem horário não aparece) */
+    var aqui = G().doBloco(un.id, k)
       .sort(function (x, y) { return Math.min.apply(null, G().blocos(x)) - Math.min.apply(null, G().blocos(y)) || u().nome(x.cpf).localeCompare(u().nome(y.cpf)); });
     var comExtra = aqui.some(function (a) { return a.blocos.length; });
     /* o gráfico (com as extras) e, com a Escala completa marcada no Exibir, quem está de serviço no dia, em cima das extras */

@@ -8,7 +8,9 @@
    barra, os campos e o cadeado; sem horário, os campos em branco;
    sempre com os outros dias dele embaixo; quem passou da cota vê
    também a nota), Pôr outro no lugar dele (o escolhido fica com o
-   horário), Remover deste dia (na hora, com o Desfazer), na Escala o
+   horário), Remover deste dia (na hora, com o Desfazer: quem entrou
+   no rascunho some, quem estava salvo fica em cinza até o Salvar, e
+   os dois já ficam livres para outro lugar), na Escala o
    Abrir na Extrajornada, e Abrir o painel do dia. Na Extrajornada, o
    pelotão abre Adicionar neste dia (o campo de militar com os grupos
    do painel; escolhido, ele entra no bloco e a caixa passa para ele,
@@ -25,9 +27,9 @@
   var RW = window.RosterWork = window.RosterWork || {};
   var TOPO_PELOTAO = 8;   // a caixa do pelotão abre com o topo 8px abaixo do topo dele
 
-  /* a caixa aberta: { tela, tipo: 'nome' | 'pelotao', uid, k, cpf, foco (o militar em foco), novo (o escolhido no
-     Adicionar, à espera do horário), pode (false: só os itens de abrir), caixa, menu, acao ('horario', 'outro' ou
-     'adicionar': a caixa 2), botao } */
+  /* a caixa aberta: { tela, tipo: 'nome' | 'pelotao', uid, k, cpf, foco (o militar em foco), pode (false: só os itens
+     de abrir), caixa (null: o escolhido no Adicionar, à espera da peça), menu, acao ('horario', 'outro' ou 'adicionar':
+     a caixa 2), botao } */
   var a = null;
   var procurando = false;   // a peça nova é procurada no próximo quadro
   var depoisDeRedesenhar = [];   // quem também desenha a barra da extra numa caixa (a Escala: o Adicionar extra)
@@ -121,13 +123,16 @@
     soltar(c);
   }
 
-  /* a caixa que deixou de ser a aberta: a barra dela deixa de ser a escolhida; na Extrajornada, o escolhido no Adicionar
-     que ficou sem horário sai do bloco, e a bolinha do militar em foco esconde o nome */
+  /* a caixa que deixou de ser a aberta: a barra dela deixa de ser a escolhida; na Extrajornada, quem ficou no bloco só
+     pela caixa (sem vaga nele) sai, e a bolinha do militar em foco esconde o nome */
   function soltar(c) {
     if (!c || c === a) return;
     if (c.cpf && B().escolhida() === chaveBarra(c.cpf, c.k)) B().escolher('');
-    if (c.tela === 'extrajornada' && ((c.novo && !G().vagaDe(c.cpf, c.k)) || c.foco)) porDia().atualizarDia(c.k);
+    if (c.tela === 'extrajornada' && (c.foco || (c.tipo === 'nome' && !temVaga(c.cpf, c.uid, c.k)))) porDia().atualizarDia(c.k);
   }
+
+  /* o militar tem vaga no bloco (com horário, ou a salva que sai ao salvar, em cinza) */
+  function temVaga(cpf, uid, k) { return G().doBloco(uid, k).some(function (v) { return v.cpf === cpf; }); }
 
   /* um item do menu: o mesmo item de novo não faz nada */
   function fazer(c, acao, botao) {
@@ -142,7 +147,7 @@
       c.acao = 'outro'; c.botao = botao;
       c.caixa.segunda(botao, campo(c.uid, c.k, function (x) { porOutro(c, x.cpf); }), textoDo(botao));
     },
-    /* sai na hora (na Extrajornada, fica em cinza até o Salvar); o Desfazer do rodapé volta */
+    /* sai na hora (quem entrou no rascunho some; quem estava salvo fica em cinza até o Salvar); o Desfazer do rodapé volta */
     remover: function (c) {
       var m = u().militar(c.cpf), uid = c.uid, k = c.k;
       fechar();
@@ -282,7 +287,7 @@
   /* escolhido no Adicionar neste dia: ele entra no fim do bloco, sem horário, e a caixa passa para ele já com a barra
      vazia; nada muda até o clique no horário */
   function abrirNovo(uid, k, cpf) {
-    a = { tela: 'extrajornada', tipo: 'nome', uid: uid, k: k, cpf: cpf, novo: true, foco: false, pode: true, caixa: null };
+    a = { tela: 'extrajornada', tipo: 'nome', uid: uid, k: k, cpf: cpf, foco: false, pode: true, caixa: null };
     porDia().atualizarDia(k);
   }
 
@@ -294,7 +299,7 @@
     if (a && a.tipo === 'nome' && a.caixa && a.uid === uid && a.k === k && a.cpf === cpf) return;
     var bloco = blocoDe(uid, k), peca = pecaDe(bloco, cpf), m = u().militar(cpf);
     if (!peca || !m) return;
-    var c = { tela: 'extrajornada', tipo: 'nome', uid: uid, k: k, cpf: cpf, foco: RW.extrajornadaLista.foco() === cpf, novo: false, pode: true };
+    var c = { tela: 'extrajornada', tipo: 'nome', uid: uid, k: k, cpf: cpf, foco: RW.extrajornadaLista.foco() === cpf, pode: true };
     c.menu = menuDoNome(c);
     prepararMenu(c);
     abrirCaixa(c, peca, [bloco], L().noDia(nomeDe(m), diaMes(k)));
@@ -356,12 +361,13 @@
   }
 
   /* a célula do bloco (extrajornada-por-dia.js, depois das vagas e da bolinha do militar em foco): a marca de quem edita
-     (a borda nos nomes, escalas-mes.css), o clique dos nomes e o escolhido no Adicionar à espera do horário; a caixa
-     aberta neste bloco acha a peça nova no próximo quadro. curto: o posto curto da célula pequena do Calendário */
+     (a borda nos nomes, escalas-mes.css), o clique dos nomes e, sem horário no fim do bloco enquanto a caixa dele está
+     aberta, quem não tem vaga nele (o escolhido no Adicionar, ou quem ficou sem horário pela barra); a caixa aberta
+     neste bloco acha a peça nova no próximo quadro. curto: o posto curto da célula pequena do Calendário */
   function decorar(cel, uid, k, curto) {
     var pode = editavel(k);
     cel.classList.toggle('escala-mes-celula--edita', pode);
-    if (pode && a && a.novo && a.uid === uid && a.k === k && !G().vagaDe(a.cpf, k) && u().militar(a.cpf)) {
+    if (pode && a && a.tela === 'extrajornada' && a.tipo === 'nome' && a.uid === uid && a.k === k && !pecaDe(cel, a.cpf) && u().militar(a.cpf)) {
       var novo = u().vaga({ cpf: a.cpf, unidade: uid, data: k, blocos: [], origem: 'admin' }, uid, curto);
       novo.classList.remove('extrajornada-vaga--sai');
       novo.removeAttribute('data-dica');
@@ -399,7 +405,7 @@
     abrirNome: function (tela, uid, k, cpf, titulo, espera) {
       var t = TELAS[tela], peca = t ? t.peca(uid, k, cpf) : null;
       if (!peca) return;
-      var c = { tela: tela, tipo: 'nome', uid: +uid, k: k, cpf: cpf, foco: false, novo: false, pode: false };
+      var c = { tela: tela, tipo: 'nome', uid: +uid, k: k, cpf: cpf, foco: false, pode: false };
       c.menu = menuDoNome(c);
       abrirCaixa(c, peca, t.junto(uid, k), titulo, espera);
     },

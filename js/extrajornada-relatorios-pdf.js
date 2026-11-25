@@ -15,9 +15,11 @@
    mudou desde o lançamento (era, ficou e quem ajustou).
    A tabela vai inteira para a folha seguinte só quando cabe numa folha;
    mais alta, ela se parte, com os títulos das colunas repetidos.
-   Usa as peças do PDF da escala (escalas-impressao-pdf.js: biblioteca,
-   fontes, logo, cores do tema e download) e empresta as suas às cópias
-   da tela (extrajornada-tela-pdf.js). O PDF é desenhado aqui
+   Usa as peças do formato dos relatórios (geral-relatorio-pdf.js: a
+   folha, as seções, as tabelas) e as do PDF da escala
+   (escalas-impressao-pdf.js: biblioteca, fontes, cores do tema e
+   download), e empresta as tabelas por pelotão às cópias da tela
+   (extrajornada-tela-pdf.js). O PDF é desenhado aqui
    (exceção REGRAS §3/§4).
    RosterWork.extrajornadaRelatoriosPdf.
    ============================================================ */
@@ -29,23 +31,14 @@
   var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   var INI = ['', '08h', '14h', '20h', '02h'];
   var FIM = ['', '14h', '20h', '02h', '08h'];
-  /* as medidas do registro RW das trocas (pontos) */
-  var FONTE = { titulo: 13, rotulo: 8, valor: 10, secao: 9.5, texto: 9.5, celula: 9, cabecalho: 8.5, ajuda: 8 };
-  var MARGEM = { cabecalho: [0, 10, 0, 0], secao: [0, 16, 0, 4], ajuda: [0, 4, 0, 2], observacoes: [0, 6, 0, 0], subsecao: [0, 10, 0, 0] };
-  var LINHA = { secao: 0.75, tabela: 0.5 };
-  var CELULA = { lado: 6, vertical: 5 };
-  var ESPACAMENTO_CAIXA_ALTA = { titulo: 0.4, secao: 0.6 };
-  var ALTURA_LINHA = FONTE.celula * 1.22 * 1.15;   // uma linha de texto da célula (a fonte e o lineHeight do documento)
-  var LETRA = 0.52;                                // a largura média de uma letra, em vezes a fonte (estimativa das linhas)
   var LINHAS_INTEIRAS = 30;                        // até aqui a tabela não se parte entre duas folhas (se couber numa folha)
-  var A4 = { largura: 595, altura: 842 };          // a folha em retrato (pontos)
-  var FOLGA_INTEIRA = 120;                         // o que a folha leva além da tabela inteira (o título da seção, a ajuda...)
   var LARGURA = { cpf: 72, pelotao: 40, pedidoEm: 62, cotasPedidas: 70, termo: 40, pediu: 34, recebeu: 44, data: 58, horario: 86, cotas: 36,
-                  era: 58, ficou: 58, ajustadoPor: 80, campoRotulo: 150 };
+                  era: 58, ficou: 58, ajustadoPor: 80 };
 
   function P() { return RW.escalasImpressaoPdf; }
+  /* as peças do formato dos relatórios (a folha, as seções, as tabelas): geral-relatorio-pdf.js */
+  function relatorio() { return RW.relatorioPdf; }
   function txt() { return RW.mensagens.extrajornada.relatoriosPdf; }
-  function dois(n) { return String(n).padStart(2, '0'); }
   function dataBr(iso) { var p = String(iso).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
   function rotuloMes(comp) { var p = String(comp).split('-'); var n = MESES[Number(p[1]) - 1]; return n.charAt(0).toUpperCase() + n.slice(1) + ' de ' + p[0]; }
   /* o horário do trecho; o da extra que começa no fim do expediente (inicio) dura 6 h por cota */
@@ -74,112 +67,9 @@
     return saida;
   }
 
-  /* ---------- as peças do registro RW ---------- */
-  /* larga: a folha em paisagem (as cópias da tela que pedem; os relatórios saem em retrato) */
-  function pecas(c, larga) {
-    var M = P().medidas.MARGENS;
-    var largura = (larga ? A4.altura : A4.largura) - M[0] - M[2];
-    /* até essa altura a tabela pode ir inteira para a folha seguinte; mais alta que a folha, o pdfmake some com ela */
-    var alturaInteira = (larga ? A4.largura : A4.altura) - M[1] - M[3] - FOLGA_INTEIRA;
-    var numero = 0;
-    var linhasFinas = {
-      hLineWidth: function (i) { return i === 0 ? 0 : LINHA.tabela; },
-      vLineWidth: function () { return 0; },
-      hLineColor: function () { return c.borda; },
-      paddingLeft: function (i) { return i === 0 ? 0 : CELULA.lado; },
-      paddingRight: function () { return CELULA.lado; },
-      paddingTop: function () { return CELULA.vertical; },
-      paddingBottom: function () { return CELULA.vertical; }
-    };
-    function linhasDe(t, l) { return typeof t !== 'string' || typeof l !== 'number' ? 1 : Math.max(1, Math.ceil(t.length * FONTE.celula * LETRA / l)); }
-    return {
-      largura: largura,
-      alturaInteira: alturaInteira,
-      numero: function () { return numero; },
-      /* o título da seção (numerado pela ordem em que aparece) com a linha embaixo */
-      secao: function (titulo) {
-        numero++;
-        return [
-          { text: txt().secao(numero, titulo), bold: true, fontSize: FONTE.secao, color: c.forte, characterSpacing: ESPACAMENTO_CAIXA_ALTA.secao, margin: MARGEM.secao },
-          { canvas: [{ type: 'line', x1: 0, y1: 0, x2: largura, y2: 0, lineWidth: LINHA.secao, lineColor: c.forte }] }
-        ];
-      },
-      ajuda: function (texto) { return { text: texto, fontSize: FONTE.ajuda, color: c.suave, margin: MARGEM.ajuda }; },
-      topo: function (rotulo, valor, negrito) {
-        return { stack: [{ text: rotulo, fontSize: FONTE.rotulo, color: c.suave }, { text: valor, fontSize: FONTE.valor, bold: !!negrito, color: c.forte }] };
-      },
-      /* o resumo: o rótulo em cinza e o valor */
-      campos: function (lista) {
-        return { table: { widths: [LARGURA.campoRotulo, '*'], body: lista.map(function (x) {
-          return [{ text: x[0], fontSize: FONTE.celula, color: c.suave }, { text: x[1], fontSize: FONTE.texto, color: c.forte }];
-        }) }, layout: linhasFinas };
-      },
-      /* uma linha: a 1ª célula à esquerda, as outras no centro, todas descidas para o meio da altura da linha; a célula
-         é um texto, uma lista de linhas ou { v, plano, negrito, junta } (plano = o texto simples do nome, para contar as
-         linhas; junta = quantas colunas ela ocupa). jeito (opcional, as cópias da tela): { noAlto (todas no alto da
-         linha), esquerda (quantas colunas à esquerda; o padrão é 1) }. A linha leva quantas linhas de texto a mais alta
-         tem (linhas: a altura da tabela, em quadros) */
-      linha: function (celulas, larguras, negrito, jeito) {
-        var esquerda = (jeito && jeito.esquerda) || 1, noAlto = !!(jeito && jeito.noAlto);
-        function valor(x) { return x && x.v !== undefined ? x.v : x; }
-        var conta = celulas.map(function (x, i) {
-          if (x === null) return 0;
-          var v = valor(x);
-          return Array.isArray(v) ? v.length : linhasDe(x && x.plano ? x.plano : v, larguras[i]);
-        });
-        var n = Math.max.apply(null, conta);
-        var saida = celulas.map(function (x, i) {
-          if (x === null) return {};
-          var v = valor(x);
-          var cel = { stack: (Array.isArray(v) ? v : [v]).map(function (t) { return typeof t === 'object' ? t : { text: t }; }),
-            alignment: i < esquerda ? 'left' : 'center', fontSize: FONTE.celula, color: c.forte, bold: !!(negrito || (x && x.negrito)),
-            margin: [0, noAlto ? 0 : (n - conta[i]) * ALTURA_LINHA / 2, 0, 0] };
-          if (x && x.junta) cel.colSpan = x.junta;
-          return cel;
-        });
-        saida.linhas = n;
-        return saida;
-      },
-      /* esquerda: quantas colunas à esquerda (o padrão é 1) */
-      tabela: function (larguras, titulos, linhas, esquerda) {
-        var cab = titulos.map(function (t, i) { return { text: t, bold: true, fontSize: FONTE.cabecalho, color: c.suave, alignment: i < (esquerda || 1) ? 'left' : 'center' }; });
-        return { table: { headerRows: 1, dontBreakRows: true, widths: larguras, body: [cab].concat(linhas) }, layout: linhasFinas };
-      },
-      /* o pelotão dentro da seção (2.1, 2.2...) */
-      subsecao: function (n, u) {
-        return { text: [{ text: n + '   ' + u.nome, bold: true }, { text: u.cidade ? '   ' + u.cidade : '', color: c.suave }],
-          fontSize: FONTE.celula, color: c.forte, margin: MARGEM.subsecao };
-      },
-      /* as Observações com o título (não se separam) */
-      observacoes: function (lista) {
-        var t = this.secao(txt().secoes.observacoes);
-        return { unbreakable: true, stack: t.concat([{ ol: lista, fontSize: FONTE.celula, color: c.texto, margin: MARGEM.observacoes }]) };
-      }
-    };
-  }
-
-  /* a folha no padrão do registro RW: o título, a linha do alto (topo: as colunas feitas com p.topo) e o conteúdo; larga =
-     em paisagem (as cópias da tela, extrajornada-tela-pdf.js) */
-  function folha(titulo, topo, conteudo, c, larga) {
-    var M = P().medidas, pdf = RW.mensagens.escala.impressao.pdf;
-    return {
-      pageSize: 'A4', pageOrientation: larga ? 'landscape' : 'portrait', pageMargins: M.MARGENS,
-      defaultStyle: { font: 'Montserrat', fontSize: FONTE.celula, color: c.texto, lineHeight: 1.15 },
-      info: { title: titulo, author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' },
-      header: function () { return { svg: c.logo, width: M.LOGO_LARGURA, margin: M.LOGO_MARGEM }; },
-      footer: function (pagina, total) {
-        return { columns: [{ text: pdf.site }, { text: pdf.pagina(pagina, total), alignment: 'right' }], fontSize: M.FONTE.rodape, color: c.suave, margin: M.RODAPE_MARGEM };
-      },
-      content: [
-        { text: titulo, bold: true, fontSize: FONTE.titulo, color: c.forte, characterSpacing: ESPACAMENTO_CAIXA_ALTA.titulo },
-        { columns: topo, margin: MARGEM.cabecalho }
-      ].concat(conteudo)
-    };
-  }
-
   function documento(qual, r, opc, conteudo, c) {
-    var p = pecas(c), t = txt();
-    return folha(t.titulos[qual], [p.topo(t.rotuloMes, rotuloMes(r.competencia), true),
+    var p = relatorio().pecas(c), t = txt();
+    return relatorio().folha(t.titulos[qual], [p.topo(t.rotuloMes, rotuloMes(r.competencia), true),
       p.topo(t.rotuloUnidade, opc.unidade ? unidade(r, opc.unidade).nome : t.todos, true), p.topo(t.rotuloGerado, r.geradoEm)], conteudo, c, false);
   }
 
@@ -213,8 +103,9 @@
     if (unica) cols.splice(pos, 0, { titulo: txt().colunas.pelotao, largura: LARGURA.pelotao });
     var larguras = cols.map(function (x) { return x.largura; });
     var fixas = larguras.reduce(function (s, l) { return s + (typeof l === 'number' ? l : 0); }, 0);
+    var celula = relatorio().medidas.CELULA, alturaLinha = relatorio().medidas.ALTURA_LINHA;
     /* a largura que sobra para o militar (só para contar as linhas do nome; a tabela continua com '*') */
-    var estimar = larguras.map(function (l) { return typeof l === 'number' ? l : p.largura - fixas - CELULA.lado - 2 * CELULA.lado * (larguras.length - 1); });
+    var estimar = larguras.map(function (l) { return typeof l === 'number' ? l : p.largura - fixas - celula.lado - 2 * celula.lado * (larguras.length - 1); });
     var n = p.numero();
     var grupos = unica || opc.unidade ? [{ u: null, ms: lista }]
       : unidades(r, opc).map(function (u) { return { u: u, ms: lista.filter(function (m) { return m.unidade_id === u.unidade_id; }) }; }).filter(function (g) { return g.ms.length; });
@@ -229,7 +120,7 @@
       for (var k = 1; k < juntas; k++) cel.push(null);
       linhas.push(p.linha(cel.concat(t.contas), estimar, true, jeito));
       var bloco = (i === 0 && antes ? antes : []).concat(g.u ? [p.subsecao(n + '.' + (i + 1), g.u)] : [], [p.tabela(larguras, cols.map(function (x) { return x.titulo; }), linhas)]);
-      var altura = linhas.reduce(function (s, l) { return s + l.linhas * ALTURA_LINHA + 2 * CELULA.vertical; }, 0);
+      var altura = linhas.reduce(function (s, l) { return s + l.linhas * alturaLinha + 2 * celula.vertical; }, 0);
       return { stack: bloco, unbreakable: linhas.length <= LINHAS_INTEIRAS && altura <= p.alturaInteira };
     });
   }
@@ -239,7 +130,7 @@
 
   /* ---------- Pedidos: a data do pedido e as cotas pedidas ---------- */
   function pedidos(r, opc, c) {
-    var p = pecas(c), t = txt(), vols = voluntarios(r, opc), eh = daqui(r, opc), C = t.colunas;
+    var p = relatorio().pecas(c), t = txt(), vols = voluntarios(r, opc), eh = daqui(r, opc), C = t.colunas;
     var cotasDe = function (m) { return m.cotas; };
     var conteudo = p.secao(t.secoes.resumo).concat([p.campos([
       [t.campos.periodo, t.periodo(dataBr(r.abre), dataBr(r.fecha))],
@@ -260,7 +151,7 @@
 
   /* ---------- Termos e cotas: o termo, quantas pediu e quantas recebeu; o total de cada pelotão ---------- */
   function termos(r, opc, c) {
-    var p = pecas(c), t = txt(), vols = voluntarios(r, opc), C = t.colunas;
+    var p = relatorio().pecas(c), t = txt(), vols = voluntarios(r, opc), C = t.colunas;
     var recebeu = function (m) { return m.termo ? (m.concedidas || 0) : 0; };
     var com = vols.filter(function (m) { return m.termo; }).length;
     var conteudo = p.secao(t.secoes.resumo).concat([p.campos([
@@ -293,7 +184,7 @@
   }
 
   function inicial(r, opc, c) {
-    var p = pecas(c), t = txt(), base = dosVoluntarios(voluntarios(r, opc), r.base);
+    var p = relatorio().pecas(c), t = txt(), base = dosVoluntarios(voluntarios(r, opc), r.base);
     var conteudo = p.secao(t.secoes.resumo).concat([p.campos([
       [t.campos.lancadoEm, r.lancado], [t.campos.lancadoPor, r.lancadoPor],
       [t.campos.comExtra, String(Object.keys(porCpf(base)).length)], [t.campos.lancadas, t.cotas(soma(base))]
@@ -312,7 +203,7 @@
     return saida;
   }
   function final(r, opc, c) {
-    var p = pecas(c), t = txt(), C = t.colunas, vols = voluntarios(r, opc);
+    var p = relatorio().pecas(c), t = txt(), C = t.colunas, vols = voluntarios(r, opc);
     var base = dosVoluntarios(vols, r.base), atual = dosVoluntarios(vols, r.atual);
     var naBase = {}, noAtual = {}, mud = {}, ajuste = {};
     base.forEach(function (x) { naBase[chave(x)] = true; });
@@ -342,8 +233,8 @@
   /* ---------- os dados do mês (extrajornada_mes) no formato dos relatórios ---------- */
   /* o "Gerado em" do alto: a data e a hora de agora */
   function geradoAgora() {
-    var agora = new Date();
-    return txt().gerado(dois(agora.getDate()) + '/' + dois(agora.getMonth() + 1) + '/' + agora.getFullYear(), dois(agora.getHours()) + ':' + dois(agora.getMinutes()));
+    var agora = relatorio().agora();
+    return txt().gerado(agora.data, agora.hora);
   }
 
   function dados(d) {
@@ -376,9 +267,9 @@
 
   RW.extrajornadaRelatoriosPdf = {
     arquivo: arquivo, nomeArquivo: nomeArquivo, trechos: trechos,
-    /* as peças para as cópias da tela (extrajornada-tela-pdf.js): a folha, as peças, as tabelas por pelotão, os dados do
-       mês e os textos de data, mês e horário */
-    folha: folha, pecas: pecas, quadros: quadros, dados: dados, geradoAgora: geradoAgora, dataBr: dataBr, rotuloMes: rotuloMes,
+    /* para as cópias da tela (extrajornada-tela-pdf.js): as tabelas por pelotão, os dados do mês e os textos de data,
+       mês e horário */
+    quadros: quadros, dados: dados, geradoAgora: geradoAgora, dataBr: dataBr, rotuloMes: rotuloMes,
     horario: horario
   };
 })();

@@ -79,6 +79,8 @@
       var linha = RW.tpl('tpl-extrajornada-painel-outro');
       var sem = G().SEM_CURTA[G().dataDe(v.data).getDay()];
       linha.querySelector('.extrajornada-painel-outro-dia').textContent = msg().outroDia(v.data.slice(8, 10), sem, (u().unidade(v.unidade) || {}).nome || '');
+      /* a salva que ficou sem horário: em cinza até o Salvar */
+      linha.classList.toggle('extrajornada-painel-outro--sai', !G().blocos(v).length);
       avisoDoDia(linha, v);
       RW.extrajornadaDia.ligarMarcas(linha.querySelector('.extrajornada-painel-marcas'), m, v.data, G().blocos(v), +v.unidade, opcoes);
       ligarInicio(linha.querySelector('.extrajornada-painel-outro-texto'), null, m, v.data, +v.unidade);

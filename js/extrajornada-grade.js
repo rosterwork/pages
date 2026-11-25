@@ -8,8 +8,9 @@
    (extrajornada-montar.js) e a aba Extrajornada do painel do dia da
    Escala (escalas-painel-extra.js). O calendário, a lista dos
    voluntários e o painel do dia leem e mudam por aqui.
-   Tudo fica no rascunho até o Salvar; o militar sem nenhum horário
-   continua no dia até lá. O rascunho aceita passar da cota: quem
+   Tudo fica no rascunho até o Salvar; quem estava salvo e ficou sem
+   horário continua no dia, em cinza, até lá, e quem entrou no rascunho
+   e ficou sem horário sai de vez. O rascunho aceita passar da cota: quem
    passou aparece em passaram e o Salvar espera acertar. Cada mudança é
    um passo do Desfazer e do Refazer (o Preencher pela sugestão, um só).
    Não desenha nada. RosterWork.extrajornadaGrade.
@@ -50,7 +51,7 @@
   function dataLonga(k) { var x = dataDe(k); return SEMANA[x.getDay()] + ', ' + x.getDate() + ' de ' + MESES[x.getMonth()]; }
   function nomeDoMes(k) { return MESES[dataDe(k).getMonth()]; }
 
-  /* as vagas como ficam com o rascunho, inclusive as sem nenhum horário (o militar fica no dia até o Salvar) */
+  /* as vagas como ficam com o rascunho, inclusive as sem nenhum horário (quem estava salvo e sai ao salvar) */
   function vagas() {
     var mapa = {};
     d.alocacoes.forEach(function (a) { mapa[chave(a.cpf, a.data)] = a; });
@@ -62,6 +63,22 @@
   function base(cpf, data) { return d.alocacoes.filter(function (a) { return a.cpf === cpf && a.data === data; })[0] || null; }
   function vagaDe(cpf, data) { var k = chave(cpf, data); return k in mud ? mud[k] : base(cpf, data); }
   function alocDe(cpf, data) { var v = vagaDe(cpf, data); return v && v.blocos.length ? v : null; }
+  /* a extra salva (b) que sai do pelotão ao salvar (tirada, ou posta em outro pelotão no mesmo dia): fica em cinza nele
+     até o Salvar, e o militar já está livre para outro lugar */
+  function saiDe(b, uid) {
+    var v = mud[chave(b.cpf, b.data)];
+    return +b.unidade === +uid && !!v && !(v.blocos.length && +v.unidade === +uid);
+  }
+  function sai(cpf, uid, k) { var b = base(cpf, k); return !!b && saiDe(b, uid); }
+  /* as vagas que o pelotão mostra no dia: as com horário e, sem horário (em cinza), as salvas que saem ao salvar */
+  function doBloco(uid, k) {
+    var lista = efetivas().filter(function (a) { return +a.unidade === +uid && a.data === k; });
+    d.alocacoes.forEach(function (b) {
+      if (b.data !== k || !saiDe(b, uid)) return;
+      lista.push({ cpf: b.cpf, data: k, unidade: +uid, blocos: [], origem: mud[chave(b.cpf, k)].origem, porque: null, inicio: null });
+    });
+    return lista;
+  }
   /* as mudanças do rascunho que mexem na escala (a data nova ainda sem horário não mexe) */
   function alteracoes() {
     return Object.keys(mud).filter(function (k) { return mud[k].blocos.length || !!base(mud[k].cpf, mud[k].data); });
@@ -286,13 +303,14 @@
   }
 
   /* muda os horários do militar no dia (o mesmo para o calendário, a lista e o painel do dia). Passar da cota fica no
-     rascunho, e o Salvar espera acertar; sem nenhum horário, ele continua no dia até o Salvar. inicio: a hora em que a
-     extra começa fora dos riscos (o horário livre, ou o administrativo no fim do expediente), que vale se couber; sem
-     ele (as bolinhas mudaram), vale o padrão: o administrativo com 2 cotas, no fim do expediente (sai à meia-noite);
-     senão, na bolinha */
+     rascunho, e o Salvar espera acertar. Sem nenhum horário: quem estava salvo sai do pelotão salvo ao salvar (em cinza
+     até lá); quem entrou no rascunho sai de vez. inicio: a hora em que a extra começa fora dos riscos (o horário livre,
+     ou o administrativo no fim do expediente), que vale se couber; sem ele (as bolinhas mudaram), vale o padrão: o
+     administrativo com 2 cotas, no fim do expediente (sai à meia-noite); senão, na bolinha */
   function mudar(m, k, novos, unidade, inicio) {
     if (soLeitura() || antigo(k)) return;
     var antes = base(m.cpf, k), bs = novos.slice().sort();
+    if (!bs.length && antes) unidade = antes.unidade;
     var dado = inicio !== undefined;
     if (!dado) inicio = bs.length === 2 ? desde(m, k) : null;
     if (inicio && !(dado ? comecoCabe(bs, inicio) : inicioCabe(m, k, bs))) inicio = null;
@@ -300,6 +318,7 @@
     var c = chave(m.cpf, k), era = JSON.stringify(mud[c] || null), foto = copia(mud);
     if (antes && +antes.unidade === novo.unidade && JSON.stringify(blocos(antes).sort()) === JSON.stringify(novo.blocos)
         && (antes.inicio || null) === novo.inicio) delete mud[c];
+    else if (!antes && !bs.length) delete mud[c];
     else mud[c] = novo;
     /* o passo do Desfazer (o clique que não muda nada não conta) */
     if (juntando) return;
@@ -394,7 +413,7 @@
     podeDesfazer: function () { return passos.length > 0; },
     podeRefazer: function () { return refeitos.length > 0; },
     chave: chave, base: base, alteracoes: alteracoes, passaram: passaram, fraseDasCotas: fraseDasCotas, lancada: lancada, mesmosBlocos: mesmosBlocos,
-    vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, usadas: usadas, voluntarios: voluntarios, blocos: blocos, naoSalvos: naoSalvos,
+    vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, sai: sai, doBloco: doBloco, usadas: usadas, voluntarios: voluntarios, blocos: blocos, naoSalvos: naoSalvos,
     conduz: conduz, impedimento: impedimento, viagemDe: viagemDe,
     faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado, soLeitura: soLeitura, antigo: antigo,
     escalaDoMes: escalaDoMes, escalaPronta: escalaPronta,

@@ -1,39 +1,25 @@
 /* ============================================================
    ESCALAS — PDF da escala (biblioteca pdfmake, carregada só aqui)
-   Monta e baixa o PDF que o painel "Imprimir escala" pede: uma
-   folha por dia, as unidades em sequência, só a logo no alto e o
-   site + "Página X de Y" no rodapé (com os ícones de origem, que o
-   Mostrar do painel liga, a legenda deles logo acima:
-   escalas-impressao-legenda.js). O conteúdo é o do painel do dia,
-   na mesma ordem (Funções especiais, as instalações, Extrajornada,
-   Estagiários, Sobreaviso, as viaturas, sem função, observações),
-   no padrão de blocos (Guia visual › Impressão da escala): a unidade é um bloco cinza com
-   contorno fino e o título dentro, e cada posto um bloquinho branco com contorno fino,
-   a linha do título de uma borda à outra e a linha fina entre as
-   funções (e entre os grupos das observações), antes da borda.
+   Monta e baixa o PDF que o painel "Imprimir escala" pede, no
+   formato dos relatórios (geral-relatorio-pdf.js): cada unidade de
+   cada dia começa numa folha nova, com o alto ("ESCALA DE SERVIÇO",
+   o Dia, a Unidade e quantos estão de serviço), e o conteúdo do
+   painel do dia na mesma ordem (Funções especiais, as instalações,
+   Extrajornada, Estagiários, Sobreaviso, as viaturas, sem função,
+   observações), cada parte uma seção numerada com o traço embaixo.
+   As tabelas não têm os títulos das colunas: a função (que ocupa as
+   linhas dela), o militar e o horário; Extrajornada, Estagiários,
+   Sobreaviso e Sem função só com o militar e o horário. A seção vai
+   inteira para a folha seguinte quando não cabe; só a maior que uma
+   folha se parte entre as linhas. No pé, o site, o "Gerado em" e
+   "Página X de Y" (com os ícones de origem, que o Mostrar do painel
+   liga, a legenda deles logo acima: escalas-impressao-legenda.js).
    O PDF é desenhado aqui, como o canvas do gráfico (exceção REGRAS
-   §3/§4): cores lidas do tema (--impressao-*), medidas em pontos
-   (A4 = 595 × 842) nas constantes abaixo.
-   Quebra de folha, em passadas (nunca perde ninguém):
-     1) mede: só as unidades que, pela altura estimada, podem passar
-        de uma folha, cada uma numa folha própria; a que passa é
-        "grande" (no caso comum não há nenhuma e não se mede nada);
-     2) monta: a pequena nunca se divide (vai inteira para a folha
-        seguinte); a grande quebra só entre postos, com o título
-        repetido; lê em que folha cada posto caiu;
-     3) final: a grande é cortada nesses pontos e a folha seguinte
-        ganha "(continuação)" e a data.
-   Cada desenho é conferido (todo posto saiu, no lugar certo) e o
-   desenho conferido é o próprio arquivo; se algo não bate, fica o
-   anterior, e no último caso o jeito simples (quebra livre).
-   As peças (recursos, medidas, desenho, blocos e download) também
-   servem aos relatórios da Extrajornada (extrajornada-relatorios-pdf.js)
-   e ao PDF das grades (escalas-impressao-grade-pdf.js).
-   Cantos arredondados (a biblioteca não arredonda tabela): os desenhos
-   acima pintam os blocos com fundo quadrado; o escolhido é redesenhado
-   sem esses fundos e com os blocos arredondados na camada de fundo de
-   cada folha, nas posições lidas dele. O texto tem de cair no mesmo
-   lugar; se não cair, fica o desenho de cantos retos.
+   §3/§4): cores lidas do tema (--impressao-*), medidas em pontos.
+   As peças (recursos, medidas, desenho, blocos arredondados e
+   download) também servem aos relatórios (geral-relatorio-pdf.js,
+   os da Extrajornada e os das trocas) e aos PDFs das grades
+   (escalas-impressao-grade-pdf.js) e dos Afastamentos.
    ============================================================ */
 (function () {
   'use strict';
@@ -43,37 +29,31 @@
   var BIBLIOTECA = 'bibliotecas/pdfmake.min.js';
   var FONTE_NORMAL = 'fontes/montserrat-400.woff';
   var FONTE_NEGRITO = 'fontes/montserrat-600.woff';
-  var ICONE_LOGO = 'icones/icone-logo.svg';
   var ICONE_SETA = 'icones/icone-seta-direita-longa.svg';
 
   /* medidas em pontos */
-  var MARGENS = [40, 70, 40, 44];         // esquerda, topo (logo), direita, base (rodapé)
-  var LOGO_LARGURA = 74;
-  var LOGO_MARGEM = [40, 22, 0, 0];
+  var MARGENS = [40, 40, 40, 44];         // esquerda, topo, direita, base (rodapé)
   var RODAPE_MARGEM = [40, 16, 40, 0];
-  var COLUNAS = [80, '*', 70];            // função · militar · horário (o mais largo, "00:00 → 00:00")
-  var SETA_LARGURA = 8;
-  var SETA_MARGEM = [0, 0.5, 0, 0];      // alinha a seta ao meio do texto do horário
   var ICONE = 7;                          // ícone de origem antes do nome (o Mostrar), no tamanho do PDF das grades
-  var ICONE_MARGEM = [0, 2.5, 0, 0];     // alinha o ícone ao meio do nome
-  var LINHA_FINA = 0.5;                   // contorno do bloquinho branco e as linhas dentro dele
+  var ICONE_MARGEM = [0, 2, 0, 0];       // alinha o ícone ao meio do nome
+  var LINHA_FINA = 0.5;                   // o contorno dos blocos arredondados (as grades e o relatório de trocas)
   var RAIO = { unidade: 6, posto: 3.5 };  // cantos arredondados do bloco da unidade e do bloquinho
   var ESPACAMENTO_CAIXA_ALTA = 0.6;       // entre letras do título do posto (caixa alta)
   var FONTE = { titulo: 16, data: 11, unidade: 12, detalhe: 9, posto: 8.5, funcao: 8.5, grad: 8.5, nome: 10, hora: 9, texto: 9, rodape: 8 };
-  var ALTURA_LINHA = 1.22;                // altura de uma linha de texto da Montserrat, em vezes o tamanho da fonte
-  /* margens dentro das células: o deslocamento no topo alinha as letras menores à linha do nome */
+  /* os blocos do relatório de trocas (trocas-relatorio-pdf.js): as margens dentro das células, os respiros da unidade
+     (lado, topo, entre bloquinhos, base) e do bloquinho (lado, entre colunas, topo, entre linhas, base, em cima e embaixo
+     da linha do título) e os espaços */
   var CELULA = { titulo: [3, 0, 3, 3], funcao: [0, 1.5, 0, 0], militar: [0, 0, 0, 0], hora: [0, 1, 0, 0], vazio: [3, 2, 3, 2] };
-  /* respiros dos blocos: a unidade (lado, topo, entre bloquinhos, base) e o bloquinho (lado, entre colunas, topo, entre linhas,
-     base, em cima e embaixo da linha do título) */
   var BLOCO = { lado: 5, topo: 7, vao: 2.5, base: 5 };
   var BLOQUINHO = { lado: 7, entreColunas: 4, topo: 6, linha: 2, base: 6, titulo: 4 };
   var ESPACO = { aposData: 16, entreUnidades: 9 };
-  /* a largura de dentro do bloquinho (a folha sem as margens, o recuo do bloco cinza e o do bloquinho): a linha fina */
-  var LARGURA_DENTRO = 595 - MARGENS[0] - MARGENS[2] - 2 * BLOCO.lado - 2 * BLOQUINHO.lado;
-  var A4_ALTURA = 842;
-  var ALTURA_UTIL = A4_ALTURA - MARGENS[1] - MARGENS[3] - 50;   // menos o topo, o rodapé e o título do dia
-  /* estimativa da altura de uma unidade (pt), com folga de 30%: só as que passam de ALTURA_UTIL são medidas */
-  var ESTIMATIVA = { titulo: 40, posto: 22, linha: 21, linhaTexto: 12, letrasPorLinha: 80, folga: 1.3 };
+  /* a escala do Dia (no formato dos relatórios): as larguras da função e do horário (o militar fica com o resto), o vão
+     entre os campos do alto, a altura útil da folha (A4 menos as margens e o alto da unidade), para saber se a seção
+     cabe inteira, e quantas letras cabem numa linha da folha (a conta da altura das observações) */
+  var COLUNAS = { funcao: 100, horario: 86 };
+  var VAO_TOPO = 32;
+  var ALTURA_UTIL = 842 - MARGENS[1] - MARGENS[3] - 60;
+  var LETRAS_POR_LINHA = 95;
 
   var recursos = null;   // promessa única: biblioteca + fontes + ícones (carregados no 1º uso)
 
@@ -120,11 +100,11 @@
 
   function carregarRecursos() {
     if (recursos) return recursos;
-    recursos = Promise.all([carregarScript(BIBLIOTECA), buscar(FONTE_NORMAL), buscar(FONTE_NEGRITO), buscar(ICONE_LOGO, true), buscar(ICONE_SETA, true)])
+    recursos = Promise.all([carregarScript(BIBLIOTECA), buscar(FONTE_NORMAL), buscar(FONTE_NEGRITO), buscar(ICONE_SETA, true)])
       .then(function (r) {
         window.pdfMake.vfs = { 'montserrat-400.woff': base64(r[1]), 'montserrat-600.woff': base64(r[2]) };
         window.pdfMake.fonts = { Montserrat: { normal: 'montserrat-400.woff', bold: 'montserrat-600.woff', italics: 'montserrat-400.woff', bolditalics: 'montserrat-600.woff' } };
-        return { logo: r[3], seta: r[4] };
+        return { seta: r[3] };
       })
       .catch(function (e) { recursos = null; throw e; });
     return recursos;
@@ -151,20 +131,20 @@
       forte: cor('--impressao-texto-forte'), texto: cor('--impressao-texto'), suave: cor('--impressao-texto-suave'),
       borda: cor('--impressao-borda'), fundo: cor('--impressao-fundo'), papel: cor('--impressao-papel')
     };
-    c.logo = svgDoIcone(icones.logo.replace(/currentColor/g, c.forte), '<g>');
     c.seta = svgDeTraco(icones.seta, c.suave);
     return c;
   }
 
-  function horarios(periodos, c) {
+  /* ---------- a escala do Dia ---------- */
+  /* as peças do formato dos relatórios (a folha, as seções, as tabelas): geral-relatorio-pdf.js */
+  function relatorio() { return RW.relatorioPdf; }
+  /* uma linha de texto da célula da tabela (pontos) */
+  function alturaTexto() { return relatorio().medidas.ALTURA_LINHA; }
+
+  /* os horários do militar, um embaixo do outro ("08h às 08h") */
+  function horarios(m) {
     var hora = pecas().formatarHora || function (h) { return h || ''; };
-    return {
-      stack: (periodos || []).map(function (p) {
-        /* encostado à direita: o vão em branco antes do horário */
-        return { columns: [{ text: '', width: '*' }, { text: hora(p.hi), width: 'auto' }, { svg: c.seta, width: SETA_LARGURA, margin: SETA_MARGEM }, { text: hora(p.hf), width: 'auto' }], columnGap: 4 };
-      }),
-      fontSize: FONTE.hora, color: c.texto, margin: CELULA.hora
-    };
+    return (m.periodos || []).map(function (p) { return txt().horario(hora(p.hi), hora(p.hf)); });
   }
 
   /* os ícones do militar, como no painel do dia: a origem do serviço e, fixado na função, o cadeado */
@@ -195,75 +175,73 @@
     return Array.from(s).map(function (ch) { return ch.normalize('NFD').charAt(0).toLowerCase(); }).join('');
   }
 
-  /* o nome completo (c.nomes, do banco) com o nome de guerra em negrito: a palavra inteira, sem olhar acento nem
-     maiúscula, com as letras do nome completo; sem o nome completo ou sem o nome de guerra dentro dele, só o nome de
-     guerra em negrito */
+  /* o posto e o nome completo (c.nomes, do banco), com o posto e o nome de guerra em negrito: a palavra inteira, sem
+     olhar acento nem maiúscula, com as letras do nome completo; sem o nome completo ou sem o nome de guerra dentro dele,
+     só o nome de guerra */
   function partesDoNome(m, c) {
     var guerra = m.nome || '', completo = (c.nomes && m.cpf && c.nomes[m.cpf]) || '';
-    var negrito = { bold: true, fontSize: FONTE.nome, color: c.forte };
-    var normal = { fontSize: FONTE.nome, color: c.forte };
+    var posto = { text: (m.grad || '') + ' ', bold: true };
     var procura = semAcento(guerra).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     var achou = guerra && completo ? new RegExp('(^|[^a-z0-9])(' + procura + ')(?=$|[^a-z0-9])').exec(semAcento(completo)) : null;
-    if (!achou) return [Object.assign({ text: guerra }, negrito)];
+    if (!achou) return [posto, { text: guerra, bold: true }];
     var letras = Array.from(completo), ini = achou.index + achou[1].length, fim = ini + achou[2].length;
-    return [
-      Object.assign({ text: letras.slice(0, ini).join('') }, normal),
-      Object.assign({ text: letras.slice(ini, fim).join('') }, negrito),
-      Object.assign({ text: letras.slice(fim).join('') }, normal)
-    ];
+    return [posto, { text: letras.slice(0, ini).join('') }, { text: letras.slice(ini, fim).join(''), bold: true },
+      { text: letras.slice(fim).join('') }];
   }
 
-  /* graduação e nome completo; com os ícones ligados (c.comIcones), os ícones de origem antes */
-  function celulaMilitar(m, c) {
-    var texto = { text: [{ text: (m.grad || '') + ' ', fontSize: FONTE.grad, color: c.suave }].concat(partesDoNome(m, c)), margin: CELULA.militar };
-    if (!c.comIcones) return texto;
+  /* o militar, descido para o meio das linhas dele (n = quantos horários ele tem); com os ícones ligados (c.comIcones),
+     os ícones de origem antes do nome */
+  function celulaMilitar(m, c, n) {
+    var margem = [0, (n - 1) * alturaTexto() / 2, 0, 0];
+    var texto = { text: partesDoNome(m, c) };
+    if (!c.comIcones) return Object.assign(texto, { margin: margem });
     texto.width = '*';
-    return { columns: iconesDoMilitar(m).map(function (n) {
-      return { svg: c.icones[n], width: ICONE, height: ICONE, margin: ICONE_MARGEM };
-    }).concat([texto]), columnGap: 2 };
+    return { columns: iconesDoMilitar(m).map(function (nome) {
+      return { svg: c.icones[nome], width: ICONE, height: ICONE, margin: ICONE_MARGEM };
+    }).concat([texto]), columnGap: 2, margin: margem };
   }
 
-  function semLinha() { return 0; }
+  function celulaHorario(m) { return { stack: horarios(m).map(function (h) { return { text: h }; }), alignment: 'center' }; }
 
-  /* bloquinho branco (posto, sem função, observações): tabela com uma linha só, a do título (embaixo dele, de uma borda
-     à outra); o fundo branco quadrado só quando "preencher" (o desenho de cantos retos, que também é a medida dos
-     blocos arredondados) */
-  function layoutBloquinho(c, preencher) {
-    return {
-      hLineWidth: function (i, no) { return i === 1 && no.table.body.length > 1 ? LINHA_FINA : 0; },
-      hLineColor: function () { return c.borda; },
-      vLineWidth: semLinha,
-      paddingLeft: function (i) { return i === 0 ? BLOQUINHO.lado : 0; },
-      paddingRight: function (i, no) { return i === no.table.widths.length - 1 ? BLOQUINHO.lado : BLOQUINHO.entreColunas; },
-      paddingTop: function (i) { return i === 0 ? BLOQUINHO.topo : i === 1 ? BLOQUINHO.titulo : BLOQUINHO.linha; },
-      paddingBottom: function (i, no) { return i === no.table.body.length - 1 ? BLOQUINHO.base : i === 0 ? BLOQUINHO.titulo : BLOQUINHO.linha; },
-      fillColor: function () { return preencher ? c.papel : null; }
-    };
+  /* a tabela com a função (função · militar · horário): a função ocupa as linhas dela, no meio da altura (a mescla Chefe
+     + Condutor, dois rótulos empilhados); o lugar sem ninguém, com a frase → { linhas, comFuncao, altura } */
+  function tabelaComFuncao(funcoes, c) {
+    var M = RW.mensagens.escala, h = alturaTexto(), vertical = relatorio().medidas.CELULA.vertical, linhas = [], total = 0;
+    funcoes.forEach(function (f) {
+      var daFuncao = [];
+      (f.militares || []).forEach(function (m) {
+        var n = Math.max(1, (m.periodos || []).length);
+        daFuncao.push({ n: n, celulas: [celulaMilitar(m, c, n), celulaHorario(m)] });
+      });
+      /* o grupo sem número (f.partes, do mesclarFuncoes): as pessoas na ordem de antiguidade e depois os lugares sem
+         ninguém */
+      (f.partes || [f]).forEach(function (pt) {
+        if (!pt.vazio || (f.partes && (pt.militares || []).length) || !M.vagaVazia) return;
+        daFuncao.push({ n: 1, celulas: [{ text: M.vagaVazia(pt.vazio_motivo), italics: true, color: c.suave }, { text: '' }] });
+      });
+      if (!daFuncao.length) return;
+      var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
+      /* a biblioteca não centraliza na vertical: a margem de cima do rótulo vem da altura das linhas da função */
+      var altura = daFuncao.reduce(function (s, x) { return s + x.n * h; }, 0) + (daFuncao.length - 1) * 2 * vertical;
+      daFuncao.forEach(function (x, i) {
+        var funcao = i ? {} : { text: rotulos.join('\n'), rowSpan: daFuncao.length,
+          margin: [0, Math.max(0, (altura - rotulos.length * h) / 2), 0, 0] };
+        linhas.push([funcao].concat(x.celulas));
+      });
+      total += altura + 2 * vertical;
+    });
+    return { linhas: linhas, comFuncao: true, altura: total };
   }
 
-  /* a linha fina entre as funções e entre os grupos das observações: uma célula só com o traço, da largura de dentro
-     do bloquinho (para antes da borda) */
-  function linhaFina(c) {
-    return { canvas: [{ type: 'line', x1: 0, y1: 0, x2: LARGURA_DENTRO, y2: 0, lineWidth: LINHA_FINA, lineColor: c.borda }] };
-  }
-
-  /* título de bloquinho em caixa alta, como o rótulo da caixa na tela (o mesmo texto é o marcador da folha) */
-  function tituloBloquinho(texto) { return texto.toLocaleUpperCase('pt-BR'); }
-
-  /* um posto = um bloquinho (título do posto + uma linha por militar); é a "linha" que nunca se parte */
-  function tabelaPosto(titulo, linhas, c, preencher) {
-    var corpo = [[{ text: titulo, colSpan: 3, bold: true, fontSize: FONTE.posto, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: c.forte }, {}, {}]].concat(linhas);
-    return { table: { widths: COLUNAS, body: corpo }, layout: layoutBloquinho(c, preencher) };
-  }
-
-  /* altura aproximada (pt) do conteúdo de uma linha do posto: o nome ou os horários empilhados, o que for maior */
-  function alturaLinha(periodos) {
-    return Math.max(FONTE.nome * ALTURA_LINHA, (periodos || []).length * FONTE.hora * ALTURA_LINHA + CELULA.hora[1]);
-  }
-
-  function linhasDoPosto(posto, c) {
-    var mesclar = pecas().mesclarFuncoes || function (p) { return p.funcoes || []; };
-    return linhasDasFuncoes(mesclar(posto), c);
+  /* a tabela só com o militar e o horário (Extrajornada, Estagiários, Sobreaviso e Sem função) */
+  function tabelaSoNomes(militares, c) {
+    var h = alturaTexto(), vertical = relatorio().medidas.CELULA.vertical, total = 0;
+    var linhas = militares.map(function (m) {
+      var n = Math.max(1, (m.periodos || []).length);
+      total += n * h + 2 * vertical;
+      return [celulaMilitar(m, c, n), celulaHorario(m)];
+    });
+    return { linhas: linhas, comFuncao: false, altura: total };
   }
 
   /* o dia da unidade em blocos, como no painel (escalas-painel.js › blocosDoDia; o Cabo de Dia sem ninguém não sai no
@@ -271,42 +249,6 @@
   function blocosDoItem(item) {
     if (pecas().blocosDoDia) return pecas().blocosDoDia(item.postos, false);
     return { especiais: [], instalacoes: item.postos || [], extra: [], estagiarios: [], viaturas: [] };
-  }
-
-  /* as linhas de uma lista de funções (a função à esquerda, no meio da altura das linhas dela) */
-  function linhasDasFuncoes(funcoes, c) {
-    var linhas = [];
-    funcoes.forEach(function (f) {
-      var daFuncao = [], alturas = [];
-      /* o grupo sem número (f.partes, do mesclarFuncoes): as pessoas na ordem de antiguidade e depois os lugares sem
-         ninguém */
-      (f.militares || []).forEach(function (m) {
-        daFuncao.push([celulaMilitar(m, c), horarios(m.periodos, c)]);
-        alturas.push(alturaLinha(m.periodos));
-      });
-      (f.partes || [f]).forEach(function (pt) {
-        if (!pt.vazio || (f.partes && (pt.militares || []).length) || !RW.mensagens.escala.vagaVazia) return;
-        daFuncao.push([{ text: RW.mensagens.escala.vagaVazia(pt.vazio_motivo), italics: true, fontSize: FONTE.texto, color: c.suave, margin: CELULA.militar }, { text: '' }]);
-        alturas.push(alturaLinha([]));
-      });
-      if (!daFuncao.length) return;
-      if (linhas.length) linhas.push([Object.assign(linhaFina(c), { colSpan: 3 }), {}, {}]);   // a linha entre as funções
-      /* o rótulo da função (mescla Chefe + Condutor = dois rótulos empilhados) ocupa as linhas dela, no meio da
-         altura: a biblioteca não centraliza na vertical, então a margem de cima vem da altura aproximada das linhas */
-      var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];
-      var margem = CELULA.funcao;
-      if (daFuncao.length > 1) {
-        var total = alturas.reduce(function (s, h) { return s + h; }, 0) + (daFuncao.length - 1) * 2 * BLOQUINHO.linha;
-        margem = [0, Math.max(CELULA.funcao[1], (total - rotulos.length * FONTE.funcao * ALTURA_LINHA) / 2), 0, 0];
-      }
-      daFuncao.forEach(function (resto, i) {
-        var celula = i === 0
-          ? { text: rotulos.join('\n'), rowSpan: daFuncao.length, fontSize: FONTE.funcao, color: c.suave, margin: margem }
-          : {};
-        linhas.push([celula].concat(resto));
-      });
-    });
-    return linhas;
   }
 
   /* o sobreaviso da companhia de um dia da unidade, no lugar em que ele aparece (o mesmo "exibe" da grade), como militares
@@ -320,74 +262,61 @@
     });
   }
 
-  /* as "linhas" de uma unidade (cada uma inteira), na ordem do painel do dia: Funções especiais, as instalações,
-     Extrajornada, Estagiários, Sobreaviso, as viaturas, sem função e observações; cada uma com o seu marcador (o 1º
-     texto dela), para achar depois em que folha caiu */
-  function linhasDaUnidade(item, c, preencher) {
-    var t = txt(), M = RW.mensagens.escala, linhas = [], alguem = false;
-    function bloco(titulo, corpo) {
-      if (!corpo.length) return false;
-      var nome = tituloBloquinho(titulo);
-      linhas.push({ marcador: nome, no: tabelaPosto(nome, corpo, c, preencher) });
-      return true;
-    }
-    function deServico(titulo, corpo) { if (bloco(titulo, corpo)) alguem = true; }
+  /* a altura que a seção pode ter para ir inteira (a legenda do pé da folha toma o seu espaço) */
+  function alturaUtil(c) { return ALTURA_UTIL - (c.legendaAltura || 0); }
+
+  /* a seção: o título numerado com o traço e a tabela, sem os títulos das colunas; vai inteira para a folha seguinte
+     quando não cabe, e só a maior que uma folha se parte entre as linhas. false = sem linhas (não sai) */
+  function secao(p, titulo, tabela, conteudo, c) {
+    if (!tabela.linhas.length) return false;
+    var larguras = tabela.comFuncao ? [COLUNAS.funcao, '*', COLUNAS.horario] : ['*', COLUNAS.horario];
+    conteudo.push({ stack: p.secao(titulo.toLocaleUpperCase('pt-BR')).concat([p.tabela(larguras, null, tabela.linhas)]),
+      unbreakable: tabela.altura <= alturaUtil(c) });
+    return true;
+  }
+
+  /* as Observações nos grupos da tela (Administração, Trocas, Folgas, De outra unidade): cada grupo uma subseção (n.1,
+     n.2...) com a lista numerada */
+  function observacoes(p, item, conteudo, c) {
+    var obs = item.observacoes || [];
+    if (!obs.length) return;
+    var titulo = p.secao(txt().observacoes), n = p.numero(), corpo = [], linhas = 0;
+    gruposObservacoes(obs).forEach(function (g, i) {
+      var itens = g.itens.map(RW.mensagens.escala.observacaoTexto);
+      if (g.titulo) corpo.push(p.subsecao(n + '.' + (i + 1), { nome: g.titulo }));
+      corpo.push(p.lista(itens));
+      linhas += 2 + itens.reduce(function (s, x) { return s + Math.ceil(((x || '').length + 1) / LETRAS_POR_LINHA); }, 0);
+    });
+    conteudo.push({ stack: titulo.concat(corpo), unbreakable: linhas * alturaTexto() <= alturaUtil(c) });
+  }
+
+  /* o Dia de uma unidade: o alto (o título, o Dia, a Unidade e quantos estão de serviço) e as seções na ordem do painel
+     do dia (Funções especiais, as instalações, Extrajornada, Estagiários, Sobreaviso, as viaturas, sem função,
+     observações); quebra = começa numa folha nova */
+  function conteudoDaUnidade(u, item, iso, c, quebra) {
+    var t = txt(), M = RW.mensagens.escala, p = relatorio().pecas(c), conteudo = [], alguem = false;
+    var unidade = (u.tipo === 'PEL' && u.pai ? u.pai + ' / ' : '') + u.nome + (u.cidade ? ' · ' + u.cidade : '');
+    var campos = [p.topo(t.rotuloDia, RW.data.comDiaSemana(iso), true), p.topo(t.rotuloUnidade, unidade, true),
+      p.topo(t.rotuloDeServico, t.militares(item.efetivo || 0))];
+    campos.forEach(function (x) { x.width = 'auto'; });
+    var alto = relatorio().cabecalho(t.tituloDia, campos, c);
+    alto[1].columnGap = VAO_TOPO;
+    if (quebra) alto[0].pageBreak = 'before';
+    function deServico(titulo, tabela) { if (secao(p, titulo, tabela, conteudo, c)) alguem = true; }
     var temAlguem = pecas().temAlguem || function () { return true; };
-    function postos(lista) { lista.filter(temAlguem).forEach(function (p) { deServico(p.nome, linhasDoPosto(p, c)); }); }
-    function soNomes(lista) { return lista.map(function (m) { return [{ text: '' }, celulaMilitar(m, c), horarios(m.periodos, c)]; }); }
+    var mesclar = pecas().mesclarFuncoes || function (po) { return po.funcoes || []; };
+    function postos(lista) { lista.filter(temAlguem).forEach(function (po) { deServico(po.nome, tabelaComFuncao(mesclar(po), c)); }); }
     var blocos = blocosDoItem(item);
-    deServico(M.blocoEspeciais, linhasDasFuncoes(blocos.especiais, c));
+    deServico(M.blocoEspeciais, tabelaComFuncao(blocos.especiais, c));
     postos(blocos.instalacoes);
-    deServico(M.blocoExtra, linhasDasFuncoes(blocos.extra, c));
-    deServico(M.blocoEstagiarios, linhasDasFuncoes(blocos.estagiarios.length
-      ? [{ nome: M.rotuloEstagiario, militares: blocos.estagiarios }] : [], c));
-    bloco(M.sobreaviso.dica, soNomes(sobreavisoDoItem(item)));
+    deServico(M.blocoExtra, tabelaSoNomes([].concat.apply([], blocos.extra.map(function (f) { return f.militares || []; })), c));
+    deServico(M.blocoEstagiarios, tabelaSoNomes(blocos.estagiarios, c));
+    secao(p, M.sobreaviso.dica, tabelaSoNomes(sobreavisoDoItem(item), c), conteudo, c);
     postos(blocos.viaturas);
-    deServico(t.semFuncao, soNomes(item.sem_funcao || []));
-    if (!alguem) linhas.push({ marcador: t.semDistribuicao, no: { text: t.semDistribuicao, fontSize: FONTE.texto, color: c.suave, margin: CELULA.vazio } });
-    if ((item.observacoes || []).length) {
-      var tituloObs = tituloBloquinho(t.observacoes);
-      /* os mesmos grupos da tela (Administração, Trocas, Folgas, De outra unidade), cada um com a lista numerada, e a
-         linha fina entre eles */
-      var gruposObs = [];
-      gruposObservacoes(item.observacoes).forEach(function (g, i) {
-        if (i) gruposObs.push([linhaFina(c)]);
-        gruposObs.push([{ stack: [
-          { text: g.titulo, bold: true, fontSize: FONTE.texto, color: c.forte, margin: [0, 0, 0, 2] },
-          { ol: g.itens.map(RW.mensagens.escala.observacaoTexto), fontSize: FONTE.texto, color: c.texto }
-        ] }]);
-      });
-      linhas.push({ marcador: tituloObs, no: { table: { widths: ['*'], body: [
-        [{ text: tituloObs, bold: true, fontSize: FONTE.posto, characterSpacing: ESPACAMENTO_CAIXA_ALTA, color: c.forte }]
-      ].concat(gruposObs) }, layout: layoutBloquinho(c, preencher) } });
-    }
-    return linhas;
-  }
-
-  function tituloUnidade(u, item, iso, continuacao, c) {
-    var t = txt();
-    var sigla = (u.tipo === 'PEL' && u.pai ? u.pai + ' / ' : '') + u.nome + (u.cidade ? ' · ' + u.cidade : '') + (continuacao ? ' · ' + RW.data.isoParaBR(iso) : '');
-    return { stack: [
-      { text: (u.nome_completo || u.nome) + (continuacao ? ' ' + t.continuacao : ''), bold: true, fontSize: FONTE.unidade, color: c.forte },
-      { columns: [{ text: sigla }, { text: t.deServico(item.ritmo, item.efetivo || 0), alignment: 'right', width: 'auto' }], fontSize: FONTE.detalhe, color: c.suave, margin: [0, 1, 0, 0] }
-    ], margin: CELULA.titulo };
-  }
-
-  /* a unidade = bloco cinza: tabela de uma coluna, título (repete na folha seguinte) + as linhas, cada
-     uma inteira; o cinza quadrado só quando "preencher" */
-  function tabelaUnidade(titulo, linhas, quebraLivre, c, preencher) {
-    var corpo = [[titulo]].concat(linhas.map(function (l) { return [l.no]; }));
-    var tabela = { widths: ['*'], headerRows: 1, body: corpo };
-    if (!quebraLivre) { tabela.keepWithHeaderRows = 1; tabela.dontBreakRows = true; }
-    return { table: tabela, layout: {
-      hLineWidth: semLinha,
-      vLineWidth: semLinha,
-      paddingLeft: function () { return BLOCO.lado; },
-      paddingRight: function () { return BLOCO.lado; },
-      paddingTop: function (i) { return i === 0 ? BLOCO.topo : BLOCO.vao; },
-      paddingBottom: function (i, no) { return i === no.table.body.length - 1 ? BLOCO.base : BLOCO.vao; },
-      fillColor: function () { return preencher ? c.fundo : null; }
-    } };
+    deServico(t.semFuncao, tabelaSoNomes(item.sem_funcao || [], c));
+    if (!alguem) conteudo.push(p.ajuda(t.semDistribuicao));
+    observacoes(p, item, conteudo, c);
+    return alto.concat(conteudo);
   }
 
   /* camada de fundo de uma folha: os blocos arredondados nas posições lidas do desenho de cantos retos
@@ -408,73 +337,33 @@
   }
 
   /* ---------- documento ---------- */
-  /* plano: { modo: 'medir' | 'montar' | 'final' | 'simples', so: {chave:true} (medir), grandes: {chave:true}, cortes: {chave:[índices]},
-     caixas: [por folha {cinza, papel}] (só no redesenho de cantos arredondados: sem os fundos quadrados) } */
-  function montarDocumento(dados, c, plano) {
-    var t = txt(), conteudo = [], marcadores = [];
-    var preencher = !plano.caixas;
-    var porDia = {};
+  /* cada unidade de cada dia, na ordem dos dias e das unidades, começando numa folha nova; no pé, o site, o "Gerado em"
+     e a página (com os ícones, a legenda deles logo acima) */
+  function montarDocumento(dados, c) {
+    var t = txt(), conteudo = [], porDia = {};
     dados.dias.forEach(function (it) { (porDia[it.data] = porDia[it.data] || {})[it.unidade_id] = it; });
-    /* título do dia; ao medir, vai em cima de CADA unidade (cabe = cabe numa folha junto do título) */
-    function tituloDoDia(iso, quebra) {
-      conteudo.push({ text: t.titulo, bold: true, fontSize: FONTE.titulo, color: c.forte, pageBreak: quebra ? 'before' : undefined });
-      conteudo.push({ text: pecas().dataPorExtenso(iso), fontSize: FONTE.data, color: c.suave, margin: [0, 2, 0, ESPACO.aposData] });
-    }
-    var primeiro = true;
     Object.keys(porDia).sort().forEach(function (iso) {
-      if (plano.modo !== 'medir') { tituloDoDia(iso, !primeiro); primeiro = false; }
       dados.unidades.forEach(function (u) {
         var item = porDia[iso][u.unidade_id];
-        if (!item) return;
-        var chave = iso + '|' + u.unidade_id;
-        if (plano.so && !plano.so[chave]) return;   // ao medir, só as que podem passar de uma folha
-        var linhas = linhasDaUnidade(item, c, preencher);
-        linhas.forEach(function (l, j) { marcadores.push({ texto: l.marcador, chave: chave, j: j }); });
-        var simples = plano.modo === 'simples';
-        var grande = !!(plano.grandes && plano.grandes[chave]);
-        var bloco;
-        if (plano.modo === 'medir') { tituloDoDia(iso, !primeiro); primeiro = false; }
-        if (plano.modo === 'final' && plano.cortes[chave]) {
-          /* grande: um pedaço por folha; do 2º em diante, "(continuação)" e começa em folha nova */
-          var inicios = [0].concat(plano.cortes[chave]);
-          inicios.forEach(function (ini, k) {
-            var fim = k + 1 < inicios.length ? inicios[k + 1] : linhas.length;
-            var pedaco = tabelaUnidade(tituloUnidade(u, item, iso, k > 0, c), linhas.slice(ini, fim), false, c, preencher);
-            /* só o último pedaço leva o espaço de baixo (num pedaço que enche a folha, ele abriria uma folha vazia) */
-            pedaco.margin = [0, 0, 0, k === inicios.length - 1 ? ESPACO.entreUnidades : 0];
-            if (k > 0) pedaco.pageBreak = 'before';
-            conteudo.push(pedaco);
-          });
-          return;
-        }
-        bloco = tabelaUnidade(tituloUnidade(u, item, iso, false, c), linhas, simples, c, preencher);
-        /* a pequena nunca se divide: vai inteira para a folha seguinte (a grande quebra entre postos) */
-        if (plano.modo !== 'medir' && !simples && !grande) bloco = { stack: [bloco], unbreakable: true };
-        bloco.margin = [0, 0, 0, ESPACO.entreUnidades];
-        conteudo.push(bloco);
+        if (item) conteudo = conteudo.concat(conteudoDaUnidade(u, item, iso, c, conteudo.length > 0));
       });
     });
-    var doc = {
-      pageSize: 'A4',
-      /* com os ícones, a base cresce para a legenda (escalas-impressao-legenda.js) */
-      pageMargins: [MARGENS[0], MARGENS[1], MARGENS[2], MARGENS[3] + (c.legendaAltura || 0)],
-      defaultStyle: { font: 'Montserrat', fontSize: FONTE.texto, color: c.texto },
-      info: { title: t.titulo + ' ' + RW.data.isoParaBR(dados.inicio) + (dados.fim !== dados.inicio ? ' a ' + RW.data.isoParaBR(dados.fim) : ''), author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' },
-      header: function () { return { svg: c.logo, width: LOGO_LARGURA, margin: LOGO_MARGEM }; },
-      footer: function (pagina, total) {
-        var linha = { columns: [{ text: t.site }, { text: t.pagina(pagina, total), alignment: 'right' }] };
-        /* a legenda é montada a cada folha (a biblioteca anota medidas em cada peça) */
-        var legenda = c.legendaUsados && RW.escalasImpressaoLegenda ? RW.escalasImpressaoLegenda.peca(c, c.legendaUsados) : null;
-        var pe = legenda ? { stack: [legenda, linha] } : linha;
-        pe.fontSize = FONTE.rodape;
-        pe.color = c.suave;
-        pe.margin = RODAPE_MARGEM;
-        return pe;
-      },
-      content: conteudo
+    var agora = relatorio().agora(), gerado = t.gerado(agora.data, agora.hora);
+    var doc = relatorio().folha(null, null, conteudo, c, false);
+    /* com os ícones, a base cresce para a legenda (escalas-impressao-legenda.js) */
+    doc.pageMargins = [MARGENS[0], MARGENS[1], MARGENS[2], MARGENS[3] + (c.legendaAltura || 0)];
+    doc.info.title = t.titulo + ' ' + RW.data.isoParaBR(dados.inicio) + (dados.fim !== dados.inicio ? ' a ' + RW.data.isoParaBR(dados.fim) : '');
+    doc.footer = function (pagina, total) {
+      var linha = { columns: [{ text: t.site }, { text: gerado, alignment: 'center' }, { text: t.pagina(pagina, total), alignment: 'right' }] };
+      /* a legenda é montada a cada folha (a biblioteca anota medidas em cada peça) */
+      var legenda = c.legendaUsados && RW.escalasImpressaoLegenda ? RW.escalasImpressaoLegenda.peca(c, c.legendaUsados) : null;
+      var pe = legenda ? { stack: [legenda, linha] } : linha;
+      pe.fontSize = FONTE.rodape;
+      pe.color = c.suave;
+      pe.margin = RODAPE_MARGEM;
+      return pe;
     };
-    if (plano.caixas) doc.background = function (folha) { return blocosArredondados(plano.caixas[folha - 1], c, true); };
-    return { doc: doc, marcadores: marcadores };
+    return { doc: doc, marcadores: [] };
   }
 
   /* em que folha cada marcador saiu (na ordem); null se algum sumiu */
@@ -554,107 +443,6 @@
     });
   }
 
-  /* agrupa as folhas por unidade: { chave: [folha da linha 0, folha da linha 1, ...] } */
-  function folhasPorUnidade(marcadores, folhas) {
-    var r = {};
-    marcadores.forEach(function (m, i) { (r[m.chave] = r[m.chave] || [])[m.j] = folhas[i]; });
-    return r;
-  }
-
-  /* altura estimada de uma unidade (pt), com folga: só quem pode passar de uma folha é medido de verdade */
-  function alturaEstimada(item) {
-    var linha = function (m) { return ESTIMATIVA.linha * Math.max(1, (m.periodos || []).length); };
-    var h = ESTIMATIVA.titulo;
-    var semFuncao = item.sem_funcao || [];
-    if (semFuncao.length) h += ESTIMATIVA.posto + semFuncao.reduce(function (s, m) { return s + linha(m); }, 0);
-    (item.postos || []).forEach(function (p) {
-      h += ESTIMATIVA.posto;
-      (p.funcoes || []).forEach(function (f) {
-        h += (f.vazio ? ESTIMATIVA.linha : 0) + (f.militares || []).reduce(function (s, m) { return s + linha(m); }, 0);
-      });
-    });
-    /* os blocos só para ver (Funções especiais, Extrajornada, Estagiários): o título de cada um e as linhas */
-    var blocos = blocosDoItem(item);
-    function somar(lista) { return lista.reduce(function (s, m) { return s + linha(m); }, 0); }
-    [blocos.especiais, blocos.extra].forEach(function (funcoes) {
-      if (funcoes.length) h += ESTIMATIVA.posto + funcoes.reduce(function (s, f) { return s + somar(f.militares); }, 0);
-    });
-    if (blocos.estagiarios.length) h += ESTIMATIVA.posto + somar(blocos.estagiarios);
-    var sobreaviso = sobreavisoDoItem(item);
-    if (sobreaviso.length) h += ESTIMATIVA.posto + sobreaviso.length * ESTIMATIVA.linha;
-    var obs = item.observacoes || [];
-    if (obs.length) {
-      /* o título do bloquinho, uma linha por título de grupo e as linhas de cada item */
-      h += ESTIMATIVA.posto + gruposObservacoes(obs).length * ESTIMATIVA.linhaTexto + obs.reduce(function (s, o) {
-        return s + ESTIMATIVA.linhaTexto * Math.ceil(((RW.mensagens.escala.observacaoTexto(o) || '').length + 1) / ESTIMATIVA.letrasPorLinha);
-      }, 0);
-    }
-    return h * ESTIMATIVA.folga;
-  }
-
-  /* as passadas → o arquivo:
-     1) mede só as unidades que podem passar de uma folha (pela altura estimada);
-     2) monta: a pequena inteira, a grande quebrando entre postos com o título repetido;
-     3) se há grande, corta nos pontos medidos e põe "(continuação)" + a data;
-     4) redesenha o escolhido com os cantos arredondados.
-     Cada desenho é conferido; se algo não bate, fica o anterior (ou o jeito simples). */
-  function desenharArquivo(dados, c) {
-    /* um desenho com o plano que o gerou (o redesenho de cantos arredondados repete o plano) */
-    function desenharPlano(plano) {
-      return desenhar(montarDocumento(dados, c, plano), c).then(function (d) { return { plano: plano, desenho: d }; });
-    }
-    function simples() { return desenharPlano({ modo: 'simples' }); }
-    var candidatas = {};
-    var util = ALTURA_UTIL - (c.legendaAltura || 0);   // a legenda do pé da folha toma o seu espaço
-    dados.dias.forEach(function (it) { if (alturaEstimada(it) > util) candidatas[it.data + '|' + it.unidade_id] = true; });
-    var medir = Object.keys(candidatas).length ? desenhar(montarDocumento(dados, c, { modo: 'medir', so: candidatas }), c) : Promise.resolve(null);
-    var escolhido = medir.then(function (m) {
-      if (m && !m.folhas) return simples();
-      var grandes = {};
-      if (m) {
-        var porUnidade = folhasPorUnidade(m.marcadores, m.folhas);
-        Object.keys(porUnidade).forEach(function (k) { var f = porUnidade[k]; if (f[f.length - 1] > f[0]) grandes[k] = true; });
-      }
-      return desenharPlano({ modo: 'montar', grandes: grandes }).then(function (montado) {
-        var b = montado.desenho;
-        if (!b.folhas) return simples();
-        var cortes = {}, porUnidadeB = folhasPorUnidade(b.marcadores, b.folhas);
-        Object.keys(grandes).forEach(function (k) {
-          var f = porUnidadeB[k], lista = [];
-          for (var j = 1; j < f.length; j++) if (f[j] !== f[j - 1]) lista.push(j);
-          if (lista.length) cortes[k] = lista;
-        });
-        if (!Object.keys(cortes).length) return montado;
-        return desenharPlano({ modo: 'final', grandes: grandes, cortes: cortes }).then(function (final) {
-          var f = final.desenho;
-          if (!f.folhas) return montado;
-          /* cada pedaço da grande cabe na folha dele e começa na folha seguinte à do anterior (sem folha
-             vazia no meio); senão fica a montagem com o título repetido */
-          var porUnidadeC = folhasPorUnidade(f.marcadores, f.folhas);
-          var certo = Object.keys(cortes).every(function (k) {
-            var fl = porUnidadeC[k], inicios = [0].concat(cortes[k]);
-            return inicios.every(function (ini, n) {
-              var fim = n + 1 < inicios.length ? inicios[n + 1] : fl.length;
-              var inteiro = fl.slice(ini, fim).every(function (pg) { return pg === fl[ini]; });
-              return inteiro && (n === 0 || fl[ini] === fl[inicios[n - 1]] + 1);
-            });
-          });
-          return certo ? final : montado;
-        });
-      });
-    });
-    /* cantos arredondados: o mesmo plano, sem os fundos quadrados e com os blocos na camada de fundo de cada
-       folha, nas posições lidas do escolhido; o texto tem de cair no mesmo lugar, senão fica o de cantos retos */
-    return escolhido.then(function (e) {
-      var p = e.plano;
-      var plano = { modo: p.modo, so: p.so, grandes: p.grandes, cortes: p.cortes, caixas: e.desenho.caixas };
-      var folhas = (e.desenho.caixas || []).length;   // o redesenho tem as mesmas folhas
-      return desenhar(montarDocumento(dados, c, plano), c).then(function (r) {
-        return { arquivo: r.assinatura === e.desenho.assinatura ? r.arquivo : e.desenho.arquivo, folhas: folhas };
-      }, function () { return { arquivo: e.desenho.arquivo, folhas: folhas }; });
-    });
-  }
-
   /* baixa o arquivo (link escondido do molde, clicado e retirado) */
   function baixar(arquivo, nome) {
     var link = RW.tpl('tpl-escala-impressao-baixar');
@@ -694,9 +482,9 @@
         return c;
       });
     }).then(function (c) {
-      return desenharArquivo(dados, c);
+      return desenhar(montarDocumento(dados, c), c);
     }).then(function (r) {
-      return { arquivo: r.arquivo, nome: nomeArquivo(dados), folhas: r.folhas };
+      return { arquivo: r.arquivo, nome: nomeArquivo(dados), folhas: r.caixas.length };
     });
   }
 
@@ -711,8 +499,8 @@
     /* peças para outros relatórios no mesmo formato (os da Extrajornada): as cores e ícones do tema
        (carrega a biblioteca no 1º uso), as medidas, o desenho conferido, os blocos arredondados e o download */
     preparar: function () { return carregarRecursos().then(montarEstilo); },
-    medidas: { MARGENS: MARGENS, LOGO_LARGURA: LOGO_LARGURA, LOGO_MARGEM: LOGO_MARGEM, RODAPE_MARGEM: RODAPE_MARGEM,
-      FONTE: FONTE, BLOCO: BLOCO, BLOQUINHO: BLOQUINHO, ESPACO: ESPACO, SETA_LARGURA: SETA_LARGURA, SETA_MARGEM: SETA_MARGEM,
+    medidas: { MARGENS: MARGENS, RODAPE_MARGEM: RODAPE_MARGEM,
+      FONTE: FONTE, BLOCO: BLOCO, BLOQUINHO: BLOQUINHO, ESPACO: ESPACO,
       ESPACAMENTO_CAIXA_ALTA: ESPACAMENTO_CAIXA_ALTA, CELULA: CELULA },
     /* marcadores (opcional): [{ texto }] em ordem; o resultado diz em que folha caiu cada um (null se algum sumiu) */
     desenhar: function (doc, c, marcadores) { return desenhar({ doc: doc, marcadores: marcadores || [] }, c); },

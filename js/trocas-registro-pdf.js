@@ -16,7 +16,7 @@
    riscado. O Imprimir registro de um substituído sai com a
    sequência: ele e, em folha nova, cada um que veio depois, até o
    que vale. Usa o motor do PDF da escala (RW.escalasImpressaoPdf: a
-   biblioteca, as fontes, a logo, as cores do tema e o download).
+   biblioteca, as fontes, as cores do tema e o download).
    ============================================================ */
 (function () {
   'use strict';
@@ -165,7 +165,6 @@
       pageSize: 'A4', pageMargins: M.MARGENS,
       defaultStyle: { font: 'Montserrat', fontSize: FONTE.celula, color: c.texto, lineHeight: 1.15 },
       info: { title: titulo, author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' },
-      header: function () { return { svg: c.logo, width: M.LOGO_LARGURA, margin: M.LOGO_MARGEM }; },
       footer: function (pagina, total) {
         return { columns: [{ text: pdf.site }, { text: pdf.pagina(pagina, total), alignment: 'right' }], fontSize: M.FONTE.rodape, color: c.suave, margin: M.RODAPE_MARGEM };
       },

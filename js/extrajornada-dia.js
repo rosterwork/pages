@@ -144,11 +144,12 @@
     GRUPOS.forEach(function (g) { grupos[g] = []; });
     G().voluntarios().forEach(function (m) {
       var g = fixos[m.cpf] || (fixos[m.cpf] = grupoDe(m, uid, k));
-      /* quem ficou sem nenhum horário (sai ao salvar) fica em cinza no Neste dia, e marcar de novo traz ele de volta;
-         quem saiu no rascunho antes de o dia abrir fica no grupo dele e também no Neste dia */
-      var v = G().vagaDe(m.cpf, k), sai = !!v && +v.unidade === uid && !v.blocos.length;
-      grupos[g.nome].push({ m: m, motivo: g.motivo, sai: sai && g.nome === 'neste' });
-      if (sai && g.nome !== 'neste') grupos.neste.push({ m: m, sai: true });
+      /* quem ficou sem nenhum horário aqui com o dia aberto fica em cinza no Neste dia, e marcar de novo traz ele de
+         volta; quem estava salvo no dia e sai ao salvar (tirado antes de o dia abrir, ou posto em outro pelotão) fica no
+         grupo dele, já livre, e também em cinza no Neste dia */
+      var v = G().alocDe(m.cpf, k), semHorario = !(v && +v.unidade === uid);
+      grupos[g.nome].push({ m: m, motivo: g.motivo, sai: semHorario && g.nome === 'neste' });
+      if (G().sai(m.cpf, uid, k) && g.nome !== 'neste') grupos.neste.push({ m: m, sai: true });
     });
     corpo.appendChild(caixaCobertura(uid, k, alocs, grupos));
     GRUPOS.forEach(function (g) {

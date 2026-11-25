@@ -626,10 +626,9 @@
         arquivo: function (prefixo, mes, ano, unidade) { return prefixo + '-' + mes + '-' + ano + (unidade ? '-' + unidade : '') + '.pdf'; },
         rotuloMes: 'Mês', rotuloUnidade: 'Unidade', rotuloGerado: 'Gerado em', todos: 'Todos os pelotões',
         gerado: function (data, hora) { return data + ', ' + hora; },
-        secao: function (n, titulo) { return n + '. ' + titulo; },
         secoes: {
           resumo: 'RESUMO', pedidos: 'PEDIDOS', termos: 'TERMOS E COTAS', lancadas: 'EXTRAS LANÇADAS',
-          comoFicou: 'COMO FICOU NO FIM DO MÊS', mudou: 'O QUE MUDOU DESDE O LANÇAMENTO', observacoes: 'OBSERVAÇÕES'
+          comoFicou: 'COMO FICOU NO FIM DO MÊS', mudou: 'O QUE MUDOU DESDE O LANÇAMENTO'
         },
         ajudaOrdem: 'Em ordem de antiguidade. A última linha de cada tabela é o total.',
         ajudaMudou: 'Só quem mudou. Quem não aparece manteve as datas do lançamento.',
@@ -1799,13 +1798,20 @@
         /* textos de dentro do PDF */
         pdf: {
           titulo: 'Escala de serviço',
-          observacoes: 'Observações',
+          /* a escala do Dia, no formato dos relatórios (escalas-impressao-pdf.js) */
+          tituloDia: 'ESCALA DE SERVIÇO',
+          rotuloDia: 'Dia', rotuloUnidade: 'Unidade', rotuloDeServico: 'De serviço',
+          militares: function (n) { return n + (n === 1 ? ' militar' : ' militares'); },
+          horario: function (ini, fim) { return ini + ' às ' + fim; },
+          gerado: function (data, hora) { return 'Gerado em ' + data + ', ' + hora; },
+          /* as peças dos relatórios (geral-relatorio-pdf.js): a seção numerada e as Observações */
+          secao: function (n, titulo) { return n + '. ' + titulo; },
+          observacoes: 'OBSERVAÇÕES',
           semFuncao: 'Sem função definida',
           semDistribuicao: 'Sem distribuição neste dia.',
           continuacao: '(continuação)',
           site: 'www.rosterwork.com',
           pagina: function (n, total) { return 'Página ' + n + ' de ' + total; },
-          deServico: function (ritmo, n) { return (ritmo ? ritmo + ' · ' : '') + n + ' de serviço'; },
           arquivo: function (periodo, unidade) { return 'Escala ' + (unidade ? unidade + ' ' : '') + periodo + '.pdf'; }
         },
         /* painel e PDF das grades: Agenda, Calendário e Colunas (escalas-impressao-grade.js e -grade-pdf.js) */

@@ -1,8 +1,8 @@
 /* ============================================================
    ESCALAS — PDF das grades (Agenda, Calendário, Colunas)
    Monta o PDF que o painel das grades pede (escalas-impressao-grade.js),
-   no formato da tela e no padrão de blocos do PDF do Dia: a logo, o
-   título e o período no alto; o site e "Página X de Y" no pé (com os
+   no formato da tela e no padrão de blocos: o título e o período no
+   alto; o site e "Página X de Y" no pé (com os
    ícones ou a Falta de gente, a legenda deles logo acima:
    escalas-impressao-legenda.js).
    - Calendário e Colunas › Dias (A4 paisagem): uma linha por semana
@@ -53,10 +53,10 @@
     { nome: 'A1', largura: 1683.78, altura: 2383.94 }, { nome: 'A0', largura: 2383.94, altura: 3370.39 },
     { nome: '2A0', largura: 3370.39, altura: 4767.87 }, { nome: '4A0', largura: 4767.87, altura: 6740.79 }];
   var LADO = 28;                                  // margem dos lados
-  var TOPO = 66, TOPO_COM_DIAS = 78, BASE = 36;   // margens de cima (com a linha dom…sáb no calendário) e de baixo
-  var CONTINUA = { topo: 20, base: 20 };          // margens da página contínua (logo e títulos vão no conteúdo)
+  var TOPO = 60, TOPO_COM_DIAS = 72, BASE = 36;   // margens de cima (com a linha dom…sáb no calendário) e de baixo
+  var CONTINUA = { topo: 20, base: 20 };          // margens da página contínua (os títulos vão no conteúdo)
   var LIMITE_CONTINUA = 14400;                    // altura máxima de página que os leitores de PDF abrem
-  var CABECALHO = { logo: 74, topo: 20, titulo: 15, subtitulo: 9.5, dias: 6.5 };
+  var CABECALHO = { topo: 20, titulo: 15, subtitulo: 9.5, dias: 6.5 };
   var DIA = { numero: 8, sigla: 6, vao: 4, lado: 2.5, topo: 3, entre: 1.25, base: 2.5, vaoUnidades: 2,
     titulo: { calendario: 12, colunas: 26 }, oficial: 7 };   // no título: o espaço do número (com a sigla, no Colunas) e o Oficial
   var AGENDA = { data: 28, vao: 3, lado: 2.5, topo: 2.5, base: 2.5, numero: 10, sigla: 6, unidade: 6.5, entreDias: 5, porGrupo: 4, oficial: 7.5 };
@@ -295,12 +295,9 @@
 
   /* ---------- documento ---------- */
   function cabecalho(cfg, c) {
-    return { columns: [
-      { svg: c.logo, width: CABECALHO.logo },
-      { stack: [
-        { text: cfg.titulo || txt().titulo, bold: true, fontSize: CABECALHO.titulo, color: c.forte },
-        { text: msg().nomes[cfg.formato] + ' · ' + cfg.texto, fontSize: CABECALHO.subtitulo, color: c.suave, margin: [0, 2, 0, 0] }
-      ], alignment: 'right' }
+    return { stack: [
+      { text: cfg.titulo || txt().titulo, bold: true, fontSize: CABECALHO.titulo, color: c.forte },
+      { text: msg().nomes[cfg.formato] + ' · ' + cfg.texto, fontSize: CABECALHO.subtitulo, color: c.suave, margin: [0, 2, 0, 0] }
     ] };
   }
 

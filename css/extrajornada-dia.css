@@ -190,6 +190,10 @@
 .extrajornada-painel-outro--antigo .regua-barra-hora--faixa {
   --regua-cor: var(--texto-debil);
 }
+/* a extra salva que ficou sem horário: o dia em cinza até o Salvar (como na lista dos voluntários) */
+.extrajornada-painel-outro--sai .extrajornada-painel-outro-dia {
+  color: var(--texto-debil);
+}
 
 /* quem casa com a busca do painel (o risco das horas sem extra num cinza que aparece nesse fundo) */
 .extrajornada-painel-militar.busca-achado {

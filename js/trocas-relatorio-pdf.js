@@ -179,7 +179,6 @@
       pageSize: 'A4', pageMargins: M().MARGENS,
       defaultStyle: { font: 'Montserrat', fontSize: F.texto, color: c.texto },
       info: { title: t.titulo + ' ' + mes, author: 'Roster Work', creator: 'Roster Work', producer: 'Roster Work' },
-      header: function () { return { svg: c.logo, width: M().LOGO_LARGURA, margin: M().LOGO_MARGEM }; },
       footer: function (pagina, total) {
         return { columns: [{ text: pdf.site }, { text: pdf.pagina(pagina, total), alignment: 'right' }], fontSize: F.rodape, color: c.suave, margin: M().RODAPE_MARGEM };
       },

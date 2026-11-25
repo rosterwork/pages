@@ -2,8 +2,9 @@
    EXTRAJORNADA — as folhas da cópia da tela (o Imprimir da Minha
    extra, dos Pedidos e das Cotas; o painel é o
    extrajornada-imprimir-tela.js), no padrão dos relatórios, com as
-   peças deles (extrajornada-relatorios-pdf.js: a folha, as seções, as
-   tabelas por pelotão e a que se parte quando não cabe numa folha):
+   peças deles (geral-relatorio-pdf.js: a folha, as seções, as tabelas;
+   extrajornada-relatorios-pdf.js: as tabelas por pelotão e a que se
+   parte quando não cabe numa folha):
    - Pedidos: o Resumo (o prazo e as contas da tela) e a lista aberta
      na tela (Voluntários, Não querem ou Sem resposta), na ordem da
      tela, com o termo como está na tela; o Não pode com o motivo (no
@@ -33,6 +34,8 @@
   var LINHA_DA_TABELA = 22; // a altura de cada linha de texto de uma linha da tabela, com o respiro (a conta da tabela inteira)
 
   function R() { return RW.extrajornadaRelatoriosPdf; }
+  /* as peças do formato dos relatórios (a folha, as seções, as tabelas): geral-relatorio-pdf.js */
+  function relatorio() { return RW.relatorioPdf; }
   function P() { return RW.escalasImpressaoPdf; }
   function rel() { return RW.mensagens.extrajornada.relatoriosPdf; }
   function txt() { return RW.mensagens.extrajornada.imprimir.tela; }
@@ -48,7 +51,7 @@
 
   /* ---------- Pedidos ---------- */
   function pedidos(d, opc, c) {
-    var larga = opc.orientacao === 'paisagem', p = R().pecas(c, larga), r = R().dados(d), t = txt(), T = opc.tela, o = org();
+    var larga = opc.orientacao === 'paisagem', p = relatorio().pecas(c, larga), r = R().dados(d), t = txt(), T = opc.tela, o = org();
     var W = LARGURA.pedidos[larga ? 'paisagem' : 'retrato'];
     var responderam = T.todos.filter(function (m) { return m.respondeu; }).length;
     var voluntarios = T.todos.filter(function (m) { return m.voluntario; }).length;
@@ -86,12 +89,12 @@
         1, antes, { noAlto: true }));
     }
     conteudo.push(p.observacoes(observacoes));
-    return R().folha(t.folhas.pedidos, topoDoMes(p, d.competencia, r.geradoEm), conteudo, c, larga);
+    return relatorio().folha(t.folhas.pedidos, topoDoMes(p, d.competencia, r.geradoEm), conteudo, c, larga);
   }
 
   /* ---------- Cotas ---------- */
   function cotas(d, opc, c) {
-    var larga = opc.orientacao === 'paisagem', p = R().pecas(c, larga), t = txt(), T = opc.tela, C = t.colunas;
+    var larga = opc.orientacao === 'paisagem', p = relatorio().pecas(c, larga), t = txt(), T = opc.tela, C = t.colunas;
     var larguras = LARGURA.cotas[larga ? 'paisagem' : 'retrato'];
     var estimar = larguras.map(function (l) { return typeof l === 'number' ? l : LARGURA.estimarMilitar; });
     var conteudo = p.secao(rel().secoes.resumo).concat([p.campos([
@@ -114,12 +117,12 @@
         unbreakable: altura <= p.alturaInteira });
     });
     conteudo.push(p.observacoes([t.obs.atendido, t.obs.copia]));
-    return R().folha(t.folhas.cotas, topoDoMes(p, d.competencia, R().geradoAgora()), conteudo, c, larga);
+    return relatorio().folha(t.folhas.cotas, topoDoMes(p, d.competencia, R().geradoAgora()), conteudo, c, larga);
   }
 
   /* ---------- Minha extra ---------- */
   function minha(e, opc, c) {
-    var p = R().pecas(c, false), t = txt(), o = org(), ped = e.pedido, C = t.colunas;
+    var p = relatorio().pecas(c, false), t = txt(), o = org(), ped = e.pedido, C = t.colunas;
     var conteudo = p.secao(t.secoes.pedido);
     if (!ped || !ped.voluntario) conteudo.push(p.ajuda(ped ? t.naoQuer : t.semPedido));
     else conteudo.push(p.campos([
@@ -150,7 +153,7 @@
     }
     conteudo.push(p.observacoes([rel().obs.cota, t.obs.copia]));
     var m = e.militar || {};
-    return R().folha(t.folhas.minha, [p.topo(t.campos.militar, t.militar(m.grad, m.nome, m.unidade), true), p.topo(rel().rotuloMes, R().rotuloMes(e.competencia), true),
+    return relatorio().folha(t.folhas.minha, [p.topo(t.campos.militar, t.militar(m.grad, m.nome, m.unidade), true), p.topo(rel().rotuloMes, R().rotuloMes(e.competencia), true),
       p.topo(rel().rotuloGerado, R().geradoAgora())], conteudo, c, false);
   }
 

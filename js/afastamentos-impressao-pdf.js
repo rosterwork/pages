@@ -1,7 +1,7 @@
 /* ============================================================
    AFASTAMENTOS — a folha do Ano e do Mês
    (RosterWork.afastamentosImpressaoPdf.gerar)
-   A grade da tela em A4 paisagem, no padrão dos PDFs da escala: a logo,
+   A grade da tela em A4 paisagem, no padrão dos PDFs da escala:
    "Afastamentos" e o período no alto; o site e "Página X de Y" no pé.
    Um bloco por unidade: o nome, a sigla e a cidade e a contagem no
    alto e a linha dos meses (Ano) ou dos dias (Mês: a sigla e o número,
@@ -15,7 +15,7 @@
    repetem na folha seguinte e o militar nunca se parte entre folhas
    (a linha dele é uma só: as faixas das barras ficam numa tabela por
    dentro, nas mesmas colunas). Página contínua: uma página só.
-   As peças (biblioteca, cores, logo, desenho e o medidor do texto) são
+   As peças (biblioteca, cores, desenho e o medidor do texto) são
    as do escalas-impressao-pdf.js e do escalas-impressao-grade-celula.js.
    Desenhado com a biblioteca do PDF (exceção REGRAS §3/§4): medidas
    em pontos nas constantes abaixo, cores --impressao-* do tema.
@@ -29,9 +29,9 @@
 
   /* medidas em pontos */
   var A4 = { largura: 841.89, altura: 595.28 };   // paisagem
-  var LADO = 28, TOPO = 66, BASE = 36;            // margens da folha
-  var CONTINUA = { topo: 20, base: 20 };          // margens da página contínua (logo e títulos vão no conteúdo)
-  var CABECALHO = { logo: 74, topo: 20, titulo: 15, subtitulo: 9.5 };
+  var LADO = 28, TOPO = 60, BASE = 36;            // margens da folha
+  var CONTINUA = { topo: 20, base: 20 };          // margens da página contínua (os títulos vão no conteúdo)
+  var CABECALHO = { topo: 20, titulo: 15, subtitulo: 9.5 };
   var MILITAR = 128;                               // a coluna do militar, com o respiro dos lados
   var RESPIRO = { militar: 5, dia: 1.5, alto: 5 };
   var LINHA = 0.5;
@@ -238,14 +238,11 @@
     };
   }
 
-  /* o alto da folha: a logo, o título e a grade com o período */
+  /* o alto da folha: o título e a grade com o período */
   function cabecalho(cfg, c) {
-    return { columns: [
-      { svg: c.logo, width: CABECALHO.logo },
-      { stack: [
-        { text: M().impressao.titulo, bold: true, fontSize: CABECALHO.titulo, color: c.forte },
-        { text: cfg.nome + ' · ' + cfg.texto, fontSize: CABECALHO.subtitulo, color: c.suave, margin: [0, 2, 0, 0] }
-      ], alignment: 'right' }
+    return { stack: [
+      { text: M().impressao.titulo, bold: true, fontSize: CABECALHO.titulo, color: c.forte },
+      { text: cfg.nome + ' · ' + cfg.texto, fontSize: CABECALHO.subtitulo, color: c.suave, margin: [0, 2, 0, 0] }
     ] };
   }
 
