@@ -18,7 +18,10 @@
    caixa da célula mostra os campos em branco. O cadeado aberto deixa o horário livre: a bolinha e o
    campo do começo andam de hora em hora e levam a extra junto (as
    cotas não mudam), e o clique põe ou tira 6 horas pela ponta mais
-   perto; fechado, volta ao horário padrão (o risco mais perto). A
+   perto; fechado, volta ao horário padrão (o risco mais perto). O
+   campo do começo (e, em branco, os dois) aceita também uma hora fora
+   dos riscos, que abre o cadeado sozinho; de volta a um risco, ele
+   fecha (o aberto à mão fica aberto até ser fechado). A
    lixeira tira os horários dele no dia. Muda o rascunho por
    RosterWork.extrajornadaGrade.mudar. RosterWork.extrajornadaBarra.
    ============================================================ */
@@ -80,6 +83,8 @@
   function regras(m, k, bs, inicio, travado, solto) {
     var ultimo = bs.length ? bs[bs.length - 1] : 0;
     function cabe(f) { return !f || !f.blocos.length || G().foraDoServico(m, k, f.ini, f.fim); }
+    /* sem horário no dia, quem pediu 24 horas seguidas e ainda tem as 4 cotas recebe o dia todo de uma vez */
+    function inteiro() { return m.so24 && !bs.length && (m.concedidas || 0) - G().usadas(m.cpf) >= 4; }
     /* as paradas da bolinha do começo: as divisas de 6 horas até o último horário e o fim do expediente; livre, toda hora
        em que a extra inteira ainda cabe no dia */
     function comecos() {
@@ -136,14 +141,19 @@
           novos = bs.filter(function (x) { return x !== p; });
         } else {
           if (travado) return null;   // com o pedido aberto, só dá para tirar
-          var inteiro = m.so24 && !bs.length && (m.concedidas || 0) - G().usadas(m.cpf) >= 4;
           var todos = bs.concat([p]);
-          novos = inteiro ? [1, 2, 3, 4] : seguidos(Math.min.apply(null, todos), Math.max.apply(null, todos));
+          novos = inteiro() ? [1, 2, 3, 4] : seguidos(Math.min.apply(null, todos), Math.max.apply(null, todos));
         }
         var f = faixaDe(novos, inicioPadrao(m, k, novos)) || { ini: 0, fim: 0, blocos: [], inicio: null };
         if (poe && !cabe(f)) return null;   // tirar sempre pode; pôr, só fora do serviço
         f.padrao = true;   // o começo fica com o rascunho, como nas bolinhas
         return f;
+      },
+      /* sem horário no dia: as 6 horas que começam em h0, uma hora fora dos riscos (o horário livre), se cabem */
+      fora: function (h0) {
+        if (bs.length || travado || inteiro() || h0 < 0 || h0 + 6 > 24) return null;
+        var l = livre(h0, 1);
+        return cabe(l) ? l : null;
       },
       arrastar: function (qual, pos, f) {
         if (qual === 'fim') {
@@ -168,15 +178,16 @@
   }
 
   /* sem horário no dia: os campos em branco. Escolher ou escrever uma hora põe as 6 horas que começam (no início) ou
-     terminam (no fim) ali, como o clique na barra; só as horas em que elas cabem. Sem nenhuma, sem campos */
+     terminam (no fim) ali: num risco, como o clique na barra; em outra hora, com o cadeado aberto (o horário livre);
+     só as horas em que elas cabem. Sem nenhuma, sem campos */
   function camposVazios(rg, aplicar) {
     var porInicio = {}, porFim = {}, inicios = [], fins = [];
-    [0, 6, 12, 18].forEach(function (h) {
-      var f = rg.clique(h);
-      if (!f) return;
+    for (var h = 0; h <= 18; h++) {
+      var f = h % 6 ? rg.fora(h) : rg.clique(h);
+      if (!f) continue;
       porInicio[horaDoCampo(h)] = f; inicios.push(horaDoCampo(h));
       porFim[horaDoCampo(h + 6)] = f; fins.push(horaDoCampo(h + 6));
-    });
+    }
     if (!inicios.length) return null;
     return H().linha({
       hi: '', hf: '', semAcoes: true, opcoes: { inicios: inicios, fins: fins },
@@ -251,11 +262,23 @@
       return;
     }
     /* a barra escolhida: o seletor de horas embaixo, com as paradas das bolinhas, e, depois dele, o cadeado e a lixeira,
-       que tira os horários dele no dia (fica cinza até o Salvar) */
+       que tira os horários dele no dia (fica cinza até o Salvar). Com o cadeado fechado, o começo também tem as outras
+       horas em que a extra cabe: escolher uma delas faz a extra andar inteira, com as mesmas cotas, e abre o cadeado */
+    var comecos = rg.comecos(), porInicio = {}, inicios = [];
+    if (!solto && !G().travado()) {
+      comecos = comecos.concat(regras(m, k, bs, inicio, false, true).comecos());
+      comecos.sort(function (x, y) { return x.pos - y.pos; });   // na mesma hora, a parada da bolinha vem antes
+    }
+    comecos.forEach(function (c) {
+      var h = horaDoCampo(c.pos);
+      if (porInicio[h]) return;
+      porInicio[h] = faixaDe(c.blocos, c.inicio);
+      inicios.push(h);
+    });
     var linha = H().linha({
       hi: H().hhmm(faixa.ini * 60), hf: H().hhmm(faixa.fim * 60), semAcoes: true,
-      opcoes: { inicios: rg.comecos().map(function (c) { return horaDoCampo(c.pos); }), fins: rg.fins(faixa).map(horaDoCampo) },
-      aoInicio: function (t) { var f = rg.arrastar('ini', hora(t), faixa); if (f) aplicar(f); },
+      opcoes: { inicios: inicios, fins: rg.fins(faixa).map(horaDoCampo) },
+      aoInicio: function (t) { var f = porInicio[t.slice(0, 2)]; if (f) aplicar(f); },
       aoFim: function (t) { var p = hora(t); if (p <= faixa.ini) p += 24; var f = rg.arrastar('fim', p, faixa); if (f) aplicar(f); }
     });
     if (!linha) return;

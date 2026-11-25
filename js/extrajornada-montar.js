@@ -50,8 +50,8 @@
     escalaSeq++;
     escalaLendo = null;
   }
-  /* uma leitura por vez (o calendário mostra a forma até ela chegar). Se falhar, a frase fica no lugar do calendário,
-     como na Escala, e a mensagem técnica no console; abrir o passo de novo tenta outra vez */
+  /* uma leitura por vez (o calendário mostra a forma e o cartão das etapas até ela chegar). Se falhar, a frase fica no
+     lugar do calendário, como na Escala, e a mensagem técnica no console; abrir o passo de novo tenta outra vez */
   function pararEsperaDaEscala() {
     if (esperaDaEscala) esperaDaEscala.parar();
     esperaDaEscala = null;
@@ -69,9 +69,11 @@
       console.error('[Extrajornada] ler_escala_mes falhou' + (e && e.message ? ': ' + e.message : ''));
       if (naPagina()) redesenhar();
     }
-    /* a forma da grade que apareceu fica o mínimo na tela (geral-etapas.js) */
-    var leitura = RW.escalasDados.carregar(ids, comp, G().ultimoDia()), esta = esperaDaEscala;
-    (esta ? esta.segurar(leitura) : leitura).then(function (r) {
+    /* a forma e o cartão que estão no calendário quando a leitura chega ficam o mínimo na tela (geral-etapas.js); a
+       leitura que começou antes de a página ser refeita segura a espera da página de agora */
+    var leitura = RW.escalasDados.carregar(ids, comp, G().ultimoDia());
+    function segurada() { return esperaDaEscala ? esperaDaEscala.segurar(leitura) : leitura; }
+    leitura.then(segurada, segurada).then(function (r) {
       if (req !== escalaSeq) return;
       if (!r) { falhou(); return; }
       escalaLendo = null;
@@ -232,9 +234,11 @@
         var aviso = RW.falha.bloco(msg().falhaEscala, function () { escalaFalhou = null; redesenhar(); });
         if (no && aviso) { no.appendChild(aviso); alvo.appendChild(no); }
       } else if (!esperaDaEscala) {
-        /* passando de 0,5 s, a forma da grade, com os dias e os pelotões de verdade (escalas-esqueleto.js) */
+        /* passando de 0,5 s, a forma da grade, com os dias e os pelotões de verdade (escalas-esqueleto.js), e, de 1,5 s,
+           o cartão das etapas, as da Escala (a mesma leitura) */
         var unidades = u().doCalendario(alocs), mesDaGrade = new Date(+d.competencia.slice(0, 4), +d.competencia.slice(5, 7) - 1, 1);
-        esperaDaEscala = RW.etapas.area(alvo, { forma: function (lugar) {
+        var valores = { mes: RW.escalasEsqueleto.nomeDoMes(mesDaGrade) };
+        esperaDaEscala = RW.etapas.area(alvo, { etapas: 'escalaAbrir', valores: valores, forma: function (lugar) {
           if (RW.extrajornada.modo() === 'agenda') RW.escalasEsqueleto.agenda(lugar, unidades, mesDaGrade);
           else RW.escalasEsqueleto.calendario(lugar, unidades, mesDaGrade);
         } });
@@ -322,6 +326,9 @@
       }
     }
     escalaFalhou = null;
+    /* a espera da escala de antes (de outra visita à página ou de outro mês) sai: o redesenhar põe a de agora no
+       calendário à vista, e a leitura que ainda corre segura essa */
+    pararEsperaDaEscala();
     escalaDoMes();
     /* as cotas que faltam distribuir, no alto; nos Ajustes, com o que fazer */
     if (RW.cotasAviso) RW.cotasAviso.ligar(q('#p3-cotas-aviso'), function () { return [d.competencia]; }, { comoFazer: modoNovo === 'ajustes' });

@@ -665,6 +665,7 @@
 .guia-amostra[data-cor="impressao-texto"] { background-color: var(--impressao-texto); }
 .guia-amostra[data-cor="impressao-texto-suave"] { background-color: var(--impressao-texto-suave); }
 .guia-amostra[data-cor="impressao-borda"] { background-color: var(--impressao-borda); }
+.guia-amostra[data-cor="impressao-listra"] { background-color: var(--impressao-listra); }
 .guia-amostra[data-cor="impressao-fundo"] { background-color: var(--impressao-fundo); }
 .guia-amostra[data-cor="impressao-papel"] { background-color: var(--impressao-papel); }
 .guia-amostra[data-cor="impressao-sucesso"] { background-color: var(--impressao-sucesso); }
