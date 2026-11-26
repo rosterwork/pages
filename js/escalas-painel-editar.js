@@ -751,6 +751,8 @@
     var meu = ++pedido, c = ctx;
     /* o dia que vai mostrar a prévia já a pede junto com a leitura dele, e não depois dela (a tela espera as duas) */
     var previa = editavel() && precisaPrevia() ? pedirPrevia() : null;
+    /* o Lançar no SYSBM lê a escala do pelotão junto com o dia, e não depois dele (escalas-sysbm.js) */
+    if (ctx.admin && !ctx.comparar && !ctx.semLista && RosterWork.escalasSysbm) RosterWork.escalasSysbm.preparar(ctx.unidadeId, ctx.iso);
     RosterWork.painel.segurar(RosterWork.escalasDados.lerDistribuicaoDia(ctx.unidadeId, ctx.iso)).then(function (dados) {
       if (ctx !== c || meu !== pedido) return;
       if (!dados) { mostrarFalha(desenhar); return; }
@@ -1623,9 +1625,9 @@
     }
     var obs = caixaObservacoes(dados);
     if (obs) corpo.appendChild(obs);
-    /* Lançar no SYSBM: o último bloco do Dia gravado, para quem administra o pelotão (escalas-sysbm.js) */
+    /* Lançar no SYSBM: o último bloco do Dia gravado, para quem administra o pelotão, no dia com escala (escalas-sysbm.js) */
     if (ctx.admin && !ctx.comparar && RosterWork.escalasSysbm) {
-      RosterWork.escalasSysbm.montar(corpo, ctx.unidadeId, ctx.iso, { desligado: diaComMudanca() });
+      RosterWork.escalasSysbm.montar(corpo, ctx.unidadeId, ctx.iso, { desligado: diaComMudanca(), comEscala: alguem });
     }
     mostrarHistorico();
     /* o lugar que o Adicionar mais um lugar neste posto abriu: o cartão para escolher quem entra */
@@ -1915,6 +1917,8 @@
     /* gravou de dentro de uma sub-tela: ela sai, e a lista mostra o dia gravado */
     if (ctx.rodape) { ctx.rodape.textContent = ''; ctx.rodape.classList.add('oculto'); }
     montarSubcabecalho();
+    /* o dia gravado mudou: o Lançar no SYSBM lê de novo (escalas-sysbm.js) */
+    if (RosterWork.escalasSysbm) RosterWork.escalasSysbm.preparar(ctx.unidadeId, ctx.iso);
     renderLista(r.dia);
     avisarCelula(r.dia);   // a caixa da célula aberta no mesmo dia, sobre a lista do painel (sub.ouvir)
   }

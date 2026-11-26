@@ -10,9 +10,12 @@
      página dela na loja da Mozilla, noutra aba); instalada com o
      painel aberto, o bloco troca sozinho para o Enviar e confirma;
    - com a extensão: ele lê no banco a escala do pelotão no dia já
-     convertida nas linhas do SYSBM (escala_sysbm; na CIBM o banco
-     recusa, e o dia sem escala não tem o que lançar: nos dois
-     casos o bloco não aparece). Fechado: o Enviar e, se alguém
+     convertida nas linhas do SYSBM (escala_sysbm). A leitura sai
+     junto com a do dia do painel (preparar) e fica guardada para
+     os redesenhos do Dia; o bloco entra junto com o Dia, com o
+     Enviar desligado e respirando até ela chegar. Só no painel do
+     pelotão e no dia com escala; se mesmo assim não houver o que
+     lançar, a frase no lugar do Enviar. Fechado: o Enviar e, se alguém
      fica de fora, a linha amarela; aberto pelo chevron: o resumo,
      quem fica de fora e por quê e a explicação. Enviar leva a
      escala à extensão, que abre a aba do SYSBM e preenche a tela
@@ -35,8 +38,16 @@
   var aguardando = null;        // o bloco que mostra o Instalar a extensão, à espera dela ({partes, unidadeId, iso})
   var observador = null;        // olha a marca da extensão no <html> enquanto há bloco à espera
   var ciente = false;           // quem está logado já deu ciência da versão vigente do termo (sabido nesta página)
+  var guardada = null;          // a última leitura: {chave, promessa, chegou, resposta}; renovada a cada leitura do dia gravado
 
   function msg() { return (RW.mensagens.escala && RW.mensagens.escala.sysbm) || {}; }
+
+  /* o bloco é do pelotão (a unidade de cima é a companhia); sem a árvore de unidades à mão, o banco decide */
+  function ePelotao(unidadeId) {
+    var A = RW.arvoreUnidades;
+    var pai = A && A.pai ? A.pai(unidadeId) : null;
+    return !pai || pai.tipo === 'CIA' || pai.tipo === 'CIBM';
+  }
 
   /* ---------- o navegador e a extensão ---------- */
   /* o Firefox, no computador ou no Android (no iPhone ele se chama FxiOS e não aceita extensões) */
@@ -114,13 +125,60 @@
     partes.situacao.classList.remove('oculto');
   }
 
-  /* lê a escala do pelotão no dia; o bloco que saiu da tela (o Dia foi redesenhado) não muda mais */
-  function ler(partes, unidadeId, iso) {
-    return RW.escalasDados.lerSysbm(unidadeId, iso).then(function (r) {
+  /* nada para lançar (ou o banco recusou): a frase no lugar do Enviar e do chevron */
+  function mostrarVazio(partes, r) {
+    partes.dados = null;
+    partes.enviar.classList.add('oculto');
+    partes.toggle.classList.add('oculto');
+    partes.conteudo.classList.add('oculto');
+    partes.fora.classList.add('oculto');
+    partes.situacao.textContent = (!r.ok && r.erro) || msg().nadaParaLancar;
+    partes.situacao.classList.remove('oculto');
+  }
+
+  /* enquanto a leitura não chega: o Enviar desligado, respirando como as formas do carregando (geral-esqueleto.css) */
+  function mostrarLendo(partes) {
+    partes.enviar.disabled = true;
+    partes.enviar.classList.add('esqueleto-conjunto');
+  }
+
+  /* a resposta no bloco; o Enviar liga (desligado só com mudança do dia ainda não salva) */
+  function aplicar(partes, r) {
+    partes.enviar.classList.remove('esqueleto-conjunto');
+    partes.enviar.disabled = !!partes.desligado;
+    if (r && (!r.ok || !r.linhas.length)) { mostrarVazio(partes, r); return; }
+    if (r) preencher(partes, r); else mostrarFalha(partes);
+  }
+
+  /* a leitura da escala do pelotão no dia: sai junto com a leitura do dia gravado do painel (a abertura e o Salvar,
+     escalas-painel-editar.js) e fica guardada; os redesenhos do Dia (o rascunho, o Desfazer, a outra aba) usam ela */
+  function preparar(unidadeId, iso) {
+    if (!eFirefox() || !temExtensao() || !ePelotao(unidadeId) || !RW.escalasDados || !RW.escalasDados.lerSysbm) return null;
+    var leitura = { chave: unidadeId + '|' + iso, chegou: false, resposta: null };
+    leitura.promessa = RW.escalasDados.lerSysbm(unidadeId, iso).then(function (r) {
+      leitura.chegou = true;
+      leitura.resposta = r;
+      return r;
+    });
+    guardada = leitura;
+    return leitura;
+  }
+
+  /* a leitura guardada deste dia; sem ela (ou a que falhou), uma nova */
+  function leituraDe(unidadeId, iso) {
+    var g = guardada;
+    if (g && g.chave === unidadeId + '|' + iso && !(g.chegou && !g.resposta)) return g;
+    return preparar(unidadeId, iso);
+  }
+
+  /* põe a leitura no bloco quando chegar (leitura: a já pedida; sem ela, lê de novo); o bloco que saiu da tela (o Dia
+     foi redesenhado) não muda mais */
+  function ler(partes, unidadeId, iso, leitura) {
+    leitura = leitura || preparar(unidadeId, iso);
+    if (!leitura) return Promise.resolve();
+    return leitura.promessa.then(function (r) {
       if (!partes.bloco.isConnected) return;
-      if (r && (!r.ok || !r.linhas.length)) { partes.bloco.classList.add('oculto'); return; }
-      if (r) preencher(partes, r); else mostrarFalha(partes);
-      partes.bloco.classList.remove('oculto');
+      aplicar(partes, r);
     });
   }
 
@@ -218,6 +276,7 @@
       observador = null;
       if (!a.partes.bloco.isConnected) return;
       ligarEnvio(a.partes, a.unidadeId, a.iso);
+      mostrarLendo(a.partes);
       ler(a.partes, a.unidadeId, a.iso).then(function () {
         if (!a.partes.dados || !a.partes.bloco.isConnected) return;
         a.partes.situacao.textContent = msg().extensaoInstalada;
@@ -227,10 +286,14 @@
     observador.observe(document.documentElement, { attributes: true, attributeFilter: ['data-sysbm-extensao'] });
   }
 
-  /* põe o bloco no fim do corpo do Dia. Fora do Firefox, o título e o aviso; no Firefox sem a extensão, o
-     título e o Instalar a extensão (até ela chegar); com ela, o bloco inteiro, escondido até a leitura chegar */
-  /* opcoes.desligado: há mudança do dia ainda não salva no painel; o Enviar espera o Salvar (o SYSBM lê a escala gravada) */
+  /* põe o bloco no fim do corpo do Dia, só no painel do pelotão e no dia com escala. Fora do Firefox, o título e o
+     aviso; no Firefox sem a extensão, o título e o Instalar a extensão (até ela chegar); com ela, o bloco inteiro na
+     hora, com o Enviar respirando até a leitura chegar (a guardada, quando já chegou, na hora) */
+  /* opcoes.desligado: há mudança do dia ainda não salva no painel; o Enviar espera o Salvar (o SYSBM lê a escala gravada).
+     opcoes.comEscala: o dia tem alguém na escala */
   function montar(corpo, unidadeId, iso, opcoes) {
+    opcoes = opcoes || {};
+    if (!opcoes.comEscala || !ePelotao(unidadeId)) return;
     var bloco = RW.tpl('tpl-escala-sysbm');
     if (!bloco || !RW.escalasDados || !RW.escalasDados.lerSysbm) return;
     var partes = {
@@ -243,7 +306,8 @@
       conteudo: bloco.querySelector('[data-sysbm-conteudo]'),
       resumo: bloco.querySelector('[data-sysbm-resumo]'),
       avisos: bloco.querySelector('[data-sysbm-avisos]'),
-      dados: null
+      dados: null,
+      desligado: !!opcoes.desligado
     };
     if (!eFirefox() || !temExtensao()) {
       partes.enviar.classList.add('oculto');
@@ -258,15 +322,14 @@
       if (eFirefox()) esperarExtensao(partes, unidadeId, iso);
       return;
     }
-    bloco.classList.add('oculto');
     ligarEnvio(partes, unidadeId, iso);
-    if (opcoes && opcoes.desligado) {
-      partes.enviar.disabled = true;
-      partes.enviar.setAttribute('data-dica', msg().salveAntes);
-    }
+    if (partes.desligado) partes.enviar.setAttribute('data-dica', msg().salveAntes);
     corpo.appendChild(bloco);
-    ler(partes, unidadeId, iso);
+    var leitura = leituraDe(unidadeId, iso);
+    if (leitura && leitura.chegou) { aplicar(partes, leitura.resposta); return; }
+    mostrarLendo(partes);
+    ler(partes, unidadeId, iso, leitura);
   }
 
-  RW.escalasSysbm = { montar: montar };
+  RW.escalasSysbm = { montar: montar, preparar: preparar };
 })();

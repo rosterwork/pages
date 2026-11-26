@@ -1872,6 +1872,8 @@
         /* a linha amarela do bloco fechado */
         foraResumo: function (n) { return n === 1 ? '1 militar fica de fora do SYSBM.' : n + ' militares ficam de fora do SYSBM.'; },
         falhaLer: 'Não foi possível ler a escala. Clique em Enviar para tentar de novo.',
+        /* no bloco, no lugar do Enviar: a leitura chegou sem nenhuma linha */
+        nadaParaLancar: 'Este dia não tem nada para lançar no SYSBM.',
         juntar: juntarComE,
         comFuncao: function (militar, funcao) { return militar + ' (' + funcao + ')'; },
         semRg: function (nomes) { return 'Sem RG no cadastro, fica de fora: ' + nomes + '.'; },
