@@ -110,12 +110,23 @@
     }).then(function () { return self.clients.claim(); }));
   });
 
+  /* o arquivo guardado que responde ao pedido: a raiz do site é o index.html; a página aberta pelo endereço sem pasta
+     (a tela, como /estagios, cuja cópia do index.html nasce na publicação, fora da lista) é o index.html, e a avulsa
+     (/login, /termos) é a página dela; o resto, o próprio caminho (/estagios/, com a barra no fim, vai à internet) */
+  function arquivoDoPedido(pedido, caminho) {
+    if (caminho === '') return 'index.html';
+    if (pedido.mode !== 'navigate' || caminho.indexOf('/') !== -1 || ARQUIVOS[caminho]) return caminho;
+    if (ARQUIVOS[caminho + '.html']) return caminho + '.html';
+    return 'index.html';
+  }
+
   /* arquivo do site: do aparelho; o sob demanda ainda não usado (as bibliotecas e as imagens do manual),
      da internet pela impressão digital e guardado; fora das listas (os logos de acervo), da internet */
   function responder(pedido) {
     var url = new URL(pedido.url);
-    var chave = /\/$/.test(url.pathname) ? endereco('index.html') : pedido;   /* a raiz do site é o index.html */
     var caminho = (url.origin + url.pathname).slice(self.registration.scope.length);
+    var arquivo = arquivoDoPedido(pedido, caminho);
+    var chave = arquivo === caminho ? pedido : endereco(arquivo);
     return caches.open(NOME).then(function (cache) {
       return cache.match(chave, { ignoreSearch: true }).then(function (guardado) {
         if (guardado) return guardado;
@@ -164,7 +175,10 @@
     var destino = endereco('index.html') + (aviso.id ? '?aviso=' + encodeURIComponent(JSON.stringify(aviso)) : '');
     function abrirNova() { return self.clients.openWindow(destino); }
     evento.waitUntil(self.clients.matchAll({ type: 'window' }).then(function (telas) {
-      var sistema = telas.filter(function (t) { return /\/index\.html(\?|$)|\/(\?|$)/.test(t.url.replace(/#.*$/, '')); });
+      /* o sistema aberto: toda janela do site fora das avulsas (login, criar conta, nova senha e termos) */
+      var sistema = telas.filter(function (t) {
+        return !/\/(login|criar-conta|nova-senha|termos)(\.html)?(\?|$)/.test(t.url.replace(/#.*$/, ''));
+      });
       var tela = sistema.filter(function (t) { return t.focused; })[0] || sistema[0];
       if (tela) {
         if (aviso.id) tela.postMessage({ tipo: 'aviso', aviso: aviso });

@@ -4872,9 +4872,14 @@
   </template>
 
   <!-- a caixa da extra na célula do calendário (extrajornada-celula.js; a caixa flutuante): o menu do militar. Os textos
-       e os itens com data-tela valem só numa tela (extrajornada ou escala); o JS esconde os da outra -->
+       e os itens com data-tela valem só numa tela (extrajornada ou escala); o JS esconde os da outra. No alto, as cotas
+       do mês dele (usou de recebeu), com o traço embaixo; aparecem quando o JS põe o número -->
   <template id="tpl-extrajornada-caixa-menu">
     <div class="extrajornada-caixa-menu">
+      <div class="extrajornada-caixa-cotas oculto">
+        <span class="extrajornada-caixa-cotas-linha">Cotas no mês: <strong class="extrajornada-caixa-cotas-valor"></strong></span>
+        <div class="dropdown-divisor"></div>
+      </div>
       <button type="button" class="dropdown-item" data-acao="horario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span data-tela="extrajornada">Mudar o horário</span><span data-tela="escala">Mudar o horário da extrajornada</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
       <button type="button" class="dropdown-item" data-acao="outro"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg><span>Pôr outro no lugar dele</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
       <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-sair"/></svg><span data-tela="extrajornada">Remover deste dia</span><span data-tela="escala">Remover da extrajornada neste dia</span></button>

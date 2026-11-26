@@ -430,6 +430,22 @@
   flex-direction: column;
 }
 
+/* no alto do menu do militar, as cotas do mês dele (o número mais forte; passou da cota, em vermelho), com o traço do
+   menu embaixo */
+.extrajornada-caixa-cotas-linha {
+  display: block;
+  padding: 8px 8px 4px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.extrajornada-caixa-cotas-valor {
+  font-weight: 600;
+  color: var(--texto-forte);
+}
+
+.extrajornada-caixa-cotas-valor--erro { color: var(--erro); }
+
 /* a caixa 2 do Mudar o horário: o dia em cima, a barra com 8px dos lados (a bolinha de arrastar fica dentro da caixa
    nas 08h), os campos e o cadeado; quem passou da cota, a nota; embaixo, sempre, os outros dias dele (a peça do painel
    do dia) */
@@ -480,5 +496,10 @@
 @media (max-width: 767px) {
   html[data-celular] .extrajornada-painel-militar:not(.extrajornada-painel-militar--indisponivel) {
     grid-template-columns: 8px minmax(0, 1fr) auto;
+  }
+
+  /* as cotas no alto do menu do militar, na letra do celular */
+  html[data-celular] .extrajornada-caixa-cotas-linha {
+    font-size: var(--fonte-padrao-celular);
   }
 }

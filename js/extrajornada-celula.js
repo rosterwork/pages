@@ -4,8 +4,8 @@
    geral-caixa-flutuante). Vale nas duas telas: no Calendário e na
    Agenda da Distribuição e dos Ajustes da Extrajornada (aqui) e na
    grade da Escala (escalas-celula-extra.js, que registra a tela dela).
-   O nome abre a caixa dele: Mudar o horário (na caixa 2, o dia, a
-   barra, os campos e o cadeado; sem horário, os campos em branco;
+   O nome abre a caixa dele (no alto, as cotas do mês dele): Mudar o
+   horário (na caixa 2, o dia, a barra, os campos e o cadeado; sem horário, os campos em branco;
    sempre com os outros dias dele embaixo; quem passou da cota vê
    também a nota), Pôr outro no lugar dele (o escolhido fica com o
    horário), Remover deste dia (na hora, com o Desfazer: quem entrou
@@ -197,6 +197,21 @@
     c.menu.querySelector('[data-acao="horario"]').classList.toggle('oculto', !c.pode);
     c.menu.querySelector('[data-acao="outro"]').classList.toggle('oculto', !podeOutro(c));
     c.menu.querySelector('[data-acao="remover"]').classList.toggle('oculto', !temHorario(c));
+    preencherCotas(c);
+  }
+
+  /* no alto do menu, as cotas do mês dele (usou de recebeu, a conta do painel do dia; passou, o número em vermelho), quando
+     a extra se mexe ali (na Escala, com o mês lido). O número se acerta a cada mudança, também com a caixa 2 aberta */
+  function preencherCotas(c) {
+    var linha = c.menu ? c.menu.querySelector('.extrajornada-caixa-cotas') : null;
+    if (!linha) return;
+    var m = c.pode ? u().militar(c.cpf) : null;
+    linha.classList.toggle('oculto', !m);
+    if (!m) return;
+    var usou = G().usadas(m.cpf), recebe = m.concedidas || 0;
+    var valor = linha.querySelector('.extrajornada-caixa-cotas-valor');
+    valor.textContent = msg().deCotas(usou, recebe);
+    valor.classList.toggle('extrajornada-caixa-cotas-valor--erro', usou > recebe);
   }
 
   /* a barra da extra de um militar num dia, para uma caixa (a escolhida, com os campos e o cadeado; sem horário, os campos
@@ -231,10 +246,11 @@
     return el;
   }
 
-  /* a caixa 2 do Mudar o horário */
+  /* a caixa 2 do Mudar o horário (e as cotas do menu, que mudam com ela) */
   function desenharHorario(c) {
     var el = c.caixa ? montarHorario(c.cpf, c.uid, c.k) : null;
     if (el) c.caixa.segunda(c.botao, el, textoDo(c.botao));
+    preencherCotas(c);
   }
 
   function abrirHorario(c) { fazer(c, 'horario', c.menu.querySelector('[data-acao="horario"]')); }

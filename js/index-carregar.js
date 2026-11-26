@@ -128,13 +128,24 @@
     });
   }
 
+  /* a tela pedida no endereço: /estagios (o nome depois da última barra, sem o .html) ou o ?pagina= antigo (favoritos e
+     links mandados antes do endereço limpo); null sem nenhuma (a raiz, o index.html). A navegação, o nome da tela na
+     abertura e o registro de erros leem por aqui */
+  RW.paginaDoEndereco = function () {
+    try {
+      var antiga = location.search.match(/[?&]pagina=([^&]+)/);
+      if (antiga) return decodeURIComponent(antiga[1]);
+      var nome = decodeURIComponent(location.pathname.split('/').pop().replace(/\.html$/, ''));
+      return nome && nome !== 'index' ? nome : null;
+    } catch (e) { return null; }
+  };
+
   /* a 3ª etapa diz a tela que vai abrir, e o menu já nasce marcado nela (no F5 de outra tela, a Escala não fica marcada
      até o código chegar); o HTML traz a Escala, a tela de quem não pediu outra. Tela fora do menu (Meu perfil, Manual,
      Avisos): o nome marcado com data-nome-da-tela no texto que a abre, e nenhum item marcado, como a navegação faz */
   function nomearTela() {
-    var rota = location.search.match(/[?&]pagina=([^&]+)/);
-    if (!rota || rota[1] === 'escalas') return;
-    var pagina = decodeURIComponent(rota[1]);
+    var pagina = RW.paginaDoEndereco();
+    if (!pagina || pagina === 'escalas') return;
     var nome = document.querySelector('.menu-item[data-pagina="' + pagina + '"] .menu-item-label') ||
       document.querySelector('[data-nome-da-tela="' + pagina + '"]');
     Array.prototype.forEach.call(document.querySelectorAll('[data-abertura-tela]'), function (lugar) {

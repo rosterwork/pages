@@ -51,8 +51,7 @@
 
   function paginaAgora() {
     if (RW.paginaAtual && RW.paginaAtual()) return RW.paginaAtual();
-    var rota = location.search.match(/[?&]pagina=([^&]+)/);
-    return rota ? decodeURIComponent(rota[1]) : '';
+    return (RW.paginaDoEndereco && RW.paginaDoEndereco()) || '';
   }
 
   function enviar(erro) {
