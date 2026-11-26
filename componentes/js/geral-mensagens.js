@@ -531,20 +531,21 @@
         termos: function (rec, pend, recebidas, repartidas) {
           return rec + (rec === 1 ? ' termo recebido e ' : ' termos recebidos e ') + pend + (pend === 1 ? ' pendente. ' : ' pendentes. ') + recebidas + ' cotas recebidas, ' + repartidas + ' repartidas.';
         },
-        lancado: function (em, por, ate, iniciado) {
-          return 'Lançado na escala em ' + em + (por ? ', pelo ' + por : '') + '. ' + (iniciado ? 'Até ' + ate + ' dava para mudar e lançar de novo; cada lançamento refaz o relatório inicial.' : 'Até ' + ate + ' dá para mudar e lançar de novo; cada lançamento refaz o relatório inicial.');
+        encerrado: function (em, por, automatico, ate, iniciado) {
+          return (automatico ? 'Encerrada pelo sistema, na virada do mês, em ' + em + '.' : 'Encerrada em ' + em + (por ? ', pelo ' + por : '') + '.')
+            + (iniciado ? '' : ' Até ' + ate + ' dá para reabrir; ao encerrar de novo, o relatório inicial é refeito.');
         },
-        naoLancado: function (ate) { return 'Ainda não lançado. Até ' + ate + ' a distribuição pode ser lançada e relançada.'; },
+        naoEncerrado: 'Ainda não encerrada. Sem encerrar, ela encerra sozinha na virada do mês, com todas as cotas nas datas.',
         ajustesQtd: function (n) { return n + ' até agora'; },
         relatorioDisponivel: function (dia) { return 'Fica disponível a partir de ' + dia + ' e não sai mais daqui. Até lá, a prévia ao lado mostra como está.'; },
         relatorioPronto: function (dia) { return 'Disponível desde ' + dia + ' e não sai mais daqui.'; },
-        comparado: function (dia) { return 'comparado com o lançamento de ' + dia; },
-        semLancamento: 'A comparação começa quando a extra for lançada na escala.',
-        semAjustes: 'Nenhuma extra mudou desde o lançamento.',
+        comparado: function (dia) { return 'comparado com o encerramento de ' + dia; },
+        semEncerramento: 'A comparação começa quando a distribuição for encerrada.',
+        semAjustes: 'Nenhuma extra mudou desde o encerramento.',
         retirada: 'retirada',
         nova: 'extra nova',
         mudouVezes: function (n) { return 'mudou ' + n + ' vezes'; },
-        cotasIguais: 'Nenhuma. As cotas de cada militar continuam as do lançamento.',
+        cotasIguais: 'Nenhuma. As cotas de cada militar continuam as do encerramento.',
         cotasMudaram: function (quem, de, para) { return quem + ': de ' + de + ' para ' + para + ' cotas.'; }
       },
       /* Relatórios › Imprimir: o painel Imprimir relatório (extrajornada-imprimir.js) */
@@ -556,7 +557,7 @@
         indisponivel: {
           pedidos: 'Libera quando os pedidos fecharem.',
           termos: 'Libera quando as cotas forem repartidas.',
-          inicial: 'Libera depois do lançamento.',
+          inicial: 'Libera depois do encerramento.',
           final: 'Libera no dia 1º do mês seguinte ao da extra.'
         },
         /* a nota do alto do painel ("Será impresso:"): "Relatório inicial de outubro de 2026, todos os pelotões,
@@ -633,11 +634,11 @@
         rotuloMes: 'Mês', rotuloUnidade: 'Unidade', rotuloGerado: 'Gerado em', todos: 'Todos os pelotões',
         gerado: function (data, hora) { return data + ', ' + hora; },
         secoes: {
-          resumo: 'RESUMO', pedidos: 'PEDIDOS', termos: 'TERMOS E COTAS', lancadas: 'EXTRAS LANÇADAS',
+          resumo: 'RESUMO', pedidos: 'PEDIDOS', termos: 'TERMOS E COTAS', distribuidas: 'EXTRAS DISTRIBUÍDAS',
           comoFicou: 'COMO FICOU NO FIM DO MÊS', mudou: 'O QUE MUDOU DESDE O LANÇAMENTO'
         },
         ajudaOrdem: 'Em ordem de antiguidade. A última linha de cada tabela é o total.',
-        ajudaMudou: 'Só quem mudou. Quem não aparece manteve as datas do lançamento.',
+        ajudaMudou: 'Só quem mudou. Quem não aparece manteve as datas do encerramento.',
         colunas: {
           militar: 'Militar', cpf: 'CPF', pelotao: 'Pelotão', pedidoEm: 'Pedido em', peloSistema: 'Pelo sistema', cotasPedidas: 'Cotas pedidas', termo: 'Termo',
           pediu: 'Pediu', recebeu: 'Recebeu', data: 'Data', horario: 'Horário', cotas: 'Cotas', era: 'Era', ficou: 'Ficou',
@@ -646,8 +647,8 @@
         campos: {
           periodo: 'Período dos pedidos', voluntarios: 'Voluntários', cotasPedidas: 'Cotas pedidas', naoQuerem: 'Não querem extra',
           naoResponderam: 'Não responderam', recebidas: 'Cotas recebidas pela companhia', repartidas: 'Cotas repartidas',
-          comTermo: 'Com termo', semTermo: 'Sem termo', lancadoEm: 'Lançado na escala em', lancadoPor: 'Lançado por',
-          comExtra: 'Voluntários com extra', lancadas: 'Cotas lançadas', noLancamento: 'Cotas no lançamento',
+          comTermo: 'Com termo', semTermo: 'Sem termo', encerradoEm: 'Encerrada em', encerradoPor: 'Encerrada por',
+          comExtra: 'Voluntários com extra', distribuidas: 'Cotas distribuídas', noEncerramento: 'Cotas no encerramento',
           noFim: 'Cotas no fim do mês', ajustadas: 'Extras ajustadas'
         },
         periodo: function (abre, fecha) { return 'De ' + abre + ' a ' + fecha; },
@@ -663,7 +664,7 @@
           cota: 'Cada cota vale 6 horas de serviço.',
           reproduz: 'Este relatório reproduz os dados gravados no sistema e não substitui os documentos oficiais.',
           semTermo: 'Sem o termo entregue, o militar não recebe cota.',
-          inicial: 'O relatório inicial é a extrajornada como foi lançada na escala. As mudanças depois do lançamento ficam no relatório final.'
+          inicial: 'O relatório inicial é a distribuição como foi encerrada. As mudanças depois do encerramento ficam no relatório final.'
         }
       },
       titulo: function (mes, quem) { return quem + ' · ' + mes; },
@@ -730,7 +731,7 @@
         p2: function (rec, rep) { return rec + ' recebidas · ' + rep + ' repartidas'; },
         p2Depois: 'Depois do pedido',
         p3: function (g, c) { return g + ' de ' + c + ' cotas colocadas'; },
-        p4Nao: 'Ainda não lançado',
+        p4Nao: 'Ainda não encerrada',
         p5: function (n) { return n + (n === 1 ? ' ajuste' : ' ajustes'); },
         cotas: function (n, so24) { return n + (so24 ? ' (24 h)' : ''); },
         dias: function (n) { return n ? n + (n === 1 ? ' dia' : ' dias') : 'nenhum'; },
@@ -773,39 +774,35 @@
         c4ok: 'Nenhum dia com falta de gente',
         lancadoTitulo: function (em, por) { return 'Lançado em ' + em + (por ? ', por ' + por : ''); },
         aoLancar: 'Ao lançar',
-        /* Ações › Lançar na escala e encerrar (o título do painel) e o que ainda impede um item do menu Ações */
-        lancarTitulo: 'Lançar na escala e encerrar',
+        /* Distribuição › Lançar na escala (o título do painel) */
+        lancarTitulo: 'Lançar na escala',
         /* Relatórios: o título da prévia do que mudou desde o lançamento */
         relPrevia: 'Prévia do relatório final',
         relFinal: 'Relatório final',
-        /* Pedidos › Ações › Fechar os pedidos agora */
+        /* Pedidos › Fechar os pedidos agora */
         confirmarFechar: 'Fechar os pedidos agora? Ninguém mais consegue fazer ou mudar o pedido.',
         fecharPedidos: 'Fechar os pedidos',
         fechadosEm: function (data, por) { return 'Pedidos fechados em ' + data + (por ? ' por ' + por : '') + '.'; },
-        /* Distribuição › Ações › Reabrir a distribuição e a nota da Distribuição lançada */
-        confirmarReabrir: 'Reabrir a distribuição? Ao lançar de novo, o novo lançamento vira o relatório inicial, e os ajustes feitos até aqui passam a fazer parte dele.',
+        /* Distribuição › Encerrar a distribuição e Reabrir a distribuição, e a nota da Distribuição encerrada */
+        confirmarEncerrar: function (mes) { return 'Encerrar a distribuição de ' + mes + '? Ela vira o relatório inicial, e as mudanças passam a ser feitas em Ajustes.'; },
+        encerrar: 'Encerrar',
+        confirmarReabrir: 'Reabrir a distribuição? A escala continua como está. Ao encerrar de novo, a distribuição desse momento vira o relatório inicial, e os ajustes feitos até aqui passam a fazer parte dele.',
         reabrir: 'Reabrir',
-        distLancada: function (em, por) { return 'Distribuição lançada em ' + em + (por ? ' por ' + por : '') + '. As mudanças agora são feitas em Ajustes.'; },
-        acao: {
-          pedidosAbertos: 'Libera quando os pedidos fecharem.',
-          pedidosNaoAbriram: 'Os pedidos ainda não abriram.',
-          pedidosJaFechados: 'Os pedidos já estão fechados.',
-          salvarAntes: 'Salve as alterações antes.',
-          semExtras: 'Nenhuma extra na distribuição.',
-          faltamCotas: function (n) { return 'Faltam ' + n + (n === 1 ? ' cota' : ' cotas') + ' para colocar nas datas.'; },
-          mesComecou: 'O mês já começou. As mudanças agora são feitas em Ajustes.',
-          jaLancada: 'Já lançada. Para lançar de novo, reabra a distribuição.',
-          lancadaFechada: 'Lançada. As mudanças agora são feitas em Ajustes.',
-          naoLancada: 'A distribuição ainda não foi lançada.',
-          jaReaberta: 'A distribuição já está reaberta.'
+        distEncerrada: function (em, por, automatico) {
+          return (automatico ? 'Distribuição encerrada pelo sistema, na virada do mês, em ' + em + '.' : 'Distribuição encerrada em ' + em + (por ? ' por ' + por : '') + '.')
+            + ' As mudanças agora são feitas em Ajustes.';
         },
+        /* a nota amarela da Distribuição: as cotas que ainda não estão nas datas, até 3 dias antes de o mês começar */
+        faltamCotas: function (n) { return 'Faltam ' + n + (n === 1 ? ' cota' : ' cotas') + ' para colocar nas datas.'; },
+        daParaLancar: 'Dá para lançar na escala assim.',
+        paraEncerrar: 'Para encerrar, todas precisam estar nas datas.',
         mudouDesde: function (n) { return 'Depois do lançamento, ' + n + (n === 1 ? ' mudança ainda não está na escala:' : ' mudanças ainda não estão na escala:'); },
         nada: 'nada',
         tirado: 'tirado',
-        lancarTexto: function (n) { return n + (n === 1 ? ' extra entra na escala.' : ' extras entram na escala.') + ' Fica guardada a foto, que vira o relatório inicial.'; },
+        lancarTexto: function (n) { return n + (n === 1 ? ' extra entra na escala.' : ' extras entram na escala.') + ' Depois disso, cada Salvar vai direto para a escala.'; },
         diaAntigo: 'Este dia é de mais de 7 dias atrás. A extra dele não pode mais mudar.',
-        /* a caixa da célula na Distribuição já lançada (extrajornada-celula.js) */
-        lancadaNaoMuda: 'A distribuição já foi lançada. Para mudar, use os Ajustes.',
+        /* a caixa da célula na Distribuição já encerrada (extrajornada-celula.js) */
+        encerradaNaoMuda: 'A distribuição já foi encerrada. Para mudar, use os Ajustes.',
         relAjustesPeriodo: function (ini, fim) { return ini + ' a ' + fim + '. Feitos em Ajustes.'; },
         colocadas: function (n, t) { return n + ' de ' + t + ' cotas colocadas'; },
         faltaGenteHoras: function (h) { return 'Ainda falta gente de ' + h + '.'; },
@@ -2247,6 +2244,7 @@
       umMilitar: function (nome, colocadas, recebidas) { return nome + ' está com ' + colocadas + ' de ' + recebidas + (recebidas === 1 ? ' cota.' : ' cotas.'); },
       varios: function (nome, outros) { return nome + ' e mais ' + outros + (outros === 1 ? ' militar estão' : ' militares estão') + ' com cotas a menos.'; },
       comoFazer: 'Clique no nome na lista e marque os horários nos dias livres.',
+      paraEncerrar: 'A distribuição só encerra com todas nas datas.',
       aoSalvarFica: function (nome, n, total) { return 'Ao salvar, ' + nome + ' fica com ' + n + ' de ' + total + (total === 1 ? ' cota.' : ' cotas.'); },
       aoSalvarFicam: function (n) { return 'Ao salvar, ' + n + ' militares ficam com cotas a menos.'; },
       aoSalvarCompletam: function (n) { return 'Ao salvar, ' + n + ' militares ficam com todas as cotas.'; }

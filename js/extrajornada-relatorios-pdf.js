@@ -11,8 +11,9 @@
    datas com o ano; a ordem de antiguidade; a linha de total em cada
    tabela. As opções de quem imprime: um pelotão ou todos e, com todos,
    uma tabela por pelotão (2.1, 2.2...) ou a lista única (com a coluna
-   Pelotão). O Relatório final tem como ficou no fim do mês e o que
-   mudou desde o lançamento (era, ficou e quem ajustou).
+   Pelotão). O Relatório inicial é a foto do encerramento da
+   distribuição; o final tem como ficou no fim do mês e o que mudou
+   desde o encerramento (era, ficou e quem ajustou).
    A tabela vai inteira para a folha seguinte só quando cabe numa folha;
    mais alta, ela se parte, com os títulos das colunas repetidos.
    Usa as peças do formato dos relatórios (geral-relatorio-pdf.js: a
@@ -186,15 +187,15 @@
   function inicial(r, opc, c) {
     var p = relatorio().pecas(c), t = txt(), base = dosVoluntarios(voluntarios(r, opc), r.base);
     var conteudo = p.secao(t.secoes.resumo).concat([p.campos([
-      [t.campos.lancadoEm, r.lancado], [t.campos.lancadoPor, r.lancadoPor],
-      [t.campos.comExtra, String(Object.keys(porCpf(base)).length)], [t.campos.lancadas, t.cotas(soma(base))]
+      [t.campos.encerradoEm, r.encerrado], [t.campos.encerradoPor, r.encerradoPor],
+      [t.campos.comExtra, String(Object.keys(porCpf(base)).length)], [t.campos.distribuidas, t.cotas(soma(base))]
     ])]);
-    conteudo = conteudo.concat(extras(p, r, opc, r.base, p.secao(t.secoes.lancadas).concat([p.ajuda(t.ajudaOrdem)])));
+    conteudo = conteudo.concat(extras(p, r, opc, r.base, p.secao(t.secoes.distribuidas).concat([p.ajuda(t.ajudaOrdem)])));
     conteudo.push(p.observacoes([t.obs.inicial, t.obs.cota, t.obs.reproduz]));
     return documento('inicial', r, opc, conteudo, c);
   }
 
-  /* ---------- Relatório final: como ficou no fim do mês e o que mudou desde o lançamento ---------- */
+  /* ---------- Relatório final: como ficou no fim do mês e o que mudou desde o encerramento ---------- */
   function chave(x) { return x.cpf + '|' + x.data + '|' + x.uid + '|' + x.b_ini + '|' + x.b_fim; }
   function datas(lista, vazio) {
     if (!lista.length) return [vazio];
@@ -214,7 +215,7 @@
     (r.ajustes || []).forEach(function (a) { if (!ajuste[a.cpf]) ajuste[a.cpf] = a; });
     var mudaram = vols.filter(function (m) { return mud[m.cpf]; });
     var conteudo = p.secao(t.secoes.resumo).concat([p.campos([
-      [t.campos.lancadoEm, r.lancado], [t.campos.noLancamento, t.cotas(soma(base))],
+      [t.campos.encerradoEm, r.encerrado], [t.campos.noEncerramento, t.cotas(soma(base))],
       [t.campos.noFim, t.cotas(soma(atual))], [t.campos.ajustadas, String(mudaram.length)]
     ])]);
     conteudo = conteudo.concat(extras(p, r, opc, r.atual, p.secao(t.secoes.comoFicou).concat([p.ajuda(t.ajudaOrdem)])));
@@ -238,16 +239,16 @@
   }
 
   function dados(d) {
-    var mes = d.mes;
+    var mes = d.mes, enc = RW.extrajornadaUtil.encerrada(d) ? d.encerramento : null;
     var recebidas = mes.repartir_por === 'por_unidade'
       ? Object.keys(mes.cotas_unidades || {}).reduce(function (s, k) { return s + (+mes.cotas_unidades[k] || 0); }, 0) : (mes.cotas_recebidas || 0);
     return {
       competencia: d.competencia, abre: mes.abre, fecha: mes.fecha, cotasRecebidas: recebidas,
-      lancado: d.lancamento ? d.lancamento.lancado_em : '', lancadoPor: d.lancamento ? d.lancamento.por || '' : '',
+      encerrado: enc ? enc.encerrado_em : '', encerradoPor: enc ? enc.por || '' : '',
       geradoEm: geradoAgora(),
       unidades: d.unidades.map(function (u) { return { unidade_id: u.id, nome: u.nome, cidade: u.cidade }; }),
       militares: d.militares,
-      base: trechos(d.lancamento ? d.lancamento.foto : []), atual: trechos(d.alocacoes), ajustes: d.ajustes || []
+      base: trechos(enc ? enc.foto : []), atual: trechos(d.alocacoes), ajustes: d.ajustes || []
     };
   }
 

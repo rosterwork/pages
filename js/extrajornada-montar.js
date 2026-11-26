@@ -6,13 +6,14 @@
    lista dos voluntários (o painel esquerdo) em extrajornada-lista.js.
    Tudo fica no rascunho até o Salvar (extrajornada_distribuicao_salvar),
    que espera acertar quem passou da cota. "Preencher pela sugestão"
-   (só com tudo salvo) mantém as extras que o administrador pôs ou mudou
-   e pede ao otimizador (extrajornada-otimizador.js) que refaça as que o
-   sistema pôs; o banco (extrajornada_sugerir) confere cada uma.
+   (até encerrar, mesmo com mudança não salva) mantém as extras que o
+   administrador pôs ou mudou, salvas ou não, e pede ao otimizador
+   (extrajornada-otimizador.js) que refaça as que o sistema pôs; o banco
+   (extrajornada_sugerir) confere cada uma.
    O Desfazer e o Refazer do rodapé (e o Ctrl+Z e o Ctrl+Y) andam pelos
    passos do rascunho; o Preencher inteiro é um passo só.
-   Os Ajustes são a mesma tela (o modo ajustes): abrem depois do
-   lançamento.
+   Lançada na escala, cada Salvar vai direto para ela. Os Ajustes são a
+   mesma tela (o modo ajustes): abrem depois de encerrar a distribuição.
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.extrajornadaMontar.
    ============================================================ */
@@ -83,24 +84,29 @@
   }
 
   /* ---------- sugestão, salvar e o resto ---------- */
-  /* Preencher pela sugestão, só com tudo salvo: as extras que o administrador pôs ou mudou ficam; as que o sistema
-     salvou saem e o otimizador (extrajornada-otimizador.js, com o véu) refaz tudo com as cotas que sobram. A extra
-     refeita igual à salva não é mudança */
+  /* Preencher pela sugestão, até encerrar e mesmo com mudança não salva: o que está na tela fica (as extras que o
+     administrador pôs ou mudou, salvas ou não); as do sistema saem e o otimizador (extrajornada-otimizador.js, com o
+     véu) refaz tudo com as cotas que sobram. A extra refeita igual à salva não é mudança; só o Salvar grava */
   function sugerir() {
-    if (G().alteracoes().length || RW.extrajornadaOtimizador.calculando()) return;
-    var fixas = d.alocacoes.filter(function (a) { return a.origem !== 'sugestao'; });
+    if (RW.extrajornadaOtimizador.calculando()) return;
+    var fixas = G().efetivas().filter(function (a) { return a.origem !== 'sugestao'; }).map(function (a) {
+      return { cpf: a.cpf, data: a.data, unidade: a.unidade, blocos: a.blocos, origem: a.origem, inicio: a.inicio || null };
+    });
     var botao = q('#p3-sugerir');
     RW.extrajornadaOtimizador.preencher(d.competencia, fixas, function (r, quantasRecusadas) {
       /* a pessoa saiu da página durante o cálculo: o resultado fica para trás */
       if (q('#p3-sugerir') !== botao) return;
-      /* o Preencher inteiro é um passo só do Desfazer */
-      G().limpar();
+      /* o Preencher inteiro é um passo só do Desfazer (volta ao rascunho de antes dele) */
       G().guardarPasso('sugestao');
       sugestaoGuardada = null;
       var mud = G().rascunho();
       resultadoFechado = false;
-      d.alocacoes.forEach(function (a) {
-        if (a.origem === 'sugestao') mud[G().chave(a.cpf, a.data)] = { cpf: a.cpf, data: a.data, unidade: +a.unidade, blocos: [], origem: 'sugestao', porque: null, inicio: null, antes: G().retrato(a) };
+      /* as do sistema que estão na tela saem: a salva vira tirada; a que só está no rascunho sai dele */
+      G().efetivas().forEach(function (a) {
+        if (a.origem !== 'sugestao') return;
+        var k = G().chave(a.cpf, a.data), salva = G().base(a.cpf, a.data);
+        if (salva) mud[k] = { cpf: a.cpf, data: a.data, unidade: +salva.unidade, blocos: [], origem: 'sugestao', porque: null, inicio: null, antes: G().retrato(salva) };
+        else delete mud[k];
       });
       postas = 0;
       r.propostas.forEach(function (p) {
@@ -145,8 +151,8 @@
 
   function salvar() {
     var btn = q('#p3-salvar');
-    /* com o mês lançado, o ajuste vai para a escala e a refaz: o cartão das etapas na hora (os dias seguintes, o banco refaz);
-       antes de lançar, os pontinhos no botão na hora e o cartão só se passar de 1,5 s */
+    /* com o mês lançado, a mudança vai para a escala e a refaz: o cartão das etapas na hora (os dias seguintes, o banco
+       refaz); antes de lançar, os pontinhos no botão na hora e o cartão só se passar de 1,5 s */
     var refaz = G().lancada();
     var espera = refaz
       ? RW.etapas.acao('extraDistribuicao', { refaz: true }, { doServidor: 2, botao: btn })
@@ -168,7 +174,7 @@
         return;
       }
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
-      G().limpar(); postas = null; sugestaoGuardada = null; if (G().modo() === 'ajustes') G().usarEscala(null);   // o ajuste muda a escala: relida com o mês
+      G().limpar(); postas = null; sugestaoGuardada = null; if (refaz) G().usarEscala(null);   // lançada, o Salvar muda a escala: relida com o mês
       dia().reorganizar();
       RW.extrajornadaOrg.resumo(r);
       aoSalvar();
@@ -179,16 +185,18 @@
   function itensDoAviso(lista) { return lista.map(function (x) { return { nome: u().nome(x.cpf), dia: u().br(x.data) }; }); }
 
   /* o resumo, o rodapé, a lista e o calendário; soCabeca = o calendário já foi refeito no dia que mudou. Nos Ajustes
-     antes do lançamento, só o aviso de que eles abrem depois */
+     antes de encerrar a distribuição, só o aviso de que eles abrem depois */
   function redesenhar(soCabeca) {
-    var ajuste = G().modo() === 'ajustes', lancada = G().lancada(), travado = G().travado(), soLeitura = G().soLeitura();
-    var semLancamento = ajuste && !lancada;
-    q('#p3-sem-lancamento').classList.toggle('oculto', !semLancamento);
-    q('#p3-lateral').classList.toggle('oculto', semLancamento);
-    if (semLancamento) { q('#p3-rodape').classList.add('oculto'); return; }
+    var ajuste = G().modo() === 'ajustes', lancada = G().lancada(), encerrada = G().encerrada(), travado = G().travado(), soLeitura = G().soLeitura();
+    var semEncerrar = ajuste && !encerrada;
+    q('#p3-sem-lancamento').classList.toggle('oculto', !semEncerrar);
+    q('#p3-lateral').classList.toggle('oculto', semEncerrar);
+    /* os botões da barra (Preencher, Lançar, Encerrar) seguem o rascunho */
+    if (RW.extrajornadaAcoes) RW.extrajornadaAcoes.atualizar();
+    if (semEncerrar) { q('#p3-rodape').classList.add('oculto'); return; }
     var n = G().alteracoes().length;
     /* o rodapé de salvar aparece com alteração e enquanto há o que desfazer ou refazer (sem nada a salvar, o Salvar
-       apagado); nos Ajustes, com o "Salvar e enviar para a escala". Quem passou da cota segura o Salvar, com o motivo
+       apagado); lançada, com o "Salvar e enviar para a escala". Quem passou da cota segura o Salvar, com o motivo
        escrito */
     q('#p3-rodape').classList.toggle('oculto', !n && !G().podeDesfazer() && !G().podeRefazer());
     var passou = n ? G().passaram()[0] : null, texto = q('#p3-texto');
@@ -199,7 +207,7 @@
     texto.classList.toggle('extrajornada-painel-rodape-erro', !!passou);
     texto.classList.toggle('extrajornada-painel-rodape-alerta', !!frase);
     /* com o Salvar carregando (os textos dele saem e voltam com o pararCarregando), só o que está na tela */
-    [['#p3-salvar-dist', ajuste], ['#p3-salvar-ajuste', !ajuste]].forEach(function (t) { var s = q(t[0]); if (s) s.classList.toggle('oculto', t[1]); });
+    [['#p3-salvar-dist', lancada], ['#p3-salvar-ajuste', !lancada]].forEach(function (t) { var s = q(t[0]); if (s) s.classList.toggle('oculto', t[1]); });
     q('#p3-salvar').disabled = !n || !!passou;
     q('#p3-cancelar').disabled = !Object.keys(G().rascunho()).length;
     q('#p3-desfazer').disabled = !G().podeDesfazer();
@@ -207,10 +215,9 @@
     var aberto = q('#p3-aberto');
     aberto.classList.toggle('oculto', !travado);
     aberto.querySelector('.nota-texto').textContent = travado ? msg().pedidoAberto(u().br(d.mes.fecha)) : '';
-    q('#p3-sugerir').disabled = travado || soLeitura || n > 0;
-    var lancadaNota = q('#p3-lancada');
-    lancadaNota.classList.toggle('oculto', !soLeitura);
-    lancadaNota.querySelector('.nota-texto').textContent = soLeitura ? msg().distLancada(d.lancamento.lancado_em, d.lancamento.por || '') : '';
+    var encerradaNota = q('#p3-encerrada'), enc = d.encerramento;
+    encerradaNota.classList.toggle('oculto', !soLeitura);
+    encerradaNota.querySelector('.nota-texto').textContent = soLeitura ? msg().distEncerrada(enc.encerrado_em, enc.por || '', enc.automatico) : '';
     /* o resumo da companhia: as cotas colocadas dos militares */
     var alocs = G().efetivas();
     var sel = u().escolhidas();
@@ -218,8 +225,13 @@
     var total = vols.reduce(function (s, m) { return s + (m.concedidas || 0); }, 0);
     var colocadas = vols.reduce(function (s, m) { return s + G().usadas(m.cpf, alocs); }, 0);
     q('#p3-colocadas').textContent = msg().colocadas(colocadas, total);
-    /* todas as cotas colocadas e salvas, com o pedido fechado e ainda sem lançar */
-    q('#p3-pronta').classList.toggle('oculto', !(!ajuste && !lancada && !travado && !n && total > 0 && colocadas >= total));
+    /* as cotas que ainda não estão nas datas, pelo que está salvo, até 3 dias antes de o mês começar (dali em diante, a
+       nota vermelha de cima, geral-cotas-aviso) */
+    var faltam = RW.extrajornadaAcoes ? RW.extrajornadaAcoes.cotasFaltando(d) : 0;
+    var amarela = !ajuste && !encerrada && !travado && faltam > 0 && d.hoje < G().somaDia(d.competencia, -3);
+    q('#p3-nota-faltam').classList.toggle('oculto', !amarela);
+    q('#p3-nota-faltam-titulo').textContent = amarela ? msg().faltamCotas(faltam) : '';
+    q('#p3-nota-faltam-texto').textContent = amarela ? (lancada ? '' : msg().daParaLancar + ' ') + msg().paraEncerrar : '';
     /* depois do Preencher pela sugestão: quantas cotas o sistema pôs no mês e os dias que ainda ficaram com vermelho ou
        amarelo */
     var resultado = q('#p3-resultado'), pronta = G().escalaPronta();
@@ -349,8 +361,10 @@
        calendário à vista, e a leitura que ainda corre segura essa */
     pararEsperaDaEscala();
     escalaDoMes();
-    /* as cotas que faltam distribuir, no alto; nos Ajustes, com o que fazer */
-    if (RW.cotasAviso) RW.cotasAviso.ligar(q('#p3-cotas-aviso'), function () { return [d.competencia]; }, { comoFazer: modoNovo === 'ajustes' });
+    /* as cotas que faltam distribuir, no alto; nos Ajustes, com o que fazer; na Distribuição ainda aberta, que ela só
+       encerra com todas */
+    if (RW.cotasAviso) RW.cotasAviso.ligar(q('#p3-cotas-aviso'), function () { return [d.competencia]; },
+      { comoFazer: modoNovo === 'ajustes', paraEncerrar: modoNovo !== 'ajustes' && !G().encerrada() });
     redesenhar();
     if (mudaram.length) RW.avisar({ tipo: 'aviso', mensagem: msg().extraMudouAoLer(itensDoAviso(mudaram)) });
     /* veio do botão da nota ou da linha da Pendências: o militar, quando é um só, já em foco. Depois do clique em curso,

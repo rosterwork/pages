@@ -131,12 +131,14 @@
   function usadas(cpf, alocs) { return (alocs || efetivas()).filter(function (a) { return a.cpf === cpf; }).reduce(function (s, a) { return s + a.blocos.length; }, 0); }
   /* a distribuição só é salva depois que o pedido fecha: antes disso, só dá para tirar extra */
   function travado() { return d.mes.estado !== 'encerrado'; }
-  /* lançada e não reaberta: o lançamento vale e as mudanças vão pelos Ajustes */
-  function lancada() { return !!d.lancamento && !d.lancamento.reaberto; }
-  /* a Distribuição depois do lançamento: só para ver (as bolinhas sem clique) */
-  function soLeitura() { return modo === 'distribuicao' && lancada(); }
-  /* lançada, os Ajustes mudam a escala: o dia de mais de 7 dias atrás fica só para ver (o banco trava igual) */
-  function antigo(k) { return modo === 'ajustes' && lancada() && k < somaDia(d.hoje, -7); }
+  /* lançada na escala: cada Salvar vai direto para ela */
+  function lancada() { return u().lancada(d); }
+  /* encerrada e não reaberta: a foto é o relatório inicial e as mudanças vão pelos Ajustes */
+  function encerrada() { return u().encerrada(d); }
+  /* a Distribuição depois de encerrar: só para ver (as bolinhas sem clique) */
+  function soLeitura() { return modo === 'distribuicao' && encerrada(); }
+  /* lançada, o Salvar muda a escala: o dia de mais de 7 dias atrás fica só para ver (o banco trava igual) */
+  function antigo(k) { return lancada() && k < somaDia(d.hoje, -7); }
   function voluntarios() { return d.militares.filter(function (m) { return m.voluntario && m.termo && (m.concedidas || 0) > 0; }); }
   /* quem passou da cota no rascunho: o Salvar espera acertar */
   function passaram() {
@@ -441,7 +443,7 @@
     refazer: function () { return trocarPasso(refeitos, passos); },
     podeDesfazer: function () { return passos.length > 0; },
     podeRefazer: function () { return refeitos.length > 0; },
-    chave: chave, base: base, alteracoes: alteracoes, passaram: passaram, fraseDasCotas: fraseDasCotas, lancada: lancada, mesmosBlocos: mesmosBlocos,
+    chave: chave, base: base, alteracoes: alteracoes, passaram: passaram, fraseDasCotas: fraseDasCotas, lancada: lancada, encerrada: encerrada, mesmosBlocos: mesmosBlocos,
     vagas: vagas, vagaDe: vagaDe, efetivas: efetivas, alocDe: alocDe, sai: sai, doBloco: doBloco, usadas: usadas, voluntarios: voluntarios, blocos: blocos, naoSalvos: naoSalvos,
     conduz: conduz, impedimento: impedimento, viagemDe: viagemDe,
     faltaDoDia: faltaDoDia, situacao: situacao, antesDe: antesDe, depoisDe: depoisDe, corDe: corDe, travado: travado, soLeitura: soLeitura, antigo: antigo,

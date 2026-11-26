@@ -242,8 +242,8 @@
     }
     function registrarEndereco() {
       if (!empurrar) return;
-      if (trocarEntrada) history.replaceState({ pagina: pagina }, '', pagina);
-      else history.pushState({ pagina: pagina }, '', pagina);
+      if (trocarEntrada) history.replaceState({ pagina: pagina }, '', enderecoDaTela(pagina));
+      else history.pushState({ pagina: pagina }, '', enderecoDaTela(pagina));
     }
     function terminar() {
       if (meu !== navToken) return;
@@ -379,6 +379,13 @@
     return window.RosterWork.paginaDoEndereco();
   }
 
+  /* o endereço que a barra mostra para a tela: /estagios no site; aberto do arquivo do computador, que não tem o
+     estagios.html (as cópias nascem na publicação), o index.html?pagina=estagios, que abre com o F5 e em aba nova */
+  function enderecoDaTela(pagina, resto) {
+    if (location.protocol === 'file:') return 'index.html?pagina=' + encodeURIComponent(pagina) + (resto ? '&' + resto : '');
+    return pagina + (resto ? '?' + resto : '');
+  }
+
   /* a tela segurada (RosterWork.voltar.segurar, o cálculo da Extrajornada): a pergunta dela; sair chama o aoSair e segue,
      ficar não muda nada */
   function perguntarSaida(seguir, ficar) {
@@ -438,13 +445,13 @@
       if (popsIgnorados) { popsIgnorados--; return; }    /* volta feita pelo sistema ao tirar a entrada de uma camada */
       /* no treino com passo a passo, o Voltar do navegador não muda nada: a entrada de agora volta para o alto do histórico */
       if (window.RosterWork.treino && window.RosterWork.treino.ligado() && !window.RosterWork.treino.livre()) {
-        history.pushState(camada ? { pagina: paginaAtual, camada: true } : { pagina: paginaAtual }, '', paginaAtual);
+        history.pushState(camada ? { pagina: paginaAtual, camada: true } : { pagina: paginaAtual }, '', enderecoDaTela(paginaAtual));
         return;
       }
       /* a tela segurada (o cálculo da Extrajornada): a entrada de agora volta para o alto do histórico e a pergunta decide;
          saindo, o navegador volta de novo, para onde a pessoa ia */
       if (segura) {
-        history.pushState({ pagina: paginaAtual }, '', paginaAtual);
+        history.pushState({ pagina: paginaAtual }, '', enderecoDaTela(paginaAtual));
         perguntarSaida(function () { history.back(); });
         return;
       }
@@ -486,7 +493,7 @@
     busca.delete('pagina');
     var resto = busca.toString();
     history.replaceState(history.state && history.state.camada ? history.state : { pagina: inicial }, '',
-      inicial + (resto ? '?' + resto : ''));
+      enderecoDaTela(inicial, resto));
     navegar(inicial, false);
   }
 

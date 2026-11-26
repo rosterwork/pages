@@ -356,7 +356,7 @@
   function avisar(uid, k) {
     var bloco = blocoDe(uid, k);
     if (!bloco) return; fechar();
-    RW.caixaFlutuante.aviso({ peca: bloco, topo: TOPO_PELOTAO, texto: G().soLeitura() ? msg().lancadaNaoMuda : msg().diaAntigo,
+    RW.caixaFlutuante.aviso({ peca: bloco, topo: TOPO_PELOTAO, texto: G().soLeitura() ? msg().encerradaNaoMuda : msg().diaAntigo,
       titulo: L().noDia((u().unidade(uid) || {}).nome || '', diaMes(k)), aoPainel: function () { dia().abrir(uid, k); } });
   }
 

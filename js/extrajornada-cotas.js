@@ -194,7 +194,7 @@
       cab.querySelector('.extrajornada-p2-col-escala').classList.toggle('oculto', antes);
       alvo.appendChild(cab);
     }
-    var ajuste = d.iniciado && !!d.lancamento;
+    var ajuste = d.iniciado && RW.extrajornadaUtil.encerrada(d);
     blocosDaTela(lista).forEach(function (b) {
       var un = b.un, daqui = b.daqui;
       var bloco = RW.tpl('tpl-extrajornada-p2-bloco');
@@ -311,8 +311,8 @@
     q('#p2-pares').addEventListener('click', function () {
       p2.pares = !p2.pares; p2.sujo = true; desenhar(); pedirSugestao();
     });
-    /* Preencher pela sugestão: a Sugestão no Recebe de todos, na hora, sem o cadeado; o Desfazer volta ao de antes. Com
-       algum Recebe mudado e não salvo, não preenche (o menu Ações mostra o motivo) */
+    /* Preencher pela sugestão (o botão da barra): a Sugestão no Recebe de todos, na hora, sem o cadeado; o Desfazer volta
+       ao de antes. Com algum Recebe mudado e não salvo, não preenche (o botão fica apagado e o rodapé mostra o Salvar) */
     q('#p2-sugestao').addEventListener('click', function () {
       if (recebeMudado()) return;
       p2.antes = { conc: Object.assign({}, p2.conc), manual: Object.assign({}, p2.manual), sujo: p2.sujo };

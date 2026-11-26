@@ -1268,32 +1268,7 @@
 /* a unidade sem extra no dia guarda o lugar, para as outras ficarem na mesma altura */
 .extrajornada-cal-uni--vazia { visibility: hidden; }
 
-/* o menu Ações da barra: cada item com o motivo embaixo, em cinza, enquanto ainda não pode ser feito (a dica não
-   cabe no menu, que corta o que passa da borda dele) */
-.extrajornada-acao {
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 2px;
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-.extrajornada-acao-motivo {
-  font-size: 11px;
-  color: var(--texto-fraco);
-}
-
-.extrajornada-acao-motivo:empty { display: none; }
-
-.extrajornada-acao:disabled {
-  color: var(--texto-fraco);
-  cursor: default;
-}
-
-.extrajornada-acao:disabled:hover { background-color: var(--fundo-flutuante); }
-
-/* Ações › Lançar na escala e encerrar: a conferência no painel direito, um bloco embaixo do outro */
+/* Distribuição › Lançar na escala: a conferência no painel direito, um bloco embaixo do outro */
 .extrajornada-lancar {
   display: flex;
   flex-direction: column;

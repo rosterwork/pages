@@ -123,6 +123,10 @@
       });
     },
     br: br,
+    /* o mês lançado na escala (e não reaberto do jeito antigo): cada Salvar vai direto para a escala */
+    lancada: function (m) { return !!m && !!m.lancamento && !m.lancamento.reaberto; },
+    /* o mês encerrado (e não reaberto): a foto é o relatório inicial e as mudanças são ajustes, nos Ajustes */
+    encerrada: function (m) { return !!m && !!m.encerramento && !m.encerramento.reaberto; },
     /* o mês que as peças leem */
     usar: function (dados) { d = dados; }
   };

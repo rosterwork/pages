@@ -4,8 +4,8 @@
    1 Pedidos (termo; o prazo e o mínimo no extrajornada-minimo.js), 2 Cotas (extrajornada-cotas.js), 3
    Distribuição e 4 Ajustes (a mesma tela, extrajornada-montar.js) e 5
    Relatórios (extrajornada-relatorio.js), ou a aba Extras do mês (as
-   extras de cada unidade na Agenda ou no Calendário). O menu Ações da
-   barra fica no extrajornada-acoes.js. Pinta o número de
+   extras de cada unidade na Agenda ou no Calendário). As ações da
+   barra ficam no extrajornada-acoes.js. Pinta o número de
    cada passo nas abas (verde feito, preto o primeiro ainda não feito,
    branco os que não começaram) e escreve a linha de resumo de cada
    passo. Mostra sempre todas as unidades da companhia (o seletor de
@@ -114,15 +114,15 @@
 
   /* os números dos passos na barra (e o passo da vez: o primeiro ainda não feito) e a linha de resumo do alto de cada
      passo. Um passo só fica feito depois do anterior: o pedido fechou; as cotas foram todas entregues (ou sobraram
-     porque todos já receberam o que pediram); a distribuição foi lançada (e não reaberta); o mês terminou (os Ajustes seguem do
-     lançamento ao fim do mês). Os Relatórios nunca ficam feitos */
+     porque todos já receberam o que pediram); a distribuição foi encerrada (e não reaberta); o mês terminou (os Ajustes
+     seguem do encerramento ao fim do mês). Os Relatórios nunca ficam feitos */
   function passosTopo() {
     var comTermo = vols().filter(function (m) { return m.termo; });
     var recebido = d.mes.cotas_recebidas || 0, entregues = totalConcedidas();
     var cotasOk = entregues > 0 && (entregues >= recebido || comTermo.every(function (m) { return (m.concedidas || 0) >= (m.cotas || 0); }));
     var c = d.competencia, proximo = new Date(+c.slice(0, 4), +c.slice(5, 7), 1);
     var terminou = d.hoje >= proximo.getFullYear() + '-' + String(proximo.getMonth() + 1).padStart(2, '0') + '-01';
-    var ok = [d.mes.estado === 'encerrado', cotasOk, !!d.lancamento && !d.lancamento.reaberto, terminou, false];
+    var ok = [d.mes.estado === 'encerrado', cotasOk, util.encerrada(d), terminou, false];
     var feito = [], agora = -1;
     ok.forEach(function (x, i) { feito[i] = x && (i === 0 || feito[i - 1]); if (!feito[i] && agora < 0) agora = i; });
     vez = agora + 1;
@@ -138,7 +138,7 @@
     var vol = lista.filter(function (m) { return m.voluntario; }).length;
     var textos = {
       1: d.antes_da_escala ? msg().p1Antes(vol) : msg().p1(br(d.mes.abre), br(d.mes.fecha), resp, lista.length, vol, resp - vol, lista.length - resp),
-      5: d.lancamento ? msg().p5(d.ajustes.length) : msg().p4Nao
+      5: util.encerrada(d) ? msg().p5(d.ajustes.length) : msg().p4Nao
     };
     todos('[data-passo-resumo]', function (r) { r.textContent = textos[r.getAttribute('data-passo-resumo')]; });
   }
@@ -232,7 +232,7 @@
       var dias = p1.termos[m.cpf] === false ? diasDe(m.cpf) : [];
       if (dias.length) {
         var av = RW.tpl('tpl-extrajornada-p1-aviso');
-        av.querySelector('.extrajornada-aviso-linha').textContent = msg().retiraTermo(dias, d.iniciado && !!d.lancamento);
+        av.querySelector('.extrajornada-aviso-linha').textContent = msg().retiraTermo(dias, d.iniciado && util.encerrada(d));
         tb.appendChild(av);
       }
     });
@@ -411,7 +411,7 @@
 
   RW.extrajornadaOrg = {
     resumo: resumo, montar: montar, mostrar: mostrar,
-    /* o que o menu Ações (extrajornada-acoes.js) lê do mês */
+    /* o que as ações da barra (extrajornada-acoes.js) leem do mês */
     dados: function () { return d; },
     vols: vols, totalConcedidas: totalConcedidas, naGrade: naGrade, mudancasDesdeLancamento: mudancasDesdeLancamento,
     /* os Pedidos como a tela, para a cópia da tela (null antes de abrir os Pedidos): a lista aberta, todos da companhia

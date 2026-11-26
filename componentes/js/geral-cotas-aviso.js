@@ -1,7 +1,7 @@
 /* ============================================================
    COMPONENTE geral-cotas-aviso — as cotas que faltam distribuir
-   Quem recebeu cota da extra e ainda não tem todas nas datas, no mês
-   lançado: o grupo extra_cotas do pendencias_listar, um por mês, que
+   Quem recebeu cota da extra e ainda não tem todas nas datas, desde 3
+   dias antes de o mês começar: o grupo extra_cotas do pendencias_listar, um por mês, que
    só o administrador da companhia recebe (quem decide é o banco). O
    sino entrega a leitura leve (index-avisos.js chama definir) e a
    página aberta diz onde a nota fica e de quais meses (ligar):
@@ -10,7 +10,7 @@
        volta se o número mudar (nada fica guardado)
      · a Extrajornada, na Distribuição e nos Ajustes: o mês na tela,
        sem o X, porque é ali que se resolve; nos Ajustes, com o que
-       fazer
+       fazer; na Distribuição ainda aberta, que ela só encerra com todas
    A nota só avisa, sem levar a nenhuma tela: o administrador tem mais
    de um caminho para resolver. Ela mostra o que está salvo: o que o
    rascunho vai mudar quem diz é o rodapé (extrajornada-grade.js,
@@ -50,7 +50,8 @@
     var nome = ((primeiro.grad || '') + ' ' + (primeiro.nome || '')).trim();
     var texto = lista.length > 1 ? M().varios(nome, lista.length - 1) : M().umMilitar(nome, primeiro.colocadas, primeiro.recebidas);
     nota.querySelector('.nota-titulo').textContent = M().titulo(Number(g.contagem) || 0, RW.extrajornadaGrade.nomeDoMes(g.competencia));
-    nota.querySelector('.cotas-aviso-texto').textContent = opcoes.comoFazer ? texto + ' ' + M().comoFazer : texto;
+    nota.querySelector('.cotas-aviso-texto').textContent = texto + (opcoes.comoFazer ? ' ' + M().comoFazer : '')
+      + (opcoes.paraEncerrar ? ' ' + M().paraEncerrar : '');
     if (!opcoes.acoes) return nota;
     var fechar = nota.querySelector('.cotas-aviso-fechar');
     fechar.classList.remove('oculto');
@@ -83,8 +84,9 @@
     atualizar();
   }
 
-  /* a página diz o lugar e os meses (uma função: os meses mudam com a tela); opcoes = { acoes: com o X, comoFazer }. O lugar
-     novo é uma visita nova à página: o X recomeça. A leitura antiga é refeita, sem esperar por ela */
+  /* a página diz o lugar e os meses (uma função: os meses mudam com a tela); opcoes = { acoes: com o X, comoFazer,
+     paraEncerrar }. O lugar novo é uma visita nova à página: o X recomeça. A leitura antiga é refeita, sem esperar por
+     ela */
   function ligar(lugar, meses, opcoes) {
     if (!atual || atual.lugar !== lugar) ocultos = {};
     atual = { lugar: lugar, meses: meses, opcoes: opcoes };

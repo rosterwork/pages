@@ -1,16 +1,16 @@
 /* ============================================================
    EXTRAJORNADA — passo 5: Relatórios
    À esquerda, as ETAPAS do
-   mês em ordem (Pedidos, Termos e cotas, Distribuição e lançamento
+   mês em ordem (Pedidos, Termos e cotas, Distribuição e encerramento
    com o Relatório inicial, Ajustes do mês e Relatório de ajustes,
    liberado a partir do dia 1º do mês seguinte); feita = marca verde,
    a de agora = número escuro. À direita, a PRÉVIA do relatório de
-   ajustes: quem mudou desde o lançamento (era riscado, ficou e quem
+   ajustes: quem mudou desde o encerramento (era riscado, ficou e quem
    ajustou) e as cotas que mudaram.
    Cada etapa tem o seu Imprimir (pedidos, termos e cotas, relatório
    inicial e relatório final), que abre o painel Imprimir relatório
    (extrajornada-imprimir.js), liberado quando o relatório já pode sair.
-   A prévia compara os trechos da foto do lançamento com os de agora
+   A prévia compara os trechos da foto do encerramento com os de agora
    (mudancas, por militar: o que saiu e o que entrou).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.extrajornadaRelatorio.
@@ -62,7 +62,8 @@
       if (!x) ajustes[j.cpf] = { cpf: j.cpf, autor: j.autor, quando: j.em, vezes: 1 };
       else x.vezes++;
     });
-    var l = d.lancamento;
+    /* o encerramento de agora (a foto é o relatório inicial); reaberta, ainda não há */
+    var l = RW.extrajornadaUtil.encerrada(d) ? d.encerramento : null;
     return {
       competencia: comp, mes_fim: fim, libera_ajustes: proximo,
       iniciado: !!d.iniciado, terminou: d.hoje >= proximo,
@@ -79,7 +80,8 @@
           : (d.mes.cotas_recebidas || 0),
         repartidas: vols.reduce(function (s, m) { return s + (m.concedidas || 0); }, 0)
       },
-      lancamento: { lancado: !!l, em: l ? l.lancado_em : '', por: l ? l.por : '', data: l ? l.lancado_em : '', reabrir_ate: ddmm(vespera) },
+      encerramento: { encerrado: !!l, em: l ? l.encerrado_em : '', por: l ? l.por : '', automatico: !!(l && l.automatico),
+                      data: l ? l.encerrado_em : '', reabrir_ate: ddmm(vespera) },
       ajustes_qtd: d.ajustes.length,
       unidades: d.unidades.map(function (u) {
         return { unidade_id: u.id, nome: u.nome, nome_completo: '', cidade: u.cidade, tipo: u.pelotao === false ? 'CIA' : 'PEL', pai: cia ? cia.nome : '' };
@@ -94,11 +96,11 @@
   /* ---------- etapas ---------- */
   function estados(dados, hoje) {
     var e = {};
-    var encerradas = hoje > dados.solicitacoes.fim || dados.lancamento.lancado || dados.iniciado;
+    var encerradas = hoje > dados.solicitacoes.fim || dados.encerramento.encerrado || dados.iniciado;
     e.solicitacoes = encerradas ? 'feita' : (hoje >= dados.solicitacoes.inicio ? 'atual' : 'futura');
-    var termosOk = dados.lancamento.lancado || (e.solicitacoes === 'feita' && dados.termos.pendentes === 0 && dados.cotas.repartidas > 0);
+    var termosOk = dados.encerramento.encerrado || (e.solicitacoes === 'feita' && dados.termos.pendentes === 0 && dados.cotas.repartidas > 0);
     e.termos = termosOk ? 'feita' : (e.solicitacoes === 'feita' ? 'atual' : 'futura');
-    e.montagem = dados.lancamento.lancado ? 'feita' : (e.termos === 'feita' ? 'atual' : 'futura');
+    e.montagem = dados.encerramento.encerrado ? 'feita' : (e.termos === 'feita' ? 'atual' : 'futura');
     e.ajustes = dados.terminou ? 'feita' : (dados.iniciado ? 'atual' : 'futura');
     e.relatorio = dados.terminou ? 'atual' : 'futura';
     return e;
@@ -111,17 +113,17 @@
       li.classList.toggle('extrajornada-rel-etapa--feita', e[n] === 'feita');
       li.classList.toggle('extrajornada-rel-etapa--atual', e[n] === 'atual');
     });
-    var s = dados.solicitacoes, l = dados.lancamento;
+    var s = dados.solicitacoes, l = dados.encerramento;
     q('#p5-solicitacoes').textContent = msg().solicitacoes(ddmm(s.inicio), ddmm(s.fim), s.voluntarios, s.nao_voluntarios, s.sem_resposta);
     q('#p5-termos').textContent = msg().termos(dados.termos.recebidos, dados.termos.pendentes, dados.cotas.recebidas, dados.cotas.repartidas);
-    q('#p5-montagem').textContent = l.lancado ? msg().lancado(l.em, l.por, l.reabrir_ate, dados.iniciado) : msg().naoLancado(l.reabrir_ate);
+    q('#p5-montagem').textContent = l.encerrado ? msg().encerrado(l.em, l.por, l.automatico, l.reabrir_ate, dados.iniciado) : msg().naoEncerrado;
     /* o Imprimir de cada etapa, liberado quando o relatório já pode sair */
     Array.prototype.forEach.call(el.querySelectorAll('#p5-lista [data-relatorio]'), function (b) {
       b.disabled = !!RW.extrajornadaImprimir.motivo(b.getAttribute('data-relatorio'), bruto);
     });
     var qtd = q('#p5-ajustes-qtd');
     qtd.textContent = msg().ajustesQtd(dados.ajustes_qtd);
-    qtd.classList.toggle('oculto', !(l.lancado && dados.iniciado));
+    qtd.classList.toggle('oculto', !(l.encerrado && dados.iniciado));
     q('#p5-ajustes').textContent = RW.mensagens.extrajornada.org.relAjustesPeriodo(ddmm(dados.competencia), ddmm(dados.mes_fim));
     q('#p5-relatorio').textContent = dados.terminou ? msg().relatorioPronto(ddmm(dados.libera_ajustes)) : msg().relatorioDisponivel(ddmm(dados.libera_ajustes));
   }
@@ -140,7 +142,7 @@
 
   function desenharPrevia(dados) {
     q('#p5-previa-titulo').textContent = dados.terminou ? RW.mensagens.extrajornada.org.relFinal : RW.mensagens.extrajornada.org.relPrevia;
-    q('#p5-comparado').textContent = dados.lancamento.lancado ? msg().comparado(String(dados.lancamento.data).slice(0, 5)) : '';
+    q('#p5-comparado').textContent = dados.encerramento.encerrado ? msg().comparado(String(dados.encerramento.data).slice(0, 5)) : '';
     var linhas = q('#p5-linhas');
     linhas.textContent = '';
     var unidades = {};
@@ -151,7 +153,7 @@
     var cotas = [], n = 0;
     dados.militares.forEach(function (m) {
       var x = mud[m.cpf];
-      if (!x || !dados.lancamento.lancado) return;
+      if (!x || !dados.encerramento.encerrado) return;
       var tr = RW.tpl('tpl-extrajornada-rel-linha');
       n++;
       tr.querySelector('small').textContent = m.grad || '';
@@ -167,7 +169,7 @@
       if (de !== para) cotas.push(msg().cotasMudaram(((m.grad || '') + ' ' + (m.nome || '')).trim(), de, para));
     });
     var vazio = q('#p5-vazio');
-    vazio.textContent = !dados.lancamento.lancado ? msg().semLancamento : msg().semAjustes;
+    vazio.textContent = !dados.encerramento.encerrado ? msg().semEncerramento : msg().semAjustes;
     vazio.classList.toggle('oculto', n > 0);
     q('#p5-tabela').classList.toggle('oculto', n === 0);
     q('#p5-cotas').textContent = cotas.length ? cotas.join(' ') : msg().cotasIguais;

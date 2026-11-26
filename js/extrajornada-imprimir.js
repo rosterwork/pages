@@ -32,8 +32,8 @@
     var terminou = d.hoje >= iso(new Date(+c.slice(0, 4), +c.slice(5, 7), 1));
     if (qual === 'pedidos') return fechados ? '' : m.pedidos;
     if (qual === 'termos') return fechados && repartidas > 0 ? '' : m.termos;
-    if (qual === 'inicial') return d.lancamento ? '' : m.inicial;
-    return d.lancamento && terminou ? '' : m.final;
+    if (qual === 'inicial') return RW.extrajornadaUtil.encerrada(d) ? '' : m.inicial;
+    return RW.extrajornadaUtil.encerrada(d) && terminou ? '' : m.final;
   }
 
   /* os pelotões (e a companhia) da área de quem imprime */

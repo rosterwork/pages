@@ -8,7 +8,7 @@
    mês, os passos Pedidos · Cotas · Distribuição · Ajustes · Relatórios
    (só no Organizar o mês), o seletor Agenda | Calendário (nas Extras
    do mês, na Distribuição e nos Ajustes; com o seletor de unidade na
-   Agenda do celular), o menu Ações do passo aberto e a Legenda (o
+   Agenda do celular), as ações do passo aberto e a Legenda (o
    molde que o passo pedir, RosterWork.extrajornada.legenda).
    Abre no mês de hoje (ou no que o aviso pedir); a seta do mês anda
    de janeiro de 2026 até o mês do pedido que já abriu mais à frente.
@@ -166,7 +166,7 @@
   /* a área à vista: a da aba (Minha extra, Calendário) ou a do passo (Organizar o mês; a Distribuição e os Ajustes
      são a mesma área). Enquanto a leitura dela não chega, a forma no lugar; se falhou, a frase (os moldes da Escala).
      No mês antes da escala no sistema, a Distribuição, os Ajustes e os Relatórios dão lugar ao aviso.
-     O menu Ações fica desligado enquanto o mês não chega, para nada agir sobre o mês antigo */
+     As ações da barra ficam desligadas enquanto o mês não chega, para nada agir sobre o mês antigo */
   function mostrarArea(n) {
     passoVisivel = n;
     var l = leituras[aba === 'minha' ? 'minha' : 'mes'], pronta = l.situacao === 'ok';
@@ -188,7 +188,7 @@
       var no = RW.tpl('tpl-escala-estado'), aviso = RW.falha.bloco(l.texto, carregar);
       if (no && aviso) { no.appendChild(aviso); el.estado.appendChild(no); }
     }
-    el.acoes.disabled = leituras.mes.situacao !== 'ok';
+    if (RW.extrajornadaAcoes) RW.extrajornadaAcoes.mesPronto(leituras.mes.situacao === 'ok');
   }
 
   /* o Organizar o mês abre o passo escolhido antes ou, na primeira vez, o da vez (quem escolhe é o extrajornadaOrg,
@@ -214,15 +214,14 @@
   }
 
   /* o Imprimir da aba aberta (extrajornada-imprimir-tela.js): em todas, menos nos Relatórios (os botões deles imprimem) e
-     nos Ajustes antes do lançamento (a tela só tem o aviso); no mês antes da escala no sistema, só na Minha extra */
+     nos Ajustes antes de encerrar a distribuição (a tela só tem o aviso); no mês antes da escala no sistema, só na Minha extra */
   function comImprimir(n, comModos) {
     var d = RW.extrajornadaOrg && RW.extrajornadaOrg.dados();
-    var lancada = !!(d && d.lancamento && !d.lancamento.reaberto);
-    return aba === 'minha' || (n === 4 ? lancada : comModos || n === 1 || n === 2);
+    return aba === 'minha' || (n === 4 ? RW.extrajornadaUtil.encerrada(d) : comModos || n === 1 || n === 2);
   }
 
-  /* na barra, o que é só de alguns passos (data-passo-barra) aparece só neles e, no menu Ações, só os itens do passo
-     aberto (data-passo-acao); fora do Organizar o mês, nenhum. O Exibir da Distribuição e dos Ajustes (a Escala
+  /* na barra, o que é só de alguns passos (data-passo-barra) aparece só neles, e as ações (data-passo-acao) são as do
+     passo aberto, conforme o momento do mês (extrajornada-acoes.js); fora do Organizar o mês, nenhum. O Exibir da Distribuição e dos Ajustes (a Escala
      completa) mostra e esconde pelo extrajornada-filtros.js. O seletor Agenda | Calendário fica nas Extras do mês, na
      Distribuição e nos Ajustes; fora deles, o seletor de unidade do celular some. No mês antes da escala no sistema,
      nenhum (só para ver; as Extras do mês, sem calendário). O Imprimir: comImprimir */
@@ -237,9 +236,7 @@
     Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-passo-barra]'), function (e) {
       e.classList.toggle('oculto', !doPasso(e, 'data-passo-barra', n));
     });
-    Array.prototype.forEach.call(conteudoPagina.querySelectorAll('.pagina-subcabecalho [data-passo-acao]'), function (e) {
-      e.classList.toggle('oculto', !doPasso(e, 'data-passo-acao', n));
-    });
+    if (RW.extrajornadaAcoes) RW.extrajornadaAcoes.passo(n);
     if (RW.extrajornadaFiltros) RW.extrajornadaFiltros.mostrar(n === 3 || n === 4);
   }
 
@@ -325,7 +322,6 @@
     el.legendaDivisor = conteudo.querySelector('#extrajornada-legenda-divisor');
     el.estado = conteudo.querySelector('#extrajornada-estado');
     conteudo.querySelector('#extrajornada-antes-texto').textContent = msg().org.antesDaEscala;
-    el.acoes = conteudo.querySelector('#extrajornada-acoes > .botao');
     el.modos = conteudo.querySelector('#extrajornada-modos');
     el.imprimir = conteudo.querySelector('#extrajornada-imprimir');
     el.disposicao = conteudo.querySelector('#extrajornada-disposicao');
