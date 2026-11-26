@@ -204,6 +204,8 @@
     RW.extrajornadaCelula.decorar(cel, un.id, k, curto);
     /* a mudança ainda não salva: a borda tracejada no bloco, a mesma da Escala */
     if (marcados[un.id + '|' + k]) cel.classList.add('escala-celula--nao-salvo');
+    /* o dia que ainda pode mudar (veio da versão de antes): a borda amarela, a mesma da Escala (extrajornada-atualizando.js) */
+    cel.classList.toggle('escala-mes-celula--atualizando', RW.extrajornadaAtualizando.marcado(un.id, k));
   }
 
   /* a linha da Falta de gente embaixo do gráfico (o Exibir; o componente geral-falta-gente, o mesmo da Escala), com a

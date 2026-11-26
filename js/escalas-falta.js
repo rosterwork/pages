@@ -12,11 +12,12 @@
    grade, o dia que mudou e ainda não foi refeito vem da cópia de antes
    (a célula está com a borda amarela) e é lido de novo quando a cópia
    fica pronta; o dia que o Salvar acabou de gravar (certo na tela) vem
-   do dado real, numa leitura à parte. A grade sai como sempre e a
-   linha chega logo depois. Sem a leitura (o banco falhou), a linha não
-   aparece. A folha das grades (o Imprimir, com a opção marcada) pede a
-   mesma conta por paraImpressao, com o dado real, como a leitura da
-   impressão.
+   do dado real, numa leitura à parte. A grade sai como sempre e, na
+   célula que espera a conta, a linha já entra cinza, respirando
+   (RosterWork.faltaGente.carregando), até os números chegarem. Sem a
+   leitura (o banco falhou), a linha sai. A folha das grades (o
+   Imprimir, com a opção marcada) pede a mesma conta por
+   paraImpressao, com o dado real, como a leitura da impressão.
    Não cria HTML (o componente clona o molde) nem escreve estilo.
    RosterWork.escalasFalta.
    ============================================================ */
@@ -27,6 +28,7 @@
 
   var dados = {};          // 'unidade|dia' -> { sem, com, marca } (marca: o gráfico da célula quando a conta foi pedida)
   var pendentes = {};      // 'unidade|dia' -> a marca do gráfico, à espera da leitura
+  var lendo = {};          // 'unidade|dia' -> a marca do gráfico, com a leitura no ar
   var agendada = false;
   var SELETOR = '.escala-mes-celula[data-iso][data-unidade-id]';
 
@@ -54,23 +56,28 @@
     return e;
   }
 
-  /* a linha de uma célula: tira a que estiver e, marcada a opção e com a conta do gráfico de agora, desenha */
+  /* a linha de uma célula: tira a que estiver e, marcada a opção, desenha a do gráfico de agora; com a conta dele ainda
+     pedida (à espera ou no ar), as casinhas cinzas no lugar */
   function desenhar(cel) {
     var velha = cel.querySelector('.falta-gente');
     if (velha) velha.parentNode.removeChild(velha);
-    var g = cel.querySelector('.escala-mes-grafico'), d = dados[chave(cel)];
-    if (!ligada() || !g || !d || d.marca !== marca(g)) return;
-    var x = (cel.dataset.faltaExtras || '0,0,0,0').split(',').map(Number);
-    RW.faltaGente.linha(g, RW.faltaGente.porHorario(d.sem, d.com, { 1: x[0], 2: x[1], 3: x[2], 4: x[3] }, g.dataset.erro));
+    var g = cel.querySelector('.escala-mes-grafico'), k = chave(cel), d = dados[k];
+    if (!ligada() || !g) return;
+    if (d && d.marca === marca(g)) {
+      var x = (cel.dataset.faltaExtras || '0,0,0,0').split(',').map(Number);
+      RW.faltaGente.linha(g, RW.faltaGente.porHorario(d.sem, d.com, { 1: x[0], 2: x[1], 3: x[2], 4: x[3] }, g.dataset.erro));
+    } else if (pendentes[k] === marca(g) || lendo[k] === marca(g)) RW.faltaGente.carregando(g);
   }
 
-  /* a célula pede a conta do banco (as que pedirem juntas vão numa leitura só) */
+  /* a célula pede a conta do banco (as que pedirem juntas vão numa leitura só); até ela chegar, as casinhas cinzas */
   function pedir(cel) {
     var g = cel.querySelector('.escala-mes-grafico');
     if (!g) return;
     var d = dados[chave(cel)];
-    if (d && d.marca === marca(g)) { desenhar(cel); return; }
+    /* a conta já chegou, ou a do mesmo gráfico já está no ar (a célula foi refeita igual) */
+    if ((d && d.marca === marca(g)) || lendo[chave(cel)] === marca(g)) { desenhar(cel); return; }
     pendentes[chave(cel)] = marca(g);
+    desenhar(cel);
     if (agendada) return;
     agendada = true;
     setTimeout(ler, 0);
@@ -83,6 +90,7 @@
     var marcas = pendentes, chaves = Object.keys(marcas);
     pendentes = {};
     if (!chaves.length || !ligada()) return;
+    chaves.forEach(function (k) { lendo[k] = marcas[k]; });
     var at = RW.escalaAtualizando;
     var certas = chaves.filter(function (k) { var p = k.split('|'); return !!(at && at.certo(p[0], p[1])); });
     lerGrupo(chaves.filter(function (k) { return certas.indexOf(k) < 0; }), marcas, true);
@@ -103,13 +111,20 @@
     /* o modo treino não pede a cópia (escalas-dados.js › carregar) */
     if (copia && !(RW.treino && RW.treino.ligado())) corpo.p_aceita_copia = true;
     RW.rpc('escala_falta_mes', corpo).then(function (r) {
-      if (!r) { console.error('[Escala] Falta de gente: a leitura escala_falta_mes não veio'); return; }
+      if (!r) { console.error('[Escala] Falta de gente: a leitura escala_falta_mes não veio'); chegou(chaves, marcas); return; }
       chaves.forEach(function (k) {
         var p = k.split('|');
         dados[k] = { sem: ((r.sem || {})[p[0]] || {})[p[1]] || {}, com: ((r.com || {})[p[0]] || {})[p[1]] || {}, marca: marcas[k] };
       });
-      Array.prototype.forEach.call(celulas(), function (cel) { if (chaves.indexOf(chave(cel)) >= 0) desenhar(cel); });
-    }).catch(function (e) { console.error('[Escala] Falta de gente: a leitura escala_falta_mes falhou', e); });
+      chegou(chaves, marcas);
+    }).catch(function (e) { console.error('[Escala] Falta de gente: a leitura escala_falta_mes falhou', e); chegou(chaves, marcas); });
+  }
+
+  /* a leitura voltou (com a conta ou sem ela): as células dela trocam as casinhas cinzas pelos números ou, sem a conta,
+     ficam sem a linha. A que foi pedida de novo nesse meio tempo (o gráfico mudou) continua esperando a dela */
+  function chegou(chaves, marcas) {
+    chaves.forEach(function (k) { if (lendo[k] === marcas[k]) delete lendo[k]; });
+    Array.prototype.forEach.call(celulas(), function (cel) { if (chaves.indexOf(chave(cel)) >= 0) desenhar(cel); });
   }
 
   /* a célula acabou de ser feita (escalas-celula.js › preencherCelula): guarda as extras do dia (para quando a opção for
@@ -149,12 +164,14 @@
   }
 
   RW.escalasFalta = {
+    /* a opção marcada: a forma da grade que espera os dados já tem as casinhas (escalas-esqueleto.js) */
+    ligada: ligada,
     decorar: decorar,
     atualizar: atualizar,
     paraImpressao: paraImpressao,
     /* a cópia dos dias ficou pronta (escalas-atualizando.js): a célula refeita lê a conta de novo. chaves = ['unidade|dia'] */
     esquecer: function (chaves) { (chaves || []).forEach(function (k) { delete dados[k]; }); },
     /* a página é nova (a visita): esquece a conta guardada e confere a opção */
-    reiniciar: function () { dados = {}; pendentes = {}; atualizar(); }
+    reiniciar: function () { dados = {}; pendentes = {}; lendo = {}; atualizar(); }
   };
 })();

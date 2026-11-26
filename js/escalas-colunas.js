@@ -112,7 +112,7 @@
     var rolagem = Dia ? Dia.mesmaGrade(corpo, chaveGrade) : null;
     /* outra semana: o que está na tela fica 0,5 s; depois, a forma da nova, que fica o mínimo na tela (escalas-esqueleto.js) */
     var Esqueleto = window.RosterWork.escalasEsqueleto;
-    var esperaDaGrade = rolagem ? null : Esqueleto.abrirMes(corpo, dataRef, function (lugar) { Esqueleto.colunas(lugar, colunas, dataRef); });
+    var esperaDaGrade = rolagem ? null : Esqueleto.abrirMes(corpo, dataRef, function (lugar) { Esqueleto.colunas(lugar, colunas, dataRef, window.RosterWork.escalasFalta.ligada()); });
 
     var req = ++reqSeq;
     return Esqueleto.segurar(esperaDaGrade, window.RosterWork.escalasDados.carregar(ids, inicio, fim, { daTela: true })).then(function (resultado) {

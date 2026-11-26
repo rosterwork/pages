@@ -20,6 +20,12 @@
   /* a lista com a palavra antes de cada um: lista('no', [A, B]) = "no A e no B" */
   function lista(antes, itens) { return juntarComE(itens.map(function (x) { return antes + ' ' + x; })); }
 
+  /* "A extra de Sd. Fulano em 15/12 foi alterada" / "As extras de ... e ... foram alteradas": itens = [{ nome, dia }] */
+  function extrasMudaram(itens) {
+    var nomes = juntarComE(itens.map(function (x) { return x.nome + ' em ' + x.dia; }));
+    return itens.length === 1 ? 'A extra de ' + nomes + ' foi alterada' : 'As extras de ' + nomes + ' foram alteradas';
+  }
+
   window.RosterWork.mensagens = {
 
     /* meu perfil (e-mail e celular direto, pedido de correção do resto + troca de senha) */
@@ -916,7 +922,19 @@
         chefeDirigeHoras: function (h, cnh) { return 'O chefe ainda dirige de ' + h + ' por falta de condutor' + (cnh ? ', CNH ' + cnh : '') + '.'; },
         ajusteTexto: function (n) { return n + (n === 1 ? ' ajuste não salvo.' : ' ajustes não salvos.'); },
         alteracoes: function (n) { return n + (n === 1 ? ' alteração não salva' : ' alterações não salvas'); },
-        descartarRascunho: 'Descartar as alterações não salvas da distribuição?'
+        descartarRascunho: 'Descartar as alterações não salvas da distribuição?',
+        /* a extra mexida no rascunho mudou depois que a tela leu (outra pessoa ou o sistema): itens = [{ nome, dia }]. Ao
+           ler o mês de novo e no Salvar recusado; a mudança dela sai do rascunho */
+        extraMudouAoLer: function (itens) {
+          var um = itens.length === 1;
+          return extrasMudaram(itens) + ' por outra pessoa ou pelo sistema enquanto você mexia. '
+            + (um ? 'A sua alteração nela saiu' : 'As suas alterações nelas saíram') + ' e as outras continuam: confira e faça de novo.';
+        },
+        extraMudouAoSalvar: function (itens) {
+          var um = itens.length === 1;
+          return extrasMudaram(itens) + ' por outra pessoa ou pelo sistema. Nada foi salvo. '
+            + (um ? 'A sua alteração nela saiu' : 'As suas alterações nelas saíram') + ' e as outras continuam: confira e salve de novo.';
+        }
       }
     },
 

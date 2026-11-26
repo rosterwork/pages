@@ -13,6 +13,9 @@
    e ficou sem horário sai de vez. O rascunho aceita passar da cota: quem
    passou aparece em passaram e o Salvar espera acertar. Cada mudança é
    um passo do Desfazer e do Refazer (o Preencher pela sugestão, um só).
+   Cada mudança leva o "antes" (a extra salva quando a pessoa mexeu): com
+   o mês lido de novo, o rascunho fica por cima, e a mudança da extra que
+   outra pessoa ou o sistema mudou no meio sai (reaplicar).
    Não desenha nada. RosterWork.extrajornadaGrade.
    ============================================================ */
 (function () {
@@ -96,6 +99,9 @@
   }
   function blocos(a) { return a.blocos.map(Number); }
   function mesmosBlocos(a, b) { return blocos(a).sort().join() === blocos(b).sort().join() && (a.inicio || null) === (b.inicio || null); }
+  /* a extra como fica para a conferência: { unidade, blocos, inicio }, ou null sem horário. Na mudança, o "antes" é a
+     extra salva como a tela mostrava quando a pessoa mexeu; o banco confere ao salvar (extrajornada_distribuicao_salvar) */
+  function retrato(a) { return a && a.blocos && a.blocos.length ? { unidade: +a.unidade, blocos: blocos(a).sort(), inicio: a.inicio || null } : null; }
   /* o administrativo no dia em que o expediente termina antes da primeira bolinha livre (a quarta): a hora em que a
      extra pode começar (o fim do expediente), ou null */
   function desde(m, k) { return ((d.desde_adm || {})[m.cpf] || {})[k] || null; }
@@ -314,8 +320,9 @@
     var dado = inicio !== undefined;
     if (!dado) inicio = bs.length === 2 ? desde(m, k) : null;
     if (inicio && !(dado ? comecoCabe(bs, inicio) : inicioCabe(m, k, bs))) inicio = null;
-    var novo = { cpf: m.cpf, data: k, unidade: +unidade, blocos: bs, origem: 'admin', porque: null, inicio: inicio || null };
     var c = chave(m.cpf, k), era = JSON.stringify(mud[c] || null), foto = copia(mud);
+    var novo = { cpf: m.cpf, data: k, unidade: +unidade, blocos: bs, origem: 'admin', porque: null, inicio: inicio || null,
+      antes: c in mud ? mud[c].antes : retrato(antes) };
     if (antes && +antes.unidade === novo.unidade && JSON.stringify(blocos(antes).sort()) === JSON.stringify(novo.blocos)
         && (antes.inicio || null) === novo.inicio) delete mud[c];
     else if (!antes && !bs.length) delete mud[c];
@@ -352,6 +359,25 @@
     if (passos.length > LIMITE_PASSOS) passos.shift();
     refeitos = [];
   }
+  /* as mudanças destas extras ({ cpf, data }) saem do rascunho e dos passos do Desfazer e do Refazer */
+  function tirar(lista) {
+    var chaves = lista.map(function (x) { return chave(x.cpf, x.data); });
+    [{ mud: mud }].concat(passos, refeitos).forEach(function (p) { chaves.forEach(function (c) { delete p.mud[c]; }); });
+  }
+  /* o mês lido de novo com o rascunho na tela: cada mudança fica por cima do mês novo. A que o mês novo já tem igual
+     sai; a da extra que mudou depois que a pessoa mexeu (outra pessoa ou o sistema) sai também e volta na lista */
+  function reaplicar() {
+    var iguais = [], mudaram = [];
+    Object.keys(mud).forEach(function (k) {
+      var v = mud[k], agora = JSON.stringify(retrato(base(v.cpf, v.data)));
+      if (agora === JSON.stringify(retrato(v))) iguais.push(v);
+      else if ('antes' in v && agora !== JSON.stringify(v.antes)) mudaram.push(v);
+    });
+    iguais.forEach(function (v) { delete mud[chave(v.cpf, v.data)]; });
+    tirar(mudaram);
+    return mudaram;
+  }
+
   /* os dias que mudam de um rascunho para o outro */
   function diasEntre(a, b) {
     var dias = {};
@@ -406,6 +432,9 @@
     rascunho: function () { return mud; },
     /* o rascunho vazio e sem passos (o Cancelar, o Salvar, o mês lido de novo) */
     limpar: function () { mud = {}; passos = []; refeitos = []; },
+    /* o mês lido de novo: o rascunho por cima (as mudanças da extra que mudou saem e voltam na lista); e o Salvar
+       recusado porque a extra mudou: as mudanças dela saem */
+    reaplicar: reaplicar, tirar: tirar, retrato: retrato,
     /* o Desfazer e o Refazer: quem chama redesenha os dias que mudaram (a marca 'sugestao' é o Preencher inteiro) */
     guardarPasso: guardarPasso,
     desfazer: function () { return trocarPasso(passos, refeitos); },

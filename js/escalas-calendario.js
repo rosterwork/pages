@@ -110,7 +110,7 @@
     /* outro mês: o que está na tela fica 0,5 s; depois, a forma do novo, que fica o mínimo na tela (escalas-esqueleto.js) */
     var Esqueleto = window.RosterWork.escalasEsqueleto;
     var esperaDaGrade = rolagem ? null : Esqueleto.abrirMes(corpo, dataRef, function (lugar) {
-      Esqueleto.calendario(lugar, colunas, dataRef, opcoes.diasPorLinha, true);
+      Esqueleto.calendario(lugar, colunas, dataRef, opcoes.diasPorLinha, true, window.RosterWork.escalasFalta.ligada());
     });
 
     var req = ++reqSeq;

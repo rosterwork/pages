@@ -274,11 +274,13 @@
     var modo = modoAtual(), tipoColunas = tipoColunasAtual(), subMes = subMesAtual();
     var provisorias = idsAplicados().map(function (id) { return { id: id, nome: '' }; });
     var etapas = modo === 'militares' ? { etapas: 'escalaMilitares' } : { etapas: 'escalaAbrir', valores: { mes: E.nomeDoMes(refData) } };
+    /* com a Falta de gente marcada, a forma já tem as casinhas embaixo do gráfico (escalas-falta.js) */
+    var falta = !!(RosterWork.escalasFalta && RosterWork.escalasFalta.ligada());
     E.comecar(corpo, { etapas: etapas.etapas, valores: etapas.valores, forma: function (lugar) {
       if (modo === 'militares') E.militares(lugar, provisorias, RosterWork.escalasMilitares.diasDoMes(refData));
-      else if (modo === 'colunas' && tipoColunas === 'unidades') E.colunas(lugar, provisorias, refData);
-      else if (modo === 'mes' && subMes !== 'calendario') E.agenda(lugar, provisorias, refData);
-      else E.calendario(lugar, provisorias, refData, modo === 'colunas' ? quantidadeColunas() : undefined);
+      else if (modo === 'colunas' && tipoColunas === 'unidades') E.colunas(lugar, provisorias, refData, falta);
+      else if (modo === 'mes' && subMes !== 'calendario') E.agenda(lugar, provisorias, refData, undefined, falta);
+      else E.calendario(lugar, provisorias, refData, modo === 'colunas' ? quantidadeColunas() : undefined, undefined, falta);
     } });
   }
 

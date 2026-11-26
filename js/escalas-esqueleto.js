@@ -51,10 +51,15 @@
 
   /* ---------- as peças ---------- */
 
-  /* o miolo de uma célula: o lugar do gráfico e as linhas dos militares; quem está numa grade com muitas células anima a
-     grade inteira, não cada uma */
-  function preencherCelula(celula, linhas, semAnimar) {
+  /* o miolo de uma célula: o lugar do gráfico, com a Falta de gente marcada a linha das casinhas embaixo dele (cinza, a
+     mesma de quando a conta não chegou: geral-falta-gente.js), e as linhas dos militares; quem está numa grade com
+     muitas células anima a grade inteira, não cada uma (a linha das casinhas respira com o miolo, não sozinha) */
+  function preencherCelula(celula, linhas, semAnimar, falta) {
     var miolo = RW.tpl('tpl-esqueleto-miolo');
+    if (falta && RW.faltaGente) {
+      var casinhas = RW.faltaGente.carregando(miolo.querySelector('.esqueleto-grafico'));
+      if (casinhas) casinhas.classList.remove('esqueleto-conjunto');
+    }
     for (var i = 0; i < linhas; i++) miolo.appendChild(RW.tpl('tpl-esqueleto-pessoa'));
     if (semAnimar) miolo.classList.remove('esqueleto-conjunto');
     celula.classList.add('esqueleto-celula');
@@ -62,18 +67,19 @@
     return celula;
   }
 
-  function celulaFalsa(unidadeId, n) {
+  function celulaFalsa(unidadeId, n, falta) {
     var celula = RW.tpl('tpl-escala-mes-celula');
     celula.dataset.unidadeId = unidadeId;
-    return preencherCelula(celula, 3 + (n % 3));
+    return preencherCelula(celula, 3 + (n % 3), false, falta);
   }
 
   function mesmoDia(a, b) {
     return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   }
 
-  /* ---------- Mês › Agenda: de ontem em diante (é onde a grade abre) ou do dia 1º ---------- */
-  function agenda(corpo, colunas, dataRef, aoTerminar) {
+  /* ---------- Mês › Agenda: de ontem em diante (é onde a grade abre) ou do dia 1º; falta: a Falta de gente marcada
+     (as casinhas embaixo do gráfico), também no Calendário e no Colunas ---------- */
+  function agenda(corpo, colunas, dataRef, aoTerminar, falta) {
     var ano = dataRef.getFullYear(), mes = dataRef.getMonth();
     var ultimo = new Date(ano, mes + 1, 0).getDate();
     var hoje = new Date();
@@ -98,7 +104,7 @@
       linha.querySelector('.escala-mes-data-numero').textContent = String(dia);
       if (d.getDay() === 0 || d.getDay() === 6) linha.classList.add('escala-mes-linha--fds');
       if (mesmoDia(d, hoje)) linha.classList.add('escala-mes-linha--hoje');
-      colunas.forEach(function (c, n) { linha.appendChild(celulaFalsa(c.id, dia + n)); });
+      colunas.forEach(function (c, n) { linha.appendChild(celulaFalsa(c.id, dia + n, falta)); });
       grade.appendChild(linha);
     }
     corpo.textContent = '';
@@ -109,7 +115,7 @@
 
   /* ---------- Mês › Calendário e Colunas › Dias: rolado como a grade vai abrir (lado a lado ou uma embaixo da outra,
      como a escolha da pessoa); comDiasDeFora: os dias de outro mês das pontas também (a Escala; a Extrajornada não) ---------- */
-  function calendario(corpo, colunas, dataRef, diasPorLinha, comDiasDeFora) {
+  function calendario(corpo, colunas, dataRef, diasPorLinha, comDiasDeFora, falta) {
     var hoje = new Date();
     var ancora = (hoje.getFullYear() === dataRef.getFullYear() && hoje.getMonth() === dataRef.getMonth()) ? hoje : new Date(dataRef.getFullYear(), dataRef.getMonth(), 1);
     RW.geralCalendarioMes.renderizar(corpo, {
@@ -123,7 +129,7 @@
         colunas.forEach(function (c, n) {
           var bloco = RW.tpl('tpl-escala-calendario-unidade');
           bloco.querySelector('.escala-calendario-unidade-nome').textContent = c.nome;
-          preencherCelula(bloco.querySelector('.escala-mes-celula'), 2 + ((data.getDate() + n) % 2), true);
+          preencherCelula(bloco.querySelector('.escala-mes-celula'), 2 + ((data.getDate() + n) % 2), true, falta);
           celulaDia.appendChild(bloco);
         });
       }
@@ -139,7 +145,7 @@
   }
 
   /* ---------- Colunas › Unidades: os 7 dias da semana ---------- */
-  function colunas(corpo, unidades, dataRef) {
+  function colunas(corpo, unidades, dataRef, falta) {
     var pecas = RW.escalasColunas.pecas;
     var wrap = RW.tpl('tpl-escala-colunas');
     var grade = wrap.querySelector('.escala-colunas-grade');
@@ -150,7 +156,7 @@
     pecas.diasDaSemana(dataRef).forEach(function (info, i) {
       var linha = RW.tpl('tpl-escala-colunas-linha');
       linha.appendChild(pecas.rotuloDia(info));
-      unidades.forEach(function (u, n) { linha.appendChild(celulaFalsa(u.id, i + n)); });
+      unidades.forEach(function (u, n) { linha.appendChild(celulaFalsa(u.id, i + n, falta)); });
       grade.appendChild(linha);
     });
     corpo.textContent = '';

@@ -41,10 +41,13 @@
   /* ---------- carregar ---------- */
   /* lê o mês e desenha a aba aberta. Com outro mês na tela (ou depois de uma falha), a área do Calendário e do Organizar
      o mês mostra o círculo até ele chegar e a frase se falhar (RosterWork.extrajornada.leitura; na Minha extra, nada
-     aparece); a releitura do mesmo mês deixa a tela à vista */
-  function carregar() {
+     aparece); a releitura do mesmo mês deixa a tela à vista. manter = true: a releitura que a tela faz sozinha (a escala
+     ficou pronta, extrajornada-atualizando.js) ou depois do Salvar recusado, que deixa os rascunhos dos Pedidos e das
+     Cotas (o da Distribuição e dos Ajustes fica sempre: extrajornada-montar.js) */
+  function carregar(manter) {
     var meu = ++pedido;
     var comp = RW.extrajornada.comp();
+    var manterRascunhos = manter === true && !!d && d.competencia === comp;
     lendo = comp;
     if (!d || d.competencia !== comp || falhou) RW.extrajornada.leitura('mes', 'lendo');
     /* a falha fica no lugar da área (a frase), com a mensagem técnica no console */
@@ -65,41 +68,18 @@
       falhou = false;
       d = r;
       util.usar(d);
-      p1 = null;
-      if (RW.extrajornadaCotas) RW.extrajornadaCotas.reiniciar();
+      if (!manterRascunhos) {
+        p1 = null;
+        if (RW.extrajornadaCotas) RW.extrajornadaCotas.reiniciar();
+      }
       RW.extrajornada.leitura('mes', 'ok');
+      /* o dia que ainda pode mudar: a nota e a borda amarela (extrajornada-atualizando.js) */
+      RW.extrajornadaAtualizando.leu();
       desenharAba();
-      conferirAtualizando(comp);
+      RW.extrajornadaAtualizando.conferir();
     }, function (e) { falha(null, (e && e.message) || 'sem conexão'); });
   }
-
-  /* ---------- o mês lido da cópia guardada ----------
-     Com dia do mês que ainda vai mudar (escala_dias_atualizando: na fila do recálculo ou esperando a cópia), a nota
-     amarela no alto; a cada CONFERIR_MS a página confere de novo e, quando todos ficam prontos, lê o mês outra vez. Com
-     mudança não salva na página, a nota fica até ela sair (o Salvar lê o mês de novo) */
-  var CONFERIR_MS = 10000;
-  var conferirTimer = null;
   function treinando() { return !!(RW.treino && RW.treino.ligado()); }
-  function notaAtualizando(sim) { var n = q('#extrajornada-atualizando'); if (n) n.classList.toggle('oculto', !sim); }
-  function fimDoMes(c) { var f = new Date(+c.slice(0, 4), +c.slice(5, 7), 0); return c.slice(0, 8) + String(f.getDate()).padStart(2, '0'); }
-  function conferirAtualizando(comp) {
-    clearTimeout(conferirTimer);
-    if (!el || !el.isConnected || !d || d.competencia !== comp || treinando() || !RW.escalasDados) { notaAtualizando(false); return; }
-    var ids = (d.unidades || []).map(function (x) { return x.id; });
-    RW.escalasDados.lerDiasAtualizando(ids, d.competencia, fimDoMes(d.competencia)).then(function (lista) {
-      if (!el.isConnected || !d || d.competencia !== comp) return;
-      var n = q('#extrajornada-atualizando'), tinha = !!n && !n.classList.contains('oculto');
-      var pendente = !!(RW.guardaSaida && RW.guardaSaida.temPendencia());
-      /* sem a leitura (falha), fica como está e confere de novo */
-      if (!lista || lista.length || (tinha && pendente)) {
-        if (lista) notaAtualizando(lista.length > 0 || tinha);
-        conferirTimer = setTimeout(function () { conferirAtualizando(comp); }, CONFERIR_MS);
-        return;
-      }
-      notaAtualizando(false);
-      if (tinha) carregar();
-    });
-  }
 
   /* a aba aberta (na Minha extra, só os números dos passos); no Organizar o mês sem passo escolhido, abre o da vez.
      Quem não administra a companhia não tem os passos (o mês dele vem só com as extras que estão na escala) */
@@ -325,6 +305,7 @@
       var wrap = RW.extrajornadaPorDia.agenda(q('#extrajornada-cal-mes'), comp, unidades, function (un, k) {
         var cel = RW.extrajornadaPorDia.celulaVazia(un, k);
         cel.classList.add('extrajornada-cal-leitura');
+        marcarDia(cel, cel, un.id, k);
         alocs.filter(function (a) { return a.data === k && +a.unidade === un.id; }).forEach(function (a) { cel.appendChild(util.vaga(a, un.id)); });
         return cel;
       });
@@ -342,10 +323,18 @@
         b.querySelector('.escala-calendario-unidade-nome').textContent = un.nome;
         var aqui = alocs.filter(function (a) { return a.data === k && +a.unidade === un.id; });
         b.classList.toggle('extrajornada-cal-uni--vazia', !aqui.length);
+        marcarDia(b, b.querySelector('.escala-mes-celula'), un.id, k);
         aqui.forEach(function (a) { b.querySelector('.escala-mes-celula').appendChild(util.vaga(a, un.id, true)); });
         cel.appendChild(b);
       });
     } });
+  }
+
+  /* o pelotão no dia (o bloco: data-uid e data-dia, como na Distribuição) e a borda amarela do dia que ainda pode mudar */
+  function marcarDia(bloco, cel, uid, k) {
+    bloco.setAttribute('data-uid', uid);
+    bloco.setAttribute('data-dia', k);
+    cel.classList.toggle('escala-mes-celula--atualizando', RW.extrajornadaAtualizando.marcado(uid, k));
   }
 
   /* o mês antes da escala no sistema, sem calendário: um bloco por unidade com quanto cada voluntário pediu e recebeu,
@@ -387,6 +376,7 @@
   function montar(conteudo) {
     el = conteudo;
     d = null; util.usar(null); p1 = null; passo = null; passoAberto = null; aba = null; lendo = null; falhou = false;
+    RW.extrajornadaAtualizando.ligar(el, function () { return d; }, carregar);
     todos('#p1-filtro [data-lista]', function (b) { b.addEventListener('click', function () { p1.lista = b.getAttribute('data-lista'); passo1(); }); });
     RW.extrajornadaMinimo.ligar(el, passo1, rodapeP1);
     q('#p1-cancelar').addEventListener('click', function () { p1.termos = {}; RW.extrajornadaMinimo.iniciar(d); passo1(); });

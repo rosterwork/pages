@@ -100,14 +100,14 @@
       var mud = G().rascunho();
       resultadoFechado = false;
       d.alocacoes.forEach(function (a) {
-        if (a.origem === 'sugestao') mud[G().chave(a.cpf, a.data)] = { cpf: a.cpf, data: a.data, unidade: +a.unidade, blocos: [], origem: 'sugestao', porque: null, inicio: null };
+        if (a.origem === 'sugestao') mud[G().chave(a.cpf, a.data)] = { cpf: a.cpf, data: a.data, unidade: +a.unidade, blocos: [], origem: 'sugestao', porque: null, inicio: null, antes: G().retrato(a) };
       });
       postas = 0;
       r.propostas.forEach(function (p) {
         var k = G().chave(p.cpf, p.data), antes = G().base(p.cpf, p.data);
         postas += p.blocos.length;
         if (antes && antes.origem === 'sugestao' && +antes.unidade === +p.unidade && G().mesmosBlocos(antes, p)) delete mud[k];
-        else mud[k] = { cpf: p.cpf, data: p.data, unidade: p.unidade, blocos: p.blocos, origem: 'sugestao', porque: p.porque, inicio: p.inicio || null };
+        else mud[k] = { cpf: p.cpf, data: p.data, unidade: p.unidade, blocos: p.blocos, origem: 'sugestao', porque: p.porque, inicio: p.inicio || null, antes: G().retrato(antes) };
       });
       foraSug = {};
       (r.nao_coube || []).forEach(function (n) { foraSug[n.cpf] = n.motivo; });
@@ -157,6 +157,16 @@
       p_motivo: null   // o banco aceita o ajuste sem motivo
     }).then(function (r) {
       espera.parar();
+      /* a extra mudou depois que a tela leu (outra pessoa ou o sistema): nada foi gravado; as mudanças dela saem, as
+         outras ficam, e o mês é lido de novo com elas por cima */
+      if (r && r.desatualizado && r.itens) {
+        G().tirar(r.itens);
+        dia().reorganizar();
+        redesenhar();
+        aoSalvar(true);
+        RW.avisar({ tipo: 'aviso', mensagem: msg().extraMudouAoSalvar(itensDoAviso(r.itens)) });
+        return;
+      }
       if (!r || !r.success) { RW.avisar({ tipo: 'erro', mensagem: (r && r.error) || RW.mensagens.geral.falhaServidor }); return; }
       G().limpar(); postas = null; sugestaoGuardada = null; if (G().modo() === 'ajustes') G().usarEscala(null);   // o ajuste muda a escala: relida com o mês
       dia().reorganizar();
@@ -164,6 +174,9 @@
       aoSalvar();
     }, function () { espera.parar(); RW.avisar({ tipo: 'erro', mensagem: RW.mensagens.geral.semConexao }); });
   }
+
+  /* as extras da frase do aviso: o militar e o dia */
+  function itensDoAviso(lista) { return lista.map(function (x) { return { nome: u().nome(x.cpf), dia: u().br(x.data) }; }); }
 
   /* o resumo, o rodapé, a lista e o calendário; soCabeca = o calendário já foi refeito no dia que mudou. Nos Ajustes
      antes do lançamento, só o aviso de que eles abrem depois */
@@ -238,9 +251,11 @@
            o cartão das etapas, as da Escala (a mesma leitura) */
         var unidades = u().doCalendario(alocs), mesDaGrade = new Date(+d.competencia.slice(0, 4), +d.competencia.slice(5, 7) - 1, 1);
         var valores = { mes: RW.escalasEsqueleto.nomeDoMes(mesDaGrade) };
+        /* com a Falta de gente marcada no Exibir, a forma já tem as casinhas embaixo do gráfico */
+        var falta = RW.extrajornadaFiltros.faltaDeGente();
         esperaDaEscala = RW.etapas.area(alvo, { etapas: 'escalaAbrir', valores: valores, forma: function (lugar) {
-          if (RW.extrajornada.modo() === 'agenda') RW.escalasEsqueleto.agenda(lugar, unidades, mesDaGrade);
-          else RW.escalasEsqueleto.calendario(lugar, unidades, mesDaGrade);
+          if (RW.extrajornada.modo() === 'agenda') RW.escalasEsqueleto.agenda(lugar, unidades, mesDaGrade, undefined, falta);
+          else RW.escalasEsqueleto.calendario(lugar, unidades, mesDaGrade, undefined, undefined, falta);
         } });
       }
       if (!falha && escalaLendo !== d.competencia) carregarEscala();
@@ -325,6 +340,10 @@
         });
       }
     }
+    /* o mês lido de novo com o rascunho na tela: ele fica por cima, e o que outra pessoa ou o sistema mudou no meio sai
+       (o aviso depois do desenho) */
+    var mudaram = G().reaplicar();
+    if (mudaram.length) dia().reorganizar();
     escalaFalhou = null;
     /* a espera da escala de antes (de outra visita à página ou de outro mês) sai: o redesenhar põe a de agora no
        calendário à vista, e a leitura que ainda corre segura essa */
@@ -333,6 +352,7 @@
     /* as cotas que faltam distribuir, no alto; nos Ajustes, com o que fazer */
     if (RW.cotasAviso) RW.cotasAviso.ligar(q('#p3-cotas-aviso'), function () { return [d.competencia]; }, { comoFazer: modoNovo === 'ajustes' });
     redesenhar();
+    if (mudaram.length) RW.avisar({ tipo: 'aviso', mensagem: msg().extraMudouAoLer(itensDoAviso(mudaram)) });
     /* veio do botão da nota ou da linha da Pendências: o militar, quando é um só, já em foco. Depois do clique em curso,
        porque o clique fora tira o foco */
     var pedido = RW.cotasAviso && modoNovo === 'ajustes' ? RW.cotasAviso.focoPedido(d.competencia) : null;

@@ -10,16 +10,20 @@
    todos os dias de uma vez (escala_painel_salvar_dias), e o Cancelar
    descarta todos.
    Aqui fica também a ordem dos passos do Dia, do Ciclo e do Sobreaviso
-   de todos os dias: o Desfazer volta o último, em qualquer dia, e o
-   Refazer o último desfeito (a aba Guarnições anda pelos passos do
-   Ciclo, e a ordem acompanha, andou; a pergunta que desiste tira os
-   dela, largou; a Extrajornada tem o Desfazer dela).
+   de todos os dias, e dos afastamentos mexidos na grade (o rascunho
+   dos afastamentos, afastamentos-rascunho.js, um só e sempre
+   carregado, fora dos dias): o Desfazer volta o último, em qualquer
+   dia, e o Refazer o último desfeito (a aba Guarnições anda pelos
+   passos do Ciclo, e a ordem acompanha, andou; a pergunta que desiste
+   tira os dela, largou; a Extrajornada tem o Desfazer dela).
    Cada parte dá, na API dela, o objeto gaveta: { vivo() (o dia
    carregado nela, { chave, unidadeId, iso, vivo: true }, ou null),
    contar(item), pode(item, desfazer), andar(item, desfazer) (true:
    deu o passo), limparRefazer(item), soltar(item, gravou) (o item
    guardado sai: descartado ou gravado) }. O item guardado é
-   { chave, unidadeId, iso, estado }.
+   { chave, unidadeId, iso, estado }. Os afastamentos dão só
+   pode, andar e limparRefazer (o passo de outra parte zera o Refazer
+   deles), e o passo deles é passou('afastamentos', null).
    API: RosterWork.escalasRascunhoDias.{ guardar(parte, item),
    tirar(parte, chave), porDia() ([{ unidadeId, iso, dia, ciclo,
    sobreaviso }], os itens com mudança), contar(), datas() (quantos
@@ -34,12 +38,18 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var PARTES = ['dia', 'ciclo', 'sobreaviso'];
+  var FORA = 'afastamentos';   // a parte de fora dos dias: só os passos dela entram aqui
   var guardados = { dia: {}, ciclo: {}, sobreaviso: {} };   // chave -> o item guardado
   var ordem = [];      // os passos dados, do mais antigo ao último: { parte, chave }
   var refeitos = [];   // os passos desfeitos (o Refazer volta o último)
 
-  /* a parte, pela API do arquivo dela (o arquivo pode não estar na página: a parte fica de fora) */
+  /* a parte, pela API do arquivo dela (o arquivo pode não estar na página: a parte fica de fora; os afastamentos, só
+     quando o rascunho deles é o da Escala) */
   function parte(nome) {
+    if (nome === FORA) {
+      var R = RW.afastamentosRascunho;
+      return R && R.naEscala && R.naEscala() && R.gaveta ? R.gaveta : null;
+    }
     var m = nome === 'dia' ? RW.escalasPainelEditar : nome === 'ciclo' ? RW.escalasPainelCiclo : RW.escalasPainelSobreaviso;
     return m && m.gaveta ? m.gaveta : null;
   }
@@ -106,8 +116,11 @@
 
   /* ---------- o Desfazer e o Refazer de todos os dias ---------- */
 
-  function achar(nome, chave) { return itens(nome).filter(function (i) { return i.chave === chave; })[0] || null; }
-  /* um passo novo: o Refazer de todos os dias zera */
+  function achar(nome, chave) {
+    if (nome === FORA) return { chave: null, vivo: true };   // um rascunho só, que avisa sozinho
+    return itens(nome).filter(function (i) { return i.chave === chave; })[0] || null;
+  }
+  /* um passo novo: o Refazer de todos os dias zera, e o dos afastamentos com o passo de outra parte */
   function passou(nome, chave) {
     ordem.push({ parte: nome, chave: chave });
     refeitos = [];
@@ -115,6 +128,8 @@
       var p = parte(n);
       Object.keys(guardados[n]).forEach(function (k) { if (p && p.limparRefazer) p.limparRefazer(guardados[n][k]); });
     });
+    var f = nome !== FORA ? parte(FORA) : null;
+    if (f) f.limparRefazer();
   }
   /* o último passo de uma parte num dia, numa das listas (-1: nenhum) */
   function ultimoDa(lista, nome, chave) {

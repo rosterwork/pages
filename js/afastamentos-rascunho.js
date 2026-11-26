@@ -18,7 +18,8 @@
    afastamentos-celula.js), o rascunho é o mesmo, sem o rodapé dele: o
    rodapé largo da Escala (escalas-painel-salvar.js) conta, desfaz,
    cancela e grava junto com o resto (escala_painel_salvar_dias), com a
-   mesma confirmação; cada mudança avisa a Escala
+   mesma confirmação; cada passo entra na ordem dos passos da Escala
+   (escalas-rascunho-dias.js), e cada mudança avisa a Escala
    (rosterwork_escala_rascunho), que mostra a prévia.
    ============================================================ */
 (function () {
@@ -124,8 +125,12 @@
     if (chave && chave === ultimaChave) return;
     pilhaDesfazer.push(foto());
     pilhaRefazer = [];
+    /* na Escala, o passo entra na ordem dos passos dela, junto com os dos dias (escalas-rascunho-dias.js) */
+    if (naEscala && RW.escalasRascunhoDias) RW.escalasRascunhoDias.passou('afastamentos', null);
     ultimaChave = chave || null;
   }
+  /* saiu do campo que se digitava (afastamentos-campos.js): a próxima mudança nele é um passo novo */
+  function encerrarDigitacao() { ultimaChave = null; }
 
   /* um afastamento novo, em branco (não conta nem vai para o banco até ter algo; o primeiro campo é o primeiro passo
      do Desfazer); com tipo 'viagem', a autorização de viagem (só sai do sobreaviso; os destinos a escrever); devolve a
@@ -569,7 +574,8 @@
 
   window.RosterWork.afastamentosRascunho = {
     iniciar: iniciar, conhecer: conhecer, lista: lista, achar: achar, gravado: gravado, militares: militares,
-    criar: criar, passarNovo: passarNovo, largar: largar, mudar: mudar, remover: remover, contar: contar, problemaDe: problemaDe,
+    criar: criar, passarNovo: passarNovo, largar: largar, mudar: mudar, encerrarDigitacao: encerrarDigitacao, remover: remover,
+    contar: contar, problemaDe: problemaDe,
     conferir: conferir,
     isoLimite: isoLimite, ouvir: ouvir, perguntarAntes: perguntarAntes, salvando: function () { return salvando; },
     /* na Escala (escalas-painel-salvar.js e afastamentos-celula.js): a página é ela? O que vai ao banco, o Desfazer e o
@@ -579,6 +585,20 @@
     pedido: pedido, desfazer: desfazer, refazer: refazer, podeDesfazer: podeDesfazer, podeRefazer: podeRefazer, limpar: limpar,
     problema: problema, naCaixa: naCaixa, nomeDe: function (cpf) { return nomeDe ? nomeDe(cpf) : ''; },
     confirmarAvisos: confirmarAvisos, refazEscala: refazEscala, esquecer: esquecer, marcarSalvando: marcarSalvando,
-    marcarOnde: marcarOnde, naCelula: naCelula, mexidos: mexidos
+    marcarOnde: marcarOnde, naCelula: naCelula, mexidos: mexidos,
+    /* para a gaveta dos dias (escalas-rascunho-dias.js), que guarda a ordem dos passos da Escala: dá para andar, anda um
+       passo e, com o passo de outra parte, o Refazer daqui zera (e a digitação seguida para de juntar) */
+    gaveta: {
+      pode: function (item, voltar) { return voltar ? podeDesfazer() : podeRefazer(); },
+      andar: function (item, voltar) {
+        if (!(voltar ? podeDesfazer() : podeRefazer())) return false;
+        if (voltar) desfazer(); else refazer();
+        return true;
+      },
+      limparRefazer: function () {
+        pilhaRefazer = [];
+        ultimaChave = null;
+      }
+    }
   };
 })();

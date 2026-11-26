@@ -38,6 +38,10 @@
 .falta-gente-hora--falta { background-color: var(--erro-fundo); color: var(--erro); }
 .falta-gente-hora--coberta { background-color: var(--sucesso-fundo); color: var(--sucesso); }
 
+/* enquanto a conta não chega (geral-falta-gente.js › carregando): as casinhas cinzas, da cor do esqueleto; a respiração
+   vem do .esqueleto-conjunto (geral-esqueleto.css), parada para quem pediu menos movimento */
+.falta-gente--carregando .falta-gente-hora { background-color: var(--fundo-medio); }
+
 /* o "+1" das extras a mais, pequeno (a microetiqueta, 9px) no canto direito da casinha do certo, na cor dela */
 .falta-gente-mais {
   position: absolute;

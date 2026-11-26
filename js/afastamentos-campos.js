@@ -17,7 +17,8 @@
    e em vermelho no campo (a data errada, o início, o fim ou as duas,
    até ser corrigida); na caixa da grade, o nome, a data ou o destino em
    branco só aparece quando se tenta fechar, e ela não fecha com o
-   erro de uma pergunta que está nela (podeFechar). O que é de mais de uma semana atrás fica
+   erro de uma pergunta que está nela (podeFechar). As letras seguidas
+   num campo são um passo só do Desfazer; sair do campo encerra o passo. O que é de mais de uma semana atrás fica
    travado (o mesmo limite do banco): o que terminou antes não muda; o
    que começou antes muda só o fim e o nome.
    ============================================================ */
@@ -79,6 +80,11 @@
       if (!a) return;
       R().mudar(cpf, chave, Object.assign(campos, sugestao(a, campos)), opcoes.origem, juntar);
     }
+    /* sair do campo que se digita (o clique fora, a caixa que fecha) encerra a digitação: a próxima mudança nele é outro
+       passo do Desfazer (o campo que saiu da página no redesenho fica de fora) */
+    function aoSair(input) {
+      input.addEventListener('blur', function () { if (input.isConnected) R().encerrarDigitacao(); });
+    }
 
     /* o Nome: a lista padrão e o Outro */
     if (partes.indexOf('nome') >= 0) {
@@ -115,6 +121,7 @@
           el.outro.classList.add('oculto');
         });
         entrada.addEventListener('input', function () { mudar({ padrao: null, nome: entrada.value.trim() }, 'nome'); });
+        aoSair(entrada);
       }
       lugar.appendChild(el.nome);
       lugar.appendChild(el.outro);
@@ -134,6 +141,7 @@
           campos[x[0]] = isoDoCampo(input.value);
           mudar(campos, x[0]);
         });
+        aoSair(input);
       });
       lugar.appendChild(el.periodo);
     }
@@ -211,6 +219,7 @@
           d[i] = entrada.value;
           mudar({ destinos: d }, 'destino-' + i);
         });
+        aoSair(entrada);
         tirar.addEventListener('click', function () {
           var d = destinosDe(atual());
           if (d.length > 1) d.splice(i, 1);

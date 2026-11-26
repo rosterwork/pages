@@ -10,7 +10,8 @@
    do gráfico).
    porHorario(antes, resta, extras, erro): a conta de cada horário;
    linha(grafico, horarios): o molde #tpl-falta-gente logo depois do
-   gráfico (sempre, com a casinha vazia no horário sem nada); rotulos(horario):
+   gráfico (sempre, com a casinha vazia no horário sem nada); carregando(grafico):
+   a mesma linha, cinza e respirando, enquanto a conta não chega; rotulos(horario):
    o que vai escrito na casinha (a tela e a folha das grades,
    escalas-impressao-grade-celula.js).
    Não cria HTML (clona o molde) nem escreve estilo.
@@ -87,5 +88,17 @@
     return faixa;
   }
 
-  RW.faltaGente = { porHorario: porHorario, linha: linha, rotulos: rotulos, trechos: trechos };
+  /* a linha enquanto a conta não chega: as quatro casinhas cinzas, respirando (o esqueleto-conjunto, geral-esqueleto.css),
+     sem número nem dica, logo depois do gráfico (ou da forma dele, escalas-esqueleto.js). Devolve a linha ou null */
+  function carregando(grafico) {
+    if (!grafico || !grafico.parentNode) return null;
+    var faixa = RW.tpl('tpl-falta-gente');
+    if (!faixa) return null;
+    faixa.classList.add('falta-gente--carregando', 'esqueleto-conjunto');
+    faixa.setAttribute('aria-hidden', 'true');
+    grafico.parentNode.insertBefore(faixa, grafico.nextSibling);
+    return faixa;
+  }
+
+  RW.faltaGente = { porHorario: porHorario, linha: linha, carregando: carregando, rotulos: rotulos, trechos: trechos };
 })();
