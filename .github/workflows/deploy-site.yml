@@ -88,11 +88,16 @@ jobs:
         console.log(carimbado === original ? 'armazém sem carimbo (desligado)' : 'armazém ' + versao + ': ' + Object.keys(arquivos).length + ' arquivos, ' + Object.keys(demanda).length + ' sob demanda');
         FIM
 
+    # Pacote com o número da tentativa no nome: no Re-run, o pacote da tentativa anterior continua
+    # guardado na mesma execução, e com o mesmo nome a publicação acharia dois e recusaria.
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         path: ./
-        
+        name: github-pages-${{ github.run_attempt }}
+
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
+      with:
+        artifact_name: github-pages-${{ github.run_attempt }}
