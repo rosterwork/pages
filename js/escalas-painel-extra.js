@@ -9,8 +9,10 @@
    (escalas-painel-salvar.js, p_extra do escala_painel_salvar). A
    célula da grade, com o painel fechado, usa o mesmo mês e o mesmo
    rascunho (escalas-celula-extra.js: carregar, pronto, lido, sabido,
-   usarNaCelula). O mês vem da cópia guardada, como a grade, com o dia
-   aberto e os vizinhos feitos na hora se mudaram há pouco.
+   usarNaCelula). O mês vem só da cópia guardada, como a grade e a
+   página Extrajornada (a leitura nunca refaz a conta): o dia que mudou
+   há pouco vem da versão de antes, com a nota amarela na aba, e o mês é
+   lido de novo quando a cópia dele fica pronta (esquecer).
    Não cria HTML (clona moldes) nem escreve estilo (só classList).
    RosterWork.escalasPainelExtra.
    ============================================================ */
@@ -20,8 +22,8 @@
   var RW = window.RosterWork = window.RosterWork || {};
 
   var mes = null;      // a resposta do extrajornada_mes do mês aberto
-  var naHora = null;   // os dias que o mês lido trouxe feitos na hora (o resto veio da cópia guardada); null: todos
-  var ctx = null;      // a aba aberta: { corpo, uid, iso }
+  var refeitos = {};   // os dias do mês lido que ficaram prontos depois da leitura ({ 'AAAA-MM-DD': true }): ele é lido de novo
+  var ctx = null;      // a aba aberta: { corpo, uid, iso, pronto (o mês já foi desenhado nela) }
   var pedido = 0;      // latest-wins
   var lendo = null;    // a leitura da célula em curso: { comp, promessa }
   var onde = null;     // o dia da célula que mexe na extra, com a aba fechada: { unidadeId, iso, unidadeNome }
@@ -33,6 +35,7 @@
   function G() { return RW.extrajornadaGrade; }
   function lancada() { return !!mes && !!mes.lancamento && !mes.lancamento.reaberto; }
   function sujo() { return lancada() && G().alteracoes().length > 0; }
+  function velho() { return Object.keys(refeitos).length > 0; }
 
   function frase(corpo, texto) {
     corpo.textContent = '';
@@ -43,6 +46,8 @@
   /* o mês lido na aba: o painel do dia, ou a mensagem */
   function mostrar() {
     if (!ctx) return;
+    ctx.pronto = true;
+    nota();
     var corpo = ctx.corpo;
     if (mes.admin === false || !mes.unidades.some(function (un) { return un.id === ctx.uid; })) { frase(corpo, msg().outraCompanhia); return; }
     if (!lancada()) {
@@ -55,6 +60,32 @@
     RW.extrajornadaDia.mostrarEm(ctx.uid, ctx.iso);
   }
 
+  /* os números do dia da aba vêm da cópia de antes? O dia ainda vai mudar em alguma unidade da companhia (na fila,
+     esperando a cópia ou salvo há pouco: escalas-atualizando.js), ou ficou pronto e o mês ainda não foi lido de novo */
+  function atrasado() {
+    if (refeitos[ctx.iso]) return true;
+    var at = RW.escalaAtualizando;
+    return !!at && (mes.unidades || []).some(function (un) {
+      return at.pendente(un.id, ctx.iso) || at.soCopia(un.id, ctx.iso) || at.certo(un.id, ctx.iso);
+    });
+  }
+
+  /* a nota amarela da aba enquanto o dia vem da cópia de antes, entre o subcabeçalho e o corpo: o molde e o lugar da nota
+     do dia só para consulta (escalas-painel.js › notaConsulta, que também a tira ao trocar de aba ou de dia) */
+  function nota() {
+    var corpo = ctx && ctx.corpo;
+    if (!corpo || !corpo.parentNode || !mes) return;
+    var atual = corpo.parentNode.querySelector('.painel-nota-consulta');
+    var mostra = lancada() && mes.admin !== false && mes.unidades.some(function (un) { return un.id === ctx.uid; }) && atrasado();
+    if (atual && !mostra) atual.remove();
+    if (atual || !mostra) return;
+    var n = RW.tpl('tpl-nota-atualizando');
+    if (!n) return;
+    n.classList.add('painel-nota-consulta');
+    n.querySelector('.nota-texto').textContent = RW.mensagens.escala.extraAtualizando;
+    corpo.parentNode.insertBefore(n, corpo);
+  }
+
   /* o rascunho mudou: o painel e a caixa da célula na hora, e o rodapé e as telas pelo aviso dos rascunhos
      (escalas-painel-salvar.js) */
   function aoMudar() {
@@ -64,32 +95,18 @@
     window.dispatchEvent(new CustomEvent('rosterwork_escala_rascunho'));
   }
 
-  /* o dia e os vizinhos (AAAA-MM-DD) */
-  function vizinhos(iso) {
-    var p = iso.split('-');
-    return [-1, 0, 1].map(function (n) { return RW.data.paraIsoDeData(new Date(+p[0], +p[1] - 1, +p[2] + n)); });
-  }
-
-  /* o que a leitura do mês pede: a cópia guardada, como a grade, com o dia e os vizinhos feitos na hora se mudaram há
-     pouco. O modo treino não pede a cópia (escalas-dados.js › carregar) */
-  function corpoDoMes(comp, iso) {
+  /* o que a leitura do mês pede: só a cópia guardada, como a grade e a página Extrajornada (o dia que mudou há pouco vem
+     da versão de antes). O modo treino não pede a cópia (escalas-dados.js › carregar) */
+  function corpoDoMes(comp) {
     var corpo = { p_competencia: comp };
-    if (!(RW.treino && RW.treino.ligado())) { corpo.p_aceita_copia = true; corpo.p_na_hora = vizinhos(iso); }
+    if (!(RW.treino && RW.treino.ligado())) corpo.p_aceita_copia = true;
     return corpo;
   }
 
-  /* o mês lido serve para o dia? Serve quando o dia veio feito na hora ou quando a cópia dele está em dia: sem a borda
-     amarela da cópia que ainda vai mudar e sem o Salvar de há pouco (escalas-atualizando.js) */
-  function serve(iso) {
-    var at = RW.escalaAtualizando;
-    if (!naHora || naHora.indexOf(iso) >= 0 || !at) return true;
-    return !(mes.unidades || []).some(function (un) { return at.soCopia(un.id, iso) || at.certo(un.id, iso); });
-  }
-
   /* o mês lido: o rascunho dele começa vazio, e o que decide a extra do pelotão nele fica guardado */
-  function usarMes(r, dias) {
+  function usarMes(r) {
     mes = r;
-    naHora = dias || null;
+    refeitos = {};
     sabidos[r.competencia] = { lancada: lancada(), admin: r.admin !== false,
       unidades: (r.unidades || []).map(function (un) { return un.id; }) };
     RW.extrajornadaUtil.usar(r);
@@ -100,30 +117,64 @@
   }
 
   /* a célula da grade (o painel fechado): o mês do dia, lido uma vez (o já lido fica, com ou sem mudança; sem mudança, é
-     lido de novo só quando a cópia do dia está atrasada). A Promise diz se ele está aqui (false: a leitura falhou, ou há
-     mudança não salva em outro mês) */
+     lido de novo quando um dia dele ficou pronto depois da leitura). A Promise diz se ele está aqui (false: a leitura
+     falhou, ou há mudança não salva em outro mês) */
   function carregar(iso) {
     var comp = iso.slice(0, 8) + '01';
-    if (mes && mes.competencia === comp && (sujo() || serve(iso))) return Promise.resolve(true);
+    if (mes && mes.competencia === comp && (sujo() || !velho())) return Promise.resolve(true);
     if (sujo()) return Promise.resolve(false);
-    if (lendo && lendo.comp === comp) {
-      return !lendo.dias || lendo.dias.indexOf(iso) >= 0 ? lendo.promessa : lendo.promessa.then(function () { return carregar(iso); });
-    }
-    var corpo = corpoDoMes(comp, iso);
-    var p = RW.extrajornadaUtil.chamar('extrajornada_mes', corpo).then(function (r) {
+    if (lendo && lendo.comp === comp) return lendo.promessa;
+    var p = RW.extrajornadaUtil.chamar('extrajornada_mes', corpoDoMes(comp)).then(function (r) {
       if (lendo && lendo.promessa === p) lendo = null;
       if (!r || !r.ok || sujo()) return false;
-      usarMes(r, corpo.p_na_hora);
+      usarMes(r);
       return true;
     }, function () { if (lendo && lendo.promessa === p) lendo = null; return false; });
-    lendo = { comp: comp, dias: corpo.p_na_hora || null, promessa: p };
+    lendo = { comp: comp, promessa: p };
     return p;
+  }
+
+  /* a conferência dos dias que ainda vão mudar (escalas-atualizando.js › receberDias), com os que ficaram prontos
+     ('unidade|AAAA-MM-DD'): o dia do mês lido que ficou pronto faz o mês ser lido de novo (da cópia, já certa), na próxima
+     leitura da célula ou, com a aba aberta e já desenhada, agora; com mudança não salva, o mês fica (o Salvar e o
+     Cancelar leem de novo). A nota da aba segue o dia */
+  function esquecer(prontos) {
+    if (!mes) return;
+    (prontos || []).forEach(function (k) {
+      var dia = k.split('|')[1] || '';
+      if (dia.slice(0, 8) + '01' === mes.competencia) refeitos[dia] = true;
+    });
+    if (!ctx || !ctx.pronto) return;
+    if (velho() && !sujo()) reler(); else nota();
+  }
+
+  /* a aba aberta lê o mês de novo sem tirar o que está na tela (o que já está nela fica até o novo chegar); com o cursor
+     num campo da aba, espera ele sair. Uma releitura por vez; sem a leitura, fica como está e a próxima conferência tenta
+     de novo. Outra aba, outro dia ou o painel fechado (montar e reset) cancelam */
+  function reler() {
+    var c = ctx, meu = pedido;
+    if (c.relendo) return;
+    c.relendo = true;
+    function vale() { return meu === pedido && ctx === c && !sujo(); }
+    (function tentar() {
+      if (!vale()) { c.relendo = false; return; }
+      var foco = document.activeElement;
+      if (foco && c.corpo.contains(foco) && /^(INPUT|TEXTAREA|SELECT)$/.test(foco.tagName)) { setTimeout(tentar, 2000); return; }
+      RW.extrajornadaUtil.chamar('extrajornada_mes', corpoDoMes(c.iso.slice(0, 8) + '01')).then(function (r) {
+        c.relendo = false;
+        if (!vale() || !r || !r.ok) return;
+        usarMes(r);
+        var a = RW.extrajornadaDia.aberto();
+        if (lancada() && a && a.uid === c.uid && a.data === c.iso) RW.extrajornadaDia.redesenhar(); else mostrar();
+        nota();
+      }, function () { c.relendo = false; });
+    })();
   }
 
   function montar(corpo, rodape, unidadeId, iso) {
     if (rodape) { rodape.textContent = ''; rodape.classList.add('oculto'); }
     var comp = iso.slice(0, 8) + '01';
-    ctx = { corpo: corpo, uid: +unidadeId, iso: iso };
+    ctx = { corpo: corpo, uid: +unidadeId, iso: iso, pronto: false };
     /* com mudança não salva, o mês já lido fica (o rascunho é do mês) */
     if (sujo()) {
       if (mes.competencia === comp) mostrar();
@@ -134,12 +185,11 @@
     var c = RW.painel.criarCarregando();
     if (c) corpo.appendChild(c);
     var meu = ++pedido;
-    var pede = corpoDoMes(comp, iso);
-    RW.painel.segurar(RW.extrajornadaUtil.chamar('extrajornada_mes', pede)).then(function (r) {
+    RW.painel.segurar(RW.extrajornadaUtil.chamar('extrajornada_mes', corpoDoMes(comp))).then(function (r) {
       if (meu !== pedido || !ctx) return;
       if (r && r.error) { frase(corpo, r.error); return; }
       if (!r || !r.ok) { falhou(); return; }
-      usarMes(r, pede.p_na_hora);
+      usarMes(r);
       mostrar();
     }, function () { if (meu === pedido && ctx) falhou(); });
     /* a leitura que não veio: o aviso com o Tentar de novo (geral-falha.js), que lê o mês de novo */
@@ -163,7 +213,7 @@
   function descartar() {
     if (mes) G().limpar();
     mes = null;
-    naHora = null;
+    refeitos = {};
     onde = null;
     if (RW.extrajornadaDia) RW.extrajornadaDia.reorganizar();
   }
@@ -187,6 +237,7 @@
     /* a célula da grade: o mês do dia, se a extra do pelotão se mexe nele (lançado e da companhia de quem entrou), e o
        dia dela para o rodapé; com a aba fechada e mudança na extra, o dia do rodapé é esse (escalas-painel-salvar.js) */
     carregar: carregar,
+    esquecer: esquecer,
     pronto: function (uid, iso) {
       return !!mes && mes.competencia === iso.slice(0, 8) + '01' && lancada() && mes.admin !== false
         && mes.unidades.some(function (un) { return un.id === +uid; });

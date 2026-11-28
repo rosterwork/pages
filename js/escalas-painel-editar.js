@@ -957,7 +957,9 @@
       ? RosterWork.escalasImpressao.botaoDoDia(abrirImpressao) : null;
     var como = !ctx.emSub && !ctx.comparar && RosterWork.escalasPainelComo
       ? RosterWork.escalasPainelComo.botaoDoDia(abrirComo) : null;
-    var solicitar = !ctx.emSub && !ctx.comparar && ctx.visao !== 'estagiarios' && RosterWork.escalasPainelTroca ? RosterWork.tpl('tpl-escala-dia-solicitar') : null;
+    /* o Solicitar troca só de amanhã em diante: o pedido não aceita o dia de hoje nem os que já passaram */
+    var solicitar = !ctx.emSub && !ctx.comparar && ctx.visao !== 'estagiarios' && ctx.iso > RosterWork.data.paraIsoDeData(new Date())
+      && RosterWork.escalasPainelTroca ? RosterWork.tpl('tpl-escala-dia-solicitar') : null;
     /* a aba Estagiários num dia sem estágio na unidade: sem o Editar o dia */
     var editar = ctx.admin && !(ctx.visao === 'estagiarios' && !((ctx.dados || {}).estagios_unidade || []).length);
     if (ctx.emSub || (!editar && !imprimir && !como && !solicitar)) { sub.classList.add('oculto'); return; }
@@ -1437,6 +1439,14 @@
     return haMudanca() || !!(C && C.doDia(ctx.unidadeId, ctx.iso).length);
   }
 
+  /* o dia de mais de 7 dias atrás, para quem administra a unidade: a nota no alto da lista (a mesma frase da caixa da célula) */
+  function notaAntigo(corpo) {
+    var nota = RosterWork.tpl('tpl-escala-nota');
+    if (!nota) return;
+    nota.querySelector('.nota-texto').textContent = RosterWork.mensagens.escala.diaAntigo;
+    corpo.appendChild(nota);
+  }
+
   /* aviso quando o Chefe de Socorro ou o Oficial de Área muda por causa da última mudança */
   function notasPapeis(corpo, dados) {
     var antes = papeis(ctx.dadosAntes), agora = papeis(dados);
@@ -1574,6 +1584,7 @@
     fecharLinha('guardar');
     corpo.textContent = '';
     p.anexarProblemas(dados);   // CNH, regra, exclusivo e grau de cada militar (do banco)
+    if (ctx.antigo) notaAntigo(corpo);
     if (editavel()) notaMudou(corpo);
     /* a aba Estagiários: o mesmo dia, só os estagiários, por pessoa (escalas-painel-militares.js) */
     var M = RosterWork.escalasPainelMilitares;
@@ -1691,7 +1702,7 @@
   /* lê o dia de novo e zera o desfazer/refazer */
   function recarregar() {
     if (!ctx) return;
-    montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin, semLista: ctx.semLista, aoMostrar: ctx.aoMostrar });
+    montar(ctx.corpo, ctx.rodape, ctx.unidadeId, ctx.iso, { admin: ctx.admin, antigo: ctx.antigo, semLista: ctx.semLista, aoMostrar: ctx.aoMostrar });
   }
 
   /* ---------- sub-telas (Adicionar militar, Remover do dia, Mudar de unidade neste dia e a folga no dia) ---------- */
@@ -1812,8 +1823,9 @@
 
   /* ---------- ciclo de vida ---------- */
 
-  /* opcoes = { admin, comparar, consulta, visao: 'funcoes' | 'estagiarios', semLista, aoMostrar(dados) }: o admin edita o
-     dia; os outros só leem. Sem rodape, o rodapé não é usado. semLista: o dia da célula (corpo nulo), sem a lista */
+  /* opcoes = { admin, antigo, comparar, consulta, visao: 'funcoes' | 'estagiarios', semLista, aoMostrar(dados) }: o admin
+     edita o dia; os outros só leem. antigo: quem administra a unidade num dia de mais de 7 dias atrás (só lê, com a nota).
+     Sem rodape, o rodapé não é usado. semLista: o dia da célula (corpo nulo), sem a lista */
   function montar(corpo, rodape, unidadeId, iso, opcoes) {
     opcoes = opcoes || {};
     var visao = opcoes.visao === 'estagiarios' ? opcoes.visao : 'funcoes';
@@ -1829,7 +1841,7 @@
       return;
     }
     acenderLista();
-    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin,
+    ctx = { corpo: corpo, rodape: rodape, unidadeId: unidadeId, iso: iso, admin: !!opcoes.admin, antigo: !!opcoes.antigo,
       comparar: !!opcoes.comparar, consulta: !!opcoes.consulta, visao: visao,
       dados: null, dadosAntes: null, chaveDados: null, emSub: false, comHistorico: false, salvando: false,
       sugestao: null, ultima: null, abrirMenuDe: opcoes.abrirMenuDe || null, fazerAcao: opcoes.fazerAcao || null,

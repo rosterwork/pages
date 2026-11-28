@@ -12,8 +12,9 @@
      Adicionar extra neste dia: na caixa 2, o campo de militar (os
      grupos do painel do dia da Extrajornada) e, escolhido o nome, a
      barra dele embaixo, vazia; o clique no horário põe a extra.
-   O mês é lido no clique (no pelotão, junto com o dia; escalas-
-   painel-extra.js › carregar): a caixa do pelotão espera por ele só na
+   O mês é lido no clique, só da cópia guardada (no pelotão, junto com
+   o dia; escalas-painel-extra.js › carregar, que lê de novo quando um
+   dia dele fica pronto): a caixa do pelotão espera por ele só na
    1ª vez no mês, e depois o item vem certo na hora, pelo que ficou
    guardado do mês (sabido), mesmo depois do Salvar e do Cancelar. O
    rascunho é o do mês, o mesmo da aba Extrajornada do

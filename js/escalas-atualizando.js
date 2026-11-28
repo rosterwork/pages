@@ -173,6 +173,9 @@
     if (prontos.length && RosterWork.escalasFalta) RosterWork.escalasFalta.esquecer(prontos);
     /* e os erros da dica do gráfico desses dias, também lidos da cópia de antes */
     if (prontos.length && RosterWork.escalasCelulaErros) RosterWork.escalasCelulaErros.esquecer(prontos);
+    /* e a extrajornada do painel e da célula, lida da cópia de antes: o mês dela é lido de novo, e a nota da aba segue o
+       dia (a cada conferência, com ou sem dia pronto) */
+    if (RosterWork.escalasPainelExtra && RosterWork.escalasPainelExtra.esquecer) RosterWork.escalasPainelExtra.esquecer(prontos);
     if (prontos.length || filaAcabou) redesenharProntos(prontos, filaAcabou);
     relerGrade();
     marcar();

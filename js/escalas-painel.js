@@ -978,14 +978,18 @@
     if (naFila) notaConsulta(true);
     if ((secao === 'distribuicao' || secao === 'estagiarios') && RosterWork.escalasPainelEditar) {
       /* o dia é de quem tem a unidade na área do papel; as abas Funções e Estagiários são o mesmo dia, por posto e, só os
-         estagiários, por pessoa.
+         estagiários, por pessoa. O dia de mais de 7 dias atrás não muda mais: abre só para ver, e quem administra a
+         unidade vê a nota (antigo).
          O menu pedido na abertura (o Oficial de Área, vindo do pelotão) abre quando a lista chegar, uma vez só */
       var menuDe = pCtx.abrirMenuDe || null, fazerDe = pCtx.fazerAcao || null, adicionarDe = pCtx.adicionar || null;
       pCtx.abrirMenuDe = null;
       pCtx.fazerAcao = null;
       pCtx.adicionar = null;
+      var administra = !naFila && RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId);
+      var antigo = !!RosterWork.escalasPainelCiclo && pCtx.iso < RosterWork.escalasPainelCiclo.limite();
       RosterWork.escalasPainelEditar.montar(corpo, rodape, pCtx.unidadeId, pCtx.iso, {
-        admin: !naFila && RosterWork.sessao.podeAdministrar('pelotao', pCtx.unidadeId),
+        admin: administra && !antigo,
+        antigo: administra && antigo,
         consulta: naFila,
         visao: secao === 'estagiarios' ? secao : 'funcoes',
         abrirMenuDe: menuDe,

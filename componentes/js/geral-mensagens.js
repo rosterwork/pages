@@ -959,7 +959,8 @@
       /* o erro com quem ele toca, na dica do gráfico e no relatório da Extrajornada ("Existe militar sem função: Sd.1ªCl.
          Tavares"; escalas-painel.js › linhasDoAviso com os nomes) */
       erroComNomes: function (texto, nomes) { return texto + ': ' + juntarComE(nomes); },
-      /* a caixa da célula no dia de mais de 7 dias atrás, para quem administra (escalas-celula-editar.js) */
+      /* o dia de mais de 7 dias atrás, para quem administra: a caixa da célula (escalas-celula-editar.js) e a nota no alto
+         do painel do dia (escalas-painel-editar.js) */
       diaAntigo: 'Este dia é de mais de 7 dias atrás e não pode mais mudar.',
       /* a caixa da célula no dia que a fila do recálculo ainda vai refazer (escalas-celula-editar.js): vira o menu quando o
          dia fica pronto */
@@ -981,6 +982,8 @@
       diaAtualizando: 'Atualizando este dia. Ele abre sozinho assim que ficar pronto.',
       diaConsulta: 'Este dia ainda está sendo atualizado e pode mudar. Por enquanto, ele abre só para consulta.',
       diaPodeMudar: 'Este dia ainda está sendo atualizado e pode mudar.',
+      /* a nota da aba Extrajornada do painel do dia, enquanto o dia vem da cópia de antes (escalas-painel-extra.js) */
+      extraAtualizando: 'Os números da extrajornada deste dia ainda estão sendo atualizados e se ajustam sozinhos em instantes.',
       imprimirAtualizando: 'Atualizando a escala deste período. A impressão abre sozinha assim que ficar pronta.',
       imprimirAindaTitulo: 'A escala deste período ainda está sendo atualizada.',
       imprimirAindaDescricao: 'O PDF pode sair com dias que ainda vão mudar. Confira antes de usar.',
