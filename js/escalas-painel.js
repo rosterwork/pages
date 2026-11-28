@@ -782,11 +782,38 @@
   function rotuloDe(f) { return soEstagiarios(f) ? RosterWork.mensagens.escala.rotuloEstagiario : nomeSemNumero(f.nome); }
   function antiguidadeDe(m) { return Number(m && m.antiguidade) || 0; }
 
+  /* o Chefe (ou o Oficial de Área) que é também o Condutor só em parte do dia: três entradas no lugar das duas, na
+     ordem do posto: o papel nas horas em que ele é só o Chefe, os dois rótulos nas horas em que ele dirige e o Condutor
+     com os outros. O lápis da linha do papel continua valendo para o dia todo dele como Chefe (periodosDoPapel) */
+  function separarChefeQueDirige(lista, especial) {
+    var H = RosterWork.horario, ic = -1;
+    lista.forEach(function (f, i) { if (ic < 0 && /^Condutor/i.test(f.nome)) ic = i; });
+    if (ic < 0) return;
+    var cond = lista[ic];
+    var chefe = (especial.militares || []).filter(function (m) {
+      return (cond.militares || []).some(function (c) { return c.cpf === m.cpf; });
+    })[0];
+    if (!chefe) return;
+    var dirige = cond.militares.filter(function (c) { return c.cpf === chefe.cpf; });
+    var horasDirige = [];
+    dirige.forEach(function (c) { (c.periodos || []).forEach(function (p) { horasDirige.push(H.faixa(p)); }); });
+    var soChefe = H.menos(H.uniao((chefe.periodos || []).map(H.faixa)), horasDirige).map(H.periodo);
+    var papel = Object.assign({}, especial, { militares: especial.militares.map(function (m) {
+      return m === chefe ? Object.assign({}, m, { periodos: soChefe, periodosDoPapel: m.periodos }) : m;
+    }).filter(function (m) { return (m.periodos || []).length; }) });
+    var juntos = Object.assign({}, cond, { nomes: [especial.nome, cond.nome], militares: dirige, ghosts: [], vao: [], vazio: false });
+    var outros = Object.assign({}, cond, { militares: cond.militares.filter(function (c) { return c.cpf !== chefe.cpf; }) });
+    var novas = papel.militares.length ? [papel, juntos] : [juntos];
+    if (outros.militares.length || (outros.vao || []).length || (outros.ghosts || []).length) novas.push(outros);
+    lista.splice(ic, 1);
+    lista.splice.apply(lista, [lista.indexOf(especial), 1].concat(novas));
+  }
+
   /* as funções do posto como a lista mostra (o painel, o PDF do dia e o modo Dia). Na viatura,
-     o papel especial (Chefe/Of. Área) e o Condutor numa entrada de dois rótulos só quando as duas funções têm as mesmas
-     pessoas nos mesmos horários (quem é o Chefe dirige em todos eles); com o Chefe dirigindo só parte do dia, as duas
-     ficam separadas. Depois, os lugares da mesma função num grupo só, com o nome sem número ("Efetivo", "Rádio Operador",
-     "Estagiário"): partes = as funções guardadas do grupo (cada linha continua ligada ao lugar dela, e o lápis age nele);
+     o papel especial (Chefe/Of. Área) e o Condutor numa entrada de dois rótulos quando as duas funções têm as mesmas
+     pessoas nos mesmos horários (quem é o Chefe dirige em todos eles); com o Chefe dirigindo só parte do dia, três
+     entradas (separarChefeQueDirige). Depois, os lugares da mesma função num grupo só, com o nome sem número
+     ("Efetivo", "Rádio Operador", "Estagiário"): partes = as funções guardadas do grupo (cada linha continua ligada ao lugar dela, e o lápis age nele);
      militares = as pessoas de todas, na ordem de antiguidade, cada uma com a funcaoDoLugar (a guardada). Copia (não muta
      o leitor) */
   function mesclarFuncoesViatura(posto) {
@@ -813,6 +840,7 @@
           if (/^Condutor/i.test(f.nome) && f.militares && f.militares.length && pessoasEHorarios(f) === chave) idx = i;
         });
         if (idx >= 0) { especial.nomes = [especial.nome, lista[idx].nome]; lista.splice(idx, 1); }
+        else separarChefeQueDirige(lista, especial);
       }
     }
     var saida = [], grupos = {};
@@ -871,6 +899,10 @@
         var msg = RosterWork.mensagens.escala || {};
         if (vtxt) vtxt.textContent = msg.vagaVazia ? msg.vagaVazia(funcao.vazio_motivo) : 'Vazio';
         if (funcao.vazio_motivo === 'aberta') vazio.classList.add('escala-vaga-vazia--aberta');
+        /* as horas em que o lugar faz falta (vazio_periodos, do banco; no grupo sem número, as de todos os lugares) */
+        var H = RosterWork.horario, faixas = [], horasVazio = vazio.querySelector('.escala-distribuicao-horas');
+        (funcao.partes || [funcao]).forEach(function (pt) { (pt.vazio_periodos || []).forEach(function (p) { faixas.push(H.faixa(p)); }); });
+        H.uniao(faixas).map(H.periodo).forEach(function (p) { var hora = montarHora(p); if (hora) horasVazio.appendChild(hora); });
         lista.appendChild(vazio);
       }
     }

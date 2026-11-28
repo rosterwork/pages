@@ -518,6 +518,22 @@
   color: var(--texto);
 }
 
+/* numa linha só (a caixa 2 do Cancelar a troca, escalas-celula-cancelar-troca.js): a data à esquerda e o texto ao lado */
+.escala-remover-troca-dias--linha {
+  gap: 4px;
+}
+
+.escala-remover-troca-dias--linha .escala-remover-troca-dia {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.escala-remover-troca-dias--linha .escala-remover-troca-dia-data {
+  flex: none;
+  min-width: 40px;
+}
+
 /* o dia do painel */
 .escala-remover-troca-dia--este .escala-remover-troca-dia-texto {
   font-weight: 600;

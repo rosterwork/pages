@@ -24,11 +24,13 @@
      folga e Desfazer a mudança (escalas-painel-linha-menu, os mesmos do
      painel; uma linha riscada por folga e por mudança de dia), o
      pontual que sai sem pergunta e a mudança de dia ainda no rascunho;
+   - o Cancelar a troca da linha riscada, na caixa 2 dele
+     (escalas-celula-cancelar-troca.js: os dias da troca, o Cancelar a
+     troca ou o Cancelar todas, na hora, e o Mudar só alguns dias);
    - o painel do dia, já na tela do item: Registrar troca, o Remover
      deste dia de quem entrou de mais de um jeito ou por troca (também o
-     Tirar do dia do remanejado nesses casos), o Cancelar a troca da
-     linha riscada (o Remover deste dia de quem entrou no lugar dele, já
-     nessa troca), Mudar a extrajornada e o painel;
+     Tirar do dia do remanejado nesses casos), Mudar a extrajornada e o
+     painel;
    - o pelotão: Adicionar neste dia (escolhido o nome, ele já entra no
      dia, ao vivo, nas horas livres, e a linha dele aparece na célula na
      hora; a caixa continua com o horário e o banco de horas, com o
@@ -572,13 +574,8 @@
     'mudar-dia': mudarDia,
     'mudar-unidade': mudarUnidade,
     'registrar-troca': painelNo('registrar-troca'),
-    /* a linha riscada de quem saiu numa troca: o painel do dia no Remover deste dia de quem entrou no lugar dele, já nessa
-       troca (o mesmo do Remover deste dia dele) */
-    'cancelar-troca': function (botao, c) {
-      var t = c.a.cfg.trocas[0];
-      c.fecharTudo('guardar');
-      c.abrirPainel(t.entra, { fazerAcao: { acao: 'remover-dia', trocaId: t.troca_id } });
-    },
+    /* a linha riscada de quem saiu numa troca: a caixa 2 do Cancelar a troca (escalas-celula-cancelar-troca.js) */
+    'cancelar-troca': function (botao, c) { RW.escalasCelulaCancelarTroca.abrir(botao, c); },
     /* a caixa 2 com a pergunta se ele sai daqui ou fica nas duas (o cartão da célula, sem o horário); a resposta faz */
     'oficial-area': function (botao, c) {
       var a = c.a, el = RW.tpl('tpl-escala-celula-cartao');

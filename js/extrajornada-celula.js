@@ -8,6 +8,9 @@
    horário (na caixa 2, o dia, a barra, os campos e o cadeado; sem horário, os campos em branco;
    sempre com os outros dias dele embaixo; quem passou da cota vê
    também a nota), Pôr outro no lugar dele (o escolhido fica com o
+   horário), Mudar de unidade (na Escala, Mudar a extrajornada de
+   unidade: na caixa 2, Para qual unidade, os outros pelotões da
+   companhia; a escolha leva a extra para lá na hora, com o mesmo
    horário), Remover deste dia (na hora, com o Desfazer: quem entrou
    no rascunho some, quem estava salvo fica em cinza até o Salvar, e
    os dois já ficam livres para outro lugar), na Escala o
@@ -28,9 +31,10 @@
   var TOPO_PELOTAO = 8;   // a caixa do pelotão abre com o topo 8px abaixo do topo dele
 
   /* a caixa aberta: { tela, tipo: 'nome' | 'pelotao', uid, k, cpf, foco (o militar em foco), pode (false: só os itens
-     de abrir), caixa (null: o escolhido no Adicionar, à espera da peça), menu, acao ('horario', 'outro' ou 'adicionar':
-     a caixa 2), botao } */
+     de abrir), caixa (null: o escolhido no Adicionar, à espera da peça), menu, acao ('horario', 'outro', 'unidade' ou
+     'adicionar': a caixa 2), botao } */
   var a = null;
+  var conta = 0;   // nome único para as bolinhas de cada Para qual unidade
   var procurando = false;   // a peça nova é procurada no próximo quadro
   var depoisDeRedesenhar = [];   // quem também desenha a barra da extra numa caixa (a Escala: o Adicionar extra)
 
@@ -155,6 +159,12 @@
       c.acao = 'outro'; c.botao = botao;
       c.caixa.segunda(botao, campo(c.uid, c.k, function (x) { porOutro(c, x.cpf); }), textoDo(botao));
     },
+    /* Para qual unidade (o menu parado se acerta como no Pôr outro) */
+    unidade: function (c, botao) {
+      if (!podeUnidade(c)) { prepararMenu(c); return; }
+      c.acao = 'unidade'; c.botao = botao;
+      c.caixa.segunda(botao, caixaUnidade(c), textoDo(botao));
+    },
     /* sai na hora (quem entrou no rascunho some; quem estava salvo fica em cinza até o Salvar); o Desfazer do rodapé volta */
     remover: function (c) {
       var m = u().militar(c.cpf), uid = c.uid, k = c.k;
@@ -189,13 +199,19 @@
     return !!v && +v.unidade === c.uid && G().blocos(v).length > 0;
   }
   function podeOutro(c) { return temHorario(c) && podePor(c.k); }
+  /* os outros pelotões da companhia (para onde a extra dele pode ir no dia) */
+  function outrasUnidades(c) {
+    return u().escolhidas().map(u().unidade).filter(function (un) { return !!un && un.pelotao !== false && un.id !== +c.uid; });
+  }
+  function podeUnidade(c) { return podeOutro(c) && outrasUnidades(c).length > 0; }
 
   /* os itens que valem quando o menu abre (o menu fica o mesmo; só os itens aparecem ou somem, e não mudam enquanto a
-     caixa 2 está aberta): o Mudar o horário, quando a extra se mexe ali; com horário neste pelotão, o Pôr outro (sem o
-     pedido aberto) e o Remover */
+     caixa 2 está aberta): o Mudar o horário, quando a extra se mexe ali; com horário neste pelotão, o Pôr outro e o
+     Mudar de unidade (sem o pedido aberto; o Mudar de unidade, com outro pelotão na companhia) e o Remover */
   function prepararMenu(c) {
     c.menu.querySelector('[data-acao="horario"]').classList.toggle('oculto', !c.pode);
     c.menu.querySelector('[data-acao="outro"]').classList.toggle('oculto', !podeOutro(c));
+    c.menu.querySelector('[data-acao="unidade"]').classList.toggle('oculto', !podeUnidade(c));
     c.menu.querySelector('[data-acao="remover"]').classList.toggle('oculto', !temHorario(c));
     preencherCotas(c);
   }
@@ -313,6 +329,34 @@
     if (a !== c || !de || !para) return;
     fechar();
     G().porNoLugar(de, para, k, uid);
+  }
+
+  /* ---------- o Mudar de unidade ---------- */
+
+  /* a caixa 2: uma bolinha por outro pelotão da companhia (o nome e a cidade), nenhuma marcada */
+  function caixaUnidade(c) {
+    var el = RW.tpl('tpl-extrajornada-caixa-unidade'), lista = el.querySelector('.escala-remanejar-unidades');
+    var nome = 'extrajornada-unidade-' + (++conta);
+    outrasUnidades(c).forEach(function (un) {
+      var op = RW.tpl('tpl-escala-remanejar-unidade'), radio = op.querySelector('input');
+      radio.name = nome;
+      radio.value = String(un.id);
+      op.querySelector('.escala-remanejar-unidade-nome').textContent = un.nome || '';
+      op.querySelector('.escala-remanejar-unidade-cidade').textContent = un.cidade || '';
+      radio.addEventListener('change', function () { if (radio.checked) mudarDeUnidade(c, un.id); });
+      lista.appendChild(op);
+    });
+    return el;
+  }
+
+  /* a extra dele vai para o pelotão escolhido, com o mesmo horário e o mesmo começo (um passo do Desfazer); a de antes,
+     se estava salva, fica em cinza no pelotão de onde saiu até o Salvar */
+  function mudarDeUnidade(c, uid) {
+    var m = u().militar(c.cpf), v = G().vagaDe(c.cpf, c.k), k = c.k;
+    if (a !== c || !m || !v) return;
+    var blocos = G().blocos(v), inicio = v.inicio || null;
+    fechar();
+    G().mudar(m, k, blocos, uid, inicio);
   }
 
   /* escolhido no Adicionar neste dia: ele entra no fim do bloco, sem horário, e a caixa passa para ele já com a barra

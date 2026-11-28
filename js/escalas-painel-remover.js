@@ -3,8 +3,8 @@
    dia e o Devolver de quem foi para outra unidade; só admin). O mesmo
    caminho pelas duas entradas (REGRAS §4 › Ações e perguntas):
    - abrir(): a sub-tela em caixas de pergunta. Quem sai; a origem
-     vem da escala, e só quem entrou de mais de um jeito escolhe Qual
-     parte sai. O remanejado (escalas-painel-remanejar.js) responde
+     vem da escala, e só quem entrou de mais de um jeito escolhe de
+     qual lugar (só trocas: no lugar de quem) ou de qual serviço sai. O remanejado (escalas-painel-remanejar.js) responde
      antes se é para Devolver à unidade de origem ou Tirar do dia
      (aí seguem as perguntas de sempre; quem saiu daqui para outra
      unidade, sem serviço aqui, tira o dia todo). O serviço que veio
@@ -132,11 +132,16 @@
       comecarParte();
     }
 
-    /* Qual parte sai: só quando ele entrou de mais de um jeito */
+    /* Tirar de qual lugar (só trocas) ou de qual serviço: só quando ele entrou de mais de um jeito; na troca, no lugar de
+       quem (a leitura do dia, trocados) */
     function montarPartes() {
       el.partesLista.textContent = '';
       if (est.partes.length < 2) return;
-      var nome = 'escala-remover-parte-' + (++conta);
+      var nome = 'escala-remover-parte-' + (++conta), trocados = (api.dados() || {}).trocados || [];
+      var soTrocas = est.partes.every(function (p) { return p.origem === 'troca'; });
+      el.partesLugar.classList.toggle('oculto', !soTrocas);
+      el.partesServico.classList.toggle('oculto', soTrocas);
+      el.partesAjuda.textContent = L().vezesNoDia(nomeDe(est.mil), est.partes.length);
       est.partes.forEach(function (p, i) {
         var op = RosterWork.tpl('tpl-escala-remover-parte');
         if (!op) return;
@@ -145,7 +150,8 @@
         r.value = String(i);
         r.checked = est.parte === p;
         r.addEventListener('change', function () { if (r.checked) { est.parte = est.partes[i]; comecarParte(); } });
-        op.querySelector('.escala-remover-parte-texto').textContent = L().parte(p.origem, H.textoPeriodos(p.periodos));
+        var saiu = p.origem === 'troca' ? trocados.filter(function (x) { return x.troca_id === p.trocaId; })[0] : null;
+        op.querySelector('.escala-remover-parte-texto').textContent = L().parteTirar(p.origem, H.textoPeriodos(p.periodos), saiu ? nomeDe(saiu) : '');
         el.partesLista.appendChild(op);
       });
     }
@@ -166,6 +172,8 @@
       [].forEach.call(tela.querySelectorAll('.escala-remover-data'), function (s) { s.textContent = D.diaMesExtenso(iso); });
       el = {
         combo: q('.escala-remover-combo'), partes: q('.escala-remover-partes'), partesLista: q('.escala-remover-partes-lista'),
+        partesLugar: q('.escala-remover-partes-lugar'), partesServico: q('.escala-remover-partes-servico'),
+        partesAjuda: q('.escala-remover-partes-ajuda'),
         alcance: q('.escala-remover-alcance'), horario: q('.escala-remover-horario'), periodos: q('.escala-remover-periodos'),
         banco: q('.escala-remover-banco'),
         bancoTexto: q('.escala-remover-banco-texto'), bancoSim: q('.escala-remover-banco-sim'), bancoNao: q('.escala-remover-banco-nao'),

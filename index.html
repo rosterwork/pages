@@ -3859,7 +3859,8 @@
        menu. A célula da grade usa o mesmo menu na caixa flutuante (escalas-celula-editar.js): lá aparecem a setinha dos
        itens que abrem a caixa 2, o ícone do painel dos que abrem o painel do dia (com a dica; no Remover deste dia e no
        Mudar a extrajornada, o JS escolhe entre os dois) e o Abrir o painel do dia, e somem o lápis e os títulos. O
-       Cancelar a troca só existe na linha riscada de quem saiu numa troca, na célula -->
+       Cancelar a troca só existe na linha riscada de quem saiu numa troca, na célula (a caixa 2 dele,
+       escalas-celula-cancelar-troca.js) -->
   <template id="tpl-escala-edicao-opcoes">
     <div class="dropdown escala-edicao-opcoes">
       <button type="button" class="botao-discreto escala-edicao-lapis" aria-label="Editar esta linha">
@@ -3885,7 +3886,7 @@
           <button type="button" class="dropdown-item" data-acao="mudar-unidade"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Mudar de unidade neste dia</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="oficial-area"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span>Pôr como Oficial de Área</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="registrar-troca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg><span>Registrar troca de serviço</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
-          <button type="button" class="dropdown-item" data-acao="cancelar-troca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg><span>Cancelar a troca</span><span class="escala-edicao-opcoes-painel" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
+          <button type="button" class="dropdown-item" data-acao="cancelar-troca"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-origem-troca"/></svg><span>Cancelar a troca</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="mudar-extra"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Mudar a extrajornada</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg><span class="escala-edicao-opcoes-painel oculto" data-dica="Abre no painel do dia"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg></span></button>
           <button type="button" class="dropdown-item" data-acao="devolver"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-restaurar"/></svg><span class="escala-edicao-opcoes-devolver"></span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
           <button type="button" class="dropdown-item" data-acao="cancelar-folga"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-folgas"/></svg><span>Cancelar a folga</span></button>
@@ -4411,8 +4412,11 @@
         <span class="subtela-ajuda subtela-ajuda--opcao escala-remover-mudanca-devolver-ajuda"></span>
       </div>
       <div class="escala-remover-mudanca-outra oculto"></div>
+      <!-- quem está no dia de mais de um jeito: de qual lugar (só trocas) ou de qual serviço ele sai; a frase "O X está neste
+           dia duas vezes." e as opções vêm do JS -->
       <div class="grupo-caixa subtela-pergunta escala-remover-partes oculto">
-        <span class="rotulo-secao">Qual parte sai</span>
+        <span class="rotulo-secao"><span class="escala-remover-partes-lugar">Tirar de qual lugar</span><span class="escala-remover-partes-servico oculto">Tirar de qual serviço</span></span>
+        <span class="subtela-ajuda escala-remover-partes-ajuda"></span>
         <div class="escala-marcar-lista escala-remover-partes-lista"></div>
       </div>
       <div class="grupo-caixa subtela-pergunta escala-remover-alcance oculto">
@@ -4882,6 +4886,7 @@
       </div>
       <button type="button" class="dropdown-item" data-acao="horario"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-relogio"/></svg><span data-tela="extrajornada">Mudar o horário</span><span data-tela="escala">Mudar o horário da extrajornada</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
       <button type="button" class="dropdown-item" data-acao="outro"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-substituir"/></svg><span>Pôr outro no lugar dele</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
+      <button type="button" class="dropdown-item" data-acao="unidade"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-remanejado"/></svg><span data-tela="extrajornada">Mudar de unidade</span><span data-tela="escala">Mudar a extrajornada de unidade</span><svg class="icone escala-edicao-opcoes-seta" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-seta-direita"/></svg></button>
       <button type="button" class="dropdown-item dropdown-item--perigo" data-acao="remover"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-sair"/></svg><span data-tela="extrajornada">Remover deste dia</span><span data-tela="escala">Remover da extrajornada neste dia</span></button>
       <div class="dropdown-divisor"></div>
       <button type="button" class="dropdown-item" data-acao="abrir-extrajornada" data-tela="escala"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-extrajornada"/></svg><span>Abrir na Extrajornada</span></button>
@@ -4895,6 +4900,18 @@
     <div class="extrajornada-caixa-horario">
       <span class="extrajornada-caixa-horario-dia"></span>
       <span class="extrajornada-painel-marcas"></span>
+    </div>
+  </template>
+
+  <!-- a caixa 2 do Mudar de unidade (extrajornada-celula.js): Para qual unidade, uma bolinha por outro pelotão da
+       companhia (molde tpl-escala-remanejar-unidade: o nome e a cidade, que vêm do JS). A escolha leva a extra para lá
+       na hora, com o mesmo horário -->
+  <template id="tpl-extrajornada-caixa-unidade">
+    <div class="escala-celula-perguntas">
+      <div class="grupo-caixa pergunta-linha">
+        <span class="rotulo-secao">Para qual unidade</span>
+        <div class="escala-remanejar-unidades"></div>
+      </div>
     </div>
   </template>
 
@@ -5674,7 +5691,25 @@
   </template>
 
   <!-- ===== formulário da troca (trocas-varias.js): na página Trocas, o Solicitar troca, o Registrar troca e o Editar do
-       registro; na Escala, o Solicitar troca e o Registrar troca de serviço do painel do dia (escalas-painel-troca.js) ===== -->
+       registro; na Escala, o Solicitar troca e o Registrar troca de serviço do painel do dia (escalas-painel-troca.js) e
+       o Editar do registro pelo Mudar só alguns dias do Cancelar a troca (escalas-celula-cancelar-troca.js) ===== -->
+  <!-- molde: o motivo da alteração (opcional), no fim do Editar das trocas aprovadas (trocas-painel-situacao.js) -->
+  <template id="tpl-troca-motivo-alteracao">
+    <div class="grupo-caixa">
+      <span class="rotulo-secao">Motivo da alteração (opcional)</span>
+      <label class="campo">
+        <textarea class="campo-entrada" rows="2" maxlength="200" aria-label="Motivo da alteração" placeholder="Ex.: o militar foi escalado para curso no dia"></textarea>
+      </label>
+      <span class="campo-ajuda">Fica no registro das trocas e vai no aviso aos militares.</span>
+    </div>
+  </template>
+
+  <!-- molde: ações do rodapé do Editar troca (Cancelar volta à leitura do painel; no Mudar só alguns dias, fecha o painel) -->
+  <template id="tpl-troca-editar-acoes">
+    <button type="button" class="botao" data-acao="cancelar">Cancelar</button>
+    <button type="button" class="botao botao--primario" data-acao="salvar">Salvar</button>
+  </template>
+
   <!-- molde: o formulário da troca (trocas-varias.js), no Solicitar troca, no Registrar troca e no Editar do registro;
        num registro só. Os militares da troca, o calendário dos dias (trocas-varias-calendario.js; em cada dia, quem
        trabalha e quem folga), o resumo que o banco monta (duplas, rodas e o que fica sem devolução), dia a dia, com o
@@ -6219,6 +6254,7 @@
     <div class="escala-vaga-vazia">
       <svg class="icone escala-vaga-vazia-icone" width="16" height="16"><use href="icones/todos.svg#icone-alerta"></use></svg>
       <span class="escala-vaga-vazia-texto"></span>
+      <div class="escala-distribuicao-horas"></div>
     </div>
   </template>
 

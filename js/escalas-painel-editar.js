@@ -1181,6 +1181,9 @@
         cfg = { tipo: 'funcao', grupo: ancora, posto: posto, funcao: condutor, rotulo: rotulos.join(' e '), militar: mc, periodos: mc.periodos || [] };
       } else if (BLOQUEADAS.test(f.nome)) {
         cfg.tipo = 'papel';
+        /* a linha do papel cortada pelas horas em que ele dirige (escalas-painel.js › separarChefeQueDirige): o lápis
+           vale para o dia todo dele como Chefe */
+        if (m.periodosDoPapel) cfg.periodos = m.periodosDoPapel;
         cfg.levado = (posto.funcoes || []).some(function (o) {
           return !BLOQUEADAS.test(o.nome) && (o.militares || []).some(function (x) { return x.cpf === m.cpf; });
         });
@@ -1204,7 +1207,10 @@
     partes.forEach(function (pt) {
       var aberta = pt.vazio_motivo === 'aberta';
       function fixar(l, cinza) { if (!cinza) fixadoNoVazio(l, pt.fixado_vazio); return l; }
-      if (pt.vazio) por(fixar(linhaVazia(posto, pt.nome, { hi: '08:00', hf: '08:00' }, ancora, aberta), aberta));
+      /* o lugar vazio da distribuição, nas horas em que ele faz falta (vazio_periodos, do banco); sem elas, o dia todo */
+      if (pt.vazio) (pt.vazio_periodos || [{ hi: '08:00', hf: '08:00' }]).forEach(function (per) {
+        por(fixar(linhaVazia(posto, pt.nome, per, ancora, aberta), aberta));
+      });
       (pt.vao || []).forEach(function (v) { por(fixar(linhaVazia(posto, pt.nome, v, ancora, false), false)); });
     });
     if (grupo.linhas.children.length) caixa.appendChild(grupo.el);

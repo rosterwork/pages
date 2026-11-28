@@ -8,7 +8,9 @@
    as mudanças desenhadas pelo geral-resumo.
    Filtros: Período (rebusca, à esquerda) e o botão Filtros (componente
    geral-filtros) com Tipo e Autor, em memória e de escolha múltipla,
-   populados dos eventos carregados. Moldes em historico.html.
+   populados dos eventos carregados. A busca (componente geral-busca)
+   esconde, em memória, os eventos sem o texto: procura no que o cartão
+   mostra e nas mudanças. Moldes em historico.html.
    ============================================================ */
 (function () {
   'use strict';
@@ -18,6 +20,7 @@
 
   var periodo = '30';     // padrão: últimos 30 dias (persiste entre navegações)
   var filtros = null;     // o botão Filtros (Tipo e Autor), criado no iniciar
+  var termoBusca = '';    // o texto da busca (fica ao trocar o período; volta vazio a cada visita)
 
 
   /* atalho de período -> data de início (ISO) ou null (Tudo) */
@@ -44,10 +47,10 @@
     return (m && m[entidade]) || entidade || '';
   }
 
-  /* aplica os filtros de tipo e autor (em memória) a uma lista de eventos */
+  /* aplica os filtros de tipo e autor e a busca (em memória) a uma lista de eventos */
   function aplicarFiltros(itens) {
     return (itens || []).filter(function (e) {
-      return !filtros || (filtros.passa('tipo', e.entidade) && filtros.passa('autor', e.autor_cpf));
+      return (!filtros || (filtros.passa('tipo', e.entidade) && filtros.passa('autor', e.autor_cpf))) && casaBusca(e);
     });
   }
 
@@ -91,6 +94,38 @@
     return '-';
   }
 
+  /* ---------- busca (em memória, sobre o período carregado) ---------- */
+
+  /* qualquer valor do resumo (texto, número, lista ou objeto) vira texto para a busca */
+  function textoDe(valor) {
+    if (valor == null) return '';
+    if (typeof valor !== 'object') return String(valor);
+    return Object.keys(valor).map(function (k) { return textoDe(valor[k]); }).join(' ');
+  }
+
+  /* o que o cabeçalho do cartão mostra: a página, o assunto, quem fez, o que fez, a data e a unidade */
+  function textoCabecalho(ev) {
+    var quando = (RosterWork.resumo && RosterWork.resumo.formatarQuando) ? RosterWork.resumo.formatarQuando(ev.criado_em) : '';
+    return [(ABAS[ev.entidade] || {}).aba, tituloEvento(ev), ev.autor, rotuloAcao(ev.acao), ev.unidade, ev.cidade, quando].join(' ');
+  }
+
+  /* o que só aparece com o cartão aberto: as mudanças (onde, o rótulo, o de e o para) */
+  function textoDetalhes(ev) {
+    return ((ev.resumo || {}).alvos || []).map(function (alvo) {
+      return [alvo.onde].concat((alvo.mudancas || []).map(function (m) {
+        return [m.rotulo, textoDe(m.de), textoDe(m.para)].join(' ');
+      })).join(' ');
+    }).join(' ');
+  }
+
+  function contem(texto) {
+    return RosterWork.busca.normalizar(texto).indexOf(RosterWork.busca.normalizar(termoBusca)) !== -1;
+  }
+  function casaBusca(ev) { return !termoBusca || contem(textoCabecalho(ev)) || contem(textoDetalhes(ev)); }
+
+  /* o texto está só nos detalhes: o cartão abre sozinho, senão a pessoa não vê o que achou */
+  function casaSoNosDetalhes(ev) { return !!termoBusca && !contem(textoCabecalho(ev)) && contem(textoDetalhes(ev)); }
+
   /* monta o cartão: título = página (ícone + nome) · subtítulo = assunto · autor · verbo · data · mudanças */
   function montarEvento(ev) {
     var card = RosterWork.tpl('tpl-historico-evento');
@@ -123,6 +158,12 @@
         corpo.classList.toggle('oculto', aberto);
       });
     }
+    /* na busca: marca o achado (o Enter vai até ele) e abre o cartão quando o texto está só nos detalhes */
+    if (termoBusca) card.classList.add('busca-achado');
+    if (casaSoNosDetalhes(ev) && cabecalho) {
+      cabecalho.setAttribute('aria-expanded', 'true');
+      corpo.classList.remove('oculto');
+    }
     return card;
   }
 
@@ -132,8 +173,8 @@
       return String(b.criado_em || '').localeCompare(String(a.criado_em || ''));
     });
     if (lista.length === 0) {
-      /* havia eventos e os filtros esconderam todos: a frase diz que é dos filtros */
-      var peloFiltro = (itens || []).length > 0 && !!filtros && filtros.temFiltro();
+      /* havia eventos e os filtros (ou a busca) esconderam todos: a frase diz que é dos filtros */
+      var peloFiltro = (itens || []).length > 0 && ((!!filtros && filtros.temFiltro()) || !!termoBusca);
       var vazio = RosterWork.tpl(peloFiltro ? 'tpl-historico-vazio-filtro' : 'tpl-historico-vazio');
       if (vazio) container.appendChild(vazio);
       return;
@@ -211,6 +252,13 @@
       aoMudar: function () { if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.atualizar(); },
       guardar: 'historico'
     }) : null;
+    /* a busca: o texto fica ao trocar o período (para achar algo mais antigo, basta passar para Tudo) */
+    termoBusca = '';
+    var caixaBusca = conteudo.querySelector('#historico-busca');
+    if (caixaBusca && RosterWork.busca) RosterWork.busca.criar({
+      caixa: caixaBusca,
+      aoBuscar: function (termo) { termoBusca = termo || ''; if (RosterWork.arvoreUnidades) RosterWork.arvoreUnidades.atualizar(); }
+    });
     ligarPeriodo(conteudo);
     sincronizarLabelPeriodo(conteudo);
     var container = conteudo.querySelector('#arvore-historico');

@@ -184,7 +184,8 @@
       (((cfg.dados() || {}).postos) || []).forEach(function (po) {
         (po.funcoes || []).forEach(function (f) {
           if (BLOQUEADAS.test(f.nome) || f.vazio_motivo === 'aberta') return;
-          var vazio = f.vazio ? [[0, 1440]] : H.uniao((f.vao || []).map(H.faixa));
+          /* o lugar vazio, só nas horas em que ele faz falta (vazio_periodos); sem elas, o dia todo */
+          var vazio = f.vazio ? (f.vazio_periodos ? H.uniao(f.vazio_periodos.map(H.faixa)) : [[0, 1440]]) : H.uniao((f.vao || []).map(H.faixa));
           if (!vazio.length || H.menos(horas, vazio).length) return;
           lista.push({ chave: po.tipo + ':' + po.id + '|' + f.nome, posto: po, funcao: f.nome });
         });

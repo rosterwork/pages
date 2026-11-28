@@ -1355,6 +1355,17 @@
           var nomes = { ciclo: 'Pela guarnição', pontual: 'Pontual', troca: 'Por troca', mudanca: 'Mudou de dia' };
           return (nomes[origem] || '') + ', ' + periodos;
         },
+        /* Remover do dia de quem está no dia de mais de um jeito: a frase e cada opção (de qual lugar ou serviço ele sai);
+           periodos vazio = o dia todo; noLugarDe = quem saiu na troca daquela parte */
+        vezesNoDia: function (militar, n) {
+          return 'O ' + militar + ' está neste dia ' + (n === 2 ? 'duas vezes' : n === 3 ? 'três vezes' : n + ' vezes') + '.';
+        },
+        parteTirar: function (origem, periodos, noLugarDe) {
+          var horas = periodos ? ', ' + periodos : '';
+          if (origem === 'troca') return (noLugarDe ? 'No lugar do ' + noLugarDe + ' (troca)' : 'Por troca') + horas;
+          var nomes = { ciclo: 'O da guarnição dele', pontual: 'O pontual', mudanca: 'O que veio de outro dia' };
+          return (nomes[origem] || '') + horas;
+        },
         removerDoDia: function (militar) { return 'Remover o ' + militar + ' do dia'; },
         /* Remover do dia › o remanejado: volta só para a unidade de origem ou sai do dia */
         remanejadoTexto: function (militar, origem, destino, fica, automatico) {
@@ -1424,7 +1435,19 @@
         escolhaTroca: 'Escolha a troca',
         escolhaHoras: 'Escolha para onde vão as horas',
         confirmarCancelamento: 'Confirmar cancelamento',
-        erroRemover: 'O horário que sai precisa ficar dentro do serviço que ele tem no dia.'
+        erroRemover: 'O horário que sai precisa ficar dentro do serviço que ele tem no dia.',
+        /* Cancelar a troca, a caixa 2 da linha riscada (escalas-celula-cancelar-troca.js): com quem e o RW, os dias e as
+           notas; outros = os nomes dos outros militares da troca */
+        cancelarTrocaCom: function (outros, rw) { return 'Com ' + lista('o', outros) + ', ' + rw + '. Cada um volta ao próprio dia.'; },
+        cancelarTrocasCom: function (outros, rw, dias) { return 'Com ' + lista('o', outros) + ', ' + rw + ': ' + dias + ' dias.'; },
+        cancelarTrocaVolta: function (militar) { return 'O ' + militar + ' volta a trabalhar'; },
+        cancelarTrocaNoLugar: function (cumpre, noLugarDe, horas) { return cumpre + ' no lugar de ' + noLugarDe + (horas ? ', ' + horas : ''); },
+        cancelarTrocaSemDevolucao: 'A troca não tem dia de devolução: ela sai inteira, sem deixar horas a pagar.',
+        cancelarTrocasTodas: 'Cancelando todas, cada um volta aos próprios dias.',
+        cancelarTrocasPassou: 'Os dias que já passaram ficam como estão. Para mudar os outros, use o Mudar só alguns dias.',
+        cancelarTrocaVelha: function (data) { return 'O cancelamento mexe no dia ' + data + ', de mais de 7 dias atrás, que não pode mais mudar.'; },
+        cancelarTrocaNaoVale: 'Esta troca não está mais valendo. Abra o painel do dia para ver como ele está.',
+        cancelarTrocaSalveAntes: 'Salve as alterações antes de cancelar a troca.'
       },
       /* Mudar o dia do serviço (o menu Editar o dia; escalas-painel-mudar-dia.js): a lista Quem, o mês em miniatura, o
          horário, o Onde fica e os avisos */
@@ -2998,6 +3021,9 @@
       trocaAprovar: { titulo: 'Aprovando a troca', passos: ['Gravando a aprovação', 'Refazendo os dias da troca', 'Atualizando a lista'],
         pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
       trocaCancelar: { titulo: 'Cancelando a troca', passos: ['Gravando o cancelamento', 'Refazendo os dias da troca', 'Atualizando a lista'],
+        pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
+      /* o Cancelar a troca da célula da Escala (escalas-celula-cancelar-troca.js) */
+      trocaCancelarEscala: { titulo: 'Cancelando a troca', passos: ['Gravando o cancelamento', 'Refazendo os dias da troca', 'Atualizando a grade'],
         pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },
       trocaRegistrar: { titulo: 'Registrando as trocas', passos: ['Gravando as trocas', 'Refazendo os dias das trocas', 'Atualizando a lista'],
         pe: 'Os dias seguintes se ajustam sozinhos em seguida.' },

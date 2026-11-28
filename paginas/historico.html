@@ -13,7 +13,8 @@
   </div>
 
   <!-- barra: o período à esquerda (refaz a busca); à direita, o botão Filtros (componente geral-filtros)
-       com Tipo e Autor, os de quem aparece no período -->
+       com Tipo e Autor, os de quem aparece no período, e a busca (componente geral-busca), que esconde os eventos
+       sem o texto -->
   <div class="pagina-subcabecalho">
     <div class="dropdown" id="historico-periodo">
       <button type="button" class="seletor" id="historico-periodo-seletor">
@@ -33,6 +34,15 @@
     <div class="filtros" id="historico-filtros">
       <div data-filtro="tipo" data-filtro-nome="Tipo" data-filtro-titulo="Tipo"></div>
       <div data-filtro="autor" data-filtro-nome="Autor" data-filtro-titulo="Autor"></div>
+    </div>
+    <div class="busca" id="historico-busca">
+      <span class="busca-modo" aria-hidden="true">
+        <svg class="icone" width="16" height="16"><use href="icones/todos.svg#icone-pesquisar"/></svg>
+      </span>
+      <input type="text" class="busca-entrada" maxlength="100" enterkeyhint="search" placeholder="Pesquisar no histórico" aria-label="Pesquisar no histórico" />
+      <button type="button" class="busca-limpar" aria-label="Limpar pesquisa">
+        <svg class="icone" width="12" height="12" aria-hidden="true"><use href="icones/todos.svg#icone-fechar"/></svg>
+      </button>
     </div>
   </div>
 

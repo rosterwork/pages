@@ -11,14 +11,17 @@
    registro de antes, do fn_trocas_registro), quem sai da troca nos
    aceites, o Cancelar alteração e o Desfazer da aprovação que volta
    as trocas de antes; as trocas com uma alteração esperando trazem o
-   aviso no alto e ficam sem o Editar. Editar (no rodapé,
-   só na página Trocas): a aba Várias trocas em modo Editar, com o
-   plano que vale hoje (trocas-varias-editar.js), no mesmo painel.
+   aviso no alto e ficam sem o Editar. Editar (no rodapé, onde o JS
+   dele está carregado: a página Trocas e a Escala): a aba Várias trocas em modo Editar, com o
+   plano que vale hoje (trocas-varias-editar.js), no mesmo painel. Com
+   ctx.soEditar (o Mudar só alguns dias do Cancelar a troca da Escala,
+   escalas-celula-cancelar-troca.js), o painel abre direto no Editar,
+   e sair dele fecha o painel.
    Expõe RosterWork.trocasPainelVarias.abrir(troca, ctx) e acao(nome, troca, ctx, botao)
    (as mesmas ações fora do painel: o cartão que abre ali mesmo)
      troca = uma troca do registro (a primeira, nas Pendências);
      ctx = o mesmo do trocas-painel ({ cpf, ehAdmin, decidir?,
-     posicao?, aoMudar(), aoFechar() })
+     posicao?, soEditar?, aoMudar(), aoFechar() })
    ============================================================ */
 (function () {
   'use strict';
@@ -28,7 +31,7 @@
   var partes = null;       // as partes do painel (geral-decisao)
   var registro = null;     // o registro lido do banco (os dias e o saldo)
   var btnAprovar = null;   // travado até a análise chegar
-  var comEditar = false;   // o Editar só na página Trocas, onde está o molde da aba Várias trocas
+  var comEditar = false;   // o Editar onde o JS dele está carregado (a página Trocas e a Escala)
   function temEditar() { return !!RW.trocasVariasEditar && !!document.getElementById('tpl-troca-varias'); }
 
   function P() { return RW.trocasPainel.pecas; }
@@ -243,7 +246,7 @@
     ctx = ctx || {};
     var situacao = RW.trocasFormato.situacao(t.status, alteracao(t)).texto;
     var subtitulo = ctx.posicao ? RW.mensagens.decisao.posicao(situacao, ctx.posicao.n, ctx.posicao.total) : situacao;
-    /* o Editar só na página Trocas, onde está o molde da aba Várias trocas (o JS da Trocas fica carregado depois de sair dela) */
+    /* o Editar onde o JS dele está carregado (a página Trocas e a Escala; ele fica carregado depois de sair delas) */
     comEditar = temEditar();
     RW.painel.abrir({
       titulo: mv().painelTitulo,
@@ -252,6 +255,8 @@
       aoMudarModo: function (modo) {
         if (atual !== t) return;
         if (modo === 'editar') { abrirEdicao(t, ctx); return; }
+        /* aberto só para editar: sair do Editar fecha o painel */
+        if (ctx.soEditar) { RW.painel.fechar(); return; }
         desenharLeitura(t, ctx);
       },
       /* o X e o Esc durante a edição: com algo mudado, confirma o descarte */
@@ -264,6 +269,8 @@
     });
     atual = t;
     registro = null;
+    /* ctx.soEditar (o Mudar só alguns dias do Cancelar a troca, na Escala): direto no Editar, sem a leitura */
+    if (ctx.soEditar && comEditar) { RW.painel.editar(); return; }
     var corpo = RW.painel.corpo(), carregando = RW.painel.criarCarregando();
     if (carregando) corpo.appendChild(carregando);
     RW.painel.segurar(RW.trocasDados.registro(t.troca_id)).then(function (r) {

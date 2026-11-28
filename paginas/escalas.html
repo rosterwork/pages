@@ -711,6 +711,31 @@
   <div class="escala-celula-perguntas"></div>
 </template>
 
+<!-- a caixa 2 do Cancelar a troca, da linha riscada de quem saiu numa troca (escalas-celula-cancelar-troca.js): com quem é
+     e o RW, os dias da troca (o molde do dia do Remover do dia, numa linha só; os textos vêm do JS), a nota (as várias
+     trocas, a troca sem dia de devolução ou o dia que já passou), o Mudar só alguns dias das várias trocas (abre o painel
+     da troca no Editar), a recusa e os botões (Cancelar a troca, ou Cancelar todas nas várias trocas) -->
+<template id="tpl-escala-celula-cancelar-troca">
+  <div class="escala-celula-perguntas">
+    <div class="grupo-caixa pergunta-linha escala-cancelar-troca">
+      <span class="rotulo-secao">Cancelar a troca</span>
+      <span class="subtela-ajuda escala-cancelar-troca-com"></span>
+      <div class="escala-remover-troca-dias escala-remover-troca-dias--linha escala-cancelar-troca-dias"></div>
+      <span class="subtela-ajuda escala-cancelar-troca-nota oculto"></span>
+      <button type="button" class="dropdown-item escala-cancelar-troca-alguns oculto"><svg class="icone" width="14" height="14" aria-hidden="true"><use href="icones/todos.svg#icone-painel-lateral"/></svg><span>Mudar só alguns dias</span></button>
+      <div class="nota nota--erro escala-cancelar-troca-erro oculto">
+        <svg class="icone" width="16" height="16" aria-hidden="true"><use href="icones/todos.svg#icone-alerta"/></svg>
+        <span class="nota-texto"></span>
+      </div>
+      <div class="pergunta-linha-acoes">
+        <button type="button" class="botao escala-cancelar-troca-voltar">Voltar</button>
+        <button type="button" class="botao botao--primario escala-cancelar-troca-uma" disabled>Cancelar a troca</button>
+        <button type="button" class="botao botao--primario escala-cancelar-troca-todas oculto" disabled>Cancelar todas</button>
+      </div>
+    </div>
+  </div>
+</template>
+
 <!-- a caixa 1 do pelotão (o clique fora dos nomes): os Adicionar e o Trazer de outra unidade (este, para quem administra
      outra unidade da companhia), com a setinha da caixa 2; o Voltar o dia ao
      automático, sem sinal (a confirmação e na hora; só com ajuste manual no dia); e o Abrir o painel do dia. A letra é a

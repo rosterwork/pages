@@ -6,8 +6,8 @@
    mesmo Salvar do rodapé largo). O nome abre ao lado o menu dele no
    dia (a parte do dia do lápis da aba Funções, escalas-painel-linha-menu.js ›
    menuDaCelula, com o Abrir o painel do dia); as linhas riscadas têm
-   o menu delas (a de quem saiu numa troca: Cancelar a troca, que abre
-   no painel o Remover deste dia de quem entrou, e Remover da guarnição,
+   o menu delas (a de quem saiu numa troca: Cancelar a troca, na caixa
+   2 dele (escalas-celula-cancelar-troca.js), e Remover da guarnição,
    ou Mudar e Cancelar a saída, com este dia como o último serviço), o
    afastamento e a autorização de viagem, a caixa da página Afastamentos
    (afastamentos-celula.js › abrirNaEscala, no rascunho dos afastamentos,

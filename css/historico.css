@@ -118,14 +118,15 @@
 
 /* ============================================================
    CELULAR (até 767px; liga só com a marca data-celular no <html>)
-   O período à esquerda e o botão Filtros na mesma linha.
+   O período à esquerda e, na mesma linha, o botão Filtros e a lupa.
    ============================================================ */
 @media (max-width: 767px) {
   html[data-celular] #historico-periodo {
     margin-right: auto;
   }
 
-  html[data-celular] #historico-filtros {
+  html[data-celular] #historico-filtros,
+  html[data-celular] #historico-busca {
     order: 2;
   }
 }

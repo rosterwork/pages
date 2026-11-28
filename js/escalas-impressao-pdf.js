@@ -214,10 +214,12 @@
         daFuncao.push({ n: n, celulas: [celulaMilitar(m, c, n), celulaHorario(m)] });
       });
       /* o grupo sem número (f.partes, do mesclarFuncoes): as pessoas na ordem de antiguidade e depois os lugares sem
-         ninguém */
+         ninguém, com as horas em que fazem falta (vazio_periodos) */
       (f.partes || [f]).forEach(function (pt) {
         if (!pt.vazio || (f.partes && (pt.militares || []).length) || !M.vagaVazia) return;
-        daFuncao.push({ n: 1, celulas: [{ text: M.vagaVazia(pt.vazio_motivo), italics: true, color: c.suave }, { text: '' }] });
+        var horas = pt.vazio_periodos || [];
+        daFuncao.push({ n: Math.max(1, horas.length), celulas: [{ text: M.vagaVazia(pt.vazio_motivo), italics: true, color: c.suave },
+          horas.length ? celulaHorario({ periodos: horas }) : { text: '' }] });
       });
       if (!daFuncao.length) return;
       var rotulos = (f.nomes && f.nomes.length) ? f.nomes : [f.nome];

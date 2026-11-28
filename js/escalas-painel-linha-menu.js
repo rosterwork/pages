@@ -67,8 +67,9 @@
    Mudar o dia com ela, sem outra folga dele no dia) e o Dar folga
    neste dia (ele não trabalha em nenhum dos dois dias, a pergunta do
    banco de horas embaixo da linha). Na linha riscada da célula de quem
-   saiu numa troca: o Cancelar a troca (no painel, o Remover deste dia
-   de quem entrou no lugar dele, já nessa troca) e este dia como o
+   saiu numa troca: o Cancelar a troca (a caixa 2 dele,
+   escalas-celula-cancelar-troca.js; sempre que a linha é de uma troca
+   só, como quer que esteja quem entrou) e este dia como o
    último serviço dele: o Mudar e o Remover da guarnição ou, com a
    saída marcada depois dele, o Mudar e o Cancelar a saída; no dia da
    entrada dele, o Mudar e o Cancelar a entrada no lugar do Remover e
@@ -169,16 +170,14 @@
     if (r['onde-estagio']) { r['registrar-troca'] = false; r['mudar-unidade'] = false; }
   }
 
-  /* a linha riscada de quem saiu numa troca (cfg.trocas, da leitura do dia): o Cancelar a troca, com uma troca só e quem
-     entrou no lugar dele de serviço aqui por ela (no painel, o Remover deste dia dele, já nessa troca); e este dia como o
-     último serviço dele na guarnição, quando o dia era da guarnição: o Remover da guarnição ou, com a saída já marcada
-     depois dele, o Mudar e o Cancelar a saída. Até 7 dias atrás, como toda mudança */
+  /* a linha riscada de quem saiu numa troca (cfg.trocas, da leitura do dia): o Cancelar a troca, com uma troca só, como
+     quer que esteja quem entrou no lugar dele (de folga, remanejado ou em outra troca; a caixa 2 dele,
+     escalas-celula-cancelar-troca.js); e este dia como o último serviço dele na guarnição, quando o dia era da guarnição:
+     o Remover da guarnição ou, com a saída já marcada depois dele, o Mudar e o Cancelar a saída. Até 7 dias atrás, como
+     toda mudança */
   function itensDaTroca(cfg, r) {
     var RW = RosterWork, cpf = cfg.militar.cpf, trocas = cfg.trocas || [];
-    var t = trocas.length === 1 ? trocas[0] : null, entra = t && t.entra ? ed().militarDoDia(t.entra) : null;
-    r['cancelar-troca'] = !!entra && entra.daUnidade && RW.escalasPainelRemoverListas.partesDe(entra).some(function (p) {
-      return p.origem === 'troca' && p.trocaId === t.troca_id;
-    });
+    r['cancelar-troca'] = trocas.length === 1 && !!RW.escalasCelulaCancelarTroca;
     var C = RW.escalasPainelCiclo;
     if (!C || ed().iso() < C.limite()) return;
     var marcada = C.saidaMarcada(cpf);
